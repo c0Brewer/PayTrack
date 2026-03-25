@@ -18,7 +18,7 @@ namespace PayTrack.Api.Endpoints
         /// Maps the Endpoints necessary for Teams.
         /// </summary>
         /// <param name="app">Webapplication.</param>
-        public static void MapTeamEndpoints(this WebApplication app)
+        public static void MapTeamEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app
                 .MapGroup($"/{GroupRoute}")

@@ -62,7 +62,11 @@ app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 
-app.MapTeamEndpoints();
+var apiV1 = app
+    .MapGroup("/api/v1")
+    .WithTags("API V1");
+
+apiV1.MapTeamEndpoints();
 
 app.Run();
 
