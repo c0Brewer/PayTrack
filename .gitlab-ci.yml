@@ -65,7 +65,7 @@ frontend_build:
   artifacts:
     paths:
       - frontend/dist
-    expire_in: 1 week
+    expire_in: 1h
 
 # format backend
 backend_format:
@@ -91,7 +91,7 @@ backend_build:
     paths:
       - backend/bin
       - backend/obj
-    expire_in: 1 week
+    expire_in: 1h
 
 # run backend tests and confirm minimum test coverage
 backend_test:
@@ -106,7 +106,7 @@ backend_test:
     when: always
     paths:
       - backend/TestResults
-    expire_in: 1 week
+    expire_in: 1h
 
 # run frontend tests and confirm coverage
 frontend_test:
@@ -116,9 +116,9 @@ frontend_test:
     - frontend_install
   script:
     - cd frontend
-    - npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+    - npx c8 --check-coverage --lines 80 --functions 80 --branches 80 npm run test -- --watch=false --browsers=chromium --coverage
   artifacts:
     when: always
     paths:
       - frontend/coverage
-    expire_in: 1 week
+    expire_in: 1h

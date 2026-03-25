@@ -1,12 +1,13 @@
-coverageReporter: {
-  dir: require("path").join(__dirname, "./coverage"),
-  reporters: [{ type: "html" }, { type: "text-summary" }],
-  check: {
+coverageIstanbulReporter: {
+  dir: require('path').join(__dirname, './coverage'),
+  reports: ['html', 'lcovonly', 'text-summary'],
+  fixWebpackSourcePaths: true,
+  thresholds: {
     global: {
       statements: 80,
-      branches: 70,
+      branches: 80,
       functions: 80,
-      lines: 80
-    }
-  }
+      lines: 80,
+    },
+  },
 }

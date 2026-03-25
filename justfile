@@ -46,7 +46,7 @@ build-frontend:
 
 [working-directory: "frontend"]
 test-frontend:
-    npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+    npm run test:coverage
 
 [working-directory: "frontend"]
 format-frontend:
