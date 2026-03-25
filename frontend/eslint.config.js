@@ -5,6 +5,7 @@ import angularTemplate from '@angular-eslint/eslint-plugin-template';
 import angular from '@angular-eslint/eslint-plugin';
 import importPlugin from 'eslint-plugin-import';
 import unusedImports from 'eslint-plugin-unused-imports';
+import prettier from 'eslint-plugin-prettier';
 
 export default [
   js.configs.recommended,
@@ -23,6 +24,7 @@ export default [
       '@angular-eslint': angular,
       import: importPlugin,
       'unused-imports': unusedImports,
+      'prettier': prettier
     },
     rules: {
       'unused-imports/no-unused-imports': 'error',
@@ -49,6 +51,7 @@ export default [
 
       'no-console': 'error',
       'no-debugger': 'error',
+      'prettier/prettier': 'error',
     },
   },
   /* ---------------- Angular HTML templates ---------------- */
@@ -82,12 +85,15 @@ export default [
 
   {
     ignores: [
+      ".angular",
+      ".vscode",
       "node_modules",
       "dist",
       "karma.conf.js",
       "coverage",
       "src/app/app.ts",
       "src/main.server.ts",
+      "src/app/types/api-types.ts"
     ]
   }
 ];

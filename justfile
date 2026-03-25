@@ -56,3 +56,11 @@ format-frontend:
 lint-frontend:
     npx eslint . --max-warnings=0
 
+
+##################################
+
+# COMMON
+
+[working-directory: "frontend"]
+generate-api:
+    npm run generate:api
