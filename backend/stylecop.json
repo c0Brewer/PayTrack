@@ -1,0 +1,15 @@
+{
+  "settings": {
+    "documentationRules": {
+      "companyName": "PayTrack",
+      "documentExposedElements": true,
+      "documentInternalElements": false
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "outsideNamespace"
+    },
+    "namingRules": {
+      "allowCommonHungarianPrefixes": false
+    }
+  }
+}

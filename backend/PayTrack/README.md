@@ -1,4 +1,4 @@
-# Backend
+# Simple .NET Application With PostgreSQL
 
 Start with `dotnet run`
 

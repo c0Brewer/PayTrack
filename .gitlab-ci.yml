@@ -1,0 +1,124 @@
+stages:
+  - install
+  - lint
+  - build
+  - test
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "true"
+  NODE_ENV: "ci"
+
+default:
+  interruptible: true
+
+# installing frontend (angular)
+frontend_install:
+  stage: install
+  image: node:20
+  rules:
+    - changes:
+        - frontend/**/*
+  script:
+    - cd frontend
+    - npm ci
+  artifacts:
+    paths:
+      - frontend/node_modules
+    expire_in: 1h
+
+# Restoring backend
+backend_restore:
+  stage: install
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  rules:
+    - changes:
+        - backend/**/*
+  script:
+    - cd backend
+    - dotnet restore
+  artifacts:
+    paths:
+      - backend
+    expire_in: 1h
+
+# run linter for frontend
+frontend_lint:
+  stage: lint
+  image: node:20
+  dependencies:
+    - frontend_install
+  script:
+    - cd frontend
+    - npx eslint . --max-warnings=0
+  allow_failure: false
+
+# build frontend (check if build is successful)
+frontend_build:
+  stage: build
+  image: node:20
+  dependencies:
+    - frontend_install
+  script:
+    - cd frontend
+    - npm run build -- --configuration production
+  artifacts:
+    paths:
+      - frontend/dist
+    expire_in: 1 week
+
+# format backend
+backend_format:
+  stage: lint
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  dependencies:
+    - backend_restore
+  script:
+    - cd backend
+    - dotnet format --verify-no-changes
+  allow_failure: false
+
+# build backend (check if build is successful. Treat each warning as an error)
+backend_build:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  dependencies:
+    - backend_restore
+  script:
+    - cd backend
+    - dotnet build --configuration Release -warnaserror
+  artifacts:
+    paths:
+      - backend/bin
+      - backend/obj
+    expire_in: 1 week
+
+# run backend tests and confirm minimum test coverage
+backend_test:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  dependencies:
+    - backend_build
+  script:
+    - cd backend
+    - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
+  artifacts:
+    when: always
+    paths:
+      - backend/TestResults
+    expire_in: 1 week
+
+# run frontend tests and confirm coverage
+frontend_test:
+  stage: test
+  image: node:20
+  dependencies:
+    - frontend_install
+  script:
+    - cd frontend
+    - npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+  artifacts:
+    when: always
+    paths:
+      - frontend/coverage
+    expire_in: 1 week
