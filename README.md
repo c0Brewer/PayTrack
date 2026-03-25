@@ -100,8 +100,34 @@ just create-migration AddTeamEntity
 
 # Frontend
 
-The frontend is not yet implemented. It can be run using
+The Frontend is an Angular Application.
+
+## Commands
+
+### Starting the Frontend
+
+It can be run using
 
 ```bash
 just run-frontend
+```
+
+### Testing the Frontend
+
+```bash
+just test-frontend
+```
+
+### Linting the Frontend
+
+Runs the linter for checks
+
+```bash
+just lint-frontend
+```
+
+### Building the Frontend
+
+```bash
+just build-frontend
 ```

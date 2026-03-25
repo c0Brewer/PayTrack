@@ -1,3 +1,7 @@
+###################################
+
+# BACKEND
+
 [working-directory: "backend"]
 run-database:
     sudo docker-compose -f docker-compose-postgres.yml up -d
@@ -27,7 +31,28 @@ create-migration name:
     dotnet ef migrations add {{name}}
     dotnet ef database update
 
+###################################
+
+# FRONTEND
+
 [working-directory: "frontend"]
 run-frontend:
-    @echo "NOT IMPLEMENTED"
+    npm ci
+    npm run start
+
+[working-directory: "frontend"]
+build-frontend:
+    npm run build -- --configuration production
+
+[working-directory: "frontend"]
+test-frontend:
+    npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+[working-directory: "frontend"]
+format-frontend:
+    npx eslint . --ext .ts,.js,.html --fix
+
+[working-directory: "frontend"]
+lint-frontend:
+    npx eslint . --max-warnings=0
 
