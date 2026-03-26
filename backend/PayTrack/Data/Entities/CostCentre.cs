@@ -1,4 +1,4 @@
-// <copyright file="Team.cs" company="PayTrack">
+// <copyright file="CostCentre.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -8,23 +8,26 @@ using System.Diagnostics.CodeAnalysis;
 namespace PayTrack.Data.Entities
 {
     /// <summary>
-    /// Entity representing a Team.
+    /// Cost Centre of the TUWIEN Racing Team.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class Team
+    public class CostCentre
     {
         /// <summary>
-        /// Id of the Team.
+        /// Id of the Cost Centre.
         /// </summary>
+        [Key]
         public int Id { get; set; }
 
         /// <summary>
-        /// Name of the Team.
+        /// Name of the Cost Centre.
         /// </summary>
-        public string Name { get; set; } = default!;
+        [Required]
+        [MaxLength(255)]
+        public string Name { get; set; } = null!;
 
         /// <summary>
-        /// Description of Team.
+        /// Description of the Cost Centre.
         /// </summary>
         [MaxLength(1000)]
         public string? Description { get; set; }
@@ -41,11 +44,6 @@ namespace PayTrack.Data.Entities
         /// Reference to linked Budgets.
         /// </summary>
         public ICollection<Budget> Budgets { get; set; } = [];
-
-        /// <summary>
-        /// Reference to linked Members.
-        /// </summary>
-        public ICollection<User> Members { get; set; } = [];
 
         /// <summary>
         /// Reference to linked Transactions.

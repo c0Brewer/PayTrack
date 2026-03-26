@@ -58,7 +58,7 @@ namespace PayTrack.Api.Handler
             [FromBody] CreateTeamRequestDto teamDto,
             ITeamService teamService)
         {
-            var createdTeam = await teamService.CreateTeamAsync(teamDto.name);
+            var createdTeam = await teamService.CreateTeamAsync(teamDto.name, teamDto.description, teamDto.displayColor);
 
             var createdTeamDto = TeamMapper.ToDto(createdTeam);
 

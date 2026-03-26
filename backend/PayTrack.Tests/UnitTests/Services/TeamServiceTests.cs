@@ -22,16 +22,20 @@ namespace PayTrack.Tests.UnitTests.Services
         {
             // Arrange
             const string teamName = "My Team";
-            var expectedTeam = new Team { Name = teamName };
+            const string teamDescription = "My Description";
+            const string teamColor = "My Color";
+            var expectedTeam = new Team { Name = teamName, Description = teamDescription, DisplayColor = teamColor };
             repoMock.Setup(r => r.AddAsync(It.IsAny<Team>()))
                     .ReturnsAsync((Team t) => t);
 
             // Act
-            var result = await service.CreateTeamAsync(teamName);
+            var result = await service.CreateTeamAsync(teamName, teamDescription, teamColor);
 
             // Assert
             result.Should().NotBeNull();
             result.Name.Should().Be(teamName);
+            result.Description.Should().Be(teamDescription);
+            result.DisplayColor.Should().Be(teamColor);
             repoMock.Verify(r => r.AddAsync(It.Is<Team>(t => t.Name == teamName)), Times.Once);
         }
 

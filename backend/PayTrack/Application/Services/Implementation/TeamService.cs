@@ -17,11 +17,16 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITeamRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<Team> CreateTeamAsync(string name)
+        public async Task<Team> CreateTeamAsync(
+            string name,
+            string? description,
+            string? displayColor)
         {
             var team = new Team
             {
                 Name = name,
+                Description = description,
+                DisplayColor = displayColor,
             };
 
             return await this.repo.AddAsync(team);

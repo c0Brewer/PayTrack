@@ -16,7 +16,7 @@ run-backend:
 
 [working-directory: "backend"]
 test-backend:
-    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
+    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
 
 [working-directory: "backend/PayTrack.Tests"]
 print-test-report:

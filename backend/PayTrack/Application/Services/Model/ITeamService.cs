@@ -28,7 +28,9 @@ namespace PayTrack.Application.Services.Model
         /// Creates a Team using the given input.
         /// </summary>
         /// <param name="name">name of team.</param>
+        /// <param name="description">description of team.</param>
+        /// <param name="displayColor">displayColor of team.</param>
         /// <returns>Instance of created Team object.</returns>
-        Task<Team> CreateTeamAsync(string name);
+        Task<Team> CreateTeamAsync(string name, string? description, string? displayColor);
     }
 }

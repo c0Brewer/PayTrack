@@ -87,11 +87,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsOkWithCreatedTeam()
         {
             // Arrange
-            var requestDto = new CreateTeamRequestDto("New Team");
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color");
             var createdTeam = new Team { Id = 1, Name = "New Team" };
 
             _factory.TeamServiceMock
-                .Setup(s => s.CreateTeamAsync(requestDto.name))
+                .Setup(s => s.CreateTeamAsync(requestDto.name, requestDto.description, requestDto.displayColor))
                 .ReturnsAsync(createdTeam);
 
             var client = _factory.CreateClient();

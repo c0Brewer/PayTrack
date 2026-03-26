@@ -21,7 +21,9 @@ namespace PayTrack.Api.Mapper
         {
             return new TeamDto(
                 team.Id,
-                team.Name);
+                team.Name,
+                team.Description,
+                team.DisplayColor);
         }
 
         /// <summary>
