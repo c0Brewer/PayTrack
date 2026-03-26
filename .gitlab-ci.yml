@@ -49,8 +49,12 @@ frontend_lint:
   image: node:20
   dependencies:
     - frontend_install
+  rules:
+    - changes:
+        - frontend/**/*
   script:
     - cd frontend
+    - npm ci
     - npx eslint . --max-warnings=0
   allow_failure: false
 
