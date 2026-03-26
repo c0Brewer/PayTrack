@@ -32,7 +32,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var client = _factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/team");
+            var response = await client.GetAsync("api/v1/team");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -55,7 +55,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var client = _factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/team/1");
+            var response = await client.GetAsync("api/v1/team/1");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -75,7 +75,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var client = _factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/team/999");
+            var response = await client.GetAsync("api/v1/team/999");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -95,7 +95,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var client = _factory.CreateClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/team", requestDto);
+            var response = await client.PostAsJsonAsync("api/v1/team", requestDto);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
