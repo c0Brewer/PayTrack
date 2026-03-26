@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Handler;
 
 namespace PayTrack.Api.Endpoints

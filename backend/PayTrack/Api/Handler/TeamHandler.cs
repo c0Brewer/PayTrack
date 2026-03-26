@@ -21,7 +21,7 @@ namespace PayTrack.Api.Handler
         /// </summary>
         /// <param name="teamService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<List<TeamDto>>, ProblemHttpResult>> GetTeamsAsync(
+        public static async Task<Results<Ok<List<TeamDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetTeamsAsync(
             ITeamService teamService)
         {
             var team = await teamService.GetTeamsAsync();
@@ -37,7 +37,7 @@ namespace PayTrack.Api.Handler
         /// <param name="id">id.</param>
         /// <param name="teamService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<TeamDto>, NotFound, ProblemHttpResult>> GetTeamByIdAsync(
+        public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> GetTeamByIdAsync(
             [FromRoute] int id,
             ITeamService teamService)
         {
@@ -54,7 +54,7 @@ namespace PayTrack.Api.Handler
         /// <param name="teamDto">request for team creation.</param>
         /// <param name="teamService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<TeamDto>, ProblemHttpResult>> CreateTeamAsync(
+        public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateTeamAsync(
             [FromBody] CreateTeamRequestDto teamDto,
             ITeamService teamService)
         {

@@ -29,6 +29,15 @@ export interface paths {
                         "application/json": components["schemas"]["TeamDto"][];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -52,6 +61,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["TeamDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -89,12 +107,23 @@ export interface paths {
                         "application/json": components["schemas"]["TeamDto"];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Not Found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -112,11 +141,25 @@ export interface components {
     schemas: {
         CreateTeamRequestDto: {
             name: string;
+            description?: string | null;
+            displayColor?: string | null;
+        };
+        ProblemDetails: {
+            type?: string | null;
+            title?: string | null;
+            /** Format: int32 */
+            status?: number | null;
+            detail?: string | null;
+            instance?: string | null;
+        } & {
+            [key: string]: unknown;
         };
         TeamDto: {
             /** Format: int32 */
             id: number;
             name: string;
+            description?: string | null;
+            displayColor?: string | null;
         };
     };
     responses: never;
