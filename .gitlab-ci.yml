@@ -115,7 +115,7 @@ backend_test:
 # run frontend tests and confirm coverage
 frontend_test:
   stage: test
-  image: mcr.microsoft.com/playwright:v1.42.0-focal
+  image: mcr.microsoft.com/playwright:v1.58.2-noble
   dependencies:
     - frontend_install
   rules:
