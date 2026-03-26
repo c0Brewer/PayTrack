@@ -2,11 +2,14 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace PayTrack.Application.Exceptions
 {
     /// <summary>
     /// Base Custom Exception Class. All custom exceptions extend this..
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public abstract class ApiException : Exception
     {
         /// <summary>

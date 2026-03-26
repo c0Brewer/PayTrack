@@ -2,11 +2,14 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace PayTrack.Application.Exceptions
 {
     /// <summary>
     /// Exception to be thrown when an Entity cannot be found.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class NotFoundException : ApiException
     {
         /// <summary>

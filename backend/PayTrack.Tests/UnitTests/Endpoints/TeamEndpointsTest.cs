@@ -117,6 +117,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseEnvironment("Test");
             builder.ConfigureServices(services =>
             {
                 // DB
@@ -136,11 +137,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 // SERVICE
 
                 // Remove the real ITeamService registration coming from Program.cs
-                var descriptor = services.SingleOrDefault(
+                var serviceDescriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(ITeamService));
 
-                if (descriptor is not null)
-                    services.Remove(descriptor);
+                if (serviceDescriptor is not null)
+                    services.Remove(serviceDescriptor);
 
                 // Register the mock instead
                 services.AddSingleton(TeamServiceMock.Object);

@@ -13,13 +13,18 @@ using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var isTestEnv = builder.Environment.IsEnvironment("Test");
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+if (!isTestEnv)
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+}
 
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -43,7 +48,7 @@ var app = builder.Build();
 
 // Auto-apply migrations (According to Config)
 var migrationsRunConfig = builder.Configuration.GetValue<bool>("Migrations:Auto");
-if (migrationsRunConfig)
+if (migrationsRunConfig && !isTestEnv)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
