@@ -30,7 +30,7 @@ frontend_install:
 # Restoring backend
 backend_restore:
   stage: install
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
         - backend/**/*
@@ -71,7 +71,7 @@ frontend_build:
 # format backend
 backend_format:
   stage: lint
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:10.0
   dependencies:
     - backend_restore
   script:
@@ -82,7 +82,7 @@ backend_format:
 # build backend (check if build is successful. Treat each warning as an error)
 backend_build:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:10.0
   dependencies:
     - backend_restore
   script:
@@ -97,7 +97,7 @@ backend_build:
 # run backend tests and confirm minimum test coverage
 backend_test:
   stage: test
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:10.0
   dependencies:
     - backend_build
   script:
