@@ -14,7 +14,7 @@ export class TeamService {
         params: {},
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error);
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
       });
 
