@@ -129,6 +129,7 @@ frontend_test:
   script:
     - cd frontend
     - npm ci
+    - npx playwright install
     - npm run test:coverage
   artifacts:
     when: always
