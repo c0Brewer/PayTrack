@@ -111,11 +111,6 @@ backend_test:
   script:
     - cd backend
     - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
-  artifacts:
-    when: always
-    paths:
-      - backend/TestResults
-    expire_in: 1h
 
 # run frontend tests and confirm coverage
 frontend_test:
