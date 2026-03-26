@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { from, Observable } from 'rxjs';
 
 import { client } from '../client';
 import { TeamDto } from '../types/exporter';
@@ -7,12 +8,16 @@ import { TeamDto } from '../types/exporter';
   providedIn: 'root',
 })
 export class TeamService {
-  async getTeams(): Promise<TeamDto[]> {
-    const { data, error } = await client.GET('/api/v1/team', {
-      params: {},
-    });
+  public getTeams(): Observable<TeamDto[]> {
+    const promise = client
+      .GET('/api/v1/team', {
+        params: {},
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error);
+        return data;
+      });
 
-    if (error) throw new Error(error);
-    return data;
+    return from(promise);
   }
 }

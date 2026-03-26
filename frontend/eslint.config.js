@@ -49,7 +49,7 @@ export default [
         },
       ],
 
-      'no-console': 'error',
+      'no-console': ["error", { "allow": ["error"] }],
       'no-debugger': 'error',
       'prettier/prettier': 'error',
     },

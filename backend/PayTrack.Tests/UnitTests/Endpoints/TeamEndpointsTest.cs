@@ -3,10 +3,12 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
@@ -117,6 +119,22 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             builder.ConfigureServices(services =>
             {
+                // DB
+
+                // Remove real DbContext (prevents Postgres connection)
+                var dbDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+
+                if (dbDescriptor is not null)
+                    services.Remove(dbDescriptor);
+
+                // Replace with in-memory DB (no connection needed)
+                services.AddDbContext<AppDbContext>(options =>
+                    options.UseInMemoryDatabase("TestDb"));
+
+
+                // SERVICE
+
                 // Remove the real ITeamService registration coming from Program.cs
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(ITeamService));
