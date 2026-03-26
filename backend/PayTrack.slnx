@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/PayTrack/">
+    <Project Path="PayTrack/PayTrack.csproj" />
+  </Folder>
+  <Folder Name="/PayTrack.Tests/">
+    <Project Path="PayTrack.Tests/PayTrack.Tests.csproj" />
+  </Folder>
+</Solution>

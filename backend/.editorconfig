@@ -1,0 +1,18 @@
+root = true
+
+[*.cs]
+
+# Enforce PascalCase for types
+dotnet_diagnostic.SA1300.severity = error
+
+# You can also enforce namespace, methods, properties as PascalCase
+dotnet_diagnostic.SA1302.severity = error
+dotnet_diagnostic.SA1307.severity = error
+
+# Custom Settings for some specific severities
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1516.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1649.severity = none
+
+dotnet_diagnostic.SA1010.severity = none
