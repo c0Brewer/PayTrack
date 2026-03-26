@@ -75,7 +75,7 @@ backend_format:
     - backend_restore
   script:
     - cd backend
-    - dotnet format --verify-no-changes
+    - dotnet format PayTrack.slnx --verify-no-changes
   allow_failure: false
 
 # build backend (check if build is successful. Treat each warning as an error)
