@@ -64,8 +64,12 @@ frontend_build:
   image: node:20
   dependencies:
     - frontend_install
+  rules:
+    - changes:
+        - frontend/**/*
   script:
     - cd frontend
+    - npm ci
     - npm run build -- --configuration production
   artifacts:
     paths:
@@ -119,8 +123,12 @@ frontend_test:
   image: node:20
   dependencies:
     - frontend_install
+  rules:
+    - changes:
+        - frontend/**/*
   script:
     - cd frontend
+    - npm ci
     - npx c8 --check-coverage --lines 80 --functions 80 --branches 80 npm run test -- --watch=false --browsers=chromium --coverage
   artifacts:
     when: always
