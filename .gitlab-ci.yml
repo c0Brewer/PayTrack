@@ -36,7 +36,7 @@ backend_restore:
         - backend/**/*
   script:
     - cd backend
-    - dotnet restore
+    - dotnet restore PayTrack.slnx
   artifacts:
     paths:
       - backend
@@ -86,7 +86,7 @@ backend_build:
     - backend_restore
   script:
     - cd backend
-    - dotnet build --configuration Release -warnaserror
+    - dotnet build PayTrack.slnx --configuration Release -warnaserror
   artifacts:
     paths:
       - backend/bin
