@@ -62,7 +62,7 @@ namespace PayTrack.Tests.UnitTests.Middleware
             var problem = JsonSerializer.Deserialize<ProblemDetails>(json);
 
             problem.Should().NotBeNull();
-            problem!.Status.Should().Be(StatusCodes.Status404NotFound);
+            problem.Status.Should().Be(StatusCodes.Status404NotFound);
             problem.Title.Should().Be(nameof(NotFoundException));
             problem.Detail.Should().Be("Not allowed");
         }

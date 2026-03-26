@@ -4,7 +4,7 @@
 
 using PayTrack.Data.Entities;
 
-namespace PayTrack.Application.Services
+namespace PayTrack.Application.Services.Model
 {
     /// <summary>
     /// Service which handles Team-related requests.

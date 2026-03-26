@@ -2,10 +2,11 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
-using PayTrack.Data.Repositories;
+using PayTrack.Data.Repositories.Model;
 
-namespace PayTrack.Application.Services.Impl
+namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
     public class TeamService(ITeamRepository repo) : ITeamService

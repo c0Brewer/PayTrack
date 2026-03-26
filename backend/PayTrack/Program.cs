@@ -5,11 +5,11 @@
 using Microsoft.EntityFrameworkCore;
 using PayTrack.Api.Endpoints;
 using PayTrack.Api.Middleware;
-using PayTrack.Application.Services;
-using PayTrack.Application.Services.Impl;
+using PayTrack.Application.Services.Implementation;
+using PayTrack.Application.Services.Model;
 using PayTrack.Data;
-using PayTrack.Data.Repositories;
-using PayTrack.Data.Repositories.Impl;
+using PayTrack.Data.Repositories.Implementation;
+using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +21,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
-builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -69,10 +69,3 @@ var apiV1 = app
 apiV1.MapTeamEndpoints();
 
 app.Run();
-
-/// <summary>
-/// Expose Program for Testing.
-/// </summary>
-public partial class Program
-{
-}

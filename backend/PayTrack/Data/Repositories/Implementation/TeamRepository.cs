@@ -4,8 +4,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using PayTrack.Data.Entities;
+using PayTrack.Data.Repositories.Model;
 
-namespace PayTrack.Data.Repositories.Impl
+namespace PayTrack.Data.Repositories.Implementation
 {
     /// <inheritdoc/>
     public class TeamRepository(AppDbContext context) : ITeamRepository

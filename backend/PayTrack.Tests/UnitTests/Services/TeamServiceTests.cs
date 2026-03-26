@@ -1,8 +1,8 @@
 using Moq;
 using FluentAssertions;
-using PayTrack.Application.Services.Impl;
 using PayTrack.Data.Entities;
-using PayTrack.Data.Repositories;
+using PayTrack.Data.Repositories.Model;
+using PayTrack.Application.Services.Implementation;
 
 namespace PayTrack.Tests.UnitTests.Services
 {

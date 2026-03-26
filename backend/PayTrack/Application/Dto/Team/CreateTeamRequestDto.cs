@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace PayTrack.Application.Dto
+namespace PayTrack.Application.Dto.Team
 {
     /// <summary>
     /// Dto containing necessary information for creating a team

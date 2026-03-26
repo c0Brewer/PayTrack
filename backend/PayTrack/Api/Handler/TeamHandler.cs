@@ -4,10 +4,10 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using PayTrack.Application.Dto;
+using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Exceptions;
-using PayTrack.Application.Mapper;
-using PayTrack.Application.Services;
+using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
 {

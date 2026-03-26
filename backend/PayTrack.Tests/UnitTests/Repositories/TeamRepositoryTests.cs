@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
-using PayTrack.Data.Repositories.Impl;
+using PayTrack.Data.Repositories.Implementation;
 
 namespace PayTrack.Tests.UnitTests.Repositories
 {
@@ -11,7 +11,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         private AppDbContext GetInMemoryDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb_" + System.Guid.NewGuid())
+                .UseInMemoryDatabase(databaseName: "TestDb_" + Guid.NewGuid())
                 .Options;
 
             return new AppDbContext(options);

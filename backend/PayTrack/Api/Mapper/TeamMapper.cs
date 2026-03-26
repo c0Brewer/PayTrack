@@ -2,10 +2,10 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 
-namespace PayTrack.Application.Mapper
+namespace PayTrack.Api.Mapper
 {
     /// <summary>
     /// Mapper for Team.

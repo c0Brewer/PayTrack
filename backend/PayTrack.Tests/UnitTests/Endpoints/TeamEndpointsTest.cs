@@ -1,70 +1,58 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using PayTrack.Application.Dto;
-using PayTrack.Application.Services;
+using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
 {
-    public class TeamEndpointsTests
+    public class TeamEndpointsTests(TeamApiFactory factory) : IClassFixture<TeamApiFactory>
     {
-        private (WebApplicationFactory<Program> Factory, Mock<ITeamService> ServiceMock) CreateFactoryWithMock()
-        {
-            var serviceMock = new Mock<ITeamService>();
-
-            var factory = new WebApplicationFactory<Program>()
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        // Replace the real ITeamService with the mock
-                        services.AddSingleton(serviceMock.Object);
-                    });
-                });
-
-            return (factory, serviceMock);
-        }
+        private readonly TeamApiFactory _factory = factory;
 
         [Fact]
         public async Task GetTeams_ReturnsOkWithTeams()
         {
             // Arrange
-            var (factory, serviceMock) = CreateFactoryWithMock();
-            var teams = new List<Data.Entities.Team>
+            var teams = new List<Team>
             {
-                new() { Id = 1, Name = "Team1" },
-                new() { Id = 2, Name = "Team2" }
+                new() { Id = 1, Name = "Alpha" },
+                new() { Id = 2, Name = "Beta" },
             };
-            serviceMock.Setup(s => s.GetTeamsAsync())
-                       .ReturnsAsync(teams);
 
-            var client = factory.CreateClient();
+            _factory.TeamServiceMock
+                .Setup(s => s.GetTeamsAsync())
+                .ReturnsAsync(teams);
+
+            var client = _factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/team/");
+            var response = await client.GetAsync("/team");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<List<TeamDto>>();
             result.Should().HaveCount(2);
-            result[0].name.Should().Be("Team1");
-            result[1].name.Should().Be("Team2");
+            result![0].name.Should().Be("Alpha");
+            result![1].name.Should().Be("Beta");
         }
 
         [Fact]
         public async Task GetTeamById_ReturnsOk_WhenTeamExists()
         {
             // Arrange
-            var (factory, serviceMock) = CreateFactoryWithMock();
-            var team = new Data.Entities.Team { Id = 1, Name = "Team1" };
-            serviceMock.Setup(s => s.GetTeamByIdAsync(1))
-                       .ReturnsAsync(team);
+            var team = new Team { Id = 1, Name = "Team1" };
 
-            var client = factory.CreateClient();
+            _factory.TeamServiceMock
+                .Setup(s => s.GetTeamByIdAsync(1))
+                .ReturnsAsync(team);
+
+            var client = _factory.CreateClient();
 
             // Act
             var response = await client.GetAsync("/team/1");
@@ -73,18 +61,18 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result.name.Should().Be("Team1");
+            result!.name.Should().Be("Team1");
         }
 
         [Fact]
         public async Task GetTeamById_ReturnsNotFound_WhenTeamDoesNotExist()
         {
             // Arrange
-            var (factory, serviceMock) = CreateFactoryWithMock();
-            serviceMock.Setup(s => s.GetTeamByIdAsync(999))
-                       .ReturnsAsync((Data.Entities.Team?)null);
+            _factory.TeamServiceMock
+                .Setup(s => s.GetTeamByIdAsync(999))
+                .ReturnsAsync((Team?)null);
 
-            var client = factory.CreateClient();
+            var client = _factory.CreateClient();
 
             // Act
             var response = await client.GetAsync("/team/999");
@@ -97,22 +85,48 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsOkWithCreatedTeam()
         {
             // Arrange
-            var (factory, serviceMock) = CreateFactoryWithMock();
             var requestDto = new CreateTeamRequestDto("New Team");
-            var createdTeam = new Data.Entities.Team { Id = 1, Name = "New Team" };
-            serviceMock.Setup(s => s.CreateTeamAsync(requestDto.name))
-                       .ReturnsAsync(createdTeam);
+            var createdTeam = new Team { Id = 1, Name = "New Team" };
 
-            var client = factory.CreateClient();
+            _factory.TeamServiceMock
+                .Setup(s => s.CreateTeamAsync(requestDto.name))
+                .ReturnsAsync(createdTeam);
+
+            var client = _factory.CreateClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/team/", requestDto);
+            var response = await client.PostAsJsonAsync("/team", requestDto);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result.name.Should().Be("New Team");
+            result!.name.Should().Be("New Team");
+        }
+    }
+
+    /// <summary>
+    /// Uses the real API Program entry point so WebApplicationFactory can
+    /// resolve and build the IHost, then replaces ITeamService with a mock.
+    /// </summary>
+    public class TeamApiFactory : WebApplicationFactory<Program>  // <-- KEY FIX
+    {
+        public Mock<ITeamService> TeamServiceMock { get; } = new();
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.ConfigureServices(services =>
+            {
+                // Remove the real ITeamService registration coming from Program.cs
+                var descriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(ITeamService));
+
+                if (descriptor is not null)
+                    services.Remove(descriptor);
+
+                // Register the mock instead
+                services.AddSingleton(TeamServiceMock.Object);
+            });
         }
     }
 }

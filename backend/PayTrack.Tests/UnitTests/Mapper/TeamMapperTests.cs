@@ -1,5 +1,5 @@
 using FluentAssertions;
-using PayTrack.Application.Mapper;
+using PayTrack.Api.Mapper;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Mapper
