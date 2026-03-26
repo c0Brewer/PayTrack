@@ -4,10 +4,11 @@ TODO: Properly implement README. For now its mostly instructions on how to run t
 
 ## Prerequisites
 
-* [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
-* [Docker & Docker Compose](https://docs.docker.com/compose/) (for PostgreSQL)
-* `just` command (optional, for running predefined tasks)
-* ef for migrations: `dotnet tool install --global dotnet-ef`
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [Docker & Docker Compose](https://docs.docker.com/compose/) (for PostgreSQL)
+- `just` command (optional, for running predefined tasks)
+- EF Core CLI for migrations: `dotnet tool install --global dotnet-ef`
+- [`dotnet-reportgenerator-globaltool`](https://github.com/danielpalme/ReportGenerator) (optional, for generating HTML coverage reports)
 
 ## Commands
 
@@ -35,18 +36,18 @@ Run the backend API:
 just run-backend
 ```
 
-* This runs the project located at `PayTrack/PayTrack.csproj`.
-* The API will connect to the PostgreSQL database running in Docker.
+- Runs the project located at `PayTrack/PayTrack.csproj`.
+- The API will connect to the PostgreSQL database running in Docker.
 
 ### Building the Backend
 
-Build the backend in release mode (This is important when you want to test if the pipeline will go through)
+Build the backend in release mode:
 
 ```bash
 just build-backend
 ```
 
-* Treats all warnings as errors (`-warnaserror`). Same as the pipeline.
+- Treats all warnings as errors (`-warnaserror`), same as the CI/CD pipeline.
 
 ### Testing the Backend
 
@@ -56,12 +57,19 @@ Run unit tests with code coverage:
 just test-backend
 ```
 
-* Uses Coverlet to collect coverage in **lcov** format.
-* Enforces a minimum **line coverage threshold of 80%**.
+- Uses Coverlet to collect coverage in **OpenCover** format.
+- Enforces a minimum **line coverage threshold of 80%**.
+- Coverage reports can be converted to **HTML** using:
 
-> Note: Tests are configured to run without requiring a real database where possible. Services are mocked when needed. 
+```bash
+just print-test-report
+```
 
-We might have to add a library like "Testcontainers" which allows us to test our application in a cut-off test environment.
+- Opens a detailed report at `backend/PayTrack.Tests/coverage-report/index.html`.
+- Lines not covered will be highlighted in red; covered lines in green.
+
+> Note: Tests are configured to run without requiring a real database where possible. Services are mocked when needed.
+> We might add libraries like **Testcontainers** to run tests in isolated environments.
 
 ### Formatting the Code
 
@@ -79,24 +87,22 @@ Create a new migration and apply it:
 just create-migration <MigrationName>
 ```
 
-* Replace `<MigrationName>` with a descriptive name for the migration.
-* Example:
+- Replace `<MigrationName>` with a descriptive name for the migration.
+- Example:
 
 ```bash
 just create-migration AddTeamEntity
 ```
 
-* This will:
-
+- This will:
   1. Create a new EF Core migration.
   2. Apply it to the database.
 
-
 ## Notes
 
-* Ensure Docker is running before starting the database.
-* The databse is required for the Application to properly run
-* The backend exposes minimal API endpoints via `Program.cs`.
+- Ensure Docker is running before starting the database.
+- The database is required for the application to properly run.
+- The backend exposes minimal API endpoints via `Program.cs`.
 
 # Frontend
 
@@ -106,11 +112,11 @@ The Frontend is an Angular Application.
 
 ### Starting the Frontend
 
-It can be run using
-
 ```bash
 just run-frontend
 ```
+
+- Installs dependencies and starts the Angular development server.
 
 ### Testing the Frontend
 
@@ -118,12 +124,22 @@ just run-frontend
 just test-frontend
 ```
 
+- Runs tests and generates coverage reports (configured in the Angular project).
+
 ### Linting the Frontend
 
-Runs the linter for checks
+Runs the linter for code quality checks:
 
 ```bash
 just lint-frontend
+```
+
+### Formatting the Frontend
+
+Automatically fixes formatting issues:
+
+```bash
+just format-frontend
 ```
 
 ### Building the Frontend
@@ -131,3 +147,13 @@ just lint-frontend
 ```bash
 just build-frontend
 ```
+
+- Builds the Angular project in production mode.
+
+### Generating API Clients
+
+```bash
+just generate-api
+```
+
+- Runs the frontend script to regenerate API clients from the backend OpenAPI specification.
