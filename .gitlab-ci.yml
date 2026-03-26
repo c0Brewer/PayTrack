@@ -37,7 +37,7 @@ backend_restore:
   script:
     - cd backend
     - dotnet restore ./PayTrack/PayTrack.csproj
-    - dotnet restore ./PayTrack.Tests/PayTrack.csproj
+    - dotnet restore ./PayTrack.Tests/PayTrack.Test.csproj
   artifacts:
     paths:
       - backend
