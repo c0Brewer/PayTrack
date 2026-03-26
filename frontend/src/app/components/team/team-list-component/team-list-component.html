@@ -1,6 +1,6 @@
-<p>Teams:</p>
-<button>Refresh:</button>
+<p data-test="header">Teams:</p>
+<button data-test="refresh-teams" (click)="loadTeams()">Refresh:</button>
 
-@for (team of teams; track team.id) {
-<div>Team {{ team.id }}: {{ team.name }}</div>
+@for (team of teams(); track team.id) {
+<div [ngClass]="'team-item'" data-test="team-item">Team {{ team.id }}: {{ team.name }}</div>
 }

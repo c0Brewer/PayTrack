@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 
 import { TeamService } from '../../../services/team-service';
 import { TeamDto } from '../../../types/exporter';
@@ -10,8 +10,8 @@ import { TeamDto } from '../../../types/exporter';
   templateUrl: './team-list-component.html',
   styleUrl: './team-list-component.scss',
 })
-export class TeamListComponent {
-  teams: TeamDto[] = [];
+export class TeamListComponent implements OnInit {
+  teams = signal<TeamDto[]>([]);
 
   constructor(private teamService: TeamService) {}
 
@@ -21,7 +21,9 @@ export class TeamListComponent {
 
   loadTeams(): void {
     this.teamService.getTeams().subscribe({
-      next: (data) => (this.teams = data),
+      next: (data) => {
+        this.teams.set(data);
+      },
       error: (err) => console.error(err),
     });
   }

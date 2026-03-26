@@ -85,6 +85,7 @@ export default [
 
   {
     ignores: [
+      "e2e/base.spec.ts",
       ".angular",
       ".vscode",
       "node_modules",
