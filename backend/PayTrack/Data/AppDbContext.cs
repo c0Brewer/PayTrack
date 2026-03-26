@@ -20,6 +20,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Team> Teams => this.Set<Team>();
 
     /// <summary>
+    /// Database Set for all Team objects.
+    /// </summary>
+    public DbSet<User> User => this.Set<User>();
+
+    /// <summary>
     /// Database set for all CostCentres.
     /// </summary>
     public DbSet<CostCentre> CostCentres => this.Set<CostCentre>();
