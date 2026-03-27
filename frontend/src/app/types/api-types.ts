@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/api/v1/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GoogleAuthCallbackDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GoogleAuthResponseDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/team": {
         parameters: {
             query?: never;
@@ -143,6 +191,12 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+        };
+        GoogleAuthCallbackDto: {
+            idToken: string;
+        };
+        GoogleAuthResponseDto: {
+            jwtToken: string;
         };
         ProblemDetails: {
             type?: string | null;

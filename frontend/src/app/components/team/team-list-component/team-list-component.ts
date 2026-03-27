@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 
-import { TeamService } from '../../../services/team-service';
+import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
 
 @Component({

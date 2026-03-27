@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
-import { TeamService } from '../../../services/team-service';
+import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
 
 import { TeamListComponent } from './team-list-component';

@@ -2,9 +2,13 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PayTrack.Api.Endpoints;
 using PayTrack.Api.Middleware;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
@@ -26,11 +30,33 @@ if (!isTestEnv)
             options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 }
 
+// Service
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJWTService, JWTService>();
+
+// Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+        };
+    });
+builder.Services.AddAuthorization();
 
 // TODO: Properly set Origin for Production
 builder.Services.AddCors(options =>
@@ -64,6 +90,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 
@@ -72,5 +101,6 @@ var apiV1 = app
     .WithTags("API V1");
 
 apiV1.MapTeamEndpoints();
+apiV1.MapAuthEndpoints();
 
 app.Run();

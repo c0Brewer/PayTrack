@@ -42,8 +42,11 @@ create-migration name:
 
 [working-directory: "frontend"]
 run-frontend:
-    npm ci
     npm run start
+
+[working-directory: "frontend"]
+update-frontend:
+    npm install
 
 [working-directory: "frontend"]
 build-frontend:

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
-import { client } from '../client';
-import { TeamDto } from '../types/exporter';
+import { client } from '../../client';
+import { TeamDto } from '../../types/exporter';
 
 @Injectable({
   providedIn: 'root',

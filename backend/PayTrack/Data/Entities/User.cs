@@ -36,22 +36,21 @@ namespace PayTrack.Data.Entities
         public string Email { get; set; } = null!;
 
         /// <summary>
-        /// Reference to google.
+        /// Profile Picture URL of User.
         /// </summary>
         [MaxLength(255)]
-        public string? GoogleId { get; set; }
+        public string? ProfilePictureUrl { get; set; } = null!;
 
         /// <summary>
         /// Foreign Key on Team.
         /// </summary>
-        [Required]
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
 
         /// <summary>
         /// Reference to Team.
         /// </summary>
         [ForeignKey(nameof(TeamId))]
-        public Team Team { get; set; } = null!;
+        public Team? Team { get; set; } = null!;
 
         /// <summary>
         /// Role of User.
