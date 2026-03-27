@@ -1,4 +1,3 @@
-test
 TODO: Properly implement README. For now its mostly instructions on how to run the program
 
 # PayTrack Backend
