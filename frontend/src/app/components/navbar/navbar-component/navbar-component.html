@@ -1,6 +1,4 @@
 <nav>
-  @if (isLoggedIn$ | async) {
-  <button (click)="logout()">Logout</button>
-  }
+  <p>{{ loggedIn$ }}</p>
   <button (click)="logout()">Logout</button>
 </nav>

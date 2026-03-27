@@ -1,7 +1,7 @@
-import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { from, Observable, BehaviorSubject } from 'rxjs';
+import { CookieService } from 'ngx-cookie-service';
+import { BehaviorSubject, from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import { GoogleAuthCallbackDto, GoogleAuthResponseDto } from '../../types/exporter';
@@ -10,14 +10,13 @@ import { GoogleAuthCallbackDto, GoogleAuthResponseDto } from '../../types/export
   providedIn: 'root',
 })
 export class AuthService {
-  private platformId = inject(PLATFORM_ID);
-  private loggedIn$!: BehaviorSubject<boolean>;
+  private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
+  public loggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor(private router: Router) {
-    this.loggedIn$ = new BehaviorSubject<boolean>(
-      isPlatformBrowser(this.platformId) ? this.hasToken() : false,
-    );
-  }
+  constructor(
+    private router: Router,
+    private cookieStore: CookieService,
+  ) {}
 
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
     const callbackDto: GoogleAuthCallbackDto = { idToken };
@@ -31,26 +30,21 @@ export class AuthService {
   }
 
   public logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('jwt');
-    }
-    this.loggedIn$.next(false);
+    this.cookieStore.delete('jwt');
+    this.loggedInSubject.next(false);
     this.router.navigate(['login']);
   }
 
-  public isLoggedIn$(): Observable<boolean> {
-    return this.loggedIn$.asObservable();
-  }
-
-  private hasToken(): boolean {
-    if (!isPlatformBrowser(this.platformId)) return false; // SSR: no token
-    return localStorage.getItem('jwt') != null;
+  public isLoggedIn(): boolean {
+    return this.hasToken();
   }
 
   public storeToken(token: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('jwt', token);
-      this.loggedIn$.next(true);
-    }
+    this.cookieStore.set('jwt', token);
+    this.loggedInSubject.next(true);
+  }
+
+  private hasToken(): boolean {
+    return this.cookieStore.get('jwt') != null;
   }
 }

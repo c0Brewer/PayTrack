@@ -1,6 +1,7 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { AuthService } from '../../../services/auth/auth-service';
 import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 
 declare global {
   interface Window {
@@ -17,7 +18,7 @@ declare global {
 export class LoginComponent {
   private platformId = inject(PLATFORM_ID);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return; // SSR: skip entirely
