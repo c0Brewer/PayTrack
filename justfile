@@ -14,22 +14,6 @@ run-database:
 stop-database:
     sudo docker-compose -f docker-compose-postgres.yml down
 
-[unix]
-run-sonarqube:
-    sudo docker-compose -f docker-compose-sonarqube.yml up -d
-
-[windows]
-run-sonarqube:
-    docker-compose -f docker-compose-sonarqube.yml up -d
-
-[unix]
-stop-sonarqube:
-    sudo docker-compose -f docker-compose-sonarqube.yml down
-
-[windows]
-stop-sonarqube:
-    sudo docker-compose -f docker-compose-sonarqube.yml down
-
 [working-directory: "backend"]
 run-backend:
     dotnet run --project PayTrack/PayTrack.csproj
@@ -103,3 +87,20 @@ sonar-frontend:
 [working-directory: "frontend"]
 generate-api:
     npm run generate:api
+
+[unix]
+run-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml up -d
+
+[windows]
+run-sonarqube:
+    docker-compose -f docker-compose-sonarqube.yml up -d
+
+[unix]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
+
+[windows]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
+
