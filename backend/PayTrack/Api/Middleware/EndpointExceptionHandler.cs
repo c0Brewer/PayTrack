@@ -25,7 +25,7 @@ namespace PayTrack.Api.Middleware
         /// <returns>true if other exception handlers should get called as well.</returns>
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            this.logger.LogError("Exception occured", exception);
+            this.logger.LogError(exception, "Exception occured");
 
             var statusCode = exception is ApiException apiException
                 ? apiException.StatusCode

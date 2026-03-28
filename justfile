@@ -58,9 +58,9 @@ create-migration name:
 
 [working-directory: "backend"]
 sonar-backend:
-    dotnet sonarscanner begin /k:$SONAR_PROJECT_NAME_BACKEND /d:sonar.host.url="http://localhost:9000" /d:sonar.token=$SONARQUBE_TOKEN_BACKEND
+    dotnet sonarscanner begin /k:$SONAR_PROJECT_NAME_BACKEND /d:sonar.host.url="http://localhost:9000" /d:sonar.token=$SONARQUBE_TOKEN_BACKEND /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/*.generated.cs,**/coverage-report/**"  /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
     dotnet build
-    dotnet test /p:CollectCoverage=true
+    dotnet test /p:CollectCoverage=true /p:Threshold=0 /p:CoverletOutputFormat=opencover /p:CoverletOutput=./TestResults/coverage.opencover.xml
     dotnet sonarscanner end /d:sonar.token=$SONARQUBE_TOKEN_BACKEND
 
 ###################################
