@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 
 import { client } from '../../client';
@@ -13,10 +12,7 @@ export class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public loggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor(
-    private router: Router,
-    private cookieStore: CookieService,
-  ) {}
+  constructor(private router: Router) {}
 
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
     const callbackDto: GoogleAuthCallbackDto = { idToken };
@@ -30,7 +26,7 @@ export class AuthService {
   }
 
   public logout(): void {
-    this.cookieStore.delete('jwt');
+    localStorage.removeItem('jwt');
     this.loggedInSubject.next(false);
     this.router.navigate(['login']);
   }
@@ -40,11 +36,11 @@ export class AuthService {
   }
 
   public storeToken(token: string): void {
-    this.cookieStore.set('jwt', token);
+    localStorage.setItem('jwt', token);
     this.loggedInSubject.next(true);
   }
 
   private hasToken(): boolean {
-    return this.cookieStore.get('jwt') != null;
+    return localStorage.getItem('jwt') != null;
   }
 }

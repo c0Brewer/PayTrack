@@ -20,13 +20,15 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<User> CreateUserAsync(
             string name,
             string email,
-            string? profilePictureUrl)
+            string? profilePictureUrl,
+            bool isActive = true)
         {
             var team = new User
             {
                 Name = name,
                 Email = email,
                 ProfilePictureUrl = profilePictureUrl,
+                IsActive = isActive,
             };
 
             return await this.repo.AddAsync(team);

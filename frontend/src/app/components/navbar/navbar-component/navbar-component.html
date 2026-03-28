@@ -1,4 +1,7 @@
+@let loggedIn = loggedIn$ | async;
 <nav>
-  <p>{{ loggedIn$ }}</p>
+  <span>Status: <strong>{{ loggedIn ? 'Logged in' : 'Logged out' }}</strong></span>
+  @if (loggedIn) {
   <button (click)="logout()">Logout</button>
+  }
 </nav>

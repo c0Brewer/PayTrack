@@ -1,20 +1,14 @@
-import { isPlatformBrowser } from '@angular/common';
-import { inject, PLATFORM_ID } from '@angular/core';
+import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+
+import { AuthService } from '../../services/auth/auth-service';
 
 export const guestGuard: CanActivateFn = () => {
   const router = inject(Router);
-  const platformId = inject(PLATFORM_ID);
+  const authService = inject(AuthService);
 
-  console.log('Trigger2');
-  if (!isPlatformBrowser(platformId)) {
-    // On SSR, redirect to login — browser will re-evaluate after hydration
-    return router.createUrlTree(['/login']);
-  }
-
-  const token = localStorage.getItem('jwt');
-  console.log('Logged: 2', token);
-  if (token) {
+  const isLoggedIn = authService.isLoggedIn();
+  if (isLoggedIn) {
     return router.createUrlTree(['']); // already logged in, redirect away
   }
   return true;

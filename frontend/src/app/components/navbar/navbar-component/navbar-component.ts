@@ -1,10 +1,11 @@
+import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
 
 import { AuthService } from '../../../services/auth/auth-service';
 
 @Component({
   selector: 'app-navbar-component',
-  imports: [],
+  imports: [AsyncPipe],
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })

@@ -24,7 +24,8 @@ namespace PayTrack.Application.Services.Model
         /// <param name="name">name of user.</param>
         /// <param name="email">email of user.</param>
         /// <param name="profilePictureUrl">url to profile picture of user.</param>
+        /// <param name="isActive">indicates whether a user is currently set to active or not.</param>
         /// <returns>Instance of created User object.</returns>
-        Task<User> CreateUserAsync(string name, string email, string? profilePictureUrl);
+        Task<User> CreateUserAsync(string name, string email, string? profilePictureUrl, bool isActive = true);
     }
 }
