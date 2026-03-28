@@ -34,7 +34,7 @@ if (!isTestEnv)
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IJWTService, JWTService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -78,7 +78,7 @@ if (migrationsRunConfig && !isTestEnv)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 }
 
 // Configure the HTTP request pipeline.
@@ -103,4 +103,4 @@ var apiV1 = app
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 
-app.Run();
+await app.RunAsync();

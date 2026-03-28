@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -19,14 +20,20 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return this.context.User.FirstOrDefault(u => u.Email == email);
+            return await this.context.User.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         /// <inheritdoc/>
         public async Task<User> AddAsync(User user)
         {
             this.context.User.Add(user);
-            await this.context.SaveChangesAsync(); // TODO: Check return value if succesful?
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.");
+            }
+
             return user;
         }
     }

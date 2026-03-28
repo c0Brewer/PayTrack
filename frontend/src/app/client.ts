@@ -11,7 +11,6 @@ export const client = createClient<paths>({
 
 client.use({
   onRequest({ request }) {
-    if (typeof window === 'undefined') return; // SSR guard
     const token = localStorage.getItem('jwt');
     if (token) {
       request.headers.set('Authorization', `Bearer ${token}`);

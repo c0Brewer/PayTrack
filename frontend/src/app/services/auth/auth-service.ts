@@ -9,10 +9,10 @@ import { GoogleAuthCallbackDto, GoogleAuthResponseDto } from '../../types/export
   providedIn: 'root',
 })
 export class AuthService {
-  private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
+  private readonly loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public loggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
     const callbackDto: GoogleAuthCallbackDto = { idToken };

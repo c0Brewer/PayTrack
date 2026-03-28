@@ -1,4 +1,4 @@
-// <copyright file="IJWTService.cs" company="PayTrack">
+// <copyright file="IJwtService.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace PayTrack.Application.Services.Model
     /// <summary>
     /// Service which handles JWT-related requests.
     /// </summary>
-    public interface IJWTService
+    public interface IJwtService
     {
         /// <summary>
         /// Generates a JWT Token from email.

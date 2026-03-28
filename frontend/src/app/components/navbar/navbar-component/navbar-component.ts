@@ -12,7 +12,7 @@ import { AuthService } from '../../../services/auth/auth-service';
 export class NavbarComponent {
   loggedIn$;
 
-  constructor(private authService: AuthService) {
+  constructor(private readonly authService: AuthService) {
     this.loggedIn$ = this.authService.loggedIn$;
   }
 

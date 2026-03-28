@@ -485,3 +485,5 @@ bin/
 obj/
 
 coverage-report/
+
+.sonarqube

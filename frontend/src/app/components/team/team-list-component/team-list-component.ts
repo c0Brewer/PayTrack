@@ -13,7 +13,7 @@ import { TeamDto } from '../../../types/exporter';
 export class TeamListComponent implements OnInit {
   teams = signal<TeamDto[]>([]);
 
-  constructor(private teamService: TeamService) {}
+  constructor(private readonly teamService: TeamService) {}
 
   ngOnInit(): void {
     this.loadTeams();

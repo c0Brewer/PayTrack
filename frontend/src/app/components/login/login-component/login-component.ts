@@ -1,5 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth-service';
@@ -17,24 +16,20 @@ declare global {
   templateUrl: './login-component.html',
   styleUrl: './login-component.scss',
 })
-export class LoginComponent {
-  private platformId = inject(PLATFORM_ID);
-
+export class LoginComponent implements OnInit {
   constructor(
-    private authService: AuthService,
-    private router: Router,
+    private readonly authService: AuthService,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return; // SSR: skip entirely
-
-    window.google.accounts.id.initialize({
+    globalThis.window.google.accounts.id.initialize({
       client_id: '165684545515-r3f0a7ph6rg438r1k208tdnf2d95ie5l.apps.googleusercontent.com', // TODO: Load from .env file
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       callback: (response: any) => this.handleCredentialResponse(response),
     });
 
-    window.google.accounts.id.renderButton(document.getElementById('googleButton'), {
+    globalThis.window.google.accounts.id.renderButton(document.getElementById('googleButton'), {
       theme: 'outline',
       size: 'large',
       type: 'standard',

@@ -1,4 +1,4 @@
-// <copyright file="JWTService.cs" company="PayTrack">
+// <copyright file="JwtService.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -14,7 +14,7 @@ namespace PayTrack.Application.Services.Implementation
     /// <summary>
     /// Service for JWT use-cases.
     /// </summary>
-    public class JWTService(IConfiguration _config) : IJWTService
+    public class JwtService(IConfiguration _config) : IJwtService
     {
         private readonly IConfiguration config = _config;
 

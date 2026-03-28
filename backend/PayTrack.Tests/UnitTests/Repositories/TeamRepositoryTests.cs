@@ -8,7 +8,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 {
     public class TeamRepositoryTests
     {
-        private AppDbContext GetInMemoryDbContext()
+        private static AppDbContext GetInMemoryDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDb_" + Guid.NewGuid())

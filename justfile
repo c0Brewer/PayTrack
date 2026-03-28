@@ -1,5 +1,9 @@
 ###################################
 
+set dotenv-load
+
+###################################
+
 # BACKEND
 
 [working-directory: "backend"]
@@ -9,6 +13,22 @@ run-database:
 [working-directory: "backend"]
 stop-database:
     sudo docker-compose -f docker-compose-postgres.yml down
+
+[unix]
+run-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml up -d
+
+[windows]
+run-sonarqube:
+    docker-compose -f docker-compose-sonarqube.yml up -d
+
+[unix]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
+
+[windows]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
 
 [working-directory: "backend"]
 run-backend:
@@ -35,6 +55,13 @@ build-backend:
 create-migration name:
     dotnet ef migrations add {{name}}
     dotnet ef database update
+
+[working-directory: "backend"]
+sonar-backend:
+    dotnet sonarscanner begin /k:$SONAR_PROJECT_NAME_BACKEND /d:sonar.host.url="http://localhost:9000" /d:sonar.token=$SONARQUBE_TOKEN_BACKEND
+    dotnet build
+    dotnet test /p:CollectCoverage=true
+    dotnet sonarscanner end /d:sonar.token=$SONARQUBE_TOKEN_BACKEND
 
 ###################################
 
@@ -63,6 +90,10 @@ format-frontend:
 [working-directory: "frontend"]
 lint-frontend:
     npx eslint . --max-warnings=0
+
+[working-directory: "frontend"]
+sonar-frontend:
+    sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONARQUBE_TOKEN_FRONTEND -Dsonar.projectKey=$SONAR_PROJECT_NAME_FRONTEND
 
 
 ##################################
