@@ -40,10 +40,6 @@ export class AuthService {
     return from(promise);
   }
 
-  public getCurrentUser(): Observable<UserDto | null> {
-    return this.currentUser$;
-  }
-
   public refreshUser(): Observable<UserDto> {
     return this.fetchAndStoreUser();
   }

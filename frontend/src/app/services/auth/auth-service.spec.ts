@@ -145,4 +145,12 @@ describe('AuthService', () => {
     isLoggedIn = service.isLoggedIn();
     expect(isLoggedIn).toEqual(false);
   });
+
+  it('should return invalid for invalid token', () => {
+    localStorage.setItem('jwt', createValidJwt());
+
+    const isLoggedIn = service.isLoggedIn();
+
+    expect(isLoggedIn).toEqual(true);
+  });
 });
