@@ -24,7 +24,12 @@ namespace PayTrack.Api.Endpoints
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName);
 
+            // Unauthorized
             group.MapPost("/google", AuthHandler.GoogleAuthCallback);
+
+            // Authorized
+            group.MapGet("/currentuser", AuthHandler.GetCurrentUserAsync)
+                .RequireAuthorization();
         }
     }
 }

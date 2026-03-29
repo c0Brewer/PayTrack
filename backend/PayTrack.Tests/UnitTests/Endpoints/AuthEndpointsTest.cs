@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,9 +10,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Auth;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
+using PayTrack.Data.Entities;
+using PayTrack.Tests.UnitTests.Helper;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
 {
@@ -63,6 +68,57 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result.Detail.Should().Be("Simulated failure");
         }
+
+        [Fact]
+        public async Task GetCurrentUser_ReturnsCurrentUser()
+        {
+            // Arrange
+            var currentUser = new User { Id = 1, Name = "Name", Email = "Email", IsActive = true, ProfilePictureUrl = "123", Role = Role.RegularUser };
+
+            _factory.AuthServiceMock
+                .Setup(s => s.GetCurrentUser())
+                .ReturnsAsync(currentUser);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.GetAsync("api/v1/auth/currentuser");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<UserDto>();
+            result.Should().NotBeNull();
+            result.Id.Should().Be(currentUser.Id);
+            result.Name.Should().Be(currentUser.Name);
+            result.Email.Should().Be(currentUser.Email);
+            result.IsActive.Should().Be(currentUser.IsActive);
+            result.ProfilePictureUrl.Should().Be(currentUser.ProfilePictureUrl);
+            result.Role.Should().Be(currentUser.Role);
+        }
+
+        [Fact]
+        public async Task GetCurrentUser_ShouldReturnProblemDetails_WhenUserNotFound()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(s => s.GetCurrentUser())
+                .ReturnsAsync((User?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.GetAsync("api/v1/auth/currentuser");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+            var result = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+            result.Should().NotBeNull();
+            result.Detail.Should().Be("Current User not found");
+        }
     }
 
     /// <summary>
@@ -78,6 +134,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             builder.UseEnvironment("Test");
             builder.ConfigureServices(services =>
             {
+                // Authentication
+
+                services.AddAuthentication("Test")
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+
+                _ = services.AddAuthorization(_ => { });
+
                 // DB
 
                 // Remove real DbContext (prevents Postgres connection)

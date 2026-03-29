@@ -1,19 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, from, Observable } from 'rxjs';
+import { BehaviorSubject, from, Observable, tap } from 'rxjs';
 
 import { client } from '../../client';
-import { GoogleAuthCallbackDto, GoogleAuthResponseDto } from '../../types/exporter';
+import { GoogleAuthCallbackDto, GoogleAuthResponseDto, UserDto } from '../../types/exporter';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly loggedInSubject = new BehaviorSubject<boolean>(this.hasValidToken());
+  private readonly currentUserSubject = new BehaviorSubject<UserDto | null>(null);
+
   public loggedIn$ = this.loggedInSubject.asObservable();
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private readonly router: Router) {
     this.checkExpiryOnStartup();
+    if (this.hasValidToken()) {
+      this.fetchAndStoreUser();
+    }
   }
 
   private checkExpiryOnStartup(): void {
@@ -34,9 +40,30 @@ export class AuthService {
     return from(promise);
   }
 
+  public getCurrentUser(): Observable<UserDto | null> {
+    return this.currentUser$;
+  }
+
+  public refreshUser(): Observable<UserDto> {
+    return this.fetchAndStoreUser();
+  }
+
+  private fetchAndStoreUser(): Observable<UserDto> {
+    const obs$ = from(
+      client.GET('/api/v1/auth/currentuser', { params: {} }).then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      }),
+    );
+
+    obs$.pipe(tap((user) => this.currentUserSubject.next(user))).subscribe();
+    return obs$;
+  }
+
   public logout(): void {
     localStorage.removeItem('jwt');
     this.loggedInSubject.next(false);
+    this.currentUserSubject.next(null);
     this.router.navigate(['login']);
   }
 
@@ -47,6 +74,7 @@ export class AuthService {
   public storeToken(token: string): void {
     localStorage.setItem('jwt', token);
     this.loggedInSubject.next(true);
+    this.fetchAndStoreUser();
   }
 
   private isTokenExpired(token: string): boolean {

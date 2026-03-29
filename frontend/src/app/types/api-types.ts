@@ -52,6 +52,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/currentuser": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/team": {
         parameters: {
             query?: never;
@@ -208,12 +252,26 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        Role: 0 | 1 | 2;
         TeamDto: {
             /** Format: int32 */
             id: number;
             name: string;
             description?: string | null;
             displayColor?: string | null;
+        };
+        UserDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            email: string;
+            profilePictureUrl: string;
+            role: components["schemas"]["Role"];
+            isActive: boolean;
         };
     };
     responses: never;

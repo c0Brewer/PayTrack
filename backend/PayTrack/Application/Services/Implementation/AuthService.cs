@@ -3,18 +3,29 @@
 // </copyright>
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using Google.Apis.Auth;
 using PayTrack.Application.Dto.Auth;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class AuthService(IJwtService _jwtService, IUserService _userService) : IAuthService
+    public class AuthService(IJwtService _jwtService, IUserService _userService, IHttpContextAccessor _httpContextAccessor) : IAuthService
     {
         private readonly IJwtService jwtService = _jwtService;
         private readonly IUserService userService = _userService;
+        private readonly IHttpContextAccessor httpContextAccessor = _httpContextAccessor;
+
+        /// <inheritdoc/>
+        public Task<User?> GetCurrentUser()
+        {
+            var email = this.httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email) ?? throw new InternalErrorException("Could not find ClaimTypes");
+
+            return this.userService.GetUserByEmailAsync(email.Value);
+        }
 
         /// <inheritdoc/>
         public async Task<string> GoogleValidateCallback(

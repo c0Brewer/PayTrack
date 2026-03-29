@@ -4,7 +4,10 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PayTrack.Api.Mapper;
 using PayTrack.Application.Dto.Auth;
+using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
@@ -27,6 +30,21 @@ namespace PayTrack.Api.Handler
             var jwtToken = await authService.GoogleValidateCallback(googleCallback);
 
             return TypedResults.Ok(new GoogleAuthResponseDto(jwtToken));
+        }
+
+        /// <summary>
+        /// Returns the currently signed in User.
+        /// </summary>
+        /// <param name="authService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<UserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetCurrentUserAsync(
+            IAuthService authService)
+        {
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+
+            var userDto = UserMapper.ToDto(user);
+
+            return TypedResults.Ok(userDto);
         }
     }
 }

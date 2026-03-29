@@ -4,12 +4,29 @@ import { firstValueFrom } from 'rxjs';
 import { vi } from 'vitest';
 
 import { client } from '../../client';
+import { Role, UserDto } from '../../types/exporter';
 
 import { AuthService } from './auth-service';
 
 describe('AuthService', () => {
   let service: AuthService;
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
+
+  function createValidJwt(): string {
+    const payload = {
+      exp: Math.floor(Date.now() / 1000) + 3600, // expires in 1 hour
+    };
+
+    return `header.${btoa(JSON.stringify(payload))}.signature`;
+  }
+
+  function createInvalidJwt(): string {
+    const payload = {
+      exp: Math.floor(Date.now() / 1000) + 3600, // expires in 1 hour
+    };
+
+    return `header.${btoa(JSON.stringify(payload))}.signature`;
+  }
 
   beforeEach(() => {
     routerMock = {
@@ -80,7 +97,22 @@ describe('AuthService', () => {
   });
 
   it('should return is logged in true after store token', () => {
-    service.storeToken('123');
+    const currentUserApiResponse: UserDto = {
+      id: 123,
+      name: 'name',
+      email: 'email',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+    };
+
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: currentUserApiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    service.storeToken(createValidJwt());
 
     const isLoggedIn = service.isLoggedIn();
 
@@ -88,7 +120,22 @@ describe('AuthService', () => {
   });
 
   it('should return is logged in false after logout has been called', () => {
-    service.storeToken('123');
+    const currentUserApiResponse: UserDto = {
+      id: 123,
+      name: 'name',
+      email: 'email',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+    };
+
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: currentUserApiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    service.storeToken(createValidJwt());
 
     let isLoggedIn = service.isLoggedIn();
     expect(isLoggedIn).toEqual(true);

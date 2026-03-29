@@ -42,6 +42,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
 
 var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

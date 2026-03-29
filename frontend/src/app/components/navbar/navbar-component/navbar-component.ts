@@ -11,9 +11,11 @@ import { AuthService } from '../../../services/auth/auth-service';
 })
 export class NavbarComponent {
   loggedIn$;
+  currentUser$;
 
   constructor(private readonly authService: AuthService) {
     this.loggedIn$ = this.authService.loggedIn$;
+    this.currentUser$ = this.authService.currentUser$;
   }
 
   logout(): void {
