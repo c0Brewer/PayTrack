@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../services/auth/auth-service';
 
 declare global {
@@ -24,7 +25,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     globalThis.window.google.accounts.id.initialize({
-      client_id: '165684545515-r3f0a7ph6rg438r1k208tdnf2d95ie5l.apps.googleusercontent.com', // TODO: Load from .env file
+      client_id: environment.googleClientId,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       callback: (response: any) => this.handleCredentialResponse(response),
     });
