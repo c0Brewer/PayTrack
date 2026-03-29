@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit {
     this.authService.handleGoogleCallback(idToken).subscribe({
       next: (data) => {
         this.authService.storeToken(data.jwtToken);
-        this.router.createUrlTree(['']);
+        this.router.navigate(['']);
       },
       error: (err) => console.error(err),
     });

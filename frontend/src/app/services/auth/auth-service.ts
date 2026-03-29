@@ -9,10 +9,19 @@ import { GoogleAuthCallbackDto, GoogleAuthResponseDto } from '../../types/export
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
+  private readonly loggedInSubject = new BehaviorSubject<boolean>(this.hasValidToken());
   public loggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router) {
+    this.checkExpiryOnStartup();
+  }
+
+  private checkExpiryOnStartup(): void {
+    const token = localStorage.getItem('jwt');
+    if (token && this.isTokenExpired(token)) {
+      this.logout(); // cleans up and redirects
+    }
+  }
 
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
     const callbackDto: GoogleAuthCallbackDto = { idToken };
@@ -32,7 +41,7 @@ export class AuthService {
   }
 
   public isLoggedIn(): boolean {
-    return this.hasToken();
+    return this.hasValidToken();
   }
 
   public storeToken(token: string): void {
@@ -40,7 +49,17 @@ export class AuthService {
     this.loggedInSubject.next(true);
   }
 
-  private hasToken(): boolean {
-    return localStorage.getItem('jwt') != null;
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true; // treat malformed tokens as expired
+    }
+  }
+
+  private hasValidToken(): boolean {
+    const token = localStorage.getItem('jwt');
+    return token != null && !this.isTokenExpired(token);
   }
 }

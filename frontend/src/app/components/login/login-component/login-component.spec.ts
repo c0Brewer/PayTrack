@@ -19,7 +19,6 @@ describe('LoginComponent', () => {
 
   let routerMock: {
     navigate: ReturnType<typeof vi.fn>;
-    createUrlTree: ReturnType<typeof vi.fn>;
   };
 
   const mockGoogleCallbackResponse = {
@@ -38,7 +37,6 @@ describe('LoginComponent', () => {
 
     routerMock = {
       navigate: vi.fn(),
-      createUrlTree: vi.fn(),
     };
 
     // mock Google API
@@ -74,9 +72,6 @@ describe('LoginComponent', () => {
   });
 
   it('should redirect to home ("") on successful login', () => {
-    const urlTree = {} as UrlTree;
-
-    routerMock.createUrlTree.mockReturnValue(urlTree);
     authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtCallbackResponse));
 
     component.handleCredentialResponse(mockGoogleCallbackResponse);
@@ -85,6 +80,6 @@ describe('LoginComponent', () => {
       mockGoogleCallbackResponse.credential,
     );
     expect(authServiceMock.storeToken).toHaveBeenCalledWith(mockJwtCallbackResponse.jwtToken);
-    expect(routerMock.createUrlTree).toHaveBeenCalledWith(['']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['']);
   });
 });

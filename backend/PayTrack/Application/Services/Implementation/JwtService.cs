@@ -28,7 +28,7 @@ namespace PayTrack.Application.Services.Implementation
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 claims: [new Claim(ClaimTypes.Email, email)],
-                expires: DateTime.UtcNow.AddHours(8),
+                expires: DateTime.UtcNow.AddHours(3),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
