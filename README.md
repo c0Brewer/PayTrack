@@ -1,4 +1,6 @@
-TODO: Properly implement README. For now its mostly instructions on how to run the program
+# Disclaimer
+
+Before you are able to run the application you need to create a .env file. You can just copy the env.example and replace the dummy values with your production values. For now the only configuration you actually need to run the application is the GOOGLE\_CLIENT\_ID. You can get your own google client id by going to the Google Cloud Console and creating a new project. There you will get a client id specifically for you.
 
 # PayTrack Backend
 
