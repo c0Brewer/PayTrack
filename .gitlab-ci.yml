@@ -80,6 +80,9 @@ frontend_build:
 backend_format:
   stage: lint
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_restore
   script:
@@ -91,6 +94,9 @@ backend_format:
 backend_build:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_restore
   script:
@@ -106,6 +112,9 @@ backend_build:
 backend_test:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_build
   script:
