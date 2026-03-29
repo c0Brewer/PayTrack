@@ -77,6 +77,7 @@ lint-frontend:
 
 [working-directory: "frontend"]
 sonar-frontend:
+    npm run test:coverage:sonar
     sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONARQUBE_TOKEN_FRONTEND -Dsonar.projectKey=$SONAR_PROJECT_NAME_FRONTEND
 
 

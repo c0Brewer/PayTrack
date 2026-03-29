@@ -9,6 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:coverage": "ng test --watch=false --browsers=chromium --coverage",
+    "test:coverage:sonar": "ng test --watch=false --browsers=chromium --coverage --configuration=sonar",
     "generate:api": "npx openapi-typescript http://localhost:5154/swagger/v1/swagger.json --output src/app/types/api-types.ts",
     "serve:ssr:PayTrack": "node dist/PayTrack/server/server.mjs"
   },
