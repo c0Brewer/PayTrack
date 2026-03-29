@@ -44,6 +44,10 @@ export class AuthService {
     return this.fetchAndStoreUser();
   }
 
+  public getCurrentUser(): Observable<UserDto | null> {
+    return this.currentUser$;
+  }
+
   private fetchAndStoreUser(): Observable<UserDto> {
     const obs$ = from(
       client.GET('/api/v1/auth/currentuser', { params: {} }).then(({ data, error }) => {

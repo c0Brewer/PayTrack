@@ -154,11 +154,26 @@ describe('AuthService', () => {
     expect(isLoggedIn).toEqual(false);
   });
 
-  it('refresh user should call backend', () => {
-    localStorage.setItem('jwt', createInvalidJwt());
+  it('refresh user should call backend', async () => {
+    const currentUserApiResponse: UserDto = {
+      id: 123,
+      name: 'name',
+      email: 'email',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+    };
 
-    const isLoggedIn = service.isLoggedIn();
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: currentUserApiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
-    expect(isLoggedIn).toEqual(false);
+    await firstValueFrom(service.refreshUser());
+
+    const user = await firstValueFrom(service.getCurrentUser());
+
+    expect(user).toEqual(currentUserApiResponse);
   });
 });
