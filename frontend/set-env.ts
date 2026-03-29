@@ -9,7 +9,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load .env from repo root
-const envPath = path.resolve(__dirname, '../../.env');
+const envRootPath = path.resolve(__dirname, '../.env');
+const envExampleRootPath = path.resolve(__dirname, '../env.example');
+const envLocalPath = path.resolve(__dirname, '.env');
+const envExampleLocalPath = path.resolve(__dirname, 'env.example');
+
+let envPath = '';
+
+if (fs.existsSync(envRootPath)) envPath = envRootPath;
+else if (fs.existsSync(envLocalPath)) envPath = envLocalPath;
+else if (fs.existsSync(envExampleRootPath)) {
+  fs.copyFileSync(envExampleRootPath, envRootPath);
+  envPath = envRootPath;
+} else if (fs.existsSync(envExampleLocalPath)) {
+  fs.copyFileSync(envExampleLocalPath, envLocalPath);
+  envPath = envLocalPath;
+} else {
+  console.error('Could not find or create a .env file');
+}
+
 dotenv.config({ path: envPath });
 
 // Decide output file for Angular environment
