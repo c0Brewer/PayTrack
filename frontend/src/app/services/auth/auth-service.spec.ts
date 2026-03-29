@@ -22,7 +22,7 @@ describe('AuthService', () => {
 
   function createInvalidJwt(): string {
     const payload = {
-      exp: Math.floor(Date.now() / 1000) + 3600, // expires in 1 hour
+      exp: Math.floor(Date.now() / 1000) - 3600, // expired 1 hour ago
     };
 
     return `header.${btoa(JSON.stringify(payload))}.signature`;
@@ -147,10 +147,33 @@ describe('AuthService', () => {
   });
 
   it('should return invalid for invalid token', () => {
-    localStorage.setItem('jwt', createValidJwt());
+    localStorage.setItem('jwt', createInvalidJwt());
 
     const isLoggedIn = service.isLoggedIn();
 
-    expect(isLoggedIn).toEqual(true);
+    expect(isLoggedIn).toEqual(false);
+  });
+
+  it('refresh user should call backend', async () => {
+    const currentUserApiResponse: UserDto = {
+      id: 123,
+      name: 'name',
+      email: 'email',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+    };
+
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: currentUserApiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await firstValueFrom(service.refreshUser());
+
+    const user = await firstValueFrom(service.getCurrentUser());
+
+    expect(user).toEqual(currentUserApiResponse);
   });
 });
