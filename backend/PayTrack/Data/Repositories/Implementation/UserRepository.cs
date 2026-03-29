@@ -31,7 +31,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Saving User did not end as expected. Saved {res} user.");
             }
 
             return user;

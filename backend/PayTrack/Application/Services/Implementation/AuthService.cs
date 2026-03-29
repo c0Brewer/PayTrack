@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Google.Apis.Auth;
 using PayTrack.Application.Dto.Auth;
 using PayTrack.Application.Exceptions;
@@ -19,7 +20,7 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<string> GoogleValidateCallback(
             GoogleAuthCallbackDto googleCallback)
         {
-            var payload = await ValidateGoogleTokenAsync(googleCallback.IdToken);
+            var payload = await this.ValidateGoogleTokenAsync(googleCallback.IdToken);
 
             // Check if user exists
             var user = await this.userService.GetUserByEmailAsync(payload.Email);
@@ -32,7 +33,13 @@ namespace PayTrack.Application.Services.Implementation
             return await this.jwtService.GenerateJWTToken(payload.Email);
         }
 
-        private static async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
+        /// <summary>
+        /// Validates a google token. Is protected virtual so that the tests work.
+        /// </summary>
+        /// <param name="idToken">token from google callback.</param>
+        /// <returns>Payload from Google.</returns>
+        [ExcludeFromCodeCoverage]
+        protected virtual async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
         {
             var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
 

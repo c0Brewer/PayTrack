@@ -58,13 +58,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
-// TODO: Properly set Origin for Production
+var corsOrigin = builder.Configuration["CORS:Origins"] ?? throw new InternalErrorException("Could not load CORS Origins");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
         policy
-        .WithOrigins("*")
+        .WithOrigins(corsOrigin)
         .AllowAnyHeader()
         .AllowAnyMethod();
     });

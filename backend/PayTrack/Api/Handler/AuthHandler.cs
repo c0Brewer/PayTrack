@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Application.Dto.Auth;
-using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
@@ -25,7 +24,7 @@ namespace PayTrack.Api.Handler
             GoogleAuthCallbackDto googleCallback,
             IAuthService authService)
         {
-            var jwtToken = await authService.GoogleValidateCallback(googleCallback) ?? throw new InternalErrorException("Error during Google Callback Validation");
+            var jwtToken = await authService.GoogleValidateCallback(googleCallback);
 
             return TypedResults.Ok(new GoogleAuthResponseDto(jwtToken));
         }
