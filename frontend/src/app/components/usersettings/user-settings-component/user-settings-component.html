@@ -25,19 +25,20 @@
         <h3>Bank Accounts</h3>
 
         <div formArrayName="bankAccounts">
-          <div class="bank-card" *ngFor="let account of bankAccounts.controls; let i = index" [formGroupName]="i">
+          <div class="bank-card"
+               *ngFor="let account of bankAccounts.controls; let i = index; trackBy: trackByFn"
+               [formGroupName]="i">
 
             <div class="bank-card-header">
               <h4>Account {{ i + 1 }}</h4>
               <button type="button" (click)="removeBankAccount(i)">Remove</button>
             </div>
 
-            <label>
+            <label class="radio-label">
               <input type="radio"
-                     formControlName="preferredBankAccountId"
+                     [formControl]="$any(settingsForm).get('preferredBankAccountId')"
                      [value]="account.get('id')?.value"
-                     [disabled]="account.get('id')?.value === 0"
-                     name="preferredBankAccountId">
+                     [disabled]="account.get('id')?.value === 0">
               Preferred Account
             </label>
 

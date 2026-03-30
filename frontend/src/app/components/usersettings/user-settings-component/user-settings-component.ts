@@ -80,6 +80,10 @@ export class UserSettingsComponent implements OnInit {
     this.bankAccounts.removeAt(index);
   }
 
+  public trackByFn(index: number, item: any): any {
+    return item.get('id')?.value || index;
+  }
+
   public onSubmit(): void {
     if (this.settingsForm.invalid) return;
 
