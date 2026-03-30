@@ -35,6 +35,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -103,5 +104,6 @@ var apiV1 = app
 
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
+apiV1.MapUserSettingsEndpoints();
 
 await app.RunAsync();

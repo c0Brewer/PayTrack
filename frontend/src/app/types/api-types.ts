@@ -227,10 +227,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usersettings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserSettingsDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UserSettingsDto"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BankAccountDto: {
+            /** Format: int32 */
+            id?: number;
+            iban?: string | null;
+            bic?: string | null;
+            accountHolder?: string | null;
+        };
         CreateTeamRequestDto: {
             name: string;
             description?: string | null;
@@ -272,6 +353,13 @@ export interface components {
             profilePictureUrl: string;
             role: components["schemas"]["Role"];
             isActive: boolean;
+        };
+        UserSettingsDto: {
+            name?: string | null;
+            email?: string | null;
+            /** Format: int32 */
+            preferredBankAccountId?: number | null;
+            bankAccounts?: components["schemas"]["BankAccountDto"][] | null;
         };
     };
     responses: never;
