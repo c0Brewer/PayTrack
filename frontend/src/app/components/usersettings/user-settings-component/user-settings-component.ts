@@ -18,7 +18,8 @@ export class UserSettingsComponent implements OnInit {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly userSettingsService: UserService
+    private readonly userSettingsService: UserService,
+    private readonly authService: AuthService
   ) {
     this.initForm();
   }
@@ -90,6 +91,7 @@ export class UserSettingsComponent implements OnInit {
     this.userSettingsService.updateUserSettings(this.settingsForm.value).subscribe({
       next: () => {
         alert('Settings saved!');
+        this.authService.refreshUser().subscribe();
         this.loadSettings();
       },
       error: (err) => console.error('Failed to save settings', err),
