@@ -1,1 +1,65 @@
-<p>user-settings-component works!</p>
+<div class="settings-page">
+  <div class="settings-card">
+
+    <div class="settings-header">
+      <h1>User Settings</h1>
+      <p>Manage your personal information and bank accounts</p>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-section">
+        <h3>Personal Details</h3>
+        <label>Name</label>
+        <input type="text" formControlName="name" />
+
+        <label>Email</label>
+        <input type="email" formControlName="email" />
+      </div>
+
+      <div class="settings-divider"></div>
+
+      <div class="form-section">
+        <h3>Bank Accounts</h3>
+
+        <div formArrayName="bankAccounts">
+          <div class="bank-card" *ngFor="let account of bankAccounts.controls; let i = index" [formGroupName]="i">
+
+            <div class="bank-card-header">
+              <h4>Account {{ i + 1 }}</h4>
+              <button type="button" (click)="removeBankAccount(i)">Remove</button>
+            </div>
+
+            <label>
+              <input type="radio"
+                     formControlName="preferredBankAccountId"
+                     [value]="account.get('id')?.value"
+                     [disabled]="account.get('id')?.value === 0"
+                     name="preferredBankAccountId">
+              Preferred Account
+            </label>
+
+            <label>Account Holder</label>
+            <input type="text" formControlName="accountHolder" />
+
+            <label>IBAN</label>
+            <input type="text" formControlName="iban" />
+
+            <label>BIC</label>
+            <input type="text" formControlName="bic" />
+          </div>
+        </div>
+
+        <button type="button" class="add-btn" (click)="addBankAccount()">+ Add Bank Account</button>
+      </div>
+
+      <div class="settings-divider"></div>
+
+      <button type="submit" class="submit-btn" [disabled]="settingsForm.invalid">Save Settings</button>
+
+    </form>
+
+  </div>
+</div>

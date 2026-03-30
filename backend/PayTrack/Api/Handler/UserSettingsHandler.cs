@@ -27,13 +27,14 @@ namespace PayTrack.Api.Handler
             ClaimsPrincipal user,
             IUserSettingsService userSettingsService)
         {
-            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdString, out int userId))
+            // Extract Email instead of NameIdentifier
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return TypedResults.Unauthorized();
             }
 
-            var settings = await userSettingsService.GetUserSettingsAsync(userId);
+            var settings = await userSettingsService.GetUserSettingsAsync(email);
             return TypedResults.Ok(settings);
         }
 
@@ -49,13 +50,13 @@ namespace PayTrack.Api.Handler
             ClaimsPrincipal user,
             IUserSettingsService userSettingsService)
         {
-            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdString, out int userId))
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return TypedResults.Unauthorized();
             }
 
-            await userSettingsService.UpdateUserSettingsAsync(userId, updateDto);
+            await userSettingsService.UpdateUserSettingsAsync(email, updateDto);
             return TypedResults.NoContent();
         }
     }

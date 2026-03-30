@@ -30,12 +30,12 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<UserSettingsDto> GetUserSettingsAsync(int userId)
+        public async Task<UserSettingsDto> GetUserSettingsAsync(string email)
         {
             var user = await this.dbContext.User
-                .Include(u => u.BankAccounts)
-                .FirstOrDefaultAsync(u => u.Id == userId)
-                ?? throw new Exception("User not found.");
+                           .Include(u => u.BankAccounts)
+                           .FirstOrDefaultAsync(u => u.Email == email) // Filter by Email
+                       ?? throw new Exception("User not found.");
 
             return new UserSettingsDto
             {
@@ -53,12 +53,12 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task UpdateUserSettingsAsync(int userId, UserSettingsDto settingsDto)
+        public async Task UpdateUserSettingsAsync(string email, UserSettingsDto settingsDto)
         {
             var user = await this.dbContext.User
-                .Include(u => u.BankAccounts)
-                .FirstOrDefaultAsync(u => u.Id == userId)
-                ?? throw new Exception("User not found.");
+                           .Include(u => u.BankAccounts)
+                           .FirstOrDefaultAsync(u => u.Email == email) // Filter by Email
+                       ?? throw new Exception("User not found.");
 
             user.Name = settingsDto.Name;
             user.Email = settingsDto.Email;
@@ -87,7 +87,7 @@ namespace PayTrack.Application.Services.Implementation
                     // It's a newly added account
                     user.BankAccounts.Add(new BankAccount
                     {
-                        UserId = userId,
+                        UserId = user.Id,
                         Iban = accountDto.Iban,
                         Bic = accountDto.Bic,
                         AccountHolder = accountDto.AccountHolder,

@@ -14,16 +14,16 @@ namespace PayTrack.Application.Services.Model
         /// <summary>
         /// Gets the user settings for a specific user.
         /// </summary>
-        /// <param name="userId">The ID of the user.</param>
+        /// <param name="email">The email of the user.</param>
         /// <returns>User settings DTO.</returns>
-        Task<UserSettingsDto> GetUserSettingsAsync(int userId);
+        Task<UserSettingsDto> GetUserSettingsAsync(string email);
 
         /// <summary>
         /// Updates the user settings for a specific user.
         /// </summary>
-        /// <param name="userId">The ID of the user.</param>
+        /// <param name="email">The email of the user.</param>
         /// <param name="settingsDto">The new user settings.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task UpdateUserSettingsAsync(int userId, UserSettingsDto settingsDto);
+        Task UpdateUserSettingsAsync(string email, UserSettingsDto settingsDto);
     }
 }
