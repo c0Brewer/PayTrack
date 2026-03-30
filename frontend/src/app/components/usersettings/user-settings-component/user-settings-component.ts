@@ -43,16 +43,16 @@ export class UserSettingsComponent implements OnInit {
   private loadSettings(): void {
     this.userSettingsService.getUserSettings().subscribe({
       next: (data: UserSettingsDto) => {
+        this.bankAccounts.clear();
+        if (data.bankAccounts) {
+          data.bankAccounts.forEach(account => this.addBankAccount(account));
+        }
+
         this.settingsForm.patchValue({
           name: data.name,
           email: data.email,
           preferredBankAccountId: data.preferredBankAccountId
         });
-
-        this.bankAccounts.clear();
-        if (data.bankAccounts) {
-          data.bankAccounts.forEach(account => this.addBankAccount(account));
-        }
       },
       error: (err) => console.error('Failed to load settings', err),
     });
