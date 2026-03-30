@@ -274,6 +274,9 @@ namespace PayTrack.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<int?>("PreferredBankAccountId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ProfilePictureUrl")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -290,6 +293,8 @@ namespace PayTrack.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("PreferredBankAccountId");
 
                     b.HasIndex("TeamId");
 
@@ -426,10 +431,17 @@ namespace PayTrack.Migrations
 
             modelBuilder.Entity("PayTrack.Data.Entities.User", b =>
                 {
+                    b.HasOne("PayTrack.Data.Entities.BankAccount", "PreferredBankAccount")
+                        .WithMany()
+                        .HasForeignKey("PreferredBankAccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
                         .WithMany("Members")
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("PreferredBankAccount");
 
                     b.Navigation("Team");
                 });
