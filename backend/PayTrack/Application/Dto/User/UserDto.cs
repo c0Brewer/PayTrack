@@ -3,9 +3,10 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.User
 {
     /// <summary>
     /// Dto containing necessary information about a User
@@ -28,6 +29,9 @@ namespace PayTrack.Application.Dto.Team
 
         [property: Required]
         Role Role,
+
+        [property: Required]
+        TeamDto team,
 
         [property: Required]
         bool IsActive);

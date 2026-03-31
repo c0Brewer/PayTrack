@@ -103,5 +103,6 @@ var apiV1 = app
 
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
+apiV1.MapUserEndpoints();
 
 await app.RunAsync();

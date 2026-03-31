@@ -17,6 +17,24 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserRepository repo = repo;
 
         /// <inheritdoc/>
+        public async Task<List<User>> GetUserAsync(int? limit = null, int? offset = null)
+        {
+            return await this.repo.GetUserAsync(limit, offset);
+        }
+
+        /// <inheritdoc/>
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            return await this.repo.GetByIdAsync(id);
+        }
+
+        /// <inheritdoc/>
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await this.repo.GetByEmailAsync(email);
+        }
+
+        /// <inheritdoc/>
         public async Task<User> CreateUserAsync(
             string name,
             string email,
@@ -35,9 +53,9 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User> UpdateUserAsync(int id, bool? isActive = null, int? teamId = null, Role? role = null)
         {
-            return await this.repo.GetByEmailAsync(email);
+            return await this.repo.UpdateAsync(id, isActive, teamId, role);
         }
     }
 }

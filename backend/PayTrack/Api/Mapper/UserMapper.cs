@@ -27,5 +27,15 @@ namespace PayTrack.Api.Mapper
                 user.Role,
                 user.IsActive);
         }
+
+        /// <summary>
+        /// Turns a List of User objects into a List of UserDto objects.
+        /// </summary>
+        /// <param name="user">List of User objects.</param>
+        /// <returns>List of UserDto objects.</returns>
+        public static List<UserDto> ListToDto(List<User> user)
+        {
+            return user.ConvertAll(ToDto);
+        }
     }
 }

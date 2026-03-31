@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Auth;
-using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
