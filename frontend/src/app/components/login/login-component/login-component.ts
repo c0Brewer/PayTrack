@@ -25,8 +25,8 @@ export class LoginComponent implements AfterViewInit {
     private readonly router: Router,
   ) {}
 
-  ngAfterViewInit(): void {
-    this.authService.loadGoogleScript();
+  async ngAfterViewInit(): Promise<void> {
+    await this.authService.loadGoogleScript();
 
     globalThis.window.google.accounts.id.initialize({
       client_id: environment.googleClientId,
