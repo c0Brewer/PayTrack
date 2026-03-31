@@ -29,6 +29,20 @@ export class AuthService {
     }
   }
 
+  loadGoogleScript(): Promise<void> {
+    return new Promise((resolve) => {
+      if (window.google) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = (): void => resolve();
+      document.body.appendChild(script);
+    });
+  }
+
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
     const callbackDto: GoogleAuthCallbackDto = { idToken };
     const promise = client
