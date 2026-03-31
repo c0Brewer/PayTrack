@@ -80,6 +80,9 @@ frontend_build:
 backend_format:
   stage: lint
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_restore
   script:
@@ -91,6 +94,9 @@ backend_format:
 backend_build:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_restore
   script:
@@ -106,11 +112,14 @@ backend_build:
 backend_test:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:10.0
+  rules:
+    - changes:
+        - backend/**/*
   dependencies:
     - backend_build
   script:
     - cd backend
-    - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
+    - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
 
 # run frontend tests and confirm coverage
 frontend_test:

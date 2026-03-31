@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 
-import { TeamService } from '../../../services/team-service';
+import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
 
 @Component({
@@ -13,7 +13,7 @@ import { TeamDto } from '../../../types/exporter';
 export class TeamListComponent implements OnInit {
   teams = signal<TeamDto[]>([]);
 
-  constructor(private teamService: TeamService) {}
+  constructor(private readonly teamService: TeamService) {}
 
   ngOnInit(): void {
     this.loadTeams();

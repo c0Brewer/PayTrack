@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -20,7 +21,13 @@ namespace PayTrack.Data.Repositories.Implementation
         public async Task<Team> AddAsync(Team team)
         {
             this.context.Teams.Add(team);
-            await this.context.SaveChangesAsync(); // TODO: Check return value if succesful?
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.");
+            }
+
             return team;
         }
 

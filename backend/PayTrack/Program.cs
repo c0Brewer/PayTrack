@@ -2,9 +2,13 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PayTrack.Api.Endpoints;
 using PayTrack.Api.Middleware;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
@@ -26,19 +30,42 @@ if (!isTestEnv)
             options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 }
 
+// Service
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
 
-// TODO: Properly set Origin for Production
+var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+        };
+    });
+builder.Services.AddAuthorization();
+
+var corsOrigin = builder.Configuration["CORS:Origins"] ?? throw new InternalErrorException("Could not load CORS Origins");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
         policy
-        .WithOrigins("*")
+        .WithOrigins(corsOrigin)
         .AllowAnyHeader()
         .AllowAnyMethod();
     });
@@ -52,7 +79,7 @@ if (migrationsRunConfig && !isTestEnv)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 }
 
 // Configure the HTTP request pipeline.
@@ -64,6 +91,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 
@@ -72,5 +102,6 @@ var apiV1 = app
     .WithTags("API V1");
 
 apiV1.MapTeamEndpoints();
+apiV1.MapAuthEndpoints();
 
-app.Run();
+await app.RunAsync();

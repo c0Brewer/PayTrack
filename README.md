@@ -1,4 +1,6 @@
-TODO: Properly implement README. For now its mostly instructions on how to run the program
+# Disclaimer
+
+Before you are able to run the application you need to create a .env file. You can just copy the env.example and replace the dummy values with your production values. For now the only configuration you actually need to run the application is the GOOGLE\_CLIENT\_ID. You can get your own google client id by going to the Google Cloud Console and creating a new project. There you will get a client id specifically for you.
 
 # PayTrack Backend
 
@@ -157,3 +159,18 @@ just generate-api
 ```
 
 - Runs the frontend script to regenerate API clients from the backend OpenAPI specification.
+
+# Using SonarQube for Code Analysis
+
+SonarQube is a great tool for analyzing your code and finding bugs/improvements/etc.
+
+First you have to start SonarQube locally by running run-sonarqube. This will start sonarqube in a docker container.
+You can then access the UI by going to http://localhost:9000 and logging in with "admin/admin".
+
+Inside SonarQube you then need to create 2 new projects (call them something like "PayTrack\_Backend" and "PayTrack\_Fronted").
+
+In those projects you will need to create a new Access Key (Can be found inthe Project Settings). Copy this key into a .env file
+in the root folder of the project (there is a env.example file which you can copy). Once this is all set up you can run
+"just sonar-backend" and "just sonar-frontend" which will run the sonarqube tool on the frontend and the backend.
+Inside the UI you can then see all the Issues it detected with your code and fix them. For the backend it additionally 
+runs all tests and outputs the test coverage and which files need more testing. Very useful

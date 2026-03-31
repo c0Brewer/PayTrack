@@ -87,7 +87,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<User>(e =>
         {
             e.HasIndex(u => u.Email).IsUnique();
-            e.HasIndex(u => u.GoogleId).IsUnique().HasFilter("\"GoogleId\" IS NOT NULL");
 
             e.Property(u => u.Role)
                 .HasConversion<string>()
@@ -97,7 +96,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(u => u.Team)
                 .WithMany(t => t.Members)
                 .HasForeignKey(u => u.TeamId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // User owns many BankAccounts
             e.HasMany(u => u.BankAccounts)

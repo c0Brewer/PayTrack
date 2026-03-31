@@ -10,8 +10,6 @@ namespace PayTrack.Application.Dto.Team
     /// Dto containing necessary information about a Team
     /// </summary>
     public sealed record class TeamDto(
-
-        // This is just an example for dto mapping. This is necessary to e.g. hide information like password hash
         [property: Required]
         int id,
 

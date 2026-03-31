@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
+using PayTrack.Tests.UnitTests.Helper;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
 {
@@ -32,6 +35,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(teams);
 
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
             var response = await client.GetAsync("api/v1/team");
@@ -55,6 +59,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(team);
 
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
             var response = await client.GetAsync("api/v1/team/1");
@@ -75,6 +80,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync((Team?)null);
 
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
             var response = await client.GetAsync("api/v1/team/999");
@@ -95,6 +101,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(createdTeam);
 
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/team", requestDto);
@@ -120,6 +127,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             builder.UseEnvironment("Test");
             builder.ConfigureServices(services =>
             {
+                // Authentication
+
+                services.AddAuthentication("Test")
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+
+                _ = services.AddAuthorization(_ => { });
+
+
                 // DB
 
                 // Remove real DbContext (prevents Postgres connection)

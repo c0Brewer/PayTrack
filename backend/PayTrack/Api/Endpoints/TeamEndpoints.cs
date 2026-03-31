@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Handler;
 
 namespace PayTrack.Api.Endpoints
@@ -23,7 +22,8 @@ namespace PayTrack.Api.Endpoints
         {
             var group = app
                 .MapGroup($"/{GroupRoute}")
-                .WithTags(GroupName);
+                .WithTags(GroupName)
+                .RequireAuthorization();
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);

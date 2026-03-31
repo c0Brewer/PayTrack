@@ -1,0 +1,9 @@
+@let loggedIn = loggedIn$ | async;
+@let user = currentUser$ | async;
+
+@if (loggedIn) {
+  <nav>
+    <span>User: {{ user?.name }}</span>
+    <button (click)="logout()">Logout</button>
+  </nav>
+}

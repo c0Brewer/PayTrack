@@ -1,4 +1,9 @@
 ###################################
+set windows-shell := ["powershell", "-Command"]
+
+set dotenv-load
+
+###################################
 
 # BACKEND
 
@@ -16,7 +21,7 @@ run-backend:
 
 [working-directory: "backend"]
 test-backend:
-    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
+    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
 
 [working-directory: "backend/PayTrack.Tests"]
 print-test-report:
@@ -36,14 +41,24 @@ create-migration name:
     dotnet ef migrations add {{name}}
     dotnet ef database update
 
+[working-directory: "backend"]
+sonar-backend:
+    dotnet sonarscanner begin /k:$SONAR_PROJECT_NAME_BACKEND /d:sonar.host.url="http://localhost:9000" /d:sonar.token=$SONARQUBE_TOKEN_BACKEND /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/*.generated.cs,**/coverage-report/**"  /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+    dotnet build
+    dotnet test /p:CollectCoverage=true /p:Threshold=0 /p:CoverletOutputFormat=opencover /p:CoverletOutput=./TestResults/coverage.opencover.xml /p:ExcludeByFile="**/*Migrations/**.cs"
+    dotnet sonarscanner end /d:sonar.token=$SONARQUBE_TOKEN_BACKEND
+
 ###################################
 
 # FRONTEND
 
 [working-directory: "frontend"]
 run-frontend:
-    npm ci
     npm run start
+
+[working-directory: "frontend"]
+update-frontend:
+    npm install
 
 [working-directory: "frontend"]
 build-frontend:
@@ -61,6 +76,11 @@ format-frontend:
 lint-frontend:
     npx eslint . --max-warnings=0
 
+[working-directory: "frontend"]
+sonar-frontend:
+    npm run test:coverage:sonar
+    sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONARQUBE_TOKEN_FRONTEND -Dsonar.projectKey=$SONAR_PROJECT_NAME_FRONTEND
+
 
 ##################################
 
@@ -69,3 +89,20 @@ lint-frontend:
 [working-directory: "frontend"]
 generate-api:
     npm run generate:api
+
+[unix]
+run-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml up -d
+
+[windows]
+run-sonarqube:
+    docker-compose -f docker-compose-sonarqube.yml up -d
+
+[unix]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
+
+[windows]
+stop-sonarqube:
+    sudo docker-compose -f docker-compose-sonarqube.yml down
+

@@ -29,17 +29,13 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
+            "styles": ["src/styles.scss"],
+            "server": false,
+            "outputMode": "static",
             "security": {
               "allowedHosts": []
             },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "ssr": false
           },
           "configurations": {
             "production": {
@@ -78,7 +74,28 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "coverage": true,
+            "coverageReporters": ["lcov", "html"],
+            "coverageExclude": ["**/app.*.ts", "src/app/app.config.ts"],
+            "coverageThresholds": {
+              "statements": 80,
+              "branches": 80,
+              "functions": 80,
+              "lines": 80
+            }
+          },
+          "configurations": {
+            "sonar": {
+              "coverageThresholds": {
+                "statements": 0,
+                "branches": 0,
+                "functions": 0,
+                "lines": 0
+              }
+            }
+          }
         }
       }
     }

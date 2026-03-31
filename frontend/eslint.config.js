@@ -94,7 +94,8 @@ export default [
       "coverage",
       "src/app/app.ts",
       "src/main.server.ts",
-      "src/app/types/api-types.ts"
+      "src/app/types/api-types.ts",
+      "set-env.js"
     ]
   }
 ];
