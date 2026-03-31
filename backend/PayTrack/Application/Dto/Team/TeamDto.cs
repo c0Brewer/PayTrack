@@ -11,15 +11,15 @@ namespace PayTrack.Application.Dto.Team
     /// </summary>
     public sealed record class TeamDto(
         [property: Required]
-        int id,
+        int Id,
 
         [property: Required]
         [property: MinLength(3)]
-        string name,
+        string Name,
 
         [property: MinLength(3)]
-        string? description,
+        string? Description,
 
         [property: MinLength(3)]
-        string? displayColor);
+        string? DisplayColor);
 }

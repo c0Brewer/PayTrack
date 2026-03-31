@@ -3,6 +3,7 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -19,12 +20,20 @@ namespace PayTrack.Api.Mapper
         /// <returns>UserDto instance.</returns>
         public static UserDto ToDto(User user)
         {
+            TeamDto? teamDto = null;
+            if (user.Team != null)
+            {
+                teamDto = TeamMapper.ToDto(user.Team);
+            }
+
+            // TODO: Map BankAccount once the Mapper has been created.
             return new UserDto(
                 user.Id,
                 user.Name,
                 user.Email,
                 user.ProfilePictureUrl,
                 user.Role,
+                teamDto,
                 user.IsActive);
         }
 

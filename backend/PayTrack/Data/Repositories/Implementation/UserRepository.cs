@@ -18,7 +18,9 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<List<User>> GetUserAsync(int? limit = null, int? offset = null)
+        public async Task<List<User>> GetAllAsync(
+            int? limit = null,
+            int? offset = null)
         {
             IQueryable<User> query = this.context.User.AsQueryable();
 
@@ -36,9 +38,21 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false)
         {
-            return await this.context.User.FindAsync(id);
+            IQueryable<User> query = this.context.User.AsQueryable();
+
+            if (includeTeam)
+            {
+                query = query.Include(u => u.Team);
+            }
+
+            if (includeBankAccounts)
+            {
+                query = query.Include(u => u.BankAccounts);
+            }
+
+            return await query.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         /// <inheritdoc/>

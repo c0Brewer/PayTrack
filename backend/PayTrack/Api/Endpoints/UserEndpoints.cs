@@ -12,7 +12,7 @@ namespace PayTrack.Api.Endpoints
     public static class UserEndpoints
     {
         private const string GroupName = "User";
-        private const string GroupRoute = "team";
+        private const string GroupRoute = "user";
 
         /// <summary>
         /// Maps the Endpoints necessary for Users.

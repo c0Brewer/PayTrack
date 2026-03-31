@@ -17,14 +17,16 @@ namespace PayTrack.Application.Services.Model
         /// <param name="limit">Limit.</param>
         /// <param name="offset">Offset.</param>
         /// <returns>List of User.</returns>
-        Task<List<User>> GetUserAsync(int? limit = null, int? offset = null);
+        Task<List<User>> GetAllAsync(int? limit = null, int? offset = null);
 
         /// <summary>
         /// Gets a specific User by their ID.
         /// </summary>
         /// <param name="id">id of User to find.</param>
+        /// <param name="includeTeam">Indicate whether Teams should be loaded as well.</param>
+        /// <param name="includeBankAccounts">Indicate whether Bank Accounts should be loaded as well.</param>
         /// <returns>User with given id.</returns>
-        Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false);
 
         /// <summary>
         /// Gets a specific User by their Email.

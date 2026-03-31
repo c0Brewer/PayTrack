@@ -76,6 +76,17 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task GetCurrentUser_ThrowsInternalErrorException_WhenUserInClaimMissing()
+        {
+            // Arrange
+            httpContextMock.Setup(h => h.HttpContext!.User).Returns(new ClaimsPrincipal());
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(service.GetCurrentUser);
+            Assert.Contains("ClaimTypes", ex.Message);
+        }
+
+        [Fact]
         public async Task GoogleValidateCallback_ReturnsJwt_WhenUserExists()
         {
             // Arrange

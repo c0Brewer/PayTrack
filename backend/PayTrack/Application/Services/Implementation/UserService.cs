@@ -17,15 +17,15 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<List<User>> GetUserAsync(int? limit = null, int? offset = null)
+        public async Task<List<User>> GetAllAsync(int? limit = null, int? offset = null)
         {
-            return await this.repo.GetUserAsync(limit, offset);
+            return await this.repo.GetAllAsync(limit, offset);
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false)
         {
-            return await this.repo.GetByIdAsync(id);
+            return await this.repo.GetByIdAsync(id, includeTeam, includeBankAccounts);
         }
 
         /// <inheritdoc/>

@@ -31,7 +31,7 @@ namespace PayTrack.Application.Dto.User
         Role Role,
 
         [property: Required]
-        TeamDto team,
+        TeamDto? Team,
 
         [property: Required]
         bool IsActive);
