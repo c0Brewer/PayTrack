@@ -15,7 +15,8 @@ namespace PayTrack.Tests.UnitTests.Helper
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            if (this.countOfSuccessBeforeFailure > 0) {
+            if (this.countOfSuccessBeforeFailure > 0)
+            {
                 this.countOfSuccessBeforeFailure--;
                 return base.SaveChangesAsync(cancellationToken);
             }

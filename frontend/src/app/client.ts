@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import createClient from 'openapi-fetch';
 
 import type { paths } from './types/api-types.ts';
@@ -53,6 +55,12 @@ export function initClientInterceptors(logout: () => void): void {
       if (response.status === 401 && !isPublicRoute(response.url)) {
         logout();
       }
+
+      if (response.status === 403 && !isPublicRoute(response.url)) {
+        const router = inject(Router);
+        router.navigate(['/unauthorized']);
+      }
+
       return response;
     },
   });

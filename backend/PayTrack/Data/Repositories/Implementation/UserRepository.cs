@@ -18,11 +18,50 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<List<User>> GetAllAsync(
+        public async Task<(List<User> user, int totalCount)> GetAllAsync(
+            string? name = null,
+            string? email = null,
+            string? teamName = null,
+            Role? role = null,
+            bool? isActive = null,
+            bool? includeTeam = null,
             int? limit = null,
             int? offset = null)
         {
             IQueryable<User> query = this.context.User.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(u => EF.Functions.Like(u.Name, $"%{name}%"));
+            }
+
+            // Filter by email
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                query = query.Where(u => EF.Functions.Like(u.Email, $"%{email}%"));
+            }
+
+            // Filter by team name (need Include if navigation property)
+            if (!string.IsNullOrWhiteSpace(teamName))
+            {
+                query = query.Include(u => u.Team)
+                             .Where(u => u.Team != null && EF.Functions.Like(u.Team.Name, $"%{teamName}%"));
+            }
+
+            // Filter by role
+            if (role.HasValue)
+            {
+                query = query.Where(u => u.Role == role.Value);
+            }
+
+            // Filter by active status
+            if (isActive.HasValue)
+            {
+                query = query.Where(u => u.IsActive == isActive.Value);
+            }
+
+            // Calculate total count before limit / offset
+            var totalCount = await query.CountAsync();
 
             if (offset.HasValue)
             {
@@ -34,20 +73,31 @@ namespace PayTrack.Data.Repositories.Implementation
                 query = query.Take(limit.Value);
             }
 
-            return await query.ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public async Task<User?> GetByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false)
-        {
-            IQueryable<User> query = this.context.User.AsQueryable();
-
-            if (includeTeam)
+            if (includeTeam.HasValue)
             {
                 query = query.Include(u => u.Team);
             }
 
-            if (includeBankAccounts)
+            // Could potentially add other ordering logic here as well
+            var items = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        /// <inheritdoc/>
+        public async Task<User?> GetByIdAsync(
+            int id,
+            bool? includeTeam = false,
+            bool? includeBankAccounts = false)
+        {
+            IQueryable<User> query = this.context.User.AsQueryable();
+
+            if (includeTeam.HasValue)
+            {
+                query = query.Include(u => u.Team);
+            }
+
+            if (includeBankAccounts.HasValue)
             {
                 query = query.Include(u => u.BankAccounts);
             }
@@ -62,8 +112,21 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User> AddAsync(User user)
+        public async Task<User> AddAsync(string name, string email, string? profilePictureUrl, bool isActive = true)
         {
+            var count = await this.context.User.CountAsync();
+
+            var user = new User
+            {
+                Name = name,
+                Email = email,
+                ProfilePictureUrl = profilePictureUrl,
+                IsActive = isActive,
+
+                // Set the first user in the system as Admin
+                Role = count == 0 ? Role.Admin : Role.RegularUser,
+            };
+
             this.context.User.Add(user);
             int res = await this.context.SaveChangesAsync();
 
@@ -76,9 +139,14 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User> UpdateAsync(int id, bool? isActive = null, int? teamId = null, Role? role = null)
+        public async Task<User> UpdateAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null)
         {
             var user = await this.context.User.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException($"User with id {id} not found.");
+
+            if (name != null)
+            {
+                user.Name = name;
+            }
 
             if (isActive.HasValue)
             {

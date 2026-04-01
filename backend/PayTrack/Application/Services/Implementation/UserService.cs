@@ -17,9 +17,25 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<List<User>> GetAllAsync(int? limit = null, int? offset = null)
+        public async Task<(List<User> user, int totalCount)> GetAllAsync(
+            string? name = null,
+            string? email = null,
+            string? teamName = null,
+            Role? role = null,
+            bool? isActive = null,
+            bool? includeTeam = null,
+            int? limit = null,
+            int? offset = null)
         {
-            return await this.repo.GetAllAsync(limit, offset);
+            return await this.repo.GetAllAsync(
+                name: name,
+                email: email,
+                teamName: teamName,
+                role: role,
+                isActive: isActive,
+                includeTeam: includeTeam,
+                limit: limit,
+                offset: offset);
         }
 
         /// <inheritdoc/>
@@ -41,21 +57,13 @@ namespace PayTrack.Application.Services.Implementation
             string? profilePictureUrl,
             bool isActive = true)
         {
-            var team = new User
-            {
-                Name = name,
-                Email = email,
-                ProfilePictureUrl = profilePictureUrl,
-                IsActive = isActive,
-            };
-
-            return await this.repo.AddAsync(team);
+            return await this.repo.AddAsync(name, email, profilePictureUrl, isActive);
         }
 
         /// <inheritdoc/>
-        public async Task<User> UpdateUserAsync(int id, bool? isActive = null, int? teamId = null, Role? role = null)
+        public async Task<User> UpdateUserAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null)
         {
-            return await this.repo.UpdateAsync(id, isActive, teamId, role);
+            return await this.repo.UpdateAsync(id, name, isActive, teamId, role);
         }
     }
 }

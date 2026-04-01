@@ -102,6 +102,7 @@ describe('AuthService', () => {
       name: 'name',
       email: 'email',
       isActive: true,
+      team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
     };
@@ -125,6 +126,7 @@ describe('AuthService', () => {
       name: 'name',
       email: 'email',
       isActive: true,
+      team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
     };
@@ -160,6 +162,7 @@ describe('AuthService', () => {
       name: 'name',
       email: 'email',
       isActive: true,
+      team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
     };
@@ -170,7 +173,7 @@ describe('AuthService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    await firstValueFrom(service.refreshUser());
+    await service.refreshUser();
 
     const user = await firstValueFrom(service.getCurrentUser());
 

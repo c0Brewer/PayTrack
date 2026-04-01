@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using System.ComponentModel.DataAnnotations;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.User
@@ -11,12 +10,16 @@ namespace PayTrack.Application.Dto.User
     /// Dto containing necessary information for updating a User.
     /// </summary>
     public sealed record class UpdateUserDto(
-        [property: Required]
+
+        // Optional:
+        string? Name,
+
+        // Optional:
         Role? Role,
 
-        [property: Required]
+        // Optional:
         bool? IsActive,
 
-        [property: Required]
+        // Optional:
         int? TeamId);
 }

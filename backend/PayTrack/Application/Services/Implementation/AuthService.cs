@@ -38,10 +38,15 @@ namespace PayTrack.Application.Services.Implementation
 
             if (user == null)
             {
-                await this.userService.CreateUserAsync(payload.Name, payload.Email, payload.Picture);
+                user = await this.userService.CreateUserAsync(payload.Name, payload.Email, payload.Picture);
             }
 
-            return await this.jwtService.GenerateJWTToken(payload.Email);
+            if (!user.IsActive)
+            {
+                throw new ForbiddenException("Your Account is deactivated");
+            }
+
+            return await this.jwtService.GenerateJWTToken(payload.Email, user.Role);
         }
 
         /// <summary>

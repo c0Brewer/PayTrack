@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Implementation
 {
@@ -19,7 +20,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IConfiguration config = _config;
 
         /// <inheritdoc/>
-        public async Task<string> GenerateJWTToken(string email)
+        public async Task<string> GenerateJWTToken(string email, Role role)
         {
             var jwtSecret = this.config["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
 
@@ -27,7 +28,10 @@ namespace PayTrack.Application.Services.Implementation
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                claims: [new Claim(ClaimTypes.Email, email)],
+                claims: [
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim(ClaimTypes.Role, role.ToString())
+                ],
                 expires: DateTime.UtcNow.AddHours(3),
                 signingCredentials: creds);
 

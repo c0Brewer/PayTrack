@@ -1,0 +1,93 @@
+// Primary brand colors
+$primary-color: #1e40af;         // deep blue
+$primary-light: #3b60e0;         // lighter blue for hover/focus
+$primary-dark: #1a35a0;          // darker blue for headers or buttons
+
+$secondary-color: #facc15;       // yellow accent
+$secondary-light: #fff382;       // soft yellow
+$secondary-dark: #d4af00;        // deep yellow/gold
+
+// Accent colors for actions
+$accent-color: #ef4444;          // red for alerts/errors
+$accent-light: #f87171;          // lighter red
+$accent-dark: #b91c1c;           // dark red
+
+$success-color: #16a34a;         // green success
+$success-light: #4ade80;
+$success-dark: #15803d;
+
+$warning-color: #f59e0b;         // orange warning
+$warning-light: #fcd34d;
+$warning-dark: #b45309;
+
+$info-color: #0ea5e9;            // cyan info
+$info-light: #38bdf8;
+$info-dark: #0284c7;
+
+// Neutral / background colors
+$background-color: #f3f4f6;      // light gray
+$background-light: #ffffff;      // white for cards, modals
+$background-dark: #e5e7eb;       // slightly darker gray
+
+$text-color: #111827;             // dark text
+$text-light: #374151;             // medium text
+$text-muted: #6b7280;             // muted gray text
+
+$border-color: #d1d5db;           // borders
+$shadow-color: rgba(0, 0, 0, 0.1); // subtle shadow
+
+// Extra palette for more options
+$purple-color: #8b5cf6;
+$purple-light: #c4b5fd;
+$purple-dark: #6d28d9;
+
+$pink-color: #ec4899;
+$pink-light: #f9a8d4;
+$pink-dark: #be185d;
+
+$teal-color: #14b8a6;
+$teal-light: #5eead4;
+$teal-dark: #0f766e;
+
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+// Sizes - spacing, padding, margin, etc.
+$size-xxxs: 0.25rem;   // 4px
+$size-xxs: 0.5rem;     // 8px
+$size-xs: 0.75rem;     // 12px
+$size-s: 1rem;         // 16px
+$size-m: 1.5rem;       // 24px
+$size-l: 2rem;         // 32px
+$size-xl: 3rem;        // 48px
+$size-xxl: 4rem;       // 64px
+$size-xxxl: 6rem;      // 96px
+
+// Font Sizes
+$font-xxxs: 0.625rem;  // 10px
+$font-xxs: 0.75rem;    // 12px
+$font-xs: 0.875rem;    // 14px
+$font-s: 1rem;         // 16px (base)
+$font-m: 1.125rem;     // 18px
+$font-l: 1.25rem;      // 20px
+$font-xl: 1.5rem;      // 24px
+$font-xxl: 2rem;       // 32px
+$font-xxxl: 2.5rem;    // 40px
+
+// Font Weights
+$font-thin: 100;       // Hairline
+$font-extra-light: 200;
+$font-light: 300;      // Light
+$font-regular: 400;    // Normal / Regular
+$font-medium: 500;     // Medium
+$font-semibold: 600;   // Semi-bold
+$font-bold: 700;       // Bold
+$font-extra-bold: 800;
+$font-black: 900;      // Heaviest

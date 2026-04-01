@@ -14,10 +14,24 @@ namespace PayTrack.Data.Repositories.Model
         /// <summary>
         /// Gets all Users with optional filtering.
         /// </summary>
-        /// <param name="limit">Limit to include in search..</param>
+        /// <param name="name">Name to include in search.</param>
+        /// <param name="email">Email to include in search.</param>
+        /// <param name="teamName">TeamName to include in search.</param>
+        /// <param name="role">Role to include in search.</param>
+        /// <param name="isActive">IsActive state to include in search.</param>
+        /// <param name="includeTeam">Whether to include team in search.</param>
+        /// <param name="limit">Limit to include in search.</param>
         /// <param name="offset">Offset to include in search.</param>
         /// <returns>User with given ID.</returns>
-        Task<List<User>> GetAllAsync(int? limit = null, int? offset = null);
+        Task<(List<User> user, int totalCount)> GetAllAsync(
+            string? name = null,
+            string? email = null,
+            string? teamName = null,
+            Role? role = null,
+            bool? isActive = null,
+            bool? includeTeam = null,
+            int? limit = null,
+            int? offset = null);
 
         /// <summary>
         /// Gets a specific User by their ID.
@@ -26,7 +40,10 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="includeTeam">Indicate whether Teams should be loaded as well.</param>
         /// <param name="includeBankAccounts">Indicate whether Bank Accounts should be loaded as well.</param>
         /// <returns>User with given ID.</returns>
-        Task<User?> GetByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false);
+        Task<User?> GetByIdAsync(
+            int id,
+            bool? includeTeam = false,
+            bool? includeBankAccounts = false);
 
         /// <summary>
         /// Gets a specific User by their Email.
@@ -38,18 +55,22 @@ namespace PayTrack.Data.Repositories.Model
         /// <summary>
         /// Stores a User to the Database.
         /// </summary>
-        /// <param name="user">User object to store.</param>
+        /// <param name="name">Name to store.</param>
+        /// <param name="email">email to store.</param>
+        /// <param name="profilePictureUrl">url to profile picture.</param>
+        /// <param name="isActive">isActive state.</param>
         /// <returns>Instance of created User object.</returns>
-        Task<User> AddAsync(User user);
+        Task<User> AddAsync(string name, string email, string? profilePictureUrl, bool isActive = true);
 
         /// <summary>
         /// Updates a User with optional values.
         /// </summary>
         /// <param name="id">Id of User to update.</param>
+        /// <param name="name">Name to (optionally) set.</param>
         /// <param name="isActive">IsActive status to (optionally) set.</param>
         /// <param name="teamId">TeamId to (optionally) set.</param>
         /// <param name="role">Role to (optionally) set.</param>
         /// <returns>Instance of created User object.</returns>
-        Task<User> UpdateAsync(int id, bool? isActive = null, int? teamId = null, Role? role = null);
+        Task<User> UpdateAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null);
     }
 }

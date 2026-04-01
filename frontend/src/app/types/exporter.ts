@@ -1,10 +1,15 @@
-import type { components } from '../types/api-types';
+import type { components, paths } from '../types/api-types';
 
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
+export type UserDtoPaginatedResponse = components['schemas']['UserDtoPaginatedResponse'];
+export type UpdateUserDto = components['schemas']['UpdateUserDto'];
+
+// User Path
+export type GetUserOptions = paths['/api/v1/user']['get']['parameters']['query'];
 
 // Roles
 export enum Role {

@@ -1,0 +1,57 @@
+@use 'variables' as v;
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: v.$size-s;
+  padding: v.$size-s;
+  margin-bottom: v.$size-m;
+
+  background: v.$background-light;
+  // border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  // box-shadow: 0 2px 6px v.$shadow-color;
+}
+
+/* ---------- INPUTS + SELECTS ---------- */
+
+.toolbar input,
+.toolbar select {
+  height: v.$size-l;
+  padding: 0 v.$size-xs;
+
+  font-size: v.$font-s;
+  color: v.$text-color;
+
+  border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  background: v.$background-light;
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toolbar input {
+  width: 220px;
+}
+
+/* ---------- FOCUS STATE ---------- */
+
+.toolbar input:focus,
+.toolbar select:focus {
+  outline: none;
+  border-color: v.$primary-color;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.15);
+}
+
+/* ---------- SELECTS SMALLER ---------- */
+
+.toolbar select {
+  min-width: 140px;
+}
+
+/* ---------- PLACEHOLDER STYLE ---------- */
+
+.toolbar input::placeholder {
+  color: v.$text-muted;
+}

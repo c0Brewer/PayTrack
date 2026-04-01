@@ -12,6 +12,7 @@ using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
+using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
@@ -57,7 +58,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(nameof(Role.Admin), policy =>
+            policy.RequireRole(nameof(Role.Admin)))
+    .AddPolicy(nameof(Role.TeamLead), policy =>
+            policy.RequireRole(nameof(Role.TeamLead), nameof(Role.Admin)));
 
 var corsOrigin = builder.Configuration["CORS:Origins"] ?? throw new InternalErrorException("Could not load CORS Origins");
 builder.Services.AddCors(options =>

@@ -237,6 +237,12 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    name?: string;
+                    email?: string;
+                    teamName?: string;
+                    role?: components["schemas"]["Role"];
+                    isActive?: boolean;
+                    includeTeam?: boolean;
                     limit?: number;
                     offset?: number;
                 };
@@ -252,7 +258,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["UserDto"][];
+                        "application/json": components["schemas"]["UserDtoPaginatedResponse"];
                     };
                 };
                 /** @description Bad Request */
@@ -404,10 +410,11 @@ export interface components {
             displayColor?: string | null;
         };
         UpdateUserDto: {
-            role: components["schemas"]["Role"];
-            isActive: boolean;
+            name?: string | null;
+            role?: components["schemas"]["Role"];
+            isActive?: boolean | null;
             /** Format: int32 */
-            teamId: number;
+            teamId?: number | null;
         };
         UserDto: {
             /** Format: int32 */
@@ -418,6 +425,17 @@ export interface components {
             role: components["schemas"]["Role"];
             team: components["schemas"]["TeamDto"];
             isActive: boolean;
+        };
+        UserDtoPaginatedResponse: {
+            items: components["schemas"]["UserDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
     };
     responses: never;

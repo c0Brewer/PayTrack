@@ -5,9 +5,11 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Handler
 {
@@ -19,20 +21,43 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns all Users.
         /// </summary>
+        /// <param name="name">Name to include in search.</param>
+        /// <param name="email">Email to include in search.</param>
+        /// <param name="teamName">TeamName to include in search.</param>
+        /// <param name="role">Role to include in search.</param>
+        /// <param name="isActive">IsActive state to include in search.</param>
+        /// <param name="includeTeam">Whether to include the Team in the query.</param>
         /// <param name="limit">Limit to query.</param>
         /// <param name="offset">Offset to query.</param>
         /// <param name="userService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<List<UserDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetUsersAsync(
+        public static async Task<Results<Ok<PaginatedResponse<UserDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetUsersAsync(
+            [FromQuery] string? name,
+            [FromQuery] string? email,
+            [FromQuery] string? teamName,
+            [FromQuery] Role? role,
+            [FromQuery] bool? isActive,
+            [FromQuery] bool? includeTeam,
             [FromQuery] int? limit,
             [FromQuery] int? offset,
             IUserService userService)
         {
-            var userList = await userService.GetAllAsync(limit, offset);
+            Console.WriteLine($"{name} {email} {teamName} {role} {isActive} {limit} {offset}");
+            var (userList, totalCount) = await userService.GetAllAsync(
+                name: name,
+                email: email,
+                teamName: teamName,
+                role: role,
+                isActive: isActive,
+                includeTeam: includeTeam,
+                limit: limit,
+                offset: offset);
 
             var userListDto = UserMapper.ListToDto(userList);
 
-            return TypedResults.Ok(userListDto);
+            var paginatedResponse = new PaginatedResponse<UserDto>(userListDto, totalCount, limit ?? -1, offset ?? 0);
+
+            return TypedResults.Ok(paginatedResponse);
         }
 
         /// <summary>
@@ -70,6 +95,7 @@ namespace PayTrack.Api.Handler
         {
             var updatedUser = await userService.UpdateUserAsync(
                     id,
+                    updateUserDto.Name,
                     updateUserDto.IsActive,
                     updateUserDto.TeamId,
                     updateUserDto.Role);

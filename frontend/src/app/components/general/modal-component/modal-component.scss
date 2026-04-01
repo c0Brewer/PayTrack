@@ -1,0 +1,68 @@
+@use 'variables' as v;
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(1px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .modal {
+    background: v.$background-color;
+    display: flex;
+    max-width: 80%;
+    width: 50%;
+    max-height: 80vh;
+    flex-direction: column;
+    border-radius: 0.5rem;
+    overflow-x: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+    // Animate in when visible
+    &.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .modal-header {
+      background-color: v.$border-color;
+      display: flex;
+      justify-content: center;
+      padding: v.$size-s v.$size-m;
+      border-bottom: 1px solid v.$border-color;
+
+      .title {
+        padding-top: v.$size-xxxs;
+        color: v.$text-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: v.$font-m;
+        font-weight: v.$font-medium;
+      }
+
+      .close {
+        cursor: pointer;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+          color: v.$info-dark;
+        }
+      }
+    }
+
+    .content {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      padding: v.$size-l;
+    }
+  }
+}

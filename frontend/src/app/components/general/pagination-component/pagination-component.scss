@@ -1,0 +1,31 @@
+@use 'variables' as v;
+
+.pagination {
+  margin-top: v.$size-s;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: v.$size-m;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+
+  .left {
+    justify-self: start;
+  }
+
+  .center {
+    justify-self: center;
+  }
+
+  .right {
+    justify-self: end;
+  }
+
+  button {
+    height: v.$size-l;
+    padding: v.$size-xxs v.$size-xxs;
+    font-size: v.$font-xs;
+    width: v.$size-xxxl;
+  }
+}

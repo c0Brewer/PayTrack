@@ -1,0 +1,19 @@
+@if (visible) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      @if (title) {
+        <div class="modal-header">
+          <span class="title">{{ title }}</span>
+          <div class="close" (click)="onClose()">
+            <span class="material-symbols-outlined"> close </span>
+          </div>
+        </div>
+      }
+
+      <div class="content">
+        <!-- Project any content here -->
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+}
