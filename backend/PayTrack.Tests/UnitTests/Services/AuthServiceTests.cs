@@ -142,6 +142,27 @@ namespace PayTrack.Tests.UnitTests.Services
             Assert.Equal("jwt-token", result);
             userMock.Verify(u => u.CreateUserAsync(payloadToReturn.Name, payloadToReturn.Email, payloadToReturn.Picture), Times.Once);
         }
+
+        [Fact]
+        public async Task GoogleValidateCallback_ThrowsLockedException_WhenUserIsInactive()
+        {
+            // Arrange
+            var callback = new GoogleAuthCallbackDto("valid-token");
+            var user = new User
+            {
+                Email = payloadToReturn.Email,
+                Name = payloadToReturn.Name,
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser,
+                IsActive = false
+            };
+
+            userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email))
+                .ReturnsAsync(user);
+
+            // Act
+            await Assert.ThrowsAsync<LockedException>( async () => await service.GoogleValidateCallback(callback));
+        }
     }
 
     public class TestAuthService(IJwtService jwtService, IUserService userService, IHttpContextAccessor httpContextAccessor, GoogleJsonWebSignature.Payload payloadToReturn) : AuthService(jwtService, userService, httpContextAccessor)

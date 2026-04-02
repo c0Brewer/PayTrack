@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Model
@@ -14,24 +15,9 @@ namespace PayTrack.Application.Services.Model
         /// <summary>
         /// Gets all User with an optional offset and limit.
         /// </summary>
-        /// <param name="name">Name to include in search.</param>
-        /// <param name="email">Email to include in search.</param>
-        /// <param name="teamName">TeamName to include in search.</param>
-        /// <param name="role">Role to include in search.</param>
-        /// <param name="isActive">IsActive state to include in search.</param>
-        /// <param name="includeTeam">Whether to include team in search.</param>
-        /// <param name="limit">Limit to include in search.</param>
-        /// <param name="offset">Offset to include in search.</param>
+        /// <param name="query">Query information for search.</param>
         /// <returns>List of User.</returns>
-        Task<(List<User> user, int totalCount)> GetAllAsync(
-            string? name = null,
-            string? email = null,
-            string? teamName = null,
-            Role? role = null,
-            bool? isActive = null,
-            bool? includeTeam = null,
-            int? limit = null,
-            int? offset = null);
+        Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery query);
 
         /// <summary>
         /// Gets a specific User by their ID.

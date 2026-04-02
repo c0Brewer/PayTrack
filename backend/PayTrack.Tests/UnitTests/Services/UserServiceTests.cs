@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -77,16 +78,18 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "Alice" },
                 new() { Id = 2, Name = "Bob" }
             };
-            userRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync((users, 2));
+            userRepoMock.Setup(r => r.GetAllAsync(It.IsAny<GetUserQuery>())).ReturnsAsync((users, 2));
 
-            var (resultList, totalCount) = await service.GetAllAsync();
+            var query = new GetUserQuery();
+
+            var (resultList, totalCount) = await service.GetAllAsync(query);
 
             resultList.Should().HaveCount(2);
             resultList.Should().ContainSingle(u => u.Name == "Alice");
             resultList.Should().ContainSingle(u => u.Name == "Bob");
             totalCount.Should().Be(2);
 
-            userRepoMock.Verify(r => r.GetAllAsync(), Times.Once);
+            userRepoMock.Verify(r => r.GetAllAsync(query), Times.Once);
         }
 
         [Fact]

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -18,68 +19,60 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<(List<User> user, int totalCount)> GetAllAsync(
-            string? name = null,
-            string? email = null,
-            string? teamName = null,
-            Role? role = null,
-            bool? isActive = null,
-            bool? includeTeam = null,
-            int? limit = null,
-            int? offset = null)
+        public async Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery query)
         {
-            IQueryable<User> query = this.context.User.AsQueryable();
+            IQueryable<User> dbQuery = this.context.User.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(name))
+            if (!string.IsNullOrWhiteSpace(query.Name))
             {
-                query = query.Where(u => EF.Functions.Like(u.Name, $"%{name}%"));
+                dbQuery = dbQuery.Where(u => EF.Functions.Like(u.Name, $"%{query.Name}%"));
             }
 
             // Filter by email
-            if (!string.IsNullOrWhiteSpace(email))
+            if (!string.IsNullOrWhiteSpace(query.Email))
             {
-                query = query.Where(u => EF.Functions.Like(u.Email, $"%{email}%"));
+                dbQuery = dbQuery.Where(u => EF.Functions.Like(u.Email, $"%{query.Email}%"));
             }
 
             // Filter by team name (need Include if navigation property)
-            if (!string.IsNullOrWhiteSpace(teamName))
+            if (!string.IsNullOrWhiteSpace(query.TeamName))
             {
-                query = query.Include(u => u.Team)
-                             .Where(u => u.Team != null && EF.Functions.Like(u.Team.Name, $"%{teamName}%"));
+                dbQuery = dbQuery.Include(u => u.Team)
+                             .Where(u => u.Team != null && EF.Functions.Like(u.Team.Name, $"%{query.TeamName}%"));
             }
 
             // Filter by role
-            if (role.HasValue)
+            if (query.Role.HasValue)
             {
-                query = query.Where(u => u.Role == role.Value);
+                dbQuery = dbQuery.Where(u => u.Role == query.Role.Value);
             }
 
             // Filter by active status
-            if (isActive.HasValue)
+            if (query.IsActive.HasValue)
             {
-                query = query.Where(u => u.IsActive == isActive.Value);
+                dbQuery = dbQuery.Where(u => u.IsActive == query.IsActive.Value);
             }
 
             // Calculate total count before limit / offset
-            var totalCount = await query.CountAsync();
+            var totalCount = await dbQuery.CountAsync();
 
-            if (offset.HasValue)
+            if (query.Offset.HasValue)
             {
-                query = query.Skip(offset.Value);
+                dbQuery = dbQuery.Skip(query.Offset.Value);
             }
 
-            if (limit.HasValue)
+            if (query.Limit.HasValue)
             {
-                query = query.Take(limit.Value);
+                dbQuery = dbQuery.Take(query.Limit.Value);
             }
 
-            if (includeTeam.HasValue)
+            if (query.IncludeTeam.HasValue)
             {
-                query = query.Include(u => u.Team);
+                dbQuery = dbQuery.Include(u => u.Team);
             }
 
             // Could potentially add other ordering logic here as well
-            var items = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
+            var items = await dbQuery.OrderByDescending(u => u.CreatedAt).ToListAsync();
 
             return (items, totalCount);
         }

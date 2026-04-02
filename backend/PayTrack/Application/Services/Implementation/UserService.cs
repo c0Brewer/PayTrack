@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -18,24 +19,9 @@ namespace PayTrack.Application.Services.Implementation
 
         /// <inheritdoc/>
         public async Task<(List<User> user, int totalCount)> GetAllAsync(
-            string? name = null,
-            string? email = null,
-            string? teamName = null,
-            Role? role = null,
-            bool? isActive = null,
-            bool? includeTeam = null,
-            int? limit = null,
-            int? offset = null)
+            GetUserQuery query)
         {
-            return await this.repo.GetAllAsync(
-                name: name,
-                email: email,
-                teamName: teamName,
-                role: role,
-                isActive: isActive,
-                includeTeam: includeTeam,
-                limit: limit,
-                offset: offset);
+            return await this.repo.GetAllAsync(query);
         }
 
         /// <inheritdoc/>

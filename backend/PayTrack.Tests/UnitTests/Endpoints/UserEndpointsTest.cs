@@ -32,7 +32,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.UserServiceMock
-                .Setup(s => s.GetAllAsync())
+                .Setup(s => s.GetAllAsync(It.IsAny<GetUserQuery>()))
                 .ReturnsAsync((users, 2));
 
             var client = _factory.CreateClient();

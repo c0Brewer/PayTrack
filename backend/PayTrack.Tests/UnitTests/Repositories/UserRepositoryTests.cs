@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -175,7 +176,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var (result, totalCount) = await repo.GetAllAsync(limit: 10);
+            var (result, totalCount) = await repo.GetAllAsync(new GetUserQuery { Limit = 10 });
 
             // Assert
             result.Should().HaveCount(2);
@@ -206,7 +207,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             const int offset = 1;
 
             // Act
-            var (resultList, totalCount) = await repo.GetAllAsync(limit: limit, offset: offset);
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetUserQuery { Limit = limit, Offset = offset });
 
             // Assert
             resultList.Should().HaveCount(limit);
@@ -215,6 +216,69 @@ namespace PayTrack.Tests.UnitTests.Repositories
             resultList.Should().ContainSingle(t => t.Name == "User3" && t.Email == "E3");
             resultList.Should().ContainSingle(t => t.Name == "User4" && t.Email == "E4");
             resultList.Should().NotContain(t => t.Name == "User5" || t.Email == "E5");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnOnlyUsersIncludedInquery_IfAllValuesAreSet()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllUserAsync");
+
+            var teams = new List<Team>
+            {
+                new () { Name = "AAA", Description = "123", DisplayColor = "123"},
+                new () { Name = "BBB", Description = "123", DisplayColor = "123"}
+            };
+            context.Teams.AddRange(teams);
+            await context.SaveChangesAsync();
+
+            var user = new List<User>
+            {
+                new() { Name = "AAA", Email = "AAA", TeamId = teams[0].Id, Role = Role.RegularUser, IsActive = true },
+                new() { Name = "BBB", Email = "AAA", TeamId = teams[0].Id, Role = Role.RegularUser, IsActive = true },
+                new() { Name = "AAA", Email = "BBB", TeamId = teams[0].Id, Role = Role.RegularUser, IsActive = true },
+                new() { Name = "AAA", Email = "AAA", TeamId = teams[1].Id, Role = Role.RegularUser, IsActive = true },
+                new() { Name = "AAA", Email = "AAA", TeamId = teams[0].Id, Role = Role.Admin, IsActive = true },
+                new() { Name = "AAA", Email = "AAA", TeamId = teams[0].Id, Role = Role.RegularUser, IsActive = false },
+            };
+            context.User.AddRange(user);
+            await context.SaveChangesAsync();
+
+            var repo = new UserRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetUserQuery
+            {
+                Name = "A",
+                Email = "A",
+                TeamName = "A",
+                Role = Role.RegularUser,
+                IsActive = true,
+                IncludeTeam = true,
+                Limit = 10,
+                Offset = 0
+            });
+
+            // Assert
+            totalCount.Should().Be(1);
+            resultList.Count.Should().Be(1);
+
+            resultList.Should().Contain(u =>
+                    u.Name == user[0].Name &&
+                    u.Email == user[0].Email &&
+                    u.TeamId == user[0].TeamId &&
+                    u.Role == user[0].Role &&
+                    u.IsActive == user[0].IsActive);
+
+            for (int i = 1; i < user.Count; i++)
+            {
+                resultList.Should().NotContain(u =>
+                        u.Name == user[i].Name &&
+                        u.Email == user[i].Email &&
+                        u.TeamId == user[i].TeamId &&
+                        u.Role == user[i].Role &&
+                        u.IsActive == user[i].IsActive);
+            }
         }
 
         [Fact]
