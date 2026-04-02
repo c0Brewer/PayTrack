@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { NotificationService } from '../../../services/notification/notification-service';
 import { UserService } from '../../../services/user/user-service';
 import { UserDto, GetUserOptions, UpdateUserDto } from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
@@ -22,8 +23,9 @@ import { UserListComponent } from '../user-list-component/user-list-component';
 })
 export class UserManagementComponent implements OnInit {
   constructor(
-    private userService: UserService,
-    private cdr: ChangeDetectorRef,
+    private readonly userService: UserService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly notificationService: NotificationService,
   ) {}
 
   user: UserDto[] = [];
@@ -65,22 +67,20 @@ export class UserManagementComponent implements OnInit {
 
     this.userService.getUser(queryOptions).subscribe({
       next: (data) => {
-        if (data != null && data.items != null) {
+        if (data?.items) {
           this.user = data.items;
           this.totalCount = data.totalCount;
           this.hasNext = data.hasNext ?? false;
           this.hasPrev = data.hasPrevious ?? false;
-          // this.hasNext = true;
-          // this.hasPrev = true;
 
           // Mark for refresh
           this.cdr.markForCheck();
         } else {
-          console.error('Items were null');
+          this.notificationService.showError('Error while loading Items');
         }
       },
       error: (err) => {
-        console.error('Error occured', err);
+        this.notificationService.showError(err);
       },
     });
   }
@@ -126,11 +126,14 @@ export class UserManagementComponent implements OnInit {
 
     this.userService.updateUser(user.id, updateRequest).subscribe({
       next: () => {
+        this.notificationService.showSuccess(
+          'Successfully changed active status of user ' + user.name,
+        );
         this.loadUser();
         this.closeEdit();
       },
       error: (error: Error) => {
-        console.error('Could not update User', error);
+        this.notificationService.showError('Could not update User: ' + error);
       },
     });
 
@@ -149,7 +152,7 @@ export class UserManagementComponent implements OnInit {
     if (!user) return;
 
     // Only set teamid if explicitly set
-    const teamId = user.team != null && user.team.id && user.team.id != -1 ? user.team.id : null;
+    const teamId = user.team?.id && user.team.id != -1 ? user.team.id : null;
 
     const updateRequest: UpdateUserDto = {
       name: user.name,
@@ -160,11 +163,12 @@ export class UserManagementComponent implements OnInit {
 
     this.userService.updateUser(user.id, updateRequest).subscribe({
       next: () => {
+        this.notificationService.showSuccess('Successfully updated user ' + user.name);
         this.loadUser();
         this.closeEdit();
       },
       error: (error: Error) => {
-        console.error('Could not update User', error);
+        this.notificationService.showError('Could not update User: ' + error);
       },
     });
   }

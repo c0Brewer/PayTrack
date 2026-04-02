@@ -1,6 +1,15 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { Role, TeamDto, UserDto } from '../../../types/exporter';
 import { ModalComponent } from '../../general/modal-component/modal-component';
@@ -11,10 +20,11 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
   templateUrl: './user-edit-modal-component.html',
   styleUrl: './user-edit-modal-component.scss',
 })
-export class UserEditModalComponent implements OnInit {
+export class UserEditModalComponent implements OnInit, OnChanges {
   constructor(
-    private teamService: TeamService,
-    private cdr: ChangeDetectorRef,
+    private readonly teamService: TeamService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly notificationService: NotificationService,
   ) { }
 
   @Input() user: UserDto = {
@@ -34,8 +44,8 @@ export class UserEditModalComponent implements OnInit {
 
   teams: TeamDto[] = [];
 
-  @Output() save = new EventEmitter<UserDto>();
-  @Output() close = new EventEmitter<void>();
+  @Output() saveEvent = new EventEmitter<UserDto>();
+  @Output() closeEvent = new EventEmitter<void>();
 
   roleOptions = [
     { value: Role.REGULAR_USER, text: 'Regular User' },
@@ -55,14 +65,16 @@ export class UserEditModalComponent implements OnInit {
         this.teams = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
     });
   }
 
   ngOnChanges(): void {
     if (this.user) {
       // Deep clone to avoid mutation
-      this.originalUser = JSON.parse(JSON.stringify(this.user));
+      this.originalUser = structuredClone(this.user);
     }
   }
 
@@ -83,10 +95,10 @@ export class UserEditModalComponent implements OnInit {
       return;
     }
 
-    this.save.emit(this.user);
+    this.saveEvent.emit(this.user);
   }
 
   onClose(): void {
-    this.close.emit();
+    this.closeEvent.emit();
   }
 }

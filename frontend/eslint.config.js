@@ -1,6 +1,6 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import angularParser from "@angular-eslint/template-parser";
+import angularParser from '@angular-eslint/template-parser';
 import angularTemplate from '@angular-eslint/eslint-plugin-template';
 import angular from '@angular-eslint/eslint-plugin';
 import importPlugin from 'eslint-plugin-import';
@@ -24,7 +24,7 @@ export default [
       '@angular-eslint': angular,
       import: importPlugin,
       'unused-imports': unusedImports,
-      'prettier': prettier
+      prettier: prettier,
     },
     rules: {
       'unused-imports/no-unused-imports': 'error',
@@ -49,9 +49,15 @@ export default [
         },
       ],
 
-      'no-console': ["error", { "allow": ["error"] }],
+      'no-console': ['error', { allow: ['error'] }],
       'no-debugger': 'error',
-      'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {},
+        {
+          usePrettierrc: true,
+        },
+      ],
     },
   },
   /* ---------------- Angular HTML templates ---------------- */
@@ -85,17 +91,17 @@ export default [
 
   {
     ignores: [
-      "e2e/base.spec.ts",
-      ".angular",
-      ".vscode",
-      "node_modules",
-      "dist",
-      "karma.conf.js",
-      "coverage",
-      "src/app/app.ts",
-      "src/main.server.ts",
-      "src/app/types/api-types.ts",
-      "set-env.js"
-    ]
-  }
+      'e2e/base.spec.ts',
+      '.angular',
+      '.vscode',
+      'node_modules',
+      'dist',
+      'karma.conf.js',
+      'coverage',
+      'src/app/app.ts',
+      'src/main.server.ts',
+      'src/app/types/api-types.ts',
+      'set-env.js',
+    ],
+  },
 ];

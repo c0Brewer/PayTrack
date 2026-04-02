@@ -11,9 +11,9 @@ export class ModalComponent {
   @Input() title: string = '';
   @Input() info: string = '';
 
-  @Output() close = new EventEmitter<void>();
+  @Output() closeEvent = new EventEmitter<void>();
 
   onClose(): void {
-    this.close.emit();
+    this.closeEvent.emit();
   }
 }

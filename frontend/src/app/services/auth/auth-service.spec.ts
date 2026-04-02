@@ -179,4 +179,56 @@ describe('AuthService', () => {
 
     expect(user).toEqual(currentUserApiResponse);
   });
+
+  it('fetchAndStoreUser should throw error when API returns error', async () => {
+    const apiError = { detail: 'Fetch error' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: apiError } as any);
+
+    await expect(service.fetchAndStoreUser()).rejects.toThrow(apiError.detail);
+  });
+
+  it('initCurrentUser should call logout and show error if fetch fails', async () => {
+    const apiError = { detail: 'Fetch error' };
+    vi.spyOn(service, 'fetchAndStoreUser').mockRejectedValue(apiError);
+    const logoutSpy = vi.spyOn(service, 'logout');
+    const notifSpy = vi.spyOn(service['notificationService'], 'showError');
+
+    await service['initCurrentUser']();
+
+    expect(logoutSpy).toHaveBeenCalledOnce();
+    expect(notifSpy).toHaveBeenCalledOnce();
+    expect(notifSpy).toHaveBeenCalledWith(expect.stringContaining('Error while loading User'));
+  });
+
+  it('checkExpiryOnStartup should logout if token expired', () => {
+    const expiredToken = createInvalidJwt();
+    localStorage.setItem('jwt', expiredToken);
+    const logoutSpy = vi.spyOn(service, 'logout');
+
+    service['checkExpiryOnStartup']();
+
+    expect(logoutSpy).toHaveBeenCalledOnce();
+  });
+
+  it('loadGoogleScript should append script if google is undefined', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (globalThis.window as any).google;
+    const scriptAppendSpy = vi.spyOn(document.body, 'appendChild');
+
+    await service.loadGoogleScript();
+
+    const script = scriptAppendSpy.mock.calls[0][0] as HTMLScriptElement;
+    expect(script.src).toContain('https://accounts.google.com/gsi/client');
+  });
+
+  it('loadGoogleScript should resolve immediately if google already exists', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis.window as any).google = {};
+    const scriptAppendSpy = vi.spyOn(document.body, 'appendChild');
+
+    await service.loadGoogleScript();
+
+    expect(scriptAppendSpy).not.toHaveBeenCalled();
+  });
 });

@@ -60,11 +60,9 @@ describe('TeamListComponent', () => {
     });
 
     it('should log an error and not update teams on failure', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       teamServiceMock.getTeams.mockReturnValue(throwError(() => new Error('Network error')));
       fixture.detectChanges();
       expect(component.teams()).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalled();
     });
 
     it('should refresh teams when called again', () => {

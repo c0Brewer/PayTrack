@@ -9,9 +9,7 @@
   margin-bottom: v.$size-m;
 
   background: v.$background-light;
-  // border: 1px solid v.$border-color;
   border-radius: v.$size-xs;
-  // box-shadow: 0 2px 6px v.$shadow-color;
 }
 
 /* ---------- INPUTS + SELECTS ---------- */
@@ -28,7 +26,10 @@
   border-radius: v.$size-xs;
   background: v.$background-light;
 
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  cursor: inspect;
 }
 
 .toolbar input {
@@ -48,6 +49,11 @@
 
 .toolbar select {
   min-width: 140px;
+  cursor: pointer;
+
+  option {
+    cursor: pointer;
+  }
 }
 
 /* ---------- PLACEHOLDER STYLE ---------- */

@@ -4,6 +4,7 @@ import { BehaviorSubject, from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import { GoogleAuthCallbackDto, GoogleAuthResponseDto, UserDto } from '../../types/exporter';
+import { NotificationService } from '../notification/notification-service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,20 +16,21 @@ export class AuthService {
   public loggedIn$ = this.loggedInSubject.asObservable();
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private readonly router: Router) {
+  constructor(
+    private readonly router: Router,
+    private readonly notificationService: NotificationService,
+  ) {
     this.checkExpiryOnStartup();
     if (this.hasValidToken()) {
-      if (this.hasValidToken()) {
-        this.initCurrentUser();
-      }
+      this.initCurrentUser();
     }
   }
 
   private async initCurrentUser(): Promise<void> {
     try {
       await this.fetchAndStoreUser();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      this.notificationService.showError('Error while loading User' + error);
       this.logout();
     }
   }
@@ -42,7 +44,7 @@ export class AuthService {
 
   loadGoogleScript(): Promise<void> {
     return new Promise((resolve) => {
-      if (window.google) {
+      if (globalThis.window.google) {
         resolve();
         return;
       }

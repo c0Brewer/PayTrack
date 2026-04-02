@@ -1,8 +1,11 @@
+@use 'variables' as v;
+
 nav {
   display: flex;
   flex-direction: row-reverse;
   align-content: center;
-  background-color: lightblue;
+  background-color: v.$primary-dark;
+  color: v.$text-muted;
   padding: 0.5rem;
   gap: 0.5rem;
 

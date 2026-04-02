@@ -2,7 +2,7 @@
 <app-modal-component
     title="Edit User"
     info="Update User Information and Roles"
-    (close)="onClose()"
+    (closeEvent)="onClose()"
   >
   @if (user.id == -1) {
   <span>User not found.</span>

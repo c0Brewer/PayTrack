@@ -1,5 +1,8 @@
 import type { components, paths } from '../types/api-types';
 
+// Error Message
+export type ProblemDetails = components['schemas']['ProblemDetails'];
+
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
 

@@ -24,10 +24,10 @@ export class UserFilterComponent implements OnInit {
   filterIsActive: boolean | undefined = undefined;
 
   // Debounce subjects
-  private filterNameSubject = new Subject<string>();
-  private filterEmailSubject = new Subject<string>();
-  private filterRoleSubject = new Subject<Role | undefined>();
-  private filterIsActiveSubject = new Subject<boolean | undefined>();
+  private readonly filterNameSubject = new Subject<string>();
+  private readonly filterEmailSubject = new Subject<string>();
+  private readonly filterRoleSubject = new Subject<Role | undefined>();
+  private readonly filterIsActiveSubject = new Subject<boolean | undefined>();
 
   ngOnInit(): void {
     // Setup debounce

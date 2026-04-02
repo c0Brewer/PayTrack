@@ -19,7 +19,6 @@ export class UserListComponent {
   team_lead = Role.TEAM_LEAD;
   admin = Role.ADMIN;
 
-
   onToggleActive(user: UserDto): void {
     this.toggleActive.emit(user);
   }
