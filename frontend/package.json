@@ -45,7 +45,6 @@
     "@types/express": "^5.0.1",
     "@types/jasmine": "^6.0.0",
     "@types/node": "^20.17.19",
-    "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@vitest/browser-playwright": "^4.1.1",
     "@vitest/coverage-v8": "^4.1.1",
     "dotenv": "^17.3.1",
