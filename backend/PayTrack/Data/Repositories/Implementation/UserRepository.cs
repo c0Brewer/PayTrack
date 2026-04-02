@@ -19,36 +19,36 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery query)
+        public async Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery? query = null)
         {
             IQueryable<User> dbQuery = this.context.User.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(query.Name))
+            if (!string.IsNullOrWhiteSpace(query?.Name))
             {
                 dbQuery = dbQuery.Where(u => EF.Functions.Like(u.Name, $"%{query.Name}%"));
             }
 
             // Filter by email
-            if (!string.IsNullOrWhiteSpace(query.Email))
+            if (!string.IsNullOrWhiteSpace(query?.Email))
             {
                 dbQuery = dbQuery.Where(u => EF.Functions.Like(u.Email, $"%{query.Email}%"));
             }
 
             // Filter by team name (need Include if navigation property)
-            if (!string.IsNullOrWhiteSpace(query.TeamName))
+            if (!string.IsNullOrWhiteSpace(query?.TeamName))
             {
                 dbQuery = dbQuery.Include(u => u.Team)
                              .Where(u => u.Team != null && EF.Functions.Like(u.Team.Name, $"%{query.TeamName}%"));
             }
 
             // Filter by role
-            if (query.Role.HasValue)
+            if (query?.Role.HasValue == true)
             {
                 dbQuery = dbQuery.Where(u => u.Role == query.Role.Value);
             }
 
             // Filter by active status
-            if (query.IsActive.HasValue)
+            if (query?.IsActive.HasValue == true)
             {
                 dbQuery = dbQuery.Where(u => u.IsActive == query.IsActive.Value);
             }
@@ -56,17 +56,17 @@ namespace PayTrack.Data.Repositories.Implementation
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
-            if (query.Offset.HasValue)
+            if (query?.Offset.HasValue == true)
             {
                 dbQuery = dbQuery.Skip(query.Offset.Value);
             }
 
-            if (query.Limit.HasValue)
+            if (query?.Limit.HasValue == true)
             {
                 dbQuery = dbQuery.Take(query.Limit.Value);
             }
 
-            if (query.IncludeTeam.HasValue)
+            if (query?.IncludeTeam.HasValue == true)
             {
                 dbQuery = dbQuery.Include(u => u.Team);
             }
@@ -80,22 +80,21 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<User?> GetByIdAsync(
             int id,
-            bool? includeTeam = false,
-            bool? includeBankAccounts = false)
+            GetUserQueryById? query = null)
         {
-            IQueryable<User> query = this.context.User.AsQueryable();
+            IQueryable<User> dbQuery = this.context.User.AsQueryable();
 
-            if (includeTeam.HasValue)
+            if (query?.IncludeTeam.HasValue == true)
             {
-                query = query.Include(u => u.Team);
+                dbQuery = dbQuery.Include(u => u.Team);
             }
 
-            if (includeBankAccounts.HasValue)
+            if (query?.IncludeBankAccounts.HasValue == true)
             {
-                query = query.Include(u => u.BankAccounts);
+                dbQuery = dbQuery.Include(u => u.BankAccounts);
             }
 
-            return await query.FirstOrDefaultAsync(u => u.Id == id);
+            return await dbQuery.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         /// <inheritdoc/>

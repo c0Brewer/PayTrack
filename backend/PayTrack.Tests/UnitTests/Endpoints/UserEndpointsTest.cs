@@ -57,7 +57,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Arrange
             var user = new User { Id = 1, Name = "Charlie", Email = "charlie@example.com" };
             _factory.UserServiceMock
-                .Setup(s => s.GetUserByIdAsync(1, false, false))
+                .Setup(s => s.GetUserByIdAsync(1, It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             var client = _factory.CreateClient();
@@ -78,7 +78,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             _factory.UserServiceMock
-                .Setup(s => s.GetUserByIdAsync(999, false, false))
+                .Setup(s => s.GetUserByIdAsync(999))
                 .ReturnsAsync((User?)null);
 
             var client = _factory.CreateClient();

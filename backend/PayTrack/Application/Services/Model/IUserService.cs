@@ -17,16 +17,15 @@ namespace PayTrack.Application.Services.Model
         /// </summary>
         /// <param name="query">Query information for search.</param>
         /// <returns>List of User.</returns>
-        Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery query);
+        Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery? query = null);
 
         /// <summary>
         /// Gets a specific User by their ID.
         /// </summary>
         /// <param name="id">id of User to find.</param>
-        /// <param name="includeTeam">Indicate whether Teams should be loaded as well.</param>
-        /// <param name="includeBankAccounts">Indicate whether Bank Accounts should be loaded as well.</param>
+        /// <param name="query">Query information for search.</param>
         /// <returns>User with given id.</returns>
-        Task<User?> GetUserByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false);
+        Task<User?> GetUserByIdAsync(int id, GetUserQueryById? query = null);
 
         /// <summary>
         /// Gets a specific User by their Email.

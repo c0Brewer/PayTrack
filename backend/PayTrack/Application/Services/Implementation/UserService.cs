@@ -19,15 +19,15 @@ namespace PayTrack.Application.Services.Implementation
 
         /// <inheritdoc/>
         public async Task<(List<User> user, int totalCount)> GetAllAsync(
-            GetUserQuery query)
+            GetUserQuery? query = null)
         {
             return await this.repo.GetAllAsync(query);
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetUserByIdAsync(int id, bool includeTeam = false, bool includeBankAccounts = false)
+        public async Task<User?> GetUserByIdAsync(int id, GetUserQueryById? query = null)
         {
-            return await this.repo.GetByIdAsync(id, includeTeam, includeBankAccounts);
+            return await this.repo.GetByIdAsync(id, query);
         }
 
         /// <inheritdoc/>

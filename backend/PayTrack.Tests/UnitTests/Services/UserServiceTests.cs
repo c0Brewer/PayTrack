@@ -96,26 +96,38 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task GetUserByIdAsync_ShouldReturnUser_WhenExists()
         {
             var user = new User { Id = 1, Name = "Charlie" };
-            userRepoMock.Setup(r => r.GetByIdAsync(1, true, true)).ReturnsAsync(user);
+            var query = new GetUserQueryById
+            {
+                IncludeTeam = true,
+                IncludeBankAccounts = true
+            };
 
-            var result = await service.GetUserByIdAsync(1, includeTeam: true, includeBankAccounts: true);
+            userRepoMock.Setup(r => r.GetByIdAsync(1, query)).ReturnsAsync(user);
+
+            var result = await service.GetUserByIdAsync(1, query);
 
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
             result.Name.Should().Be("Charlie");
 
-            userRepoMock.Verify(r => r.GetByIdAsync(1, true, true), Times.Once);
+            userRepoMock.Verify(r => r.GetByIdAsync(1, query), Times.Once);
         }
 
         [Fact]
         public async Task GetUserByIdAsync_ShouldReturnNull_WhenNotExists()
         {
-            userRepoMock.Setup(r => r.GetByIdAsync(999, false, false)).ReturnsAsync((User?)null);
+            var query = new GetUserQueryById
+            {
+                IncludeTeam = false,
+                IncludeBankAccounts = false
+            };
 
-            var result = await service.GetUserByIdAsync(999, includeTeam: false, includeBankAccounts: false);
+            userRepoMock.Setup(r => r.GetByIdAsync(999, query)).ReturnsAsync((User?)null);
+
+            var result = await service.GetUserByIdAsync(999, query);
 
             result.Should().BeNull();
-            userRepoMock.Verify(r => r.GetByIdAsync(999, false, false), Times.Once);
+            userRepoMock.Verify(r => r.GetByIdAsync(999, query), Times.Once);
         }
 
         [Fact]

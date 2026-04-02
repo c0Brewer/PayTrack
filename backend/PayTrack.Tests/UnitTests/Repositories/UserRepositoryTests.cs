@@ -145,8 +145,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Act
             var result = await repo.GetByIdAsync(
                 user.Id,
-                includeTeam: true,
-                includeBankAccounts: true);
+                new GetUserQueryById
+                {
+                    IncludeTeam = true,
+                    IncludeBankAccounts = true
+                });
 
             // Assert
             result.Should().NotBeNull();

@@ -40,17 +40,15 @@ namespace PayTrack.Api.Handler
         /// Returns a User by ID.
         /// </summary>
         /// <param name="id">id.</param>
-        /// <param name="includeTeam">Whether to load Team as well.</param>
-        /// <param name="includeBankAccounts">Whether to load Bank Accounts as well.</param>
+        /// <param name="query">Query object including all query options.</param>
         /// <param name="userService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<UserDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> GetUserByIdAsync(
             [FromRoute] int id,
-            [FromQuery] bool includeTeam,
-            [FromQuery] bool includeBankAccounts,
+            [AsParameters] GetUserQueryById query,
             IUserService userService)
         {
-            var user = await userService.GetUserByIdAsync(id, includeTeam, includeBankAccounts) ?? throw new NotFoundException("User could not be found");
+            var user = await userService.GetUserByIdAsync(id, query) ?? throw new NotFoundException("User could not be found");
 
             var userDto = UserMapper.ToDto(user);
 
