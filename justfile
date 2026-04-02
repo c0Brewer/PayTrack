@@ -1,4 +1,5 @@
 ###################################
+set windows-shell := ["powershell", "-Command"]
 
 set dotenv-load
 
