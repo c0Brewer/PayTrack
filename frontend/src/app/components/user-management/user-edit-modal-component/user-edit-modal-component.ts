@@ -25,7 +25,7 @@ export class UserEditModalComponent implements OnInit, OnChanges {
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   @Input() user: UserDto = {
     id: -1,
