@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
@@ -31,21 +32,23 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.UserServiceMock
-                .Setup(s => s.GetAllAsync(null, null))
-                .ReturnsAsync(users);
+                .Setup(s => s.GetAllAsync())
+                .ReturnsAsync((users, 2));
 
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.GetAsync("api/v1/user");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<List<UserDto>>();
-            result.Should().HaveCount(2);
-            result[0].Name.Should().Be("Alice");
-            result[1].Name.Should().Be("Bob");
+            var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<UserDto>>();
+            result.Should().NotBeNull();
+            result.Items.Should().HaveCount(2);
+            result.Items[0].Name.Should().Be("Alice");
+            result.Items[1].Name.Should().Be("Bob");
+            result.TotalCount.Should().Be(2);
         }
 
         [Fact]
@@ -58,7 +61,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(user);
 
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.GetAsync("api/v1/user/1?includeTeam=false&includeBankAccounts=false");
@@ -79,7 +82,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync((User?)null);
 
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.GetAsync("api/v1/user/999?includeTeam=false&includeBankAccounts=false");
@@ -93,6 +96,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             var updateDto = new UpdateUserDto(
+                Name: null,
                 Role: Role.Admin,
                 IsActive: false,
                 TeamId: 1);
@@ -108,11 +112,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.UserServiceMock
-                .Setup(s => s.UpdateUserAsync(1, updateDto.IsActive, updateDto.TeamId, updateDto.Role))
+                .Setup(s => s.UpdateUserAsync(1, null, updateDto.IsActive, updateDto.TeamId, updateDto.Role))
                 .ReturnsAsync(updatedUser);
 
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.PutAsJsonAsync("api/v1/user/1", updateDto);
@@ -121,6 +125,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<UserDto>();
             result.Should().NotBeNull();
+            result.Name.Should().Be("Dave");
             result.Id.Should().Be(1);
             result.IsActive.Should().BeFalse();
             result.Role.Should().Be(Role.Admin);
@@ -141,8 +146,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             builder.ConfigureServices(services =>
             {
                 // Authentication
-                services.AddAuthentication("Test")
-                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+                services.AddAuthentication("Admin")
+                    .AddScheme<AuthenticationSchemeOptions, AdminAuthHandler>("Admin", _ => { });
 
                 _ = services.AddAuthorization(_ => { });
 

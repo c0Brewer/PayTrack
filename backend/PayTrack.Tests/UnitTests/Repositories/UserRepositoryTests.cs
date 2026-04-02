@@ -34,7 +34,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             };
 
             // Act
-            var result = await repo.AddAsync(user);
+            var result = await repo.AddAsync(user.Name, user.Email, user.ProfilePictureUrl, user.IsActive);
 
             // Assert
             Assert.NotNull(result);
@@ -59,7 +59,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InternalErrorException>(
-                async () => await repo.AddAsync(user)
+                async () => await repo.AddAsync(user.Name, user.Email, profilePictureUrl: null)
             );
 
             // Assert
@@ -175,10 +175,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var result = await repo.GetAllAsync();
+            var (result, totalCount) = await repo.GetAllAsync(limit: 10);
 
             // Assert
             result.Should().HaveCount(2);
+            result.Count.Should().Be(totalCount);
             result.Should().ContainSingle(t => t.Name == "User1" && t.Email == "E1");
             result.Should().ContainSingle(t => t.Name == "User2" && t.Email == "E2");
         }
@@ -205,15 +206,15 @@ namespace PayTrack.Tests.UnitTests.Repositories
             const int offset = 1;
 
             // Act
-            var result = await repo.GetAllAsync(limit: limit, offset: offset);
+            var (resultList, totalCount) = await repo.GetAllAsync(limit: limit, offset: offset);
 
             // Assert
-            result.Should().HaveCount(limit);
-            result.Should().NotContain(t => t.Name == "User1" || t.Email == "E1");
-            result.Should().ContainSingle(t => t.Name == "User2" && t.Email == "E2");
-            result.Should().ContainSingle(t => t.Name == "User3" && t.Email == "E3");
-            result.Should().ContainSingle(t => t.Name == "User4" && t.Email == "E4");
-            result.Should().NotContain(t => t.Name == "User5" || t.Email == "E5");
+            resultList.Should().HaveCount(limit);
+            resultList.Should().NotContain(t => t.Name == "User1" || t.Email == "E1");
+            resultList.Should().ContainSingle(t => t.Name == "User2" && t.Email == "E2");
+            resultList.Should().ContainSingle(t => t.Name == "User3" && t.Email == "E3");
+            resultList.Should().ContainSingle(t => t.Name == "User4" && t.Email == "E4");
+            resultList.Should().NotContain(t => t.Name == "User5" || t.Email == "E5");
         }
 
         [Fact]
@@ -228,10 +229,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var updated = await repo.UpdateAsync(user.Id, isActive: false);
+            var updated = await repo.UpdateAsync(user.Id, null, isActive: false);
 
             // Assert
             updated.IsActive.Should().BeFalse();
+            updated.Name.Should().Be(user.Name);
             (await context.User.FindAsync(user.Id))!.IsActive.Should().BeFalse();
         }
 
@@ -251,10 +253,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var updated = await repo.UpdateAsync(user.Id, teamId: team.Id);
+            var updated = await repo.UpdateAsync(user.Id, null, teamId: team.Id);
 
             // Assert
             updated.TeamId.Should().Be(team.Id);
+            updated.Name.Should().Be(user.Name);
             (await context.User.FindAsync(user.Id))!.TeamId.Should().Be(team.Id);
         }
 
@@ -270,10 +273,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var updated = await repo.UpdateAsync(user.Id, role: Role.Admin);
+            var updated = await repo.UpdateAsync(user.Id, null, role: Role.Admin);
 
             // Assert
             updated.Role.Should().Be(Role.Admin);
+            updated.Name.Should().Be(user.Name);
             (await context.User.FindAsync(user.Id))!.Role.Should().Be(Role.Admin);
         }
 
@@ -293,9 +297,10 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var updated = await repo.UpdateAsync(user.Id, isActive: false, teamId: team.Id, role: Role.Admin);
+            var updated = await repo.UpdateAsync(user.Id, "New Name", isActive: false, teamId: team.Id, role: Role.Admin);
 
             // Assert
+            updated.Name.Should().Be("New Name");
             updated.IsActive.Should().BeFalse();
             updated.TeamId.Should().Be(team.Id);
             updated.Role.Should().Be(Role.Admin);
@@ -309,7 +314,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new UserRepository(context);
 
             // Act
-            var act = async () => await repo.UpdateAsync(999, isActive: true);
+            var act = async () => await repo.UpdateAsync(999, null, isActive: true);
 
             // Assert
             await act.Should().ThrowAsync<NotFoundException>()
@@ -328,7 +333,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await failingContext.SaveChangesAsync();
 
             // Act
-            var act = async () => await repo.UpdateAsync(user.Id, isActive: false);
+            var act = async () => await repo.UpdateAsync(user.Id, null, isActive: false);
 
             // Assert
             await act.Should().ThrowAsync<InternalErrorException>()

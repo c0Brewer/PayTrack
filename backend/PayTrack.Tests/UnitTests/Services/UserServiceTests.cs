@@ -25,18 +25,22 @@ namespace PayTrack.Tests.UnitTests.Services
             const string picture = "pic.png";
 
             userRepoMock
-                .Setup(r => r.AddAsync(It.IsAny<User>()))
-                .ReturnsAsync((User u) => u);
+                .Setup(r => r.AddAsync(name, email, picture, true))
+                .ReturnsAsync(new User
+                {
+                    Name = name,
+                    Email = email,
+                    ProfilePictureUrl = picture,
+                    IsActive = true
+                });
 
-            var result = await service.CreateUserAsync(name, email, picture);
+            var result = await service.CreateUserAsync(name, email, picture, true);
 
             result.Should().NotBeNull();
             result.Name.Should().Be(name);
             result.Email.Should().Be(email);
             result.ProfilePictureUrl.Should().Be(picture);
             result.IsActive.Should().BeTrue();
-
-            userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
@@ -73,15 +77,16 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "Alice" },
                 new() { Id = 2, Name = "Bob" }
             };
-            userRepoMock.Setup(r => r.GetAllAsync(null, null)).ReturnsAsync(users);
+            userRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync((users, 2));
 
-            var result = await service.GetAllAsync();
+            var (resultList, totalCount) = await service.GetAllAsync();
 
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(u => u.Name == "Alice");
-            result.Should().ContainSingle(u => u.Name == "Bob");
+            resultList.Should().HaveCount(2);
+            resultList.Should().ContainSingle(u => u.Name == "Alice");
+            resultList.Should().ContainSingle(u => u.Name == "Bob");
+            totalCount.Should().Be(2);
 
-            userRepoMock.Verify(r => r.GetAllAsync(null, null), Times.Once);
+            userRepoMock.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         [Fact]
@@ -123,10 +128,10 @@ namespace PayTrack.Tests.UnitTests.Services
             };
 
             userRepoMock
-                .Setup(r => r.UpdateAsync(1, true, 2, Role.Admin))
+                .Setup(r => r.UpdateAsync(1, "Dave", true, 2, Role.Admin))
                 .ReturnsAsync(updatedUser);
 
-            var result = await service.UpdateUserAsync(1, isActive: true, teamId: 2, role: Role.Admin);
+            var result = await service.UpdateUserAsync(1, "Dave", isActive: true, teamId: 2, role: Role.Admin);
 
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
@@ -134,7 +139,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result.TeamId.Should().Be(2);
             result.Role.Should().Be(Role.Admin);
 
-            userRepoMock.Verify(r => r.UpdateAsync(1, true, 2, Role.Admin), Times.Once);
+            userRepoMock.Verify(r => r.UpdateAsync(1, "Dave", true, 2, Role.Admin), Times.Once);
         }
     }
 }

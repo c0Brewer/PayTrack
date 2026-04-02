@@ -95,13 +95,14 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Email = payloadToReturn.Email,
                 Name = payloadToReturn.Name,
-                ProfilePictureUrl = payloadToReturn.Picture
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser
             };
 
             // Mock the static ValidateAsync (simulate successful Google token)
             userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email)).ReturnsAsync(user);
 
-            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email))
+            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email, user.Role))
                 .ReturnsAsync("jwt-token");
 
             // Act
@@ -121,7 +122,8 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Email = payloadToReturn.Email,
                 Name = payloadToReturn.Name,
-                ProfilePictureUrl = payloadToReturn.Picture
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser
             };
 
             userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email))
@@ -130,7 +132,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.CreateUserAsync(payloadToReturn.Name, payloadToReturn.Email, payloadToReturn.Picture))
                 .ReturnsAsync(user);
 
-            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email))
+            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email, user.Role))
                 .ReturnsAsync("jwt-token");
 
             // Act
