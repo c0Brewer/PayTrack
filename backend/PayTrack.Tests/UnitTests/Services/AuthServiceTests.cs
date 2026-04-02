@@ -161,7 +161,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ReturnsAsync(user);
 
             // Act
-            await Assert.ThrowsAsync<LockedException>( async () => await service.GoogleValidateCallback(callback));
+            await Assert.ThrowsAsync<LockedException>(async () => await service.GoogleValidateCallback(callback));
         }
     }
 

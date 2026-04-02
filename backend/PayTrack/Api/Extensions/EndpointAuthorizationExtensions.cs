@@ -1,4 +1,4 @@
-// <copyright file="EndpointAuthorizationExtendsions.cs" company="PayTrack">
+// <copyright file="EndpointAuthorizationExtensions.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
