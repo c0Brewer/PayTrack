@@ -10,12 +10,12 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Data.Repositories.Implementation
 {
     /// <inheritdoc/>
-    public class TeamRepository(AppDbContext context) : ITeamRepository
+    public class TeamRepository(AppDbContext _context) : ITeamRepository
     {
         /// <summary>
         /// Database Context for accessing the DB.
         /// </summary>
-        private readonly AppDbContext context = context;
+        private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
         public async Task<Team> AddAsync(Team team)

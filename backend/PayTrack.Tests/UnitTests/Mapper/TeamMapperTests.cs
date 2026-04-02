@@ -17,8 +17,8 @@ namespace PayTrack.Tests.UnitTests.Mapper
             var teamDto = TeamMapper.ToDto(team);
 
             teamDto.Should().NotBeNull();
-            teamDto.id.Should().Be(id);
-            teamDto.name.Should().Be(name);
+            teamDto.Id.Should().Be(id);
+            teamDto.Name.Should().Be(name);
         }
 
         [Fact]
@@ -39,12 +39,12 @@ namespace PayTrack.Tests.UnitTests.Mapper
             teamsDto.Should().NotBeNull();
             teamsDto.Should().HaveCount(3);
             teamsDto.Should().HaveCount(teams.Count);
-            teamsDto[0].name.Should().Be(team1.Name);
-            teamsDto[1].name.Should().Be(team2.Name);
-            teamsDto[2].name.Should().Be(team3.Name);
-            teamsDto[0].name.Should().Be(teams[0].Name);
-            teamsDto[1].name.Should().Be(teams[1].Name);
-            teamsDto[2].name.Should().Be(teams[2].Name);
+            teamsDto[0].Name.Should().Be(team1.Name);
+            teamsDto[1].Name.Should().Be(team2.Name);
+            teamsDto[2].Name.Should().Be(team3.Name);
+            teamsDto[0].Name.Should().Be(teams[0].Name);
+            teamsDto[1].Name.Should().Be(teams[1].Name);
+            teamsDto[2].Name.Should().Be(teams[2].Name);
         }
     }
 }

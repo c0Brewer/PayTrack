@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Helper
 {
@@ -19,7 +20,8 @@ namespace PayTrack.Tests.UnitTests.Helper
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, "TestUser"),
-                new Claim(ClaimTypes.NameIdentifier, "1")
+                new Claim(ClaimTypes.NameIdentifier, "1"),
+                new Claim(ClaimTypes.Role, nameof(Role.RegularUser))
             };
 
             var identity = new ClaimsIdentity(claims, "Test");

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../services/auth/auth-service';
+import { NotificationService } from '../../../services/notification/notification-service';
 
 declare global {
   interface Window {
@@ -23,6 +24,7 @@ export class LoginComponent implements AfterViewInit {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
@@ -52,7 +54,9 @@ export class LoginComponent implements AfterViewInit {
         this.authService.storeToken(data.jwtToken);
         this.router.navigate(['']);
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
     });
   }
 }

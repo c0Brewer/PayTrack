@@ -21,7 +21,7 @@ run-backend:
 
 [working-directory: "backend"]
 test-backend:
-    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
+    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=90 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
 
 [working-directory: "backend/PayTrack.Tests"]
 print-test-report:

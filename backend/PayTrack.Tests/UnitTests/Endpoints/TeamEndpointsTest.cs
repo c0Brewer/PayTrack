@@ -44,8 +44,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<List<TeamDto>>();
             result.Should().HaveCount(2);
-            result![0].name.Should().Be("Alpha");
-            result![1].name.Should().Be("Beta");
+            result[0].Name.Should().Be("Alpha");
+            result[1].Name.Should().Be("Beta");
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result!.name.Should().Be("Team1");
+            result.Name.Should().Be("Team1");
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result!.name.Should().Be("New Team");
+            result.Name.Should().Be("New Team");
         }
     }
 

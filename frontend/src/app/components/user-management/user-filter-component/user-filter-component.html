@@ -1,0 +1,23 @@
+<div class="toolbar">
+  <input type="text" placeholder="Filter by name..." (input)="onNameFilterChange($event)" />
+  <input type="text" placeholder="Filter by email..." (input)="onEmailFilterChange($event)" />
+
+  <select (change)="onRoleFilterChange($event)">
+    <option value="">All Roles</option>
+    <option [value]="0">Regular User</option>
+    <option [value]="1">Team Lead</option>
+    <option [value]="2">Admin</option>
+  </select>
+
+  <select [(ngModel)]="limit" (change)="onLimitChange()">
+    @for (l of limitSelection; track l) {
+    <option [value]="l">{{ l }} per page</option>
+    }
+  </select>
+
+  <select [(ngModel)]="filterIsActive" (ngModelChange)="onIsActiveFilterChange()">
+    <option [ngValue]="undefined">All</option>
+    <option [ngValue]="true">Only Active</option>
+    <option [ngValue]="false">Only Inactive</option>
+  </select>
+</div>

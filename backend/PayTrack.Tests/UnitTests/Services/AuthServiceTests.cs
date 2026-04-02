@@ -76,6 +76,17 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task GetCurrentUser_ThrowsInternalErrorException_WhenUserInClaimMissing()
+        {
+            // Arrange
+            httpContextMock.Setup(h => h.HttpContext!.User).Returns(new ClaimsPrincipal());
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(service.GetCurrentUser);
+            Assert.Contains("ClaimTypes", ex.Message);
+        }
+
+        [Fact]
         public async Task GoogleValidateCallback_ReturnsJwt_WhenUserExists()
         {
             // Arrange
@@ -84,13 +95,14 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Email = payloadToReturn.Email,
                 Name = payloadToReturn.Name,
-                ProfilePictureUrl = payloadToReturn.Picture
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser
             };
 
             // Mock the static ValidateAsync (simulate successful Google token)
             userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email)).ReturnsAsync(user);
 
-            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email))
+            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email, user.Role))
                 .ReturnsAsync("jwt-token");
 
             // Act
@@ -110,7 +122,8 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Email = payloadToReturn.Email,
                 Name = payloadToReturn.Name,
-                ProfilePictureUrl = payloadToReturn.Picture
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser
             };
 
             userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email))
@@ -119,7 +132,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.CreateUserAsync(payloadToReturn.Name, payloadToReturn.Email, payloadToReturn.Picture))
                 .ReturnsAsync(user);
 
-            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email))
+            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email, user.Role))
                 .ReturnsAsync("jwt-token");
 
             // Act
@@ -128,6 +141,27 @@ namespace PayTrack.Tests.UnitTests.Services
             // Assert
             Assert.Equal("jwt-token", result);
             userMock.Verify(u => u.CreateUserAsync(payloadToReturn.Name, payloadToReturn.Email, payloadToReturn.Picture), Times.Once);
+        }
+
+        [Fact]
+        public async Task GoogleValidateCallback_ThrowsLockedException_WhenUserIsInactive()
+        {
+            // Arrange
+            var callback = new GoogleAuthCallbackDto("valid-token");
+            var user = new User
+            {
+                Email = payloadToReturn.Email,
+                Name = payloadToReturn.Name,
+                ProfilePictureUrl = payloadToReturn.Picture,
+                Role = Role.RegularUser,
+                IsActive = false
+            };
+
+            userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email))
+                .ReturnsAsync(user);
+
+            // Act
+            await Assert.ThrowsAsync<LockedException>(async () => await service.GoogleValidateCallback(callback));
         }
     }
 

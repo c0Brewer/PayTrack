@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Services
 {
@@ -26,7 +27,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var service = new JwtService(configMock.Object);
 
             // Act
-            var token = await service.GenerateJWTToken(email);
+            var token = await service.GenerateJWTToken(email, Role.RegularUser);
 
             // Assert
             Assert.False(string.IsNullOrEmpty(token));
@@ -35,6 +36,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var handler = new JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(token);
             Assert.Contains(jwt.Claims, c => c.Type == System.Security.Claims.ClaimTypes.Email && c.Value == email);
+            Assert.Contains(jwt.Claims, c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == nameof(Role.RegularUser));
         }
 
         [Fact]
@@ -45,7 +47,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var service = new JwtService(configMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsAsync<InternalErrorException>(async () => await service.GenerateJWTToken("test@example.com"));
+            await Assert.ThrowsAsync<InternalErrorException>(async () => await service.GenerateJWTToken("test@example.com", It.IsAny<Role>()));
         }
     }
 }

@@ -1,0 +1,41 @@
+<div class="user-management">
+  <h2>User Management</h2>
+
+  <!-- FILTER + LIMIT -->
+  <app-user-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onLimitChange($event)"
+  >
+  </app-user-filter-component>
+
+  <!-- USER TABLE -->
+  <app-user-list-component
+    [user]="user"
+    (toggleActive)="toggleActive($event)"
+    (openEditUser)="openEditUser($event)"
+  >
+  </app-user-list-component>
+
+  <!-- PAGINATION -->
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  >
+  </app-pagination-component>
+
+  <!-- EDIT POPUP -->
+  @if (editingUser) {
+    <app-user-edit-modal-component
+      [user]="editingUser"
+      (saveEvent)="saveUser($event)"
+      (closeEvent)="closeEdit()"
+    >
+    </app-user-edit-modal-component>
+  }
+</div>
