@@ -19,4 +19,10 @@ describe('ModalComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should emit close event when onClose is called', () => {
+    const spy = vi.spyOn(component.closeEvent, 'emit');
+    component.onClose();
+    expect(spy).toHaveBeenCalled();
+  });
 });

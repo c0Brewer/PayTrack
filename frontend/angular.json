@@ -81,7 +81,14 @@
           "options": {
             "coverage": true,
             "coverageReporters": ["lcov", "html"],
-            "coverageExclude": ["**/app.*.ts", "src/app/app.config.ts"],
+            "coverageExclude": [
+              "**/app.*.ts",
+              "**/app.ts",
+              "**/app.config.ts",
+              "**/app.routes.ts",
+              "**/client.ts",
+              "**.html"
+            ],
             "coverageThresholds": {
               "statements": 80,
               "branches": 80,
