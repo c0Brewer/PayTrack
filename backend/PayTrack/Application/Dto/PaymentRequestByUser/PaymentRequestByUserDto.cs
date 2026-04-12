@@ -1,42 +1,35 @@
-// <copyright file="UserDto.cs" company="PayTrack">
+// <copyright file="PaymentRequestByUserDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.BankAccount;
-using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 
-namespace PayTrack.Application.Dto.User
+namespace PayTrack.Application.Dto.PaymentRequestByUser
 {
     /// <summary>
-    /// Dto containing necessary information about a User
+    /// Dto containing necessary information about a PaymentRequestByUser
     /// </summary>
-    public sealed record class UserDto(
+    public sealed record class PaymentRequestByUserDto(
         [property: Required]
         int Id,
 
         [property: Required]
         [property: MinLength(3)]
-        string Name,
+        string InvoiceNumber,
 
         [property: Required]
         [property: MinLength(3)]
-        string Email,
+        string? Comment,
 
         [property: Required]
         [property: MinLength(3)]
-        string? ProfilePictureUrl,
+        string? ReceiptUrl,
 
         [property: Required]
-        Role Role,
+        PayoutType PayoutType,
 
         [property: Required]
-        bool IsActive,
-
-        [property: Required]
-        TeamDto? Team,
-
-        [property: Required]
-        List<BankAccountDto> BankAccounts);
+        BankAccountDto? BankAccount);
 }
