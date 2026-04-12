@@ -1,4 +1,3 @@
-
 // <copyright file="PaymentRequestByUserService.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
@@ -45,7 +44,7 @@ namespace PayTrack.Application.Services.Implementation
             PayoutType payoutType,
             int bankAccountId)
         {
-            var direction = PaymentDirection.Out;
+            // var direction = PaymentDirection.Out;
             throw new NotImplementedException();
 
             // return await this.repo.AddAsync(name, email, profilePictureUrl, isActive);
