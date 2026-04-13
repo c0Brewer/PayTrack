@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
@@ -12,10 +12,11 @@ import { TeamDto } from '../../../types/exporter';
   styleUrl: './team-list-component.scss',
 })
 export class TeamListComponent implements OnInit {
-  teams = signal<TeamDto[]>([]);
+  teams: TeamDto[] = [];
 
   constructor(
     private readonly teamService: TeamService,
+    private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -26,7 +27,10 @@ export class TeamListComponent implements OnInit {
   loadTeams(): void {
     this.teamService.getTeams().subscribe({
       next: (data) => {
-        this.teams.set(data);
+        this.teams = data;
+
+        // Mark for refresh
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.notificationService.showError(err);
