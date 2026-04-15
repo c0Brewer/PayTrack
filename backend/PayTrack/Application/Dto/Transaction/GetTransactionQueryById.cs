@@ -15,6 +15,11 @@ namespace PayTrack.Application.Dto.Transaction
         public bool? IncludeCostCentre { get; init; }
 
         /// <summary>
+        /// Whether to include the cost centre in the query.
+        /// </summary>
+        public bool? IncludeUser { get; init; }
+
+        /// <summary>
         /// Whether to include the team in the query.
         /// </summary>
         public bool? IncludeTeam { get; init; }

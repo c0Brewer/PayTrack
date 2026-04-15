@@ -9,6 +9,7 @@ import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
 import { roleGuard } from './guards/role-guard/role-guard';
 import { Role } from './types/exporter';
+import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 
 /*
  * FYI: For the other devs: The guestGuard and authGuard protect certain routes from unauthorized access.
@@ -28,6 +29,11 @@ export const routes: Routes = [
     path: 'submit',
     canActivate: [authGuard],
     component: ReceiptSubmitComponent,
+  },
+  {
+    path: 'requests',
+    canActivate: [authGuard],
+    component: ReceiptOverviewComponent,
   },
   {
     path: 'user',
