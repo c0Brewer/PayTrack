@@ -32,7 +32,7 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
 
-            group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync);
+            group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery(); // Needed because of the way the file upload works. This is intentional
 
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);

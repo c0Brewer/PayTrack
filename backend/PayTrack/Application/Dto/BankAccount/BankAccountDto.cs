@@ -17,5 +17,8 @@ namespace PayTrack.Application.Dto.BankAccount
         string IBAN,
 
         [property: Required]
-        string BIC);
+        string BIC,
+
+        [property: Required]
+        string AccountHolder);
 }

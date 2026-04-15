@@ -49,6 +49,7 @@ namespace PayTrack.Application.Services.Implementation
             // TODO: Check here if bank account valid when bank account service is ready
             var team = this.teamService.GetTeamByIdAsync(teamId);
 
+            // TODO: Check paid at < todays date. Allow paid at to be null when PayoutType is not User
             var paymentRequest = new PaymentRequestByUser
             {
                 // Transaction settings
@@ -57,12 +58,12 @@ namespace PayTrack.Application.Services.Implementation
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
                 Status = TransactionStatus.Submitted,
-                CostCentreId = -1, // Cost centre will be set later by the finance team
+                CostCentreId = null, // Cost centre will be set later by the finance team
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.Out, // Payment direction is out for payment requests by user
 
                 // Created at is set automatically
-                PaidAt = PaidAt,
+                PaidAt = PaidAt.ToUniversalTime(),
 
                 // Payment request specific settings
                 InvoiceNumber = invoiceNumber,

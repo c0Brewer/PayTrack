@@ -116,4 +116,12 @@ export class AuthService {
     const token = localStorage.getItem('jwt');
     return token != null && !this.isTokenExpired(token);
   }
+
+  public getToken(): string | null {
+    if (this.hasValidToken()) {
+      return localStorage.getItem('jwt');
+    }
+
+    return null;
+  }
 }

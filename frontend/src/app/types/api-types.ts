@@ -618,6 +618,7 @@ export interface components {
             id: number;
             iban: string;
             bic: string;
+            accountHolder: string;
         };
         ByteReadOnlyMemory: {
             /** Format: int32 */
@@ -643,7 +644,6 @@ export interface components {
             comment: string;
             /** Format: binary */
             receipt: string;
-            receiptUrl: string;
             payoutType: components["schemas"]["PayoutType"];
             /** Format: int32 */
             bankAccountId: number;

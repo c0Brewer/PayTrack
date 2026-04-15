@@ -22,7 +22,8 @@ namespace PayTrack.Api.Mapper
             return new BankAccountDto(
                 bankAccount.Id,
                 bankAccount.Iban,
-                bankAccount.Bic);
+                bankAccount.Bic,
+                bankAccount.AccountHolder);
         }
 
         /// <summary>

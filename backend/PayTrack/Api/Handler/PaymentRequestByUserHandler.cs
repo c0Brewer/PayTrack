@@ -63,7 +63,7 @@ namespace PayTrack.Api.Handler
         /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreatePaymentRequestByUserAsync(
-            [FromBody] CreatePaymentRequestByUserDto createPaymentRequestByUserDto,
+            [FromForm] CreatePaymentRequestByUserDto createPaymentRequestByUserDto,
             IAuthService authService,
             IPaymentRequestByUserService paymentRequestByUserService)
         {

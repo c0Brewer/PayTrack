@@ -27,10 +27,6 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         IFormFile Receipt,
 
         [property: Required]
-        [property: MinLength(3)]
-        string? ReceiptUrl,
-
-        [property: Required]
         PayoutType PayoutType,
 
         [property: Required]

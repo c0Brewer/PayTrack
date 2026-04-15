@@ -33,6 +33,7 @@ export class UserEditModalComponent implements OnInit, OnChanges {
     email: '',
     profilePictureUrl: '',
     role: Role.REGULAR_USER,
+    bankAccounts: [],
     team: {
       id: 0,
       name: '',

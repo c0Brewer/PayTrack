@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { TeamListComponent } from './components/team/team-list-component/team-list-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -22,6 +23,11 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     component: LoginComponent,
+  },
+  {
+    path: 'submit',
+    canActivate: [authGuard],
+    component: ReceiptSubmitComponent,
   },
   {
     path: 'user',
