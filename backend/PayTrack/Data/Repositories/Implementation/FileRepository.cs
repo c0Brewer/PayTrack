@@ -39,7 +39,13 @@ namespace PayTrack.Data.Repositories.Implementation
             // Get file name to prevent code/file access injections
             var safeFilePath = Path.GetFileName(name);
 
-            var filePath = Path.Combine(this.fileUploadPath, safeFilePath);
+            // Get extension safely
+            var fileEnding = Path.GetExtension(file.FileName);
+
+            // Forge safe file name
+            var safeFileName = $"{safeFilePath}.{fileEnding}";
+
+            var filePath = Path.Combine(this.fileUploadPath, safeFileName);
 
             Directory.CreateDirectory(this.fileUploadPath);
 

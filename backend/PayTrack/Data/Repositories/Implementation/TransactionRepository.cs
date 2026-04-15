@@ -107,7 +107,7 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             transaction.ReceiptUrl = await this.fileRepository.SaveFile(
                 receipt,
-                $"{transaction.InvoiceNumber}_{transaction.CreatedAt:yyyyMMdd_HHmmss}");
+                $"invoice_{transaction.InvoiceNumber}_{transaction.CreatedAt:yyyyMMdd_HHmmss}");
 
             this.context.PaymentRequestsByUser.Add(transaction);
             int res = await this.context.SaveChangesAsync();
