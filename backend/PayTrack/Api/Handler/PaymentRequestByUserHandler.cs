@@ -59,27 +59,31 @@ namespace PayTrack.Api.Handler
         /// Creates a PaymentRequestByUser.
         /// </summary>
         /// <param name="createPaymentRequestByUserDto">request for PaymentRequestByUser creation.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service..</param>
         /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreatePaymentRequestByUserAsync(
             [FromBody] CreatePaymentRequestByUserDto createPaymentRequestByUserDto,
+            IAuthService authService,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
-            var updatedPaymentRequestByUser = await paymentRequestByUserService.CreatePaymentRequestByUserAsync(
-                    createPaymentRequestByUserDto.Transaction.UserId,
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+
+            var createdPaymentRequestByUser = await paymentRequestByUserService.CreatePaymentRequestByUserAsync(
+                    user.Id,
                     createPaymentRequestByUserDto.Transaction.TeamId,
                     createPaymentRequestByUserDto.Transaction.Amount,
                     createPaymentRequestByUserDto.Transaction.PurposeOfPayment,
+                    createPaymentRequestByUserDto.Receipt,
                     createPaymentRequestByUserDto.Transaction.PaidAt,
                     createPaymentRequestByUserDto.InvoiceNumber,
                     createPaymentRequestByUserDto.Comment,
                     createPaymentRequestByUserDto.PayoutType,
                     createPaymentRequestByUserDto.BankAccountId);
 
-            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+            var createdPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(createdPaymentRequestByUser);
 
-            // TODO: return created
-            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+            return TypedResults.Ok(createdPaymentRequestByUserDto);
         }
 
         /// <summary>
@@ -106,6 +110,21 @@ namespace PayTrack.Api.Handler
 
             // TODO: return updated
             return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Returns a PaymentRequestByUser by ID.
+        /// </summary>
+        /// <param name="id">id.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<FileContentHttpResult>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUserByIdReceiptAsync(
+            [FromRoute] int id,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var file = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id) ?? throw new NotFoundException("Could not load file");
+
+            return TypedResults.Ok(TypedResults.File(file));
         }
     }
 }

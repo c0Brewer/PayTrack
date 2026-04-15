@@ -11,9 +11,6 @@ namespace PayTrack.Application.Dto.Transaction
     /// </summary>
     public sealed record class CreateTransactionDto(
         [property: Required]
-        int UserId,
-
-        [property: Required]
         int TeamId,
 
         [property: Required]

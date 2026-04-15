@@ -28,12 +28,18 @@ namespace PayTrack.Api.Endpoints
                 .RequireAuthorization()
                 .RequireRole(Role.Admin);
 
-            group.MapGet("/user/", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
-            group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
-            group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync);
-            group.MapPost("/user/{id:int}", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync);
+            group.MapGet("/user", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
 
-            // TODO: Implement this:
+            group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
+
+            group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync);
+
+            group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin);
+
+            group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
+
+            // TODO: Implement this in another ticket:
 
             // group.MapGet("/team/", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             // group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);

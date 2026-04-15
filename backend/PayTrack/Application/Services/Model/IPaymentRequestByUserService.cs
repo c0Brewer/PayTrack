@@ -28,12 +28,20 @@ namespace PayTrack.Application.Services.Model
         Task<PaymentRequestByUser?> GetPaymentRequestByUserByIdAsync(int id, GetPaymentRequestByUserQueryById? query = null);
 
         /// <summary>
+        /// Gets a specific receipt for a PaymentRequestByUser by their ID.
+        /// </summary>
+        /// <param name="id">id of PaymentRequestByUser to find.</param>
+        /// <returns>PaymentRequestByUser with given id.</returns>
+        Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id);
+
+        /// <summary>
         /// Creates a PaymentRequestByUser using the given input.
         /// </summary>
         /// <param name="userId">Id of user.</param>
         /// <param name="teamId">Id of team.</param>
         /// <param name="amount">Amount.</param>
         /// <param name="purposeOfPayment">Purpose.</param>
+        /// <param name="receipt">Receipt.</param>
         /// <param name="PaidAt">When the invoice was paid at.</param>
         /// <param name="invoiceNumber">InvoiceNumber of PaymentRequestByUser.</param>
         /// <param name="comment">Optional comment.</param>
@@ -45,6 +53,7 @@ namespace PayTrack.Application.Services.Model
             int teamId,
             decimal amount,
             string purposeOfPayment,
+            IFormFile receipt,
             DateTime PaidAt,
             string invoiceNumber,
             string? comment,

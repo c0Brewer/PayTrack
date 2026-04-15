@@ -24,6 +24,9 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         string? Comment,
 
         [property: Required]
+        IFormFile Receipt,
+
+        [property: Required]
         [property: MinLength(3)]
         string? ReceiptUrl,
 

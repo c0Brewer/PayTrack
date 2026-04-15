@@ -36,5 +36,30 @@ namespace PayTrack.Data.Repositories.Model
         Task<Transaction?> GetByIdAsync(
             int id,
             GetTransactionQueryById? query = null);
+
+        /// <summary>
+        /// Gets a specific Transaction by their ID.
+        /// </summary>
+        /// <param name="id">id of Transaction to find.</param>
+        /// <param name="query">Query information to include in search.</param>
+        /// <returns>Transaction with given ID.</returns>
+        Task<PaymentRequestByUser?> GetByIdAsync(
+            int id,
+            GetPaymentRequestByUserQueryById? query = null);
+
+        /// <summary>
+        /// Stores a Transaction to the Database.
+        /// </summary>
+        /// <param name="transaction">Transaction object to store.</param>
+        /// <returns>Instance of created Transaction object.</returns>
+        Task<Transaction> AddAsync(Transaction transaction);
+
+        /// <summary>
+        /// Stores a Transaction to the Database.
+        /// </summary>
+        /// <param name="transaction">Transaction object to store.</param>
+        /// <param name="receipt">Receipt to store with transaction.</param>
+        /// <returns>Instance of created Transaction object.</returns>
+        Task<PaymentRequestByUser> AddAsync(PaymentRequestByUser transaction, IFormFile receipt);
     }
 }

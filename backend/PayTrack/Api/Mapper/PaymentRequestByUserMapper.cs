@@ -3,7 +3,11 @@
 // </copyright>
 
 using PayTrack.Application.Dto.BankAccount;
+using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Dto.PaymentRequestByUser;
+using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.Transaction;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -26,11 +30,45 @@ namespace PayTrack.Api.Mapper
                 bankAccountDto = BankAccountMapper.ToDto(paymentRequestByUser.BankAccount);
             }
 
+            UserDto? user = null;
+            if (paymentRequestByUser.User != null)
+            {
+                user = UserMapper.ToDto(paymentRequestByUser.User);
+            }
+
+            CostCentreDto? costCentre = null;
+            if (paymentRequestByUser.CostCentre != null)
+            {
+                costCentre = CostCentreMapper.ToDto(paymentRequestByUser.CostCentre);
+            }
+
+            TeamDto? team = null;
+            if (paymentRequestByUser.Team != null)
+            {
+                team = TeamMapper.ToDto(paymentRequestByUser.Team);
+            }
+
+            ICollection<TransactionStatusHistoryDto>? statusHistory = [];
+            if (paymentRequestByUser.StatusHistory != null)
+            {
+                statusHistory = TransactionStatusHistoryMapper.ListToDto([.. paymentRequestByUser.StatusHistory]);
+            }
+
             return new PaymentRequestByUserDto(
                 paymentRequestByUser.Id,
+                user,
+                paymentRequestByUser.Amount,
+                paymentRequestByUser.PurposeOfPayment,
+                paymentRequestByUser.PaymentReference,
+                paymentRequestByUser.Status,
+                costCentre,
+                team,
+                paymentRequestByUser.PaymentDirection,
+                statusHistory,
+                paymentRequestByUser.CreatedAt,
+                paymentRequestByUser.PaidAt,
                 paymentRequestByUser.InvoiceNumber,
                 paymentRequestByUser.Comment,
-                paymentRequestByUser.ReceiptUrl,
                 paymentRequestByUser.PayoutType,
                 bankAccountDto);
         }

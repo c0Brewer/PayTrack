@@ -3,6 +3,7 @@
 // </copyright>
 
 using PayTrack.Application.Dto.PaymentRequestByUser;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -10,12 +11,14 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByUserService(ITransactionRepository repo) : IPaymentRequestByUserService
+    public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo) : IPaymentRequestByUserService
     {
         /// <summary>
         /// Repository for PaymentRequestByUsers.
         /// </summary>
         private readonly ITransactionRepository repo = repo;
+        private readonly IFileRepository fileRepo = _fileRepo;
+        private readonly ITeamService teamService = _teamService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -27,9 +30,7 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<PaymentRequestByUser?> GetPaymentRequestByUserByIdAsync(int id, GetPaymentRequestByUserQueryById? query = null)
         {
-            throw new NotImplementedException();
-
-            // return await this.repo.GetByIdAsync(id, query);
+            return await this.repo.GetByIdAsync(id, query);
         }
 
         /// <inheritdoc/>
@@ -38,16 +39,40 @@ namespace PayTrack.Application.Services.Implementation
             int teamId,
             decimal amount,
             string purposeOfPayment,
+            IFormFile receipt,
             DateTime PaidAt,
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
             int bankAccountId)
         {
-            // var direction = PaymentDirection.Out;
-            throw new NotImplementedException();
+            // TODO: Check here if bank account valid when bank account service is ready
+            var team = this.teamService.GetTeamByIdAsync(teamId);
 
-            // return await this.repo.AddAsync(name, email, profilePictureUrl, isActive);
+            var paymentRequest = new PaymentRequestByUser
+            {
+                // Transaction settings
+                UserId = userId,
+                Amount = amount,
+                PurposeOfPayment = purposeOfPayment,
+                PaymentReference = string.Empty, // Payment reference will be set later by the finance team
+                Status = TransactionStatus.Submitted,
+                CostCentreId = -1, // Cost centre will be set later by the finance team
+                TeamId = team.Id,
+                PaymentDirection = PaymentDirection.Out, // Payment direction is out for payment requests by user
+
+                // Created at is set automatically
+                PaidAt = PaidAt,
+
+                // Payment request specific settings
+                InvoiceNumber = invoiceNumber,
+                Comment = comment,
+                ReceiptUrl = string.Empty, // TODO:
+                PayoutType = payoutType,
+                BankAccountId = bankAccountId,
+            };
+
+            return await this.repo.AddAsync(paymentRequest, receipt);
         }
 
         /// <inheritdoc/>
@@ -61,6 +86,19 @@ namespace PayTrack.Application.Services.Implementation
             throw new NotImplementedException();
 
             // return await this.repo.UpdateAsync(id, name, isActive, teamId, role);
+        }
+
+        /// <inheritdoc/>
+        public async Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id)
+        {
+            var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
+
+            if (paymentRequest?.ReceiptUrl == null)
+            {
+                throw new InvalidStateException("Receipt URL is null although it should not be.");
+            }
+
+            return await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
         }
     }
 }
