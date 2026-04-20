@@ -1,0 +1,99 @@
+@use 'variables' as v;
+
+.cost-centre-detail {
+  padding: 25px;
+
+  .back-btn {
+    margin-bottom: v.$size-l;
+    background: v.$background-dark;
+    color: v.$text-color;
+    border: 1px solid v.$border-color;
+    font-size: v.$font-s;
+
+    &:hover {
+      background: v.$border-color;
+      cursor: pointer;
+    }
+  }
+
+  .detail-card {
+    h2 {
+      margin: 0 0 v.$size-m;
+    }
+
+    h3 {
+      margin: v.$size-l 0 v.$size-s;
+    }
+  }
+
+  .info-table {
+    border-collapse: collapse;
+    font-size: v.$font-s;
+    margin-bottom: v.$size-m;
+
+    th {
+      text-align: left;
+      padding: v.$size-xs v.$size-m v.$size-xs 0;
+      color: v.$text-muted;
+      font-weight: v.$font-medium;
+      width: 140px;
+    }
+
+    td {
+      padding: v.$size-xs 0;
+    }
+  }
+
+  .color-cell {
+    display: flex;
+    align-items: center;
+    gap: v.$size-xs;
+  }
+
+  .color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid v.$border-color;
+    flex-shrink: 0;
+  }
+
+  .budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: v.$font-s;
+    background: v.$background-light;
+    border-radius: v.$size-xs;
+    overflow: hidden;
+
+    thead {
+      background: v.$background-dark;
+
+      th {
+        text-align: left;
+        padding: v.$size-s;
+        font-weight: v.$font-semibold;
+        color: v.$text-light;
+        border-bottom: 1px solid v.$border-color;
+      }
+    }
+
+    tbody {
+      td {
+        padding: v.$size-s;
+        border-bottom: 1px solid v.$border-color;
+      }
+
+      tr:hover {
+        background: v.$gray-100;
+      }
+    }
+  }
+
+  .no-budgets {
+    color: v.$text-muted;
+    font-style: italic;
+    font-size: v.$font-s;
+  }
+}

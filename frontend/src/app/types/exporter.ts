@@ -24,3 +24,48 @@ export enum Role {
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
+
+// Cost Centre
+export interface BudgetDto {
+  id: number;
+  teamId: number;
+  costCentreId: number;
+  targetAmount: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface CostCentreDto {
+  id: number;
+  name: string;
+  description: string | null;
+  displayColor: string | null;
+  budgets: BudgetDto[];
+}
+
+export interface CreateBudgetEntryDto {
+  teamId: number;
+  targetAmount: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface CreateCostCentreRequestDto {
+  name: string;
+  description?: string;
+  displayColor?: string;
+  budgets?: CreateBudgetEntryDto[];
+}
+
+export interface UpdateCostCentreRequestDto {
+  name?: string;
+  description?: string;
+  displayColor?: string;
+}
+
+export interface DeleteCostCentrePreviewDto {
+  costCentreName: string;
+  budgetCount: number;
+  transactionCount: number;
+  affectedTeamNames: string[];
+}

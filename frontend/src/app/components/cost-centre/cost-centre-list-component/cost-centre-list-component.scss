@@ -1,0 +1,96 @@
+@use 'variables' as v;
+
+.cost-centre-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  overflow: hidden;
+
+  thead {
+    background: v.$background-dark;
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
+  }
+
+  tbody {
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
+  }
+
+  .color-cell {
+    display: flex;
+    align-items: center;
+    gap: v.$size-xs;
+  }
+
+  .color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid v.$border-color;
+    flex-shrink: 0;
+  }
+
+  .name-link {
+    color: v.$primary-color;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .no-color {
+    color: v.$text-muted;
+    font-style: italic;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+    margin-right: v.$size-xxs;
+  }
+
+  .delete-btn {
+    border-color: v.$accent-color;
+    color: v.$accent-color;
+
+    &:hover {
+      background: v.$accent-color;
+      color: v.$background-light;
+    }
+  }
+
+  .actions-col {
+    width: 1%;
+    white-space: nowrap;
+  }
+}

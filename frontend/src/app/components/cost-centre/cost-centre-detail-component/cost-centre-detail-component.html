@@ -1,0 +1,70 @@
+<div class="cost-centre-detail">
+  <button class="back-btn" (click)="goBack()">← Back to Cost Centres</button>
+
+  @if (costCentre) {
+    <div class="detail-card">
+      <h2>{{ costCentre.name }}</h2>
+
+      <table class="info-table">
+        <tbody>
+          <tr>
+            <th>ID</th>
+            <td>{{ costCentre.id }}</td>
+          </tr>
+          <tr>
+            <th>Name</th>
+            <td>{{ costCentre.name }}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{{ costCentre.description ?? '—' }}</td>
+          </tr>
+          <tr>
+            <th>Display Color</th>
+            <td>
+              @if (costCentre.displayColor) {
+                <div class="color-cell">
+                  <span class="color-swatch" [style.background]="costCentre.displayColor"></span>
+                  {{ costCentre.displayColor }}
+                </div>
+              } @else {
+                —
+              }
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Budgets ({{ costCentre.budgets.length }})</h3>
+
+      @if (costCentre.budgets.length === 0) {
+        <p class="no-budgets">No budgets assigned.</p>
+      } @else {
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Team ID</th>
+              <th>Target Amount</th>
+              <th>Period Start</th>
+              <th>Period End</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of costCentre.budgets; track b.id) {
+              <tr>
+                <td>{{ b.id }}</td>
+                <td>{{ b.teamId }}</td>
+                <td>{{ b.targetAmount }}</td>
+                <td>{{ b.periodStart | slice: 0 : 10 }}</td>
+                <td>{{ b.periodEnd | slice: 0 : 10 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  } @else {
+    <p>Loading...</p>
+  }
+</div>

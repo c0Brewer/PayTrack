@@ -1,0 +1,53 @@
+<table class="cost-centre-table">
+  <colgroup>
+    <col style="width: 8%" />
+    <col style="width: 22%" />
+    <col style="width: 28%" />
+    <col style="width: 18%" />
+    <col style="width: 9%" />
+    <col style="width: 15%" />
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Color</th>
+      <th>Budgets</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (cc of costCentres; track cc.id) {
+      <tr>
+        <td>{{ cc.id }}</td>
+
+        <td>
+          <a class="name-link" [routerLink]="['/cost-centre', cc.id]">{{ cc.name }}</a>
+        </td>
+
+        <td>{{ cc.description ?? '—' }}</td>
+
+        <td>
+          @if (cc.displayColor) {
+            <div class="color-cell">
+              <span class="color-swatch" [style.background]="cc.displayColor"></span>
+              {{ cc.displayColor }}
+            </div>
+          } @else {
+            <span class="no-color">—</span>
+          }
+        </td>
+
+        <td>{{ cc.budgets.length }}</td>
+
+        <td class="actions-col">
+          <button class="edit-btn" (click)="onOpenEdit(cc)">Edit</button>
+          <button class="delete-btn" (click)="onOpenDelete(cc)">Delete</button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

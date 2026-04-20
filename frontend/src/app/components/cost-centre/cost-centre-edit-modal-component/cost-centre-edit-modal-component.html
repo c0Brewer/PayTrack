@@ -1,0 +1,24 @@
+<app-modal-component
+  [title]="isCreating ? 'Create Cost Centre' : 'Edit Cost Centre'"
+  (closeEvent)="onClose()"
+>
+  <label>
+    Name
+    <input [(ngModel)]="costCentre.name" placeholder="Required, min 3 characters" />
+  </label>
+
+  <label>
+    Description
+    <input [(ngModel)]="costCentre.description" placeholder="Optional" />
+  </label>
+
+  <label>
+    Display Color
+    <input [(ngModel)]="costCentre.displayColor" placeholder="#RRGGBB (optional)" />
+  </label>
+
+  <div class="modal-actions">
+    <button (click)="onClose()">Cancel</button>
+    <button (click)="onSave()">{{ isCreating ? 'Create' : 'Save' }}</button>
+  </div>
+</app-modal-component>

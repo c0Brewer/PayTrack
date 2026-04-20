@@ -1,0 +1,28 @@
+<div class="cost-centre-management">
+  <div class="header">
+    <h2>Cost Centre Management</h2>
+    <button class="create-btn" (click)="openCreate()">Create New</button>
+  </div>
+
+  <app-cost-centre-list-component
+    [costCentres]="costCentres"
+    (openEdit)="openEdit($event)"
+    (openDelete)="openDelete($event)"
+  ></app-cost-centre-list-component>
+
+  @if (editingCostCentre) {
+    <app-cost-centre-edit-modal-component
+      [costCentre]="editingCostCentre"
+      (saveEvent)="save($event)"
+      (closeEvent)="closeEdit()"
+    ></app-cost-centre-edit-modal-component>
+  }
+
+  @if (deletingCostCentre && deletePreview) {
+    <app-cost-centre-delete-preview-modal-component
+      [preview]="deletePreview"
+      (confirmDelete)="confirmDelete()"
+      (closeEvent)="closeDelete()"
+    ></app-cost-centre-delete-preview-modal-component>
+  }
+</div>
