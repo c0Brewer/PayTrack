@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -21,26 +22,84 @@ namespace PayTrack.Data.Repositories.Implementation
         public async Task<Team> AddAsync(Team team)
         {
             this.context.Teams.Add(team);
-            int res = await this.context.SaveChangesAsync();
+            var res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            return res != 1
+                ? throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.")
+                    : team;
+        }
+
+        /// <inheritdoc/>
+        public async Task<(List<Team> team, int totalCount)> GetAllAsync(GetTeamQuery? query = null)
+        {
+            var dbQuery = this.context.Teams.AsQueryable();
+
+            // Filter by Name
+            if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.");
+                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.Name, $"%{query.Name}%"));
             }
 
-            return team;
+            // Filter by Description
+            if (!string.IsNullOrWhiteSpace(query?.Description))
+            {
+                dbQuery = dbQuery.Where(t => t.Description != null && t.Description.Contains(query.Description));
+            }
+
+            // Filter by Budget
+            if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
+            {
+                // Potentially also check if the period adds with the current date?
+                dbQuery = dbQuery.Where(t => t.Budgets.Any(b =>
+                    (!query.MinBudget.HasValue || b.TargetAmount >= query.MinBudget.Value) &&
+                    (!query.MaxBudget.HasValue || b.TargetAmount <= query.MaxBudget.Value)));
+            }
+
+            // Calculate total count
+            var totalCount = await dbQuery.CountAsync();
+
+            // Check if budget should be included
+            if (query?.IncludeBudgets == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Budgets);
+            }
+
+            // Check if members should be included
+            if (query?.IncludeMembers == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Members);
+            }
+
+            if (query?.Offset.HasValue == true)
+            {
+                dbQuery = dbQuery.Skip(query.Offset.Value);
+            }
+
+            if (query?.Limit.HasValue == true)
+            {
+                dbQuery = dbQuery.Take(query.Limit.Value);
+            }
+
+            var items = await dbQuery.OrderByDescending(t => t.Name).ToListAsync();
+            return (items, totalCount);
         }
 
         /// <inheritdoc/>
-        public async Task<List<Team>> GetAllAsync()
+        public async Task<Team?> GetByIdAsync(int id, GetTeamQueryById? query = null)
         {
-            return await this.context.Teams.ToListAsync();
-        }
+            var dbQuery = this.context.Teams.AsQueryable();
 
-        /// <inheritdoc/>
-        public async Task<Team?> GetByIdAsync(int id)
-        {
-            return await this.context.Teams.FindAsync(id);
+            if (query?.IncludeBudgets.HasValue == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Budgets);
+            }
+
+            if (query?.IncludeMembers.HasValue == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Members);
+            }
+
+            return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
         }
     }
 }
