@@ -19,14 +19,14 @@ namespace PayTrack.Api.Endpoints
         /// <summary>
         /// Maps the Endpoints necessary for Teams.
         /// </summary>
-        /// <param name="app">Webapplication.</param>
+        /// <param name="app">Web application.</param>
         public static void MapTeamEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
                 .RequireAuthorization()
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin); // Who is finance team user?
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);

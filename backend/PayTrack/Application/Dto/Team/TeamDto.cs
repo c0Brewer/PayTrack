@@ -21,5 +21,9 @@ namespace PayTrack.Application.Dto.Team
         string? Description,
 
         [property: MinLength(3)]
-        string? DisplayColor);
+        string? DisplayColor,
+
+        List<TeamMemberDto>? Members,
+
+        List<TeamBudgetDto>? Budgets);
 }

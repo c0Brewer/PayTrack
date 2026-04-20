@@ -49,8 +49,10 @@ namespace PayTrack.Data.Repositories.Implementation
             // Filter by Budget
             if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
             {
-                // Potentially also check if the period adds with the current date?
+                var currentDate = DateTime.UtcNow.Date;
                 dbQuery = dbQuery.Where(t => t.Budgets.Any(b =>
+                    b.PeriodStart <= currentDate &&
+                    b.PeriodEnd >= currentDate &&
                     (!query.MinBudget.HasValue || b.TargetAmount >= query.MinBudget.Value) &&
                     (!query.MaxBudget.HasValue || b.TargetAmount <= query.MaxBudget.Value)));
             }
