@@ -72,6 +72,8 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Include(t => t.Members);
             }
 
+            dbQuery = dbQuery.OrderByDescending(t => t.Name);
+
             if (query?.Offset.HasValue == true)
             {
                 dbQuery = dbQuery.Skip(query.Offset.Value);
@@ -82,7 +84,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Take(query.Limit.Value);
             }
 
-            var items = await dbQuery.OrderByDescending(t => t.Name).ToListAsync();
+            var items = await dbQuery.ToListAsync();
             return (items, totalCount);
         }
 
@@ -91,12 +93,12 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             var dbQuery = this.context.Teams.AsQueryable();
 
-            if (query?.IncludeBudgets.HasValue == true)
+            if (query?.IncludeBudgets == true)
             {
                 dbQuery = dbQuery.Include(t => t.Budgets);
             }
 
-            if (query?.IncludeMembers.HasValue == true)
+            if (query?.IncludeMembers == true)
             {
                 dbQuery = dbQuery.Include(t => t.Members);
             }
