@@ -2,7 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Api.Extensions;
 using PayTrack.Api.Handler;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Endpoints
 {
@@ -23,7 +25,8 @@ namespace PayTrack.Api.Endpoints
             var group = app
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
-                .RequireAuthorization();
+                .RequireAuthorization()
+                .RequireRole(Role.Admin);
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
