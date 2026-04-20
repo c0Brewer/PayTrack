@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { SimpleChange } from '@angular/core';
 import { vi } from 'vitest';
 
 import { CostCentreDto } from '../../../types/exporter';
-
 import { CostCentreListComponent } from './cost-centre-list-component';
 
 const mockCostCentres: CostCentreDto[] = [
@@ -30,9 +30,32 @@ describe('CostCentreListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should accept @Input costCentres array', () => {
+  it('should populate dataSource.data when costCentres input changes', () => {
     component.costCentres = mockCostCentres;
-    expect(component.costCentres).toEqual(mockCostCentres);
+    component.ngOnChanges({
+      costCentres: new SimpleChange([], mockCostCentres, false),
+    });
+    expect(component.dataSource.data).toEqual(mockCostCentres);
+  });
+
+  it('should clear dataSource.data when costCentres is set to empty', () => {
+    component.costCentres = [];
+    component.ngOnChanges({
+      costCentres: new SimpleChange(mockCostCentres, [], false),
+    });
+    expect(component.dataSource.data).toEqual([]);
+  });
+
+  it('should set dataSource.filter trimmed and lowercased', () => {
+    const event = { target: { value: '  AERO  ' } } as unknown as Event;
+    component.applyFilter(event);
+    expect(component.dataSource.filter).toBe('aero');
+  });
+
+  it('should set dataSource.filter to empty string when input is whitespace', () => {
+    const event = { target: { value: '   ' } } as unknown as Event;
+    component.applyFilter(event);
+    expect(component.dataSource.filter).toBe('');
   });
 
   it('should emit openEdit when onOpenEdit is called', () => {

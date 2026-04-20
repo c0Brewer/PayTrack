@@ -19,20 +19,20 @@
             <th>Description</th>
             <td>{{ costCentre.description ?? '—' }}</td>
           </tr>
-          <tr>
-            <th>Display Color</th>
-            <td>
-              @if (costCentre.displayColor) {
-                <div class="color-cell">
-                  <span class="color-swatch" [style.background]="costCentre.displayColor"></span>
-                  {{ costCentre.displayColor }}
-                </div>
-              } @else {
-                —
-              }
-            </td>
-          </tr>
-        </tbody>
+        <!--   <tr> -->
+        <!--     <th>Display Color</th> -->
+        <!--     <td> -->
+        <!--       @if (costCentre.displayColor) { -->
+        <!--         <div class="color-cell"> -->
+        <!--           <span class="color-swatch" [style.background]="costCentre.displayColor"></span> -->
+        <!--           {{ costCentre.displayColor }} -->
+        <!--         </div> -->
+        <!--       } @else { -->
+        <!--         — -->
+        <!--       } -->
+        <!--     </td> -->
+        <!--   </tr> -->
+        <!-- </tbody> -->
       </table>
 
       <h3>Budgets ({{ costCentre.budgets.length }})</h3>
