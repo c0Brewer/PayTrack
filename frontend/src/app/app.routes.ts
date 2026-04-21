@@ -2,13 +2,12 @@ import { Routes } from '@angular/router';
 
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { TeamListComponent } from './components/team/team-list-component/team-list-component';
+import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
 import { roleGuard } from './guards/role-guard/role-guard';
 import { Role } from './types/exporter';
-import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 
 /*
  * FYI: For the other devs: The guestGuard and authGuard protect certain routes from unauthorized access.
