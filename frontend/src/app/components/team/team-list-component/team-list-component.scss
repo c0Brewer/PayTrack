@@ -1,0 +1,89 @@
+@use 'variables' as v;
+
+.team-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  overflow: hidden;
+
+  thead {
+    background: v.$background-dark;
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
+  }
+
+  tbody {
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+      word-break: break-word;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
+  }
+
+  .name {
+    font-weight: v.$font-medium;
+  }
+
+  .description {
+    color: v.$text-light;
+  }
+
+  .color-cell {
+    text-align: left;
+  }
+
+  .team {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .team-color {
+    width: v.$size-m;
+    height: v.$size-m;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px v.$background-light;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    flex: 0 0 auto;
+  }
+
+  .edit-btn {
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+  }
+
+  .edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px v.$shadow-color;
+  }
+
+  .actions-col {
+    width: 1%;
+    white-space: nowrap;
+  }
+}
