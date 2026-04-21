@@ -3,10 +3,13 @@
 .toolbar {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
   gap: v.$size-s;
   padding: v.$size-s;
   margin-bottom: v.$size-m;
+  overflow-x: auto;
 
   background: v.$background-light;
   border-radius: v.$size-xs;
@@ -14,7 +17,13 @@
 
 /* ---------- INPUTS + SELECTS ---------- */
 
-.toolbar input,
+.toolbar input:not([type='checkbox']),
+.toolbar select,
+.toolbar label {
+  font-family: inherit;
+}
+
+.toolbar input:not([type='checkbox']),
 .toolbar select {
   height: v.$size-l;
   padding: 0 v.$size-xs;
@@ -32,13 +41,14 @@
   cursor: inspect;
 }
 
-.toolbar input {
-  width: 220px;
+.toolbar input:not([type='checkbox']) {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* ---------- FOCUS STATE ---------- */
 
-.toolbar input:focus,
+.toolbar input:not([type='checkbox']):focus,
 .toolbar select:focus {
   outline: none;
   border-color: v.$primary-color;
@@ -60,4 +70,87 @@
 
 .toolbar input::placeholder {
   color: v.$text-muted;
+}
+
+/* ---------- CHECKBOXES ---------- */
+
+.toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: v.$size-xxs;
+  height: v.$size-l;
+  padding: 0 v.$size-xs;
+  flex: 0 0 auto;
+
+  color: v.$text-color;
+  font-size: v.$font-s;
+  font-weight: v.$font-regular;
+
+  border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  background: v.$gray-100;
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.toolbar label:hover {
+  border-color: v.$primary-light;
+  background: v.$background-light;
+}
+
+.toolbar input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: v.$size-s;
+  height: v.$size-s;
+  margin: 0;
+  position: relative;
+  flex: 0 0 auto;
+
+  border: 1px solid v.$border-color;
+  border-radius: 0.25rem;
+  background: v.$background-light;
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.toolbar input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  left: 0.28rem;
+  top: 0.08rem;
+  width: 0.22rem;
+  height: 0.5rem;
+  border: solid v.$background-light;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+.toolbar input[type='checkbox']:hover {
+  border-color: v.$primary-light;
+}
+
+.toolbar input[type='checkbox']:focus {
+  outline: none;
+  border-color: v.$primary-color;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.15);
+}
+
+.toolbar input[type='checkbox']:checked {
+  border-color: v.$primary-color;
+  background: v.$primary-color;
+}
+
+.toolbar input[type='checkbox']:checked::after {
+  opacity: 1;
 }

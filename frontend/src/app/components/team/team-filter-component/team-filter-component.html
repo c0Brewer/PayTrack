@@ -1,8 +1,8 @@
 <div class="toolbar">
-  <input type="text" placeholder="Filter by name..." (input)="onNameFilterChange($event)" />
+  <input type="text" placeholder="Name..." (input)="onNameFilterChange($event)" />
   <input
     type="text"
-    placeholder="Filter by description..."
+    placeholder="Description..."
     (input)="onDescriptionFilterChange($event)"
   />
 
@@ -26,15 +26,21 @@
     }
   </select>
 
-  <select [(ngModel)]="filterIncludeMembers" (ngModelChange)="onIncludeMembersFilterChange()">
-    <option [ngValue]="undefined">Members: default</option>
-    <option [ngValue]="true">Include members</option>
-    <option [ngValue]="false">Hide members</option>
-  </select>
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterIncludeMembers"
+      (ngModelChange)="onIncludeMembersFilterChange()"
+    />
+    Include members
+  </label>
 
-  <select [(ngModel)]="filterIncludeBudgets" (ngModelChange)="onIncludeBudgetsFilterChange()">
-    <option [ngValue]="undefined">Budgets: default</option>
-    <option [ngValue]="true">Include budgets</option>
-    <option [ngValue]="false">Hide budgets</option>
-  </select>
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterIncludeBudgets"
+      (ngModelChange)="onIncludeBudgetsFilterChange()"
+    />
+    Include budgets
+  </label>
 </div>
