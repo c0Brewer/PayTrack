@@ -210,13 +210,12 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Act
             var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
             {
-                Limit = 1,
+                Limit = 2,
                 Offset = 1,
             });
 
             // Assert
-            resultList.Should().ContainSingle();
-            resultList[0].Name.Should().Be("Beta");
+            resultList.Select(t => t.Name).Should().Equal("Beta", "Gamma");
             totalCount.Should().Be(3);
         }
 

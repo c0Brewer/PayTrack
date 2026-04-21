@@ -72,7 +72,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Include(t => t.Members);
             }
 
-            dbQuery = dbQuery.OrderByDescending(t => t.Name);
+            dbQuery = dbQuery.OrderBy(t => t.Name);
 
             if (query?.Offset.HasValue == true)
             {
