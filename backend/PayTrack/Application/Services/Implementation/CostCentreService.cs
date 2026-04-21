@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;

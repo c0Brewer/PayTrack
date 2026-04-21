@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace PayTrack.Application.Dto.CostCentre
+namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
     /// Dto representing a Budget entry linked to a cost center.

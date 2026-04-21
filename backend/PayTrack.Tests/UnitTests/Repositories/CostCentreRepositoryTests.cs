@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
