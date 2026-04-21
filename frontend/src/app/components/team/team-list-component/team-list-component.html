@@ -1,6 +1,134 @@
-<p data-test="header">Teams:</p>
-<button data-test="refresh-teams" (click)="loadTeams()">Refresh:</button>
+<div class="team-management">
+  <h2 data-test="header">Teams</h2>
 
-@for (team of teams; track team.id) {
-<div [ngClass]="'team-item'" data-test="team-item">Team {{ team.id }}: {{ team.name }}</div>
-}
+  <form
+    class="toolbar"
+    (submit)="
+      $event.preventDefault();
+      updateFilterOptions({
+        Name: nameFilter.value || undefined,
+        Description: descriptionFilter.value || undefined,
+        MinBudget: minBudgetFilter.value === '' ? undefined : +minBudgetFilter.value,
+        MaxBudget: maxBudgetFilter.value === '' ? undefined : +maxBudgetFilter.value,
+        IncludeMembers: includeMembersFilter.checked ? true : undefined,
+        IncludeBudgets: includeBudgetsFilter.checked ? true : undefined,
+      })
+    "
+  >
+    <input #nameFilter type="text" placeholder="Filter by name..." />
+    <input #descriptionFilter type="text" placeholder="Filter by description..." />
+    <input #minBudgetFilter type="number" min="0" placeholder="Min budget..." />
+    <input #maxBudgetFilter type="number" min="0" placeholder="Max budget..." />
+
+    <label>
+      <input #includeMembersFilter type="checkbox" />
+      Include members
+    </label>
+
+    <label>
+      <input #includeBudgetsFilter type="checkbox" />
+      Include budgets
+    </label>
+
+    <select (change)="onLimitChange(+$any($event.target).value)">
+      @for (l of limitSelection; track l) {
+        <option [value]="l" [selected]="l === limit">{{ l }} per page</option>
+      }
+    </select>
+
+    <button type="submit">Apply</button>
+    <button
+      type="button"
+      (click)="
+        nameFilter.value = '';
+        descriptionFilter.value = '';
+        minBudgetFilter.value = '';
+        maxBudgetFilter.value = '';
+        includeMembersFilter.checked = false;
+        includeBudgetsFilter.checked = false;
+        updateFilterOptions({
+          Name: undefined,
+          Description: undefined,
+          MinBudget: undefined,
+          MaxBudget: undefined,
+          IncludeMembers: undefined,
+          IncludeBudgets: undefined,
+        })
+      "
+    >
+      Reset
+    </button>
+    <button data-test="refresh-teams" type="button" (click)="loadTeams()">Refresh</button>
+  </form>
+
+  <table class="team-table">
+    <colgroup>
+      <col style="width: 25%" />
+      <col style="width: 35%" />
+      <col style="width: 15%" />
+      <col style="width: 12.5%" />
+      <col style="width: 12.5%" />
+    </colgroup>
+
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Color</th>
+        <th>Members</th>
+        <th>Budgets</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @if (teams.length > 0) {
+        @for (team of teams; track team.id) {
+          <tr class="team-item" data-test="team-item">
+            <td>{{ team.name }}</td>
+            <td>{{ team.description || 'No description' }}</td>
+            <td>
+              <span
+                class="team-color"
+                [style.background]="team.displayColor || 'lightgray'"
+                [style.padding]="'0.25rem 0.5rem'"
+                [style.borderRadius]="'999px'"
+              >
+                {{ team.displayColor || 'No color' }}
+              </span>
+            </td>
+            <td>
+              @if (team.members != null) {
+                {{ team.members.length }}
+              } @else {
+                Not loaded
+              }
+            </td>
+            <td>
+              @if (team.budgets != null) {
+                {{ team.budgets.length }}
+              } @else {
+                Not loaded
+              }
+            </td>
+          </tr>
+        }
+      } @else {
+        <tr>
+          <td colspan="5">No teams found.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <button class="left" (click)="previousPage()" [style.visibility]="hasPrev ? 'visible' : 'hidden'">
+      Previous
+    </button>
+
+    <span class="center"> Page {{ page + 1 }} / {{ getTotalPages() }} </span>
+
+    <button class="right" (click)="nextPage()" [style.visibility]="hasNext ? 'visible' : 'hidden'">
+      Next
+    </button>
+  </div>
+</div>
