@@ -219,8 +219,9 @@ describe('TeamManagementComponent', () => {
   it('should pass loaded teams into the list child component', () => {
     fixture.detectChanges();
 
-    const listComponent =
-      fixture.debugElement.query(By.directive(TeamListComponent)).componentInstance;
+    const listComponent = fixture.debugElement.query(
+      By.directive(TeamListComponent),
+    ).componentInstance;
 
     expect(listComponent.teams).toEqual(mockTeams);
   });
@@ -229,8 +230,9 @@ describe('TeamManagementComponent', () => {
     fixture.detectChanges();
 
     // Emit from the child component to verify the data-down/events-up contract.
-    const listComponent =
-      fixture.debugElement.query(By.directive(TeamListComponent)).componentInstance;
+    const listComponent = fixture.debugElement.query(
+      By.directive(TeamListComponent),
+    ).componentInstance;
     listComponent.openEditTeam.emit(mockTeams[0]);
 
     expect(component.editingTeam).toEqual(mockTeams[0]);
@@ -240,8 +242,9 @@ describe('TeamManagementComponent', () => {
     fixture.detectChanges();
 
     // Emit from the child filter to prove the parent listens through the template binding.
-    const filterComponent =
-      fixture.debugElement.query(By.directive(TeamFilterComponent)).componentInstance;
+    const filterComponent = fixture.debugElement.query(
+      By.directive(TeamFilterComponent),
+    ).componentInstance;
     filterComponent.updateFilter.emit({ Name: 'Platform', IncludeMembers: true });
 
     expect(component.filterOptions).toEqual(
