@@ -1,17 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { TeamDto, GetTeamOptions } from '../../../types/exporter';
+import { PaginationComponent } from '../../general/pagination-component/pagination-component';
+import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
+import { TeamListComponent } from '../team-list-component/team-list-component';
 
 @Component({
-  selector: 'app-team-list-component',
-  imports: [CommonModule],
-  templateUrl: './team-list-component.html',
-  styleUrl: './team-list-component.scss',
+  selector: 'app-team-management-component',
+  imports: [CommonModule, PaginationComponent, TeamFilterComponent, TeamListComponent],
+  templateUrl: './team-management-component.html',
+  styleUrl: './team-management-component.scss',
 })
-export class TeamListComponent implements OnInit {
+export class TeamManagementComponent {
   constructor(
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
@@ -19,6 +22,7 @@ export class TeamListComponent implements OnInit {
   ) {}
 
   teams: TeamDto[] = [];
+  editingTeam: TeamDto | null = null;
 
   limitSelection: number[] = [10, 25, 50];
 
@@ -109,5 +113,9 @@ export class TeamListComponent implements OnInit {
       this.page--;
       this.loadTeams();
     }
+  }
+
+  openEditTeam(team: TeamDto): void {
+    this.editingTeam = { ...team };
   }
 }
