@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { client } from '../../client';
-import { TeamDto, TeamDtoPaginatedResponse } from '../../types/exporter';
+import { TeamDto, TeamDtoPaginatedResponse, UpdateTeamDto } from '../../types/exporter';
 
 import { TeamService } from './team-service';
 
@@ -145,6 +145,69 @@ describe('TeamService', () => {
       } as any);
 
       await expect(firstValueFrom(service.getTeamById(42))).rejects.toThrow('No data returned');
+    });
+  });
+
+  describe('updateTeam', () => {
+    it('should call API and return the updated team', async () => {
+      const updateRequest: UpdateTeamDto = {
+        name: 'Updated Platform',
+        description: 'Updated description',
+        displayColor: '#0f172a',
+      };
+      const apiResponse: TeamDto = {
+        id: 42,
+        name: 'Updated Platform',
+        description: 'Updated description',
+        displayColor: '#0f172a',
+      };
+
+      vi.spyOn(client, 'PUT').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await firstValueFrom(service.updateTeam(42, updateRequest));
+
+      expect(client.PUT).toHaveBeenCalledWith('/api/v1/team/{id}', {
+        params: {
+          path: {
+            id: 42,
+          },
+        },
+        body: updateRequest,
+      });
+      expect(result).toEqual(apiResponse);
+    });
+
+    it('should throw the backend error detail when updateTeam fails with a specific error', async () => {
+      const updateRequest: UpdateTeamDto = { name: 'Updated Platform' };
+      const error = { detail: 'Update failed' };
+
+      vi.spyOn(client, 'PUT').mockResolvedValue({
+        data: null,
+        error,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.updateTeam(42, updateRequest))).rejects.toThrow(
+        error.detail,
+      );
+    });
+
+    it('should throw the default error message when updateTeam fails without a detail', async () => {
+      const updateRequest: UpdateTeamDto = { name: 'Updated Platform' };
+
+      vi.spyOn(client, 'PUT').mockResolvedValue({
+        data: null,
+        error: {},
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.updateTeam(42, updateRequest))).rejects.toThrow(
+        'Unexpected Error',
+      );
     });
   });
 });

@@ -17,9 +17,11 @@ describe('TeamManagementComponent', () => {
   let fixture: ComponentFixture<TeamManagementComponent>;
   let teamServiceMock: {
     getTeams: ReturnType<typeof vi.fn>;
+    updateTeam: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
+    showSuccess: ReturnType<typeof vi.fn>;
   };
   let cdrMock: {
     markForCheck: ReturnType<typeof vi.fn>;
@@ -51,10 +53,12 @@ describe('TeamManagementComponent', () => {
         .mockReturnValue(
           of({ items: mockTeams, totalCount: 2, hasNext: false, hasPrevious: false }),
         ),
+      updateTeam: vi.fn().mockReturnValue(of({})),
     };
 
     notificationServiceMock = {
       showError: vi.fn(),
+      showSuccess: vi.fn(),
     };
 
     cdrMock = {
@@ -214,6 +218,42 @@ describe('TeamManagementComponent', () => {
 
     expect(component.editingTeam).toEqual(mockTeams[0]);
     expect(component.editingTeam).not.toBe(mockTeams[0]);
+  });
+
+  it('closeEdit should reset editingTeam', () => {
+    component.editingTeam = { ...mockTeams[0] };
+
+    component.closeEdit();
+
+    expect(component.editingTeam).toBeNull();
+  });
+
+  it('saveTeam should call updateTeam, reload the list, show success, and close the modal', () => {
+    const loadTeamsSpy = vi.spyOn(component, 'loadTeams');
+    component.editingTeam = { ...mockTeams[0] };
+
+    component.saveTeam(mockTeams[0]);
+
+    expect(teamServiceMock.updateTeam).toHaveBeenCalledWith(mockTeams[0].id, {
+      name: mockTeams[0].name,
+      description: mockTeams[0].description,
+      displayColor: mockTeams[0].displayColor,
+    });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Successfully updated team ' + mockTeams[0].name,
+    );
+    expect(loadTeamsSpy).toHaveBeenCalledOnce();
+    expect(component.editingTeam).toBeNull();
+  });
+
+  it('saveTeam should surface update errors through the notification service', () => {
+    teamServiceMock.updateTeam.mockReturnValueOnce(throwError(() => new Error('Update failed')));
+
+    component.saveTeam(mockTeams[0]);
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not update Team: Error: Update failed',
+    );
   });
 
   it('should pass loaded teams into the list child component', () => {
