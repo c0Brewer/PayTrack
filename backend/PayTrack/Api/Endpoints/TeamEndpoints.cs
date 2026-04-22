@@ -30,7 +30,10 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
+            group.MapGet("/{id:int}/delete_impact", TeamHandler.GetDeleteTeamImpactAsync);
             group.MapPost("/", TeamHandler.CreateTeamAsync);
+            group.MapPut("/{id:int}", TeamHandler.UpdateTeamAsync);
+            group.MapDelete("/{id:int}", TeamHandler.DeleteTeamAsync);
         }
     }
 }

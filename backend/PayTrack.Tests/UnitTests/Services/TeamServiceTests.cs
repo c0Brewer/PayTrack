@@ -131,5 +131,70 @@ namespace PayTrack.Tests.UnitTests.Services
                     q.Limit == query.Limit &&
                     q.Offset == query.Offset)), Times.Once);
         }
+
+        [Fact]
+        public async Task UpdateTeamAsync_ShouldForwardArgumentsToRepo()
+        {
+            // Arrange
+            var expectedTeam = new Team
+            {
+                Id = 8,
+                Name = "Updated Team",
+                Description = "New Description",
+                DisplayColor = "#112233",
+            };
+
+            repoMock.Setup(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233"))
+                .ReturnsAsync(expectedTeam);
+
+            // Act
+            var result = await service.UpdateTeamAsync(8, "Updated Team", "New Description", "#112233");
+
+            // Assert
+            result.Should().BeSameAs(expectedTeam);
+            repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233"), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteTeamAsync_ShouldForwardArgumentsToRepo()
+        {
+            // Arrange
+            var expectedTeam = new Team { Id = 4, Name = "Delete Me" };
+
+            repoMock.Setup(r => r.DeleteAsync(4))
+                .ReturnsAsync(expectedTeam);
+
+            // Act
+            var result = await service.DeleteTeamAsync(4);
+
+            // Assert
+            result.Should().BeSameAs(expectedTeam);
+            repoMock.Verify(r => r.DeleteAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpactAsync_ShouldForwardQueryToRepo()
+        {
+            // Arrange
+            var expectedImpact = new DeleteTeamImpactDto(
+                9,
+                "Finance",
+                false,
+                2,
+                1,
+                3,
+                1,
+                "Deleting this team is currently blocked.");
+
+            repoMock.Setup(r => r.GetDeleteTeamImpactAsync(9))
+                .ReturnsAsync(expectedImpact);
+
+            // Act
+            var result = await service.GetDeleteTeamImpactAsync(9);
+
+            // Assert
+            result.Should().Be(expectedImpact);
+            repoMock.Verify(r => r.GetDeleteTeamImpactAsync(9), Times.Once);
+        }
     }
 }

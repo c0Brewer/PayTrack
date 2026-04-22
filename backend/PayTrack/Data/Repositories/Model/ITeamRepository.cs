@@ -33,5 +33,29 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="team">Team object to store.</param>
         /// <returns>Instance of created Team object.</returns>
         Task<Team> AddAsync(Team team);
+
+        /// <summary>
+        /// Updates a Team with optional values.
+        /// </summary>
+        /// <param name="id">Id of Team to update.</param>
+        /// <param name="name">Name to optionally set.</param>
+        /// <param name="description">Description to optionally set.</param>
+        /// <param name="displayColor">Display color to optionally set.</param>
+        /// <returns>Updated Team instance.</returns>
+        Task<Team> UpdateAsync(int id, string? name, string? description, string? displayColor);
+
+        /// <summary>
+        /// Deletes a Team by id.
+        /// </summary>
+        /// <param name="id">Id of Team to delete.</param>
+        /// <returns>Deleted Team instance.</returns>
+        Task<Team> DeleteAsync(int id);
+
+        /// <summary>
+        /// Gets the impact of deleting a Team.
+        /// </summary>
+        /// <param name="id">Id of Team to inspect.</param>
+        /// <returns>Delete impact information for the requested team.</returns>
+        Task<DeleteTeamImpactDto?> GetDeleteTeamImpactAsync(int id);
     }
 }

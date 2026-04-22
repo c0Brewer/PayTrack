@@ -35,5 +35,29 @@ namespace PayTrack.Application.Services.Model
         /// <param name="displayColor">displayColor of team.</param>
         /// <returns>Instance of created Team object.</returns>
         Task<Team> CreateTeamAsync(string name, string? description, string? displayColor);
+
+        /// <summary>
+        /// Update a Team using the given input.
+        /// </summary>
+        /// <param name="id">The id of the team to update.</param>
+        /// <param name="name">The new name that should be set for the team.</param>
+        /// <param name="description">The new description that should be set for the team.</param>
+        /// <param name="displayColor">The new display color that should be set for the team.</param>
+        /// <returns>Instance of created Team object.</returns>
+        Task<Team> UpdateTeamAsync(int id, string? name, string? description, string? displayColor);
+
+        /// <summary>
+        /// Deletes a Team by id.
+        /// </summary>
+        /// <param name="id">The id of the team to delete.</param>
+        /// <returns>Deleted team instance.</returns>
+        Task<Team> DeleteTeamAsync(int id);
+
+        /// <summary>
+        /// Gets a preview of the impact of deleting a Team.
+        /// </summary>
+        /// <param name="id">The id of the team to inspect.</param>
+        /// <returns>Delete impact information for the requested team.</returns>
+        Task<DeleteTeamImpactDto?> GetDeleteTeamImpactAsync(int id);
     }
 }

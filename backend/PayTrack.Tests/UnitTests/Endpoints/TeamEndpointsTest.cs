@@ -274,6 +274,58 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
+        public async Task GetDeleteTeamImpact_ReturnsOk_WhenTeamExists()
+        {
+            // Arrange
+            var deleteImpact = new DeleteTeamImpactDto(
+                1,
+                "Finance",
+                false,
+                2,
+                1,
+                3,
+                1,
+                "Deleting this team is currently blocked.");
+
+            _factory.TeamServiceMock
+                .Setup(s => s.GetDeleteTeamImpactAsync(1))
+                .ReturnsAsync(deleteImpact);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team/1/delete-impact");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DeleteTeamImpactDto>();
+            result.Should().NotBeNull();
+            result!.TeamId.Should().Be(1);
+            result.TeamName.Should().Be("Finance");
+            result.CanDelete.Should().BeFalse();
+            result.AffectedUserCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpact_ReturnsNotFound_WhenTeamDoesNotExist()
+        {
+            // Arrange
+            _factory.TeamServiceMock
+                .Setup(s => s.GetDeleteTeamImpactAsync(999))
+                .ReturnsAsync((DeleteTeamImpactDto?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team/999/delete-impact");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
         public async Task GetTeams_ReturnsForbidden_WhenUserIsNotAdmin()
         {
             // Arrange

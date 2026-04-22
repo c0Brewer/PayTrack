@@ -30,6 +30,26 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<Team> DeleteAsync(int id)
+        {
+            var deleteImpact = await this.GetDeleteTeamImpactAsync(id) ?? throw new NotFoundException($"Team with id {id} not found.");
+
+            if (!deleteImpact.CanDelete)
+            {
+                throw new InvalidStateException(deleteImpact.WarningMessage);
+            }
+
+            var team = await this.context.Teams.FirstAsync(t => t.Id == id);
+            this.context.Teams.Remove(team);
+
+            var res = await this.context.SaveChangesAsync();
+
+            return res != 1
+                ? throw new InternalErrorException($"Deleting Team did not end as expected. Deleted {res} teams.")
+                : team;
+        }
+
+        /// <inheritdoc/>
         public async Task<(List<Team> team, int totalCount)> GetAllAsync(GetTeamQuery? query = null)
         {
             var dbQuery = this.context.Teams.AsQueryable();
@@ -89,6 +109,45 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<DeleteTeamImpactDto?> GetDeleteTeamImpactAsync(int id)
+        {
+            var team = await this.context.Teams
+                .Where(t => t.Id == id)
+                .Select(t => new
+                {
+                    TeamId = t.Id,
+                    TeamName = t.Name,
+                })
+                .FirstOrDefaultAsync();
+
+            if (team is null)
+            {
+                return null;
+            }
+
+            var affectedUserCount = await this.context.User.CountAsync(u => u.TeamId == id);
+            var blockingBudgetCount = await this.context.Budgets.CountAsync(b => b.TeamId == id);
+            var blockingTransactionCount = await this.context.Transactions.CountAsync(t => t.TeamId == id);
+            var invoiceCount = await this.context.PaymentRequestsByUser.CountAsync(p => p.TeamId == id);
+            var canDelete = blockingBudgetCount == 0 && blockingTransactionCount == 0;
+
+            return new DeleteTeamImpactDto(
+                team.TeamId,
+                team.TeamName,
+                canDelete,
+                affectedUserCount,
+                blockingBudgetCount,
+                blockingTransactionCount,
+                invoiceCount,
+                BuildDeleteWarningMessage(
+                    canDelete,
+                    affectedUserCount,
+                    blockingBudgetCount,
+                    blockingTransactionCount,
+                    invoiceCount));
+        }
+
+        /// <inheritdoc/>
         public async Task<Team?> GetByIdAsync(int id, GetTeamQueryById? query = null)
         {
             var dbQuery = this.context.Teams.AsQueryable();
@@ -104,6 +163,83 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Team> UpdateAsync(int id, string? name, string? description, string? displayColor)
+        {
+            var team = await this.context.Teams.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException($"Team with id {id} not found.");
+            var hasChanges = false;
+
+            if (name is not null && team.Name != name)
+            {
+                team.Name = name;
+                hasChanges = true;
+            }
+
+            if (description is not null && team.Description != description)
+            {
+                team.Description = description;
+                hasChanges = true;
+            }
+
+            if (displayColor is not null && team.DisplayColor != displayColor)
+            {
+                team.DisplayColor = displayColor;
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
+            {
+                return team;
+            }
+
+            var res = await this.context.SaveChangesAsync();
+
+            return res != 1
+                ? throw new InternalErrorException($"Updating Team did not end as expected. Updated {res} teams.")
+                : team;
+        }
+
+        private static string BuildDeleteWarningMessage(
+            bool canDelete,
+            int affectedUserCount,
+            int blockingBudgetCount,
+            int blockingTransactionCount,
+            int invoiceCount)
+        {
+            var impactMessages = new List<string>();
+
+            if (affectedUserCount > 0)
+            {
+                impactMessages.Add($"{affectedUserCount} user(s) will lose their team assignment");
+            }
+
+            if (blockingBudgetCount > 0)
+            {
+                impactMessages.Add($"{blockingBudgetCount} budget(s) block deletion");
+            }
+
+            if (blockingTransactionCount > 0)
+            {
+                impactMessages.Add($"{blockingTransactionCount} transaction(s) block deletion");
+            }
+
+            if (invoiceCount > 0)
+            {
+                impactMessages.Add($"{invoiceCount} invoice(s) are part of those transactions");
+            }
+
+            if (impactMessages.Count == 0)
+            {
+                return "Deleting this team has no related users, budgets, or transactions.";
+            }
+
+            var prefix = canDelete
+                ? "Deleting this team affects related records: "
+                : "Deleting this team is currently blocked: ";
+
+            return prefix + string.Join("; ", impactMessages) + ".";
         }
     }
 }
