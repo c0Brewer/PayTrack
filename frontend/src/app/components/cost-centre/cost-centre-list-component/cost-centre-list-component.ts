@@ -1,16 +1,32 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { RouterLink } from '@angular/router';
 
 import { CostCentreDto } from '../../../types/exporter';
 
 @Component({
   selector: 'app-cost-centre-list-component',
-  imports: [RouterLink, MatTableModule, MatSortModule, MatPaginatorModule, MatFormFieldModule, MatInputModule],
+  imports: [
+    RouterLink,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './cost-centre-list-component.html',
   styleUrl: './cost-centre-list-component.scss',
 })
@@ -35,9 +51,12 @@ export class CostCentreListComponent implements OnChanges, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
-    this.dataSource.sortingDataAccessor = (item, property) => {
-      if (property === 'budgets') return item.budgets.length;
-      return (item as unknown as Record<string, unknown>)[property] as string | number;
+    this.dataSource.sortingDataAccessor = (item, property): string | number => {
+      const key = property as keyof CostCentreDto;
+      if (key === 'budgets') return item.budgets.length;
+      const value = item[key];
+      if (typeof value === 'string' || typeof value === 'number') return value;
+      return '';
     };
   }
 

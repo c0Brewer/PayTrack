@@ -51,7 +51,13 @@ export class CostCentreManagementComponent implements OnInit {
   }
 
   openCreate(): void {
-    this.editingCostCentre = { id: -1, name: '', description: null, displayColor: null, budgets: [] };
+    this.editingCostCentre = {
+      id: -1,
+      name: '',
+      description: null,
+      displayColor: null,
+      budgets: [],
+    };
   }
 
   openEdit(costCentre: CostCentreDto): void {

@@ -1,9 +1,10 @@
+import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { SimpleChange } from '@angular/core';
 import { vi } from 'vitest';
 
 import { CostCentreDto } from '../../../types/exporter';
+
 import { CostCentreListComponent } from './cost-centre-list-component';
 
 const mockCostCentres: CostCentreDto[] = [
@@ -70,5 +71,32 @@ describe('CostCentreListComponent', () => {
     component.onOpenDelete(mockCostCentres[1]);
     expect(spy).toHaveBeenCalledOnce();
     expect(spy).toHaveBeenCalledWith(mockCostCentres[1]);
+  });
+
+  describe('sortingDataAccessor', () => {
+    it('should return budgets count for budgets property', () => {
+      const item: CostCentreDto = {
+        id: 1,
+        name: 'Test',
+        description: 'Desc',
+        displayColor: '#000',
+        budgets: [{} as never, {} as never],
+      };
+      expect(component.dataSource.sortingDataAccessor(item, 'budgets')).toBe(2);
+    });
+
+    it('should return string value for string property', () => {
+      expect(component.dataSource.sortingDataAccessor(mockCostCentres[0], 'name')).toBe(
+        'Aerodynamics',
+      );
+    });
+
+    it('should return number value for number property', () => {
+      expect(component.dataSource.sortingDataAccessor(mockCostCentres[0], 'id')).toBe(1);
+    });
+
+    it('should return empty string for null property', () => {
+      expect(component.dataSource.sortingDataAccessor(mockCostCentres[1], 'description')).toBe('');
+    });
   });
 });

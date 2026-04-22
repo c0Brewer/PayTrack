@@ -49,7 +49,10 @@ export class CostCentreService {
     return from(promise);
   }
 
-  public updateCostCentre(id: number, request: UpdateCostCentreRequestDto): Observable<CostCentreDto> {
+  public updateCostCentre(
+    id: number,
+    request: UpdateCostCentreRequestDto,
+  ): Observable<CostCentreDto> {
     const promise: Promise<CostCentreDto> = this.api
       .PUT('/api/v1/cost-centre/{id}', { params: { path: { id } }, body: request })
       .then(({ data, error }: ApiResult) => {

@@ -50,7 +50,10 @@ describe('CostCentreService', () => {
 
     it('should throw error with detail when API returns error', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: null, error: { detail: 'Server error' } });
+      vi.spyOn(client as any, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Server error' },
+      });
 
       await expect(firstValueFrom(service.getCostCentres())).rejects.toThrow('Server error');
     });
@@ -79,7 +82,10 @@ describe('CostCentreService', () => {
 
     it('should throw error when API returns error', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: null, error: { detail: 'Not found' } });
+      vi.spyOn(client as any, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Not found' },
+      });
 
       await expect(firstValueFrom(service.getCostCentre(99))).rejects.toThrow('Not found');
     });
@@ -87,7 +93,10 @@ describe('CostCentreService', () => {
 
   describe('createCostCentre', () => {
     it('should call API and return created cost centre', async () => {
-      const request: CreateCostCentreRequestDto = { name: 'Powertrain', description: 'Engine costs' };
+      const request: CreateCostCentreRequestDto = {
+        name: 'Powertrain',
+        description: 'Engine costs',
+      };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client as any, 'POST').mockResolvedValue({ data: mockCostCentre, error: null });
 
@@ -101,9 +110,14 @@ describe('CostCentreService', () => {
     it('should throw error when API returns error', async () => {
       const request: CreateCostCentreRequestDto = { name: 'ab' };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'POST').mockResolvedValue({ data: null, error: { detail: 'Validation failed' } });
+      vi.spyOn(client as any, 'POST').mockResolvedValue({
+        data: null,
+        error: { detail: 'Validation failed' },
+      });
 
-      await expect(firstValueFrom(service.createCostCentre(request))).rejects.toThrow('Validation failed');
+      await expect(firstValueFrom(service.createCostCentre(request))).rejects.toThrow(
+        'Validation failed',
+      );
     });
   });
 
@@ -125,7 +139,10 @@ describe('CostCentreService', () => {
 
     it('should throw error when API returns error', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'PUT').mockResolvedValue({ data: null, error: { detail: 'Not found' } });
+      vi.spyOn(client as any, 'PUT').mockResolvedValue({
+        data: null,
+        error: { detail: 'Not found' },
+      });
 
       await expect(firstValueFrom(service.updateCostCentre(99, {}))).rejects.toThrow('Not found');
     });
@@ -153,7 +170,10 @@ describe('CostCentreService', () => {
 
     it('should throw error when API returns error', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: null, error: { detail: 'Not found' } });
+      vi.spyOn(client as any, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Not found' },
+      });
 
       await expect(firstValueFrom(service.getDeletePreview(99))).rejects.toThrow('Not found');
     });

@@ -104,7 +104,13 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('save with id -1 should call createCostCentre', () => {
-    const newCc: CostCentreDto = { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [] };
+    const newCc: CostCentreDto = {
+      id: -1,
+      name: 'New CC',
+      description: null,
+      displayColor: null,
+      budgets: [],
+    };
     component.save(newCc);
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith({
       name: 'New CC',
