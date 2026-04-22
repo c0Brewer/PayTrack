@@ -1,1 +1,29 @@
-<p>team-edit-modal-component works!</p>
+<app-modal-component
+  title="Edit Team"
+  info="Update Team Information and Color"
+  (closeEvent)="onClose()"
+>
+  @if (team.id < 0) {
+    <span>Team not found.</span>
+  } @else {
+    <label>
+      Name
+      <input [(ngModel)]="team.name"/>
+    </label>
+
+    <label>
+      Description
+      <input [(ngModel)]="team.description"/>
+    </label>
+
+    <label>
+      Color
+      <input [(ngModel)]="team.displayColor"/>
+    </label>
+
+    <div class="modal-actions">
+      <button (click)="onClose()">Cancel</button>
+      <button (click)="onSave()">Save</button>
+    </div>
+  }
+</app-modal-component>

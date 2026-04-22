@@ -23,4 +23,11 @@
     ></app-pagination-component>
 
   <!-- TODO: EDIT POPUP -->
+  @if (editingTeam) {
+    <app-team-edit-modal-component
+      [team]="editingTeam"
+      (saveEvent)="saveTeam($event)"
+      (closeEvent)="closeEdit()"
+    ></app-team-edit-modal-component>
+  }
 </div>
