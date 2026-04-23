@@ -93,7 +93,7 @@ namespace PayTrack.Application.Services.Implementation
             PayoutType? payoutType = null,
             int? bankAccountId = null)
         {
-            var transaction = await this.repo.GetByIdAsync(id, new())
+            var transaction = await this.repo.GetByIdAsync(id, new ())
                 ?? throw new NotFoundException("Transaction not found");
 
             if (teamId.HasValue)
