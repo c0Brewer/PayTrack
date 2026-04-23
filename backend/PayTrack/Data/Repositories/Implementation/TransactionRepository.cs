@@ -120,6 +120,20 @@ namespace PayTrack.Data.Repositories.Implementation
             return transaction;
         }
 
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction)
+        {
+            this.context.PaymentRequestsByUser.Update(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} teams.");
+            }
+
+            return transaction;
+        }
+
         private IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {
