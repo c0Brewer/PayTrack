@@ -56,11 +56,11 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 Team = new Team { Id = 30, Name = "Team1" },
                 BankAccount = new BankAccount { Id = 40, Iban = "IBAN123" },
 
-                StatusHistory = new List<TransactionStatusHistory>
-                {
+                StatusHistory =
+                [
                     new() { Id = 1 },
                     new() { Id = 2 }
-                }
+                ]
             };
 
             // Act
@@ -70,16 +70,16 @@ namespace PayTrack.Tests.UnitTests.Mapper
             dto.Should().NotBeNull();
 
             dto.User.Should().NotBeNull();
-            dto.User!.Id.Should().Be(10);
+            dto.User.Id.Should().Be(10);
 
             dto.CostCentre.Should().NotBeNull();
-            dto.CostCentre!.Id.Should().Be(20);
+            dto.CostCentre.Id.Should().Be(20);
 
             dto.Team.Should().NotBeNull();
-            dto.Team!.Id.Should().Be(30);
+            dto.Team.Id.Should().Be(30);
 
             dto.BankAccount.Should().NotBeNull();
-            dto.BankAccount!.Id.Should().Be(40);
+            dto.BankAccount.Id.Should().Be(40);
 
             dto.StatusHistory.Should().NotBeNull();
             dto.StatusHistory.Should().HaveCount(2);
@@ -94,11 +94,11 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 Id = 1,
                 Amount = 50,
                 InvoiceNumber = "123",
-                User = null,
-                CostCentre = null,
-                Team = null,
+                User = new User(),
+                CostCentre = new CostCentre(),
+                Team = new Team(),
                 BankAccount = null,
-                StatusHistory = null
+                StatusHistory = []
             };
 
             // Act
@@ -106,9 +106,9 @@ namespace PayTrack.Tests.UnitTests.Mapper
 
             // Assert
             dto.Should().NotBeNull();
-            dto.User.Should().BeNull();
-            dto.CostCentre.Should().BeNull();
-            dto.Team.Should().BeNull();
+            dto.User.Should().NotBeNull();
+            dto.CostCentre.Should().NotBeNull();
+            dto.Team.Should().NotBeNull();
             dto.BankAccount.Should().BeNull();
 
             // NOTE: your mapper initializes [] instead of null
