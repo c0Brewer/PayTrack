@@ -64,11 +64,15 @@ namespace PayTrack.Application.Services.Model
         /// Update a PaymentRequestByUser using the given input.
         /// </summary>
         /// <param name="id">The id of the PaymentRequestByUser to update.</param>
+        /// <param name="teamId">The teamid of the PaymentRequestByUser to update.</param>
+        /// <param name="amount">The amount of the PaymentRequestByUser to update.</param>
+        /// <param name="purposeOfPayment">The purposeOfPayment of the PaymentRequestByUser to update.</param>
+        /// <param name="paidAt">The paidat of the PaymentRequestByUser to update.</param>
         /// <param name="invoiceNumber">The new invoice number that should be set for the PaymentRequestByUser.</param>
         /// <param name="comment">The new comment that should be set for the PaymentRequestByUser.</param>
         /// <param name="payoutType">The new payout type to assign the PaymentRequestByUser to.</param>
         /// <param name="bankAccountId">The new bank account id that the PaymentRequestByUser should be assigned.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
-        Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, string? invoiceNumber, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
+        Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
     }
 }

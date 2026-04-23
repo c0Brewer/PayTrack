@@ -2,6 +2,8 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.Transaction;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.PaymentRequestByUser
@@ -10,6 +12,8 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     /// Dto containing necessary information for updating a PaymentRequestByUser.
     /// </summary>
     public sealed record class UpdatePaymentRequestByUserDto(
+        [property: Required]
+        UpdateTransactionDto Transaction,
 
         // Optional:
         string? InvoiceNumber,

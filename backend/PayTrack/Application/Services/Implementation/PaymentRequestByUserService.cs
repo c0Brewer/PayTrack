@@ -68,7 +68,7 @@ namespace PayTrack.Application.Services.Implementation
                 // Payment request specific settings
                 InvoiceNumber = invoiceNumber,
                 Comment = comment,
-                ReceiptUrl = string.Empty, // TODO:
+                ReceiptUrl = string.Empty, // will be set in the repo later
                 PayoutType = payoutType,
                 BankAccountId = bankAccountId,
             };
@@ -79,14 +79,69 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(
             int id,
-            string? invoiceNumber,
+            int? teamId = null,
+            decimal? amount = null,
+            string? purposeOfPayment = null,
+            DateTime? paidAt = null,
+            string? invoiceNumber = null,
             string? comment = null,
             PayoutType? payoutType = null,
             int? bankAccountId = null)
         {
-            throw new NotImplementedException();
+            var transaction = await this.repo.GetByIdAsync(id, new ())
+                ?? throw new NotFoundException("Transaction not found");
 
-            // return await this.repo.UpdateAsync(id, name, isActive, teamId, role);
+            if (teamId.HasValue)
+            {
+                var team = await this.teamService.GetTeamByIdAsync(teamId.Value)
+                    ?? throw new NotFoundException("Team not found");
+
+                transaction.TeamId = team.Id;
+            }
+
+            if (amount.HasValue)
+            {
+                transaction.Amount = amount.Value;
+            }
+
+            if (purposeOfPayment != null)
+            {
+                transaction.PurposeOfPayment = purposeOfPayment;
+            }
+
+            if (paidAt.HasValue)
+            {
+                transaction.PaidAt = paidAt.Value;
+            }
+
+            if (invoiceNumber != null)
+            {
+                transaction.InvoiceNumber = invoiceNumber;
+            }
+
+            if (comment != null)
+            {
+                transaction.Comment = comment;
+            }
+
+            if (payoutType.HasValue)
+            {
+                transaction.PayoutType = payoutType.Value;
+            }
+
+            if (bankAccountId.HasValue)
+            {
+                // TODO: Retrieve bank and set correct id like with team above. This should be implemented as soon as the bankAccountService is available!
+
+                /*
+                // var bankAccount = await this.bankAccountService.GetByIdAsync(bankAccountId.Value)
+                //     ?? throw new NotFoundException("Bank account not found");
+                */
+
+                transaction.BankAccountId = bankAccountId;
+            }
+
+            return await this.repo.UpdateAsync(transaction);
         }
 
         /// <inheritdoc/>

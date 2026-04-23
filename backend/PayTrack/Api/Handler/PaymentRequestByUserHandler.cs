@@ -98,9 +98,12 @@ namespace PayTrack.Api.Handler
             [FromBody] UpdatePaymentRequestByUserDto updatePaymentRequestByUserDto,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
-            // TODO: Add missing parameters for transaction update here as well
             var updatedPaymentRequestByUser = await paymentRequestByUserService.UpdatePaymentRequestByUserAsync(
                     id,
+                    updatePaymentRequestByUserDto.Transaction.TeamId,
+                    updatePaymentRequestByUserDto.Transaction.Amount,
+                    updatePaymentRequestByUserDto.Transaction.PurposeOfPayment,
+                    updatePaymentRequestByUserDto.Transaction.PaidAt,
                     updatePaymentRequestByUserDto.InvoiceNumber,
                     updatePaymentRequestByUserDto.Comment,
                     updatePaymentRequestByUserDto.PayoutType,
@@ -108,7 +111,6 @@ namespace PayTrack.Api.Handler
 
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
 
-            // TODO: return updated
             return TypedResults.Ok(updatedPaymentRequestByUserDto);
         }
 

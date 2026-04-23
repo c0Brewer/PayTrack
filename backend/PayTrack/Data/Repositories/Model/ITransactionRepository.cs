@@ -61,5 +61,12 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="receipt">Receipt to store with transaction.</param>
         /// <returns>Instance of created Transaction object.</returns>
         Task<PaymentRequestByUser> AddAsync(PaymentRequestByUser transaction, IFormFile receipt);
+
+        /// <summary>
+        /// Updates a PaymentRequestByUser using the given input.
+        /// </summary>
+        /// <param name="transaction">Transaction object to update.</param>
+        /// <returns>Instance of created PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction);
     }
 }

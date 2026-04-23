@@ -35,8 +35,8 @@ namespace PayTrack.Tests.UnitTests.Middleware
 
             problem.Should().NotBeNull();
             problem.Status.Should().Be(StatusCodes.Status500InternalServerError);
-            problem.Title.Should().Be("Exception");
-            problem.Detail.Should().Be("Something went wrong");
+            problem.Title.Should().Be("Internal Server Error");
+            problem.Detail.Should().Be("An error occured. Please try again or contact support.");
         }
 
         [Fact]
