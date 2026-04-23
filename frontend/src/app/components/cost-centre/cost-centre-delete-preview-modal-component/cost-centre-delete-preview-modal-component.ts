@@ -14,6 +14,7 @@ export class CostCentreDeletePreviewModalComponent {
     costCentreName: '',
     budgetCount: 0,
     transactionCount: 0,
+    affectedUserCount: 0,
     affectedTeamNames: [],
   };
 

@@ -154,6 +154,7 @@ describe('CostCentreService', () => {
         costCentreName: 'Aerodynamics',
         budgetCount: 3,
         transactionCount: 12,
+        affectedUserCount: 5,
         affectedTeamNames: ['Aero Team'],
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

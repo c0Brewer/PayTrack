@@ -13,6 +13,9 @@
         @if (preview.transactionCount > 0) {
           <li>{{ preview.transactionCount }} transaction(s)</li>
         }
+        @if (preview.affectedUserCount > 0) {
+          <li>{{ preview.affectedUserCount }} affected user(s)</li>
+        }
         @if (preview.affectedTeamNames.length > 0) {
           <li>Affected teams: {{ preview.affectedTeamNames.join(', ') }}</li>
         }

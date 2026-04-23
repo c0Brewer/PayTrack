@@ -5,7 +5,11 @@ import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
-import { CostCentreDto, DeleteCostCentrePreviewDto } from '../../../types/exporter';
+import {
+  CostCentreDto,
+  CostCentreSaveEvent,
+  DeleteCostCentrePreviewDto,
+} from '../../../types/exporter';
 
 import { CostCentreManagementComponent } from './cost-centre-management-component';
 
@@ -18,6 +22,7 @@ const mockPreview: DeleteCostCentrePreviewDto = {
   costCentreName: 'Aerodynamics',
   budgetCount: 0,
   transactionCount: 0,
+  affectedUserCount: 0,
   affectedTeamNames: [],
 };
 
@@ -104,30 +109,35 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('save with id -1 should call createCostCentre', () => {
-    const newCc: CostCentreDto = {
-      id: -1,
-      name: 'New CC',
-      description: null,
-      displayColor: null,
-      budgets: [],
+    const event: CostCentreSaveEvent = {
+      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [] },
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
     };
-    component.save(newCc);
+    component.save(event);
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith({
       name: 'New CC',
       description: undefined,
       displayColor: undefined,
+      budgets: undefined,
     });
     expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
     expect(component.editingCostCentre).toBeNull();
   });
 
   it('save with existing id should call updateCostCentre', () => {
-    const cc: CostCentreDto = { ...mockCostCentres[0], name: 'Updated' };
-    component.save(cc);
+    const event: CostCentreSaveEvent = {
+      costCentre: { ...mockCostCentres[0], name: 'Updated' },
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
+    };
+    component.save(event);
     expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(1, {
       name: 'Updated',
       description: 'Aero costs',
       displayColor: '#FF5733',
+      budgetsToUpsert: undefined,
+      budgetIdsToDelete: undefined,
     });
     expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
     expect(component.editingCostCentre).toBeNull();
@@ -137,7 +147,12 @@ describe('CostCentreManagementComponent', () => {
     costCentreServiceMock.createCostCentre.mockReturnValueOnce(
       throwError(() => new Error('Create failed')),
     );
-    component.save({ id: -1, name: 'X', description: null, displayColor: null, budgets: [] });
+    const event: CostCentreSaveEvent = {
+      costCentre: { id: -1, name: 'X', description: null, displayColor: null, budgets: [] },
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
+    };
+    component.save(event);
     expect(notificationServiceMock.showError).toHaveBeenCalled();
   });
 
@@ -145,7 +160,12 @@ describe('CostCentreManagementComponent', () => {
     costCentreServiceMock.updateCostCentre.mockReturnValueOnce(
       throwError(() => new Error('Update failed')),
     );
-    component.save(mockCostCentres[0]);
+    const event: CostCentreSaveEvent = {
+      costCentre: mockCostCentres[0],
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
+    };
+    component.save(event);
     expect(notificationServiceMock.showError).toHaveBeenCalled();
   });
 

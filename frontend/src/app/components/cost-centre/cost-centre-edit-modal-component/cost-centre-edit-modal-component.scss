@@ -24,6 +24,85 @@ input {
   }
 }
 
+.budgets-section {
+  margin-top: v.$size-m;
+  border-top: 1px solid v.$border-color;
+  padding-top: v.$size-m;
+
+  h4 {
+    margin: 0 0 v.$size-s;
+    font-size: v.$font-s;
+    color: v.$text-color;
+  }
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  margin-bottom: v.$size-s;
+
+  th,
+  td {
+    padding: v.$size-xs v.$size-s;
+    text-align: left;
+    border-bottom: 1px solid v.$border-color;
+  }
+
+  th {
+    color: v.$text-color;
+    font-weight: v.$font-medium;
+  }
+
+  tr.deleted td {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+}
+
+.new-budgets tr td {
+  color: v.$primary-color;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: v.$accent-color;
+  cursor: pointer;
+  font-size: v.$font-s;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.add-budget-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: v.$size-s;
+  align-items: flex-end;
+  margin-top: v.$size-s;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.btn-add-budget {
+  background: v.$primary-color;
+  color: v.$background-light;
+  padding: v.$size-xs v.$size-s;
+  border-radius: 0.375rem;
+  font-size: v.$font-s;
+  white-space: nowrap;
+  align-self: flex-end;
+
+  &:hover {
+    background: v.$primary-light;
+  }
+}
+
 .modal-actions {
   margin-top: v.$size-l;
   display: flex;

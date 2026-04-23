@@ -57,15 +57,32 @@ export interface CreateCostCentreRequestDto {
   budgets?: CreateBudgetEntryDto[];
 }
 
+export interface UpsertBudgetEntryDto {
+  id: number | null;
+  teamId: number;
+  targetAmount: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
 export interface UpdateCostCentreRequestDto {
   name?: string;
   description?: string;
   displayColor?: string;
+  budgetsToUpsert?: UpsertBudgetEntryDto[];
+  budgetIdsToDelete?: number[];
 }
 
 export interface DeleteCostCentrePreviewDto {
   costCentreName: string;
   budgetCount: number;
   transactionCount: number;
+  affectedUserCount: number;
   affectedTeamNames: string[];
+}
+
+export interface CostCentreSaveEvent {
+  costCentre: CostCentreDto;
+  budgetsToUpsert: UpsertBudgetEntryDto[];
+  budgetIdsToDelete: number[];
 }

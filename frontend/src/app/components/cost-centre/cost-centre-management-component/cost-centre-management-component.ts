@@ -4,6 +4,7 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import {
   CostCentreDto,
+  CostCentreSaveEvent,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
   UpdateCostCentreRequestDto,
@@ -68,12 +69,22 @@ export class CostCentreManagementComponent implements OnInit {
     this.editingCostCentre = null;
   }
 
-  save(costCentre: CostCentreDto): void {
+  save(event: CostCentreSaveEvent): void {
+    const { costCentre, budgetsToUpsert, budgetIdsToDelete } = event;
     if (costCentre.id === -1) {
       const request: CreateCostCentreRequestDto = {
         name: costCentre.name,
         description: costCentre.description ?? undefined,
         displayColor: costCentre.displayColor ?? undefined,
+        budgets:
+          budgetsToUpsert.length > 0
+            ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
+                teamId,
+                targetAmount,
+                periodStart,
+                periodEnd,
+              }))
+            : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({
         next: () => {
@@ -90,6 +101,8 @@ export class CostCentreManagementComponent implements OnInit {
         name: costCentre.name,
         description: costCentre.description ?? undefined,
         displayColor: costCentre.displayColor ?? undefined,
+        budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+        budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
       };
       this.costCentreService.updateCostCentre(costCentre.id, request).subscribe({
         next: () => {
