@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.CostCentre;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -132,11 +133,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task Update_ReturnsOk_WhenAdminRole()
         {
             // Arrange
-            var requestDto = new UpdateCostCentreRequestDto("Updated Name", null, null);
+            var requestDto = new UpdateCostCentreRequestDto("Updated Name", null, null, null, null);
             var updated = new CostCentre { Id = 1, Name = "Updated Name" };
 
             _factory.ServiceMock
-                .Setup(s => s.UpdateAsync(1, "Updated Name", null, null))
+                .Setup(s => s.UpdateAsync(1, "Updated Name", null, null, null, null))
                 .ReturnsAsync(updated);
 
             var client = _factory.CreateClient();
@@ -155,7 +156,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task Update_ReturnsForbidden_WhenRegularUserRole()
         {
             // Arrange
-            var requestDto = new UpdateCostCentreRequestDto("Updated Name", null, null);
+            var requestDto = new UpdateCostCentreRequestDto("Updated Name", null, null, null, null);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
@@ -167,13 +168,33 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
+        [Fact]
+        public async Task Update_ReturnsBadRequest_WhenServiceThrowsInvalidState()
+        {
+            // Arrange
+            var requestDto = new UpdateCostCentreRequestDto(null, null, null, null, null);
+
+            _factory.ServiceMock
+                .Setup(s => s.UpdateAsync(1, null, null, null, null, null))
+                .ThrowsAsync(new InvalidStateException("A budget ID cannot appear in both BudgetsToUpsert and BudgetIdsToDelete."));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PutAsJsonAsync("api/v1/cost-centre/1", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
         // ── GET /cost-centre/{id}/delete-preview ──────────────────────────────
 
         [Fact]
         public async Task GetDeletePreview_ReturnsOk_WhenAdminRole()
         {
             // Arrange
-            var preview = new DeleteCostCentrePreviewDto("Aero", 2, 5, ["Team Alpha"]);
+            var preview = new DeleteCostCentrePreviewDto("Aero", 2, 5, 3, ["Team Alpha"]);
             _factory.ServiceMock.Setup(s => s.GetDeletePreviewAsync(1)).ReturnsAsync(preview);
 
             var client = _factory.CreateClient();

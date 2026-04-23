@@ -47,8 +47,16 @@ namespace PayTrack.Application.Services.Model
         /// <param name="name">New name, or null to leave unchanged.</param>
         /// <param name="description">New description, or null to leave unchanged.</param>
         /// <param name="displayColor">New display color, or null to leave unchanged.</param>
+        /// <param name="budgetsToUpsert">Budget entries to add (Id null/0) or update (Id > 0). Null means no change.</param>
+        /// <param name="budgetIdsToDelete">Ids of budget entries to remove. Null means no change.</param>
         /// <returns>The updated CostCentre.</returns>
-        Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor);
+        Task<CostCentre> UpdateAsync(
+            int id,
+            string? name,
+            string? description,
+            string? displayColor,
+            IList<UpsertBudgetEntryDto>? budgetsToUpsert,
+            IList<int>? budgetIdsToDelete);
 
         /// <summary>
         /// Returns a preview of entities affected by deleting the given cost center.

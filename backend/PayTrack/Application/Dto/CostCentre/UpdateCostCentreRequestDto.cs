@@ -17,5 +17,9 @@ namespace PayTrack.Application.Dto.CostCentre
         string? Description,
 
         [property: MinLength(3)]
-        string? DisplayColor);
+        string? DisplayColor,
+
+        IList<UpsertBudgetEntryDto>? BudgetsToUpsert,
+
+        IList<int>? BudgetIdsToDelete);
 }

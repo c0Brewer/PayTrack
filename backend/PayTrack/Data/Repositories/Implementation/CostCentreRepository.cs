@@ -67,7 +67,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor)
+        public async Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor, IList<UpsertBudgetEntryDto>? budgetsToUpsert, IList<int>? budgetIdsToDelete)
         {
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)
@@ -89,9 +89,54 @@ namespace PayTrack.Data.Repositories.Implementation
                 costCentre.DisplayColor = displayColor;
             }
 
+            if (budgetIdsToDelete is not null)
+            {
+                foreach (var budgetId in budgetIdsToDelete)
+                {
+                    var budget = costCentre.Budgets.FirstOrDefault(b => b.Id == budgetId)
+                        ?? throw new NotFoundException($"Budget with id {budgetId} not found on CostCentre {id}.");
+                    this.context.Budgets.Remove(budget);
+                }
+            }
+
+            if (budgetsToUpsert is not null)
+            {
+                foreach (var entry in budgetsToUpsert)
+                {
+                    if (entry.Id is null or 0)
+                    {
+                        this.context.Budgets.Add(new Budget
+                        {
+                            CostCentre = costCentre,
+                            TeamId = entry.TeamId,
+                            TargetAmount = entry.TargetAmount,
+                            PeriodStart = entry.PeriodStart,
+                            PeriodEnd = entry.PeriodEnd,
+                        });
+                    }
+                    else
+                    {
+                        var existing = costCentre.Budgets.FirstOrDefault(b => b.Id == entry.Id)
+                            ?? throw new NotFoundException($"Budget with id {entry.Id} not found on CostCentre {id}.");
+                        existing.TeamId = entry.TeamId;
+                        existing.TargetAmount = entry.TargetAmount;
+                        existing.PeriodStart = entry.PeriodStart;
+                        existing.PeriodEnd = entry.PeriodEnd;
+                    }
+                }
+            }
+
+            bool hasChanges = name is not null || description is not null || displayColor is not null
+                || (budgetIdsToDelete?.Count > 0) || (budgetsToUpsert?.Count > 0);
+
+            if (!hasChanges)
+            {
+                return costCentre;
+            }
+
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Updating CostCentre did not end as expected. Saved {res} records.");
             }
@@ -114,10 +159,16 @@ namespace PayTrack.Data.Repositories.Implementation
                 .Distinct()
                 .ToList();
 
+            var affectedUserCount = costCentre.Transactions
+                .Select(t => t.UserId)
+                .Distinct()
+                .Count();
+
             return new DeleteCostCentrePreviewDto(
                 costCentre.Name,
                 costCentre.Budgets.Count,
                 costCentre.Transactions.Count,
+                affectedUserCount,
                 affectedTeamNames);
         }
 
