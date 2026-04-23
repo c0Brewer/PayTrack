@@ -3,6 +3,7 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -16,23 +17,27 @@ namespace PayTrack.Api.Mapper
         /// Turns Team object into a TeamDto.
         /// </summary>
         /// <param name="team">Team to map.</param>
-        /// <param name="includeMembers">Whether to include mapped team members.</param>
-        /// <param name="includeBudgets">Whether to include mapped team budgets.</param>
         /// <returns>TeamDto instance.</returns>
-        public static TeamDto ToDto(Team team, bool includeMembers = false, bool includeBudgets = false)
+        public static TeamDto ToDto(Team team)
         {
-            // By default, do not include members; map them only if includeMembers is true
-            List<TeamMemberDto>? members = null;
-            List<TeamBudgetDto>? budgets = null;
-            if (includeMembers)
-            {
-                members = TeamMemberMapper.ListToDto(team.Members);
-            }
+            // Clear the navigation on copied users to avoid Team -> User -> Team recursion while mapping.
+            var membersToMap = team.Members
+                .Select(member => new User
+                {
+                    Id = member.Id,
+                    Name = member.Name,
+                    Email = member.Email,
+                    ProfilePictureUrl = member.ProfilePictureUrl,
+                    TeamId = member.TeamId,
+                    Team = null!,
+                    Role = member.Role,
+                    IsActive = member.IsActive,
+                    CreatedAt = member.CreatedAt,
+                })
+                .ToList();
 
-            if (includeBudgets)
-            {
-                budgets = TeamBudgetMapper.ListToDto(team.Budgets);
-            }
+            var members = UserMapper.ListToDto(membersToMap);
+            var budgets = TeamBudgetMapper.ListToDto(team.Budgets);
 
             return new TeamDto(
                 team.Id,
@@ -52,7 +57,7 @@ namespace PayTrack.Api.Mapper
         /// <returns>List of TeamDto objects.</returns>
         public static List<TeamDto> ListToDto(List<Team> team, bool includeMembers = false, bool includeBudgets = false)
         {
-            return team.ConvertAll(t => ToDto(t, includeMembers, includeBudgets));
+            return team.ConvertAll(ToDto);
         }
     }
 }

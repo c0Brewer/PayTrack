@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.User;
 
 namespace PayTrack.Application.Dto.Team
 {
@@ -23,7 +24,7 @@ namespace PayTrack.Application.Dto.Team
         [property: MinLength(3)]
         string? DisplayColor,
 
-        List<TeamMemberDto>? Members,
+        List<UserDto> Members,
 
-        List<TeamBudgetDto>? Budgets);
+        List<TeamBudgetDto> Budgets);
 }

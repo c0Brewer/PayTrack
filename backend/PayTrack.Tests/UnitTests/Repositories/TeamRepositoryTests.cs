@@ -269,6 +269,65 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetAllAsync_ShouldOnlyIncludeMembersAndBudgets_WhenRequested()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_OnlyIncludeRelatedDataWhenRequested");
+            var team = new Team { Name = "Platform" };
+            var costCentre = new CostCentre { Name = "Operations" };
+
+            context.Teams.Add(team);
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            context.User.Add(new User
+            {
+                Name = "Alice",
+                Email = "alice@example.com",
+                TeamId = team.Id,
+                Role = Role.TeamLead,
+                IsActive = true,
+            });
+
+            context.Budgets.Add(new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 900m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            context.ChangeTracker.Clear();
+            var (withoutIncludes, withoutIncludesTotalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IncludeMembers = false,
+                IncludeBudgets = false,
+            });
+
+            context.ChangeTracker.Clear();
+            var (withIncludes, withIncludesTotalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IncludeMembers = true,
+                IncludeBudgets = true,
+            });
+
+            // Assert
+            withoutIncludes.Should().ContainSingle();
+            withoutIncludes[0].Members.Should().BeEmpty();
+            withoutIncludes[0].Budgets.Should().BeEmpty();
+            withoutIncludesTotalCount.Should().Be(1);
+
+            withIncludes.Should().ContainSingle();
+            withIncludes[0].Members.Should().ContainSingle();
+            withIncludes[0].Budgets.Should().ContainSingle();
+            withIncludesTotalCount.Should().Be(1);
+        }
+
+        [Fact]
         public async Task GetByIdAsync_ShouldOnlyIncludeMembersAndBudgets_WhenRequested()
         {
             // Arrange

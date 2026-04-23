@@ -28,12 +28,8 @@ namespace PayTrack.Api.Handler
             ITeamService teamService)
         {
             var (teamList, totalCount) = await teamService.GetTeamsAsync(query);
-
-            var teamListDto = TeamMapper.ListToDto(
-                teamList, query.IncludeMembers == true, query.IncludeBudgets == true);
-
+            var teamListDto = TeamMapper.ListToDto(teamList);
             var paginatedResponse = new PaginatedResponse<TeamDto>(teamListDto, totalCount, query.Limit ?? -1, query.Offset ?? -1);
-
             return TypedResults.Ok(paginatedResponse);
         }
 
@@ -50,9 +46,7 @@ namespace PayTrack.Api.Handler
             ITeamService teamService)
         {
             var team = await teamService.GetTeamByIdAsync(id, query) ?? throw new NotFoundException("Team could not be found");
-
-            var createdTeamDto = TeamMapper.ToDto(team, query.IncludeMembers == true, query.IncludeBudgets == true);
-
+            var createdTeamDto = TeamMapper.ToDto(team);
             return TypedResults.Ok(createdTeamDto);
         }
 

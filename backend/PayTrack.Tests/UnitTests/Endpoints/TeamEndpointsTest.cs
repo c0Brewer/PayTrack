@@ -48,6 +48,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.Items.Should().HaveCount(2);
             result.Items[0].Name.Should().Be("Alpha");
             result.Items[1].Name.Should().Be("Beta");
+            result.Items[0].Members.Should().NotBeNull().And.BeEmpty();
+            result.Items[0].Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Items[1].Members.Should().NotBeNull().And.BeEmpty();
+            result.Items[1].Budgets.Should().NotBeNull().And.BeEmpty();
             result.TotalCount.Should().Be(2);
         }
 
@@ -117,6 +121,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Items[0].Members.Should().ContainSingle();
             result.Items[0].Budgets.Should().ContainSingle();
             result.Items[0].Members![0].Email.Should().Be("alice@example.com");
+            result.Items[0].Members![0].Team.Should().BeNull();
             result.Items[0].Budgets![0].TargetAmount.Should().Be(600m);
         }
 
@@ -141,8 +146,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("Team1");
-            result.Members.Should().BeNull();
-            result.Budgets.Should().BeNull();
+            result.Members.Should().NotBeNull().And.BeEmpty();
+            result.Budgets.Should().NotBeNull().And.BeEmpty();
         }
 
         [Fact]
@@ -183,7 +188,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.Members.Should().NotBeNull();
             result.Members.Should().ContainSingle();
             result.Members![0].Email.Should().Be("alice@example.com");
-            result.Budgets.Should().BeNull();
+            result.Members![0].Team.Should().BeNull();
+            result.Budgets.Should().NotBeNull().And.BeEmpty();
         }
 
         [Fact]
@@ -226,7 +232,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Budgets.Should().ContainSingle();
             result.Budgets![0].CostCentreId.Should().Be(12);
             result.Budgets[0].TargetAmount.Should().Be(2500m);
-            result.Members.Should().BeNull();
+            result.Members.Should().NotBeNull().And.BeEmpty();
         }
 
         [Fact]
@@ -269,15 +275,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("New Team");
-            result.Members.Should().BeNull();
-            result.Budgets.Should().BeNull();
+            result.Members.Should().NotBeNull().And.BeEmpty();
+            result.Budgets.Should().NotBeNull().And.BeEmpty();
         }
 
         [Fact]
         public async Task GetTeams_ReturnsForbidden_WhenUserIsNotAdmin()
         {
             // Arrange
-            using var factory = new TeamRegularUserApiFactory();
+            await using var factory = new TeamRegularUserApiFactory();
             var client = factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
