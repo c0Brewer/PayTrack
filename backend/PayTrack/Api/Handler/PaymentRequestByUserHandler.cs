@@ -120,13 +120,13 @@ namespace PayTrack.Api.Handler
         /// <param name="id">id.</param>
         /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<FileContentHttpResult>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUserByIdReceiptAsync(
+        public static async Task<Results<FileContentHttpResult, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUserByIdReceiptAsync(
             [FromRoute] int id,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
             var file = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id) ?? throw new NotFoundException("Could not load file");
 
-            return TypedResults.Ok(TypedResults.File(file));
+            return TypedResults.File(file, "application/octet-stream");
         }
     }
 }

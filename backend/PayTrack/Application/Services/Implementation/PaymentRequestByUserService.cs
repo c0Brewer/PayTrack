@@ -47,9 +47,14 @@ namespace PayTrack.Application.Services.Implementation
             int bankAccountId)
         {
             // TODO: Check here if bank account valid when bank account service is ready
-            var team = this.teamService.GetTeamByIdAsync(teamId);
+            var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
             // TODO: Check paid at < todays date. Allow paid at to be null when PayoutType is not User
+            if (PaidAt > DateTime.Today)
+            {
+                throw new InvalidStateException("Paid at cannot be in the future!");
+            }
+
             var paymentRequest = new PaymentRequestByUser
             {
                 // Transaction settings

@@ -25,12 +25,12 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             IQueryable<Transaction> dbQuery = this.context.Transactions.AsQueryable();
 
-            dbQuery = this.ApplyBasePreFilters(dbQuery, query);
+            dbQuery = ApplyBasePreFilters(dbQuery, query);
 
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
-            dbQuery = this.ApplyBasePostFilters(dbQuery, query);
+            dbQuery = ApplyBasePostFilters(dbQuery, query);
 
             // Could potentially add other ordering logic here as well
             var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
@@ -43,7 +43,7 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             IQueryable<PaymentRequestByUser> dbQuery = this.context.PaymentRequestsByUser.AsQueryable();
 
-            dbQuery = this.ApplyBasePreFilters(dbQuery, query);
+            dbQuery = ApplyBasePreFilters(dbQuery, query);
 
             if (!string.IsNullOrWhiteSpace(query?.InvoiceNumber))
             {
@@ -63,7 +63,7 @@ namespace PayTrack.Data.Repositories.Implementation
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
-            dbQuery = this.ApplyBasePostFilters(dbQuery, query);
+            dbQuery = ApplyBasePostFilters(dbQuery, query);
 
             if (query?.IncludeBankAccount.HasValue == true)
             {
@@ -83,7 +83,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<PaymentRequestByUser?> GetByIdAsync(int id, GetPaymentRequestByUserQueryById? query)
+        public async Task<PaymentRequestByUser?> GetByIdAsync(int id, GetPaymentRequestByUserQueryById? query = null)
         {
             throw new NotImplementedException();
         }
@@ -134,7 +134,7 @@ namespace PayTrack.Data.Repositories.Implementation
             return transaction;
         }
 
-        private IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
+        private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {
             if (query?.UserId.HasValue == true)
@@ -195,7 +195,7 @@ namespace PayTrack.Data.Repositories.Implementation
             return dbQuery;
         }
 
-        private IQueryable<T> ApplyBasePostFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
+        private static IQueryable<T> ApplyBasePostFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {
             if (query?.Offset.HasValue == true)
