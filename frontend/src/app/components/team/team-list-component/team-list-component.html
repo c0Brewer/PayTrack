@@ -1,10 +1,13 @@
 <table class="team-table">
   <colgroup>
     <col style="width: 20%" />
-    <col style="width: 30%" />
-    <col style="width: 15%" />
-    <col style="width: 12.5%" />
-    <col style="width: 12.5%" />
+    <col />
+    @if (showMembers) {
+      <col style="width: 15%" />
+    }
+    @if (showBudgets) {
+      <col style="width: 15%" />
+    }
     <col style="width: 10%" />
   </colgroup>
 
@@ -12,9 +15,12 @@
     <tr>
       <th>Name</th>
       <th>Description</th>
-      <th>Color</th>
-      <th>Members</th>
-      <th>Budgets</th>
+      @if (showMembers) {
+        <th>Members</th>
+      }
+      @if (showBudgets) {
+        <th>Budgets</th>
+      }
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -22,19 +28,24 @@
   <tbody>
     @for (team of teams; track team.id) {
       <tr>
-        <td class="name">{{ team.name }}</td>
+        <td class="name">
+          <span
+            class="team-name-badge"
+            [style.background]="getDisplayColor(team)"
+            [style.color]="getTeamNameTextColor(team)"
+          >
+            {{ team.name }}
+          </span>
+        </td>
 
         <td class="description">{{ getDescription(team) }}</td>
 
-        <td class="color-cell">
-          <div class="team">
-            <span class="team-color" [style.background]="team.displayColor?.trim() || '#9ca3af'"></span>
-          </div>
-        </td>
-
-        <td>{{ getMembersCount(team) }}</td>
-
-        <td>{{ getBudgetsCount(team) }}</td>
+        @if (showMembers) {
+          <td>{{ getMembersCount(team) }}</td>
+        }
+        @if (showBudgets) {
+          <td>{{ getBudgetsCount(team) }}</td>
+        }
 
         <td class="actions-col">
           <button class="edit-btn" (click)="onOpenEditTeam(team)">Edit</button>
@@ -42,7 +53,7 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="6">No teams found.</td>
+        <td [attr.colspan]="getVisibleColumnCount()">No teams found.</td>
       </tr>
     }
   </tbody>

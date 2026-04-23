@@ -226,6 +226,19 @@ describe('TeamManagementComponent', () => {
     expect(listComponent.teams).toEqual(mockTeams);
   });
 
+  it('should pass the include flags into the list child component', () => {
+    fixture.detectChanges();
+    component.updateFilterOptions({ IncludeMembers: true, IncludeBudgets: false });
+    fixture.detectChanges();
+
+    const listComponent = fixture.debugElement.query(
+      By.directive(TeamListComponent),
+    ).componentInstance;
+
+    expect(listComponent.includeMembers).toBe(true);
+    expect(listComponent.includeBudgets).toBe(false);
+  });
+
   it('should react to the list child edit event in the parent component', () => {
     fixture.detectChanges();
 
@@ -254,5 +267,11 @@ describe('TeamManagementComponent', () => {
       }),
     );
     expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(2);
+    fixture.detectChanges();
+
+    const listComponent = fixture.debugElement.query(
+      By.directive(TeamListComponent),
+    ).componentInstance;
+    expect(listComponent.includeMembers).toBe(true);
   });
 });

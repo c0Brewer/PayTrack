@@ -32,7 +32,7 @@ export class TeamManagementComponent {
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
-  filterOptions: GetTeamOptions = {
+  filterOptions: NonNullable<GetTeamOptions> = {
     Name: undefined,
     Description: undefined,
     MinBudget: undefined,
@@ -48,7 +48,7 @@ export class TeamManagementComponent {
   }
 
   loadTeams(): void {
-    const queryOptions: GetTeamOptions = {
+    const queryOptions: NonNullable<GetTeamOptions> = {
       Name: this.filterOptions?.Name ?? undefined,
       Description: this.filterOptions?.Description ?? undefined,
       MinBudget: this.filterOptions?.MinBudget ?? undefined,

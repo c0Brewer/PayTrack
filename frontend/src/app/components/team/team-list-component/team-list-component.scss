@@ -46,28 +46,19 @@
     font-weight: v.$font-medium;
   }
 
+  .team-name-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: v.$size-xxs v.$size-s;
+    border-radius: 999px;
+    font-weight: v.$font-semibold;
+    line-height: 1.2;
+    box-shadow: inset 0 0 0 1px rgba(v.$text-color, 0.08);
+  }
+
   .description {
     color: v.$text-light;
-  }
-
-  .color-cell {
-    text-align: left;
-  }
-
-  .team {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-  }
-
-  .team-color {
-    width: v.$size-m;
-    height: v.$size-m;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px v.$background-light;
-    border: 1px solid rgba(17, 24, 39, 0.12);
-    flex: 0 0 auto;
   }
 
   .edit-btn {

@@ -87,11 +87,56 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
+  it('should hide the members and budgets columns unless their include flags are true', () => {
+    fixture.componentRef.setInput('teams', mockTeams);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).not.toContain('Members');
+    expect(text).not.toContain('Budgets');
+  });
+
+  it('should render only the requested relation columns', () => {
+    fixture.componentRef.setInput('teams', mockTeams);
+    fixture.componentRef.setInput('includeMembers', true);
+    fixture.componentRef.setInput('includeBudgets', false);
+    fixture.detectChanges();
+
+    const headers = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th') as NodeListOf<HTMLTableCellElement>,
+      (header) => header.textContent?.trim(),
+    );
+    const columns = fixture.nativeElement.querySelectorAll('colgroup col');
+    const firstRowCells = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'tbody tr:first-child td',
+      ) as NodeListOf<HTMLTableCellElement>,
+      (cell) => cell.textContent?.trim(),
+    );
+
+    expect(headers).toContain('Members');
+    expect(headers).not.toContain('Budgets');
+    expect(columns.length).toBe(headers.length);
+    expect(firstRowCells).toContain('1');
+  });
+
   it('should render the empty-state row when no teams are available', () => {
     component.teams = [];
     fixture.detectChanges();
 
     // This protects the user-facing fallback that appears when filters return no results.
     expect(fixture.nativeElement.textContent).toContain('No teams found.');
+  });
+
+  it('should keep the empty-state colspan aligned with the visible columns', () => {
+    fixture.componentRef.setInput('teams', []);
+    fixture.componentRef.setInput('includeMembers', true);
+    fixture.componentRef.setInput('includeBudgets', false);
+    fixture.detectChanges();
+
+    const emptyStateCell = fixture.nativeElement.querySelector('tbody tr td');
+
+    expect(emptyStateCell.getAttribute('colspan')).toBe('4');
   });
 });
