@@ -17,7 +17,7 @@ import { AuthService } from '../auth/auth-service';
   providedIn: 'root',
 })
 export class PaymentRequestByUserService {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   public getPaymentRequestsByUser(
     queryOptions: GetPaymentRequestsByUserOptions,

@@ -48,9 +48,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
     private readonly teamService: TeamService,
     private readonly notificationService: NotificationService,
-    private readonly userService: UserService,
-    private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.buildForm();
@@ -163,7 +161,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     };
 
     this.paymentRequestByUserService
-      .createPaymentRequestByUser(payload, this.selectedFile) // <-- pass File here
+      .createPaymentRequestByUser(payload, this.selectedFile) // <- we pass the actual File here
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

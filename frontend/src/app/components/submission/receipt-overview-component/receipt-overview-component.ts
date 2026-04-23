@@ -15,7 +15,7 @@ export class ReceiptOverviewComponent {
 
   /*
    *
-   * DISCLAIMER: THIS IS VERY HARDY WORKD IN PROGRESS.
+   * DISCLAIMER: THIS IS VERY HARD WORK IN PROGRESS.
    * This only exists to test the submission and should
    * be re-worked later.
    *
@@ -25,7 +25,7 @@ export class ReceiptOverviewComponent {
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly notificationService: NotificationService,
     private readonly cdr: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -44,7 +44,6 @@ export class ReceiptOverviewComponent {
             return;
           }
 
-          console.log(data.items);
           this.requests = data.items;
 
           this.cdr.markForCheck();
