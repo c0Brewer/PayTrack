@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Moq;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -112,22 +114,22 @@ namespace PayTrack.Tests.UnitTests.Services
         {
             // Arrange
             var updated = new CostCentre { Id = 3, Name = "NewName" };
-            repoMock.Setup(r => r.UpdateAsync(3, "NewName", null, null)).ReturnsAsync(updated);
+            repoMock.Setup(r => r.UpdateAsync(3, "NewName", null, null, null, null)).ReturnsAsync(updated);
 
             // Act
-            var result = await service.UpdateAsync(3, "NewName", null, null);
+            var result = await service.UpdateAsync(3, "NewName", null, null, null, null);
 
             // Assert
             result.Should().NotBeNull();
             result.Name.Should().Be("NewName");
-            repoMock.Verify(r => r.UpdateAsync(3, "NewName", null, null), Times.Once);
+            repoMock.Verify(r => r.UpdateAsync(3, "NewName", null, null, null, null), Times.Once);
         }
 
         [Fact]
         public async Task GetDeletePreviewAsync_ShouldReturnPreviewFromRepo()
         {
             // Arrange
-            var preview = new DeleteCostCentrePreviewDto("Aero", 2, 5, ["Team Alpha"]);
+            var preview = new DeleteCostCentrePreviewDto("Aero", 2, 5, 3, ["Team Alpha"]);
             repoMock.Setup(r => r.GetDeletePreviewAsync(1)).ReturnsAsync(preview);
 
             // Act
@@ -137,6 +139,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Should().NotBeNull();
             result.BudgetCount.Should().Be(2);
             result.TransactionCount.Should().Be(5);
+            result.AffectedUserCount.Should().Be(3);
             result.AffectedTeamNames.Should().ContainSingle(n => n == "Team Alpha");
         }
 
@@ -151,6 +154,44 @@ namespace PayTrack.Tests.UnitTests.Services
 
             // Assert
             repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithOverlappingBudgetIds_ShouldThrowInvalidStateException()
+        {
+            // Arrange
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: 5, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+            var budgetIdsToDelete = new List<int> { 5 };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await service.UpdateAsync(1, null, null, null, budgetsToUpsert, budgetIdsToDelete));
+
+            exception.Message.Should().Contain("BudgetsToUpsert");
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<IList<UpsertBudgetEntryDto>?>(), It.IsAny<IList<int>?>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithBothListsPopulated_ShouldPassBothToRepo()
+        {
+            // Arrange
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: null, TeamId: 2, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+            var budgetIdsToDelete = new List<int> { 10 };
+            var updated = new CostCentre { Id = 1, Name = "Aero" };
+            repoMock.Setup(r => r.UpdateAsync(1, null, null, null, budgetsToUpsert, budgetIdsToDelete)).ReturnsAsync(updated);
+
+            // Act
+            var result = await service.UpdateAsync(1, null, null, null, budgetsToUpsert, budgetIdsToDelete);
+
+            // Assert
+            result.Should().NotBeNull();
+            repoMock.Verify(r => r.UpdateAsync(1, null, null, null, budgetsToUpsert, budgetIdsToDelete), Times.Once);
         }
     }
 }

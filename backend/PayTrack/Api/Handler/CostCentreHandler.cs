@@ -68,7 +68,7 @@ namespace PayTrack.Api.Handler
             [FromBody] UpdateCostCentreRequestDto dto,
             ICostCentreService service)
         {
-            var costCentre = await service.UpdateAsync(id, dto.Name, dto.Description, dto.DisplayColor);
+            var costCentre = await service.UpdateAsync(id, dto.Name, dto.Description, dto.DisplayColor, dto.BudgetsToUpsert, dto.BudgetIdsToDelete);
             return TypedResults.Ok(CostCentreMapper.ToDto(costCentre));
         }
 

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
@@ -145,7 +146,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new CostCentreRepository(context);
 
             // Act
-            var result = await repo.UpdateAsync(entity.Id, "New Name", null, null);
+            var result = await repo.UpdateAsync(entity.Id, "New Name", null, null, null, null);
 
             // Assert
             result.Name.Should().Be("New Name");
@@ -161,7 +162,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
-                async () => await repo.UpdateAsync(999, "Name", null, null));
+                async () => await repo.UpdateAsync(999, "Name", null, null, null, null));
         }
 
         [Fact]
@@ -197,7 +198,45 @@ namespace PayTrack.Tests.UnitTests.Repositories
             preview.CostCentreName.Should().Be("Powertrain");
             preview.BudgetCount.Should().Be(1);
             preview.TransactionCount.Should().Be(0);
+            preview.AffectedUserCount.Should().Be(0);
             preview.AffectedTeamNames.Should().ContainSingle(n => n == "Team Alpha");
+        }
+
+        [Fact]
+        public async Task GetDeletePreviewAsync_ShouldReturnCorrectAffectedUserCount()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeletePreview_AffectedUsers");
+
+            var team = new Team { Name = "Team Alpha" };
+            context.Teams.Add(team);
+            await context.SaveChangesAsync();
+
+            var user1 = new User { Name = "Alice", Email = "alice@test.com", TeamId = team.Id };
+            var user2 = new User { Name = "Bob", Email = "bob@test.com", TeamId = team.Id };
+            context.User.Add(user1);
+            context.User.Add(user2);
+            await context.SaveChangesAsync();
+
+            var costCentre = new CostCentre { Name = "Powertrain" };
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            // 2 transactions from user1, 1 from user2 → 2 distinct users
+            context.PaymentManuals.AddRange(
+                new PaymentManual { UserId = user1.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 100m, PaymentDirection = PaymentDirection.Out },
+                new PaymentManual { UserId = user1.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 200m, PaymentDirection = PaymentDirection.Out },
+                new PaymentManual { UserId = user2.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 300m, PaymentDirection = PaymentDirection.Out });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var preview = await repo.GetDeletePreviewAsync(costCentre.Id);
+
+            // Assert
+            preview.TransactionCount.Should().Be(3);
+            preview.AffectedUserCount.Should().Be(2);
         }
 
         [Fact]
@@ -291,6 +330,200 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Act & Assert
             await Assert.ThrowsAsync<InternalErrorException>(
                 async () => await repo.DeleteAsync(entity.Id));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithNewBudgetEntry_ShouldAddBudget()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_AddBudget");
+            var team = new Team { Name = "Team A" };
+            context.Teams.Add(team);
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: null, TeamId: team.Id, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+
+            // Act
+            await repo.UpdateAsync(entity.Id, null, null, null, budgetsToUpsert, null);
+
+            // Assert
+            var budgets = await context.Budgets.Where(b => b.CostCentreId == entity.Id).ToListAsync();
+            budgets.Should().HaveCount(1);
+            budgets[0].TargetAmount.Should().Be(1000m);
+            budgets[0].TeamId.Should().Be(team.Id);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithExistingBudgetId_ShouldUpdateBudget()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_UpdateBudget");
+            var team = new Team { Name = "Team A" };
+            context.Teams.Add(team);
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var budget = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = entity.Id,
+                TargetAmount = 500m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 6, 30),
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: budget.Id, TeamId: team.Id, TargetAmount: 9999m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+
+            // Act
+            await repo.UpdateAsync(entity.Id, null, null, null, budgetsToUpsert, null);
+
+            // Assert
+            var updated = await context.Budgets.FindAsync(budget.Id);
+            updated!.TargetAmount.Should().Be(9999m);
+            updated.PeriodEnd.Should().Be(new DateTime(2026, 12, 31));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithBudgetIdToDelete_ShouldRemoveBudget()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_DeleteBudget");
+            var team = new Team { Name = "Team A" };
+            context.Teams.Add(team);
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var budget = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = entity.Id,
+                TargetAmount = 500m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            await repo.UpdateAsync(entity.Id, null, null, null, null, [budget.Id]);
+
+            // Assert
+            var deleted = await context.Budgets.FindAsync(budget.Id);
+            deleted.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithMixedUpsertAndDelete_ShouldApplyBoth()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_Mixed");
+            var team = new Team { Name = "Team A" };
+            context.Teams.Add(team);
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var budgetToDelete = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = entity.Id,
+                TargetAmount = 100m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 6, 30),
+            };
+            context.Budgets.Add(budgetToDelete);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: null, TeamId: team.Id, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 7, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+
+            // Act
+            await repo.UpdateAsync(entity.Id, null, null, null, budgetsToUpsert, [budgetToDelete.Id]);
+
+            // Assert
+            var deleted = await context.Budgets.FindAsync(budgetToDelete.Id);
+            deleted.Should().BeNull();
+
+            var remaining = await context.Budgets.Where(b => b.CostCentreId == entity.Id).ToListAsync();
+            remaining.Should().HaveCount(1);
+            remaining[0].TargetAmount.Should().Be(5000m);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithUnknownBudgetIdToDelete_ShouldThrowNotFoundException()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_DeleteUnknown");
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<NotFoundException>(
+                async () => await repo.UpdateAsync(entity.Id, null, null, null, null, [999]));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithUnknownExistingBudgetIdToUpsert_ShouldThrowNotFoundException()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateCostCentre_UpsertUnknown");
+            var entity = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(entity);
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            {
+                new(Id: 999, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<NotFoundException>(
+                async () => await repo.UpdateAsync(entity.Id, null, null, null, budgetsToUpsert, null));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithAllNullInputs_ShouldReturnEntityWithoutSaving()
+        {
+            // Arrange
+            // FailingDbContext returns 0 from SaveChangesAsync after the first real save.
+            // If SaveChangesAsync is called here it returns 0, which would trigger InternalErrorException.
+            // Passing without exception proves SaveChangesAsync was NOT called.
+            var failingContext = new FailingDbContext("UpdateCostCentre_AllNull", 1);
+            var entity = new CostCentre { Name = "Aero" };
+            failingContext.CostCentres.Add(entity);
+            await failingContext.SaveChangesAsync(); // uses the 1 allowed success
+
+            var repo = new CostCentreRepository(failingContext);
+
+            // Act
+            var result = await repo.UpdateAsync(entity.Id, null, null, null, null, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Name.Should().Be("Aero");
         }
     }
 }

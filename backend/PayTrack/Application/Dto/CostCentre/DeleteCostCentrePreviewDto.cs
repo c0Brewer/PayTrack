@@ -20,5 +20,8 @@ namespace PayTrack.Application.Dto.CostCentre
         int TransactionCount,
 
         [property: Required]
+        int AffectedUserCount,
+
+        [property: Required]
         IList<string> AffectedTeamNames);
 }

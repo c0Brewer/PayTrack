@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Data.Entities;
 
@@ -40,8 +41,16 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="name">New name, or null to leave unchanged.</param>
         /// <param name="description">New description, or null to leave unchanged.</param>
         /// <param name="displayColor">New display color, or null to leave unchanged.</param>
+        /// <param name="budgetsToUpsert">Budget entries to add (Id null/0) or update (Id > 0).</param>
+        /// <param name="budgetIdsToDelete">Ids of budget entries to remove.</param>
         /// <returns>The updated CostCentre.</returns>
-        Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor);
+        Task<CostCentre> UpdateAsync(
+            int id,
+            string? name,
+            string? description,
+            string? displayColor,
+            IList<UpsertBudgetEntryDto>? budgetsToUpsert,
+            IList<int>? budgetIdsToDelete);
 
         /// <summary>
         /// Returns a preview of what would be affected by deleting the given cost center.
