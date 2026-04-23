@@ -87,16 +87,5 @@ namespace PayTrack.Data.Entities
         /// Reference to payment requests (which this user created).
         /// </summary>
         public ICollection<PaymentRequestByTeam> RequestedByTeamPayments { get; set; } = [];
-
-        /// <summary>
-        /// Foreign Key for the preferred bank account.
-        /// </summary>
-        public int? PreferredBankAccountId { get; set; }
-
-        /// <summary>
-        /// Reference to the preferred Bank Account.
-        /// </summary>
-        [ForeignKey(nameof(PreferredBankAccountId))]
-        public BankAccount? PreferredBankAccount { get; set; }
     }
 }

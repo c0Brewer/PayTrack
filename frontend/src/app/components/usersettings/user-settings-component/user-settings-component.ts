@@ -1,100 +1,135 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
-import { UserService } from '../../../services/user/user-service';
-import { UserSettingsDto, BankAccountDto } from '../../../types/exporter';
-
-import { AuthService } from '../../../services/auth/auth-service';
+import { BankAccountEditorModalComponent } from '../bank-account-editor-modal/bank-account-editor-modal';
+import {
+  BankAccountDto,
+  BankAccountRequestDto,
+  BankAccountsResponseDto,
+  UserService,
+} from '../../../services/user/user-service';
 
 @Component({
   selector: 'app-user-settings-component',
-  imports: [ReactiveFormsModule, CommonModule],
+  standalone: true,
+  imports: [CommonModule, BankAccountEditorModalComponent],
   templateUrl: './user-settings-component.html',
   styleUrl: './user-settings-component.scss',
 })
 export class UserSettingsComponent implements OnInit {
-  public settingsForm!: FormGroup;
+  public bankAccounts: BankAccountDto[] = [];
+
+  public isLoading = false;
+  public isCreateModalOpen = false;
+  public editingBankAccount: BankAccountDto | null = null;
+
+  public errorMessage = '';
+  public modalErrorMessage = '';
 
   constructor(
-    private readonly fb: FormBuilder,
-    private readonly userSettingsService: UserService,
-    private readonly authService: AuthService
-  ) {
-    this.initForm();
+    private readonly userService: UserService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  public ngOnInit(): void {
+    this.loadBankAccounts();
   }
 
-  ngOnInit(): void {
-    this.loadSettings();
-  }
+  public loadBankAccounts(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  private initForm(): void {
-    this.settingsForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      preferredBankAccountId: [null],
-      bankAccounts: this.fb.array([])
-    });
-  }
-
-  get bankAccounts(): FormArray {
-    return this.settingsForm.get('bankAccounts') as FormArray;
-  }
-
-  private loadSettings(): void {
-    this.userSettingsService.getUserSettings().subscribe({
-      next: (data: UserSettingsDto) => {
-        this.bankAccounts.clear();
-        if (data.bankAccounts) {
-          data.bankAccounts.forEach(account => this.addBankAccount(account));
-        }
-
-        this.settingsForm.patchValue({
-          name: data.name,
-          email: data.email,
-          preferredBankAccountId: data.preferredBankAccountId
-        });
+    this.userService.getBankAccounts().subscribe({
+      next: (data: BankAccountsResponseDto) => {
+        this.bankAccounts = data.bankAccounts;
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Failed to load settings', err),
+      error: (error: unknown) => {
+        this.handleError(error, 'Failed to load bank accounts');
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
-  public addBankAccount(account?: BankAccountDto): void {
-    const accountForm = this.fb.group({
-      id: [account ? account.id : 0], // 0 for new accounts
-      accountHolder: [account ? account.accountHolder : '', Validators.required],
-      iban: [account ? account.iban : '', Validators.required],
-      bic: [account ? account.bic : '', Validators.required]
-    });
-
-    this.bankAccounts.push(accountForm);
+  public openCreateModal(): void {
+    this.editingBankAccount = null;
+    this.modalErrorMessage = '';
+    this.isCreateModalOpen = true;
+    this.cdr.detectChanges();
   }
 
-  public removeBankAccount(index: number): void {
-    const accountId = this.bankAccounts.at(index).get('id')?.value;
+  public openEditModal(account: BankAccountDto): void {
+    this.isCreateModalOpen = false;
+    this.modalErrorMessage = '';
+    this.editingBankAccount = account;
+    this.cdr.detectChanges();
+  }
 
-    // Clear preferred account if it's the one being deleted
-    if (this.settingsForm.get('preferredBankAccountId')?.value === accountId) {
-      this.settingsForm.patchValue({ preferredBankAccountId: null });
+  public closeModal(): void {
+    this.isCreateModalOpen = false;
+    this.editingBankAccount = null;
+    this.modalErrorMessage = '';
+    this.cdr.detectChanges();
+  }
+
+  public createBankAccount(request: BankAccountRequestDto): void {
+    this.userService.createBankAccount(request).subscribe({
+      next: () => {
+        this.closeModal();
+        this.loadBankAccounts();
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        this.handleModalError(error, 'Failed to create bank account');
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  public updateBankAccount(request: BankAccountRequestDto): void {
+    if (!this.editingBankAccount) {
+      return;
     }
 
-    this.bankAccounts.removeAt(index);
-  }
-
-  public trackByFn(index: number, item: any): any {
-    return item.get('id')?.value || index;
-  }
-
-  public onSubmit(): void {
-    if (this.settingsForm.invalid) return;
-
-    this.userSettingsService.updateUserSettings(this.settingsForm.value).subscribe({
+    this.userService.updateBankAccount(this.editingBankAccount.id, request).subscribe({
       next: () => {
-        alert('Settings saved!');
-        this.authService.refreshUser().subscribe();
-        this.loadSettings();
+        this.closeModal();
+        this.loadBankAccounts();
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Failed to save settings', err),
+      error: (error: unknown) => {
+        this.handleModalError(error, 'Failed to update bank account');
+        this.cdr.detectChanges();
+      },
     });
+  }
+
+  public deleteBankAccount(id: number): void {
+    if (!confirm('Delete this bank account?')) {
+      return;
+    }
+
+    this.userService.deleteBankAccount(id).subscribe({
+      next: () => {
+        this.loadBankAccounts();
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        this.handleError(error, 'Failed to delete bank account');
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private handleError(error: unknown, fallbackMessage: string): void {
+    this.errorMessage = error instanceof Error ? error.message : fallbackMessage;
+    console.error(fallbackMessage, error);
+  }
+
+  private handleModalError(error: unknown, fallbackMessage: string): void {
+    this.modalErrorMessage = error instanceof Error ? error.message : fallbackMessage;
+    console.error(fallbackMessage, error);
   }
 }

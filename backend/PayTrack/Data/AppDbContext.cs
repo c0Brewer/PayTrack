@@ -122,13 +122,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne(p => p.RequestedBy)
                 .HasForeignKey(p => p.RequestedById)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // User has one optional Preferred Bank Account
-            e.HasOne(u => u.PreferredBankAccount)
-                .WithMany()
-                .HasForeignKey(u => u.PreferredBankAccountId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // -------------------------------------------------------

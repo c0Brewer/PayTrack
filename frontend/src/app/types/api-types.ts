@@ -357,8 +357,6 @@ export interface components {
         UserSettingsDto: {
             name?: string | null;
             email?: string | null;
-            /** Format: int32 */
-            preferredBankAccountId?: number | null;
             bankAccounts?: components["schemas"]["BankAccountDto"][] | null;
         };
     };
