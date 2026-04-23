@@ -65,6 +65,7 @@ describe('UserEditModalComponent', () => {
       role: Role.REGULAR_USER,
       isActive: true,
       team: { id: 1, name: 'Team', description: '', displayColor: '' },
+      bankAccounts: [],
     };
     component.user = user;
     component.ngOnChanges();

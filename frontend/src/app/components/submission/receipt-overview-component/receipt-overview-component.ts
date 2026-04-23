@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -10,7 +10,7 @@ import { PaymentRequestByUserDto } from '../../../types/exporter';
   templateUrl: './receipt-overview-component.html',
   styleUrl: './receipt-overview-component.scss',
 })
-export class ReceiptOverviewComponent {
+export class ReceiptOverviewComponent implements OnInit {
   requests: PaymentRequestByUserDto[] = [];
 
   /*

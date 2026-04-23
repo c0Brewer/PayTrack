@@ -8,7 +8,6 @@ import {
   GetPaymentRequestsByUserOptions,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
-  ReceiptFileResponse,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
@@ -117,20 +116,20 @@ export class PaymentRequestByUserService {
     return from(promise);
   }
 
-  public getReceiptForPaymentRequestByUser(id: number): Observable<ReceiptFileResponse> {
-    const promise = client
-      .GET('/api/v1/transaction/user/{id}/receipt', {
-        params: {
-          path: {
-            id: id,
-          },
-        },
-      })
-      .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data;
-      });
-
-    return from(promise);
-  }
+  // public getReceiptForPaymentRequestByUser(id: number): Observable<ReceiptFileResponse> {
+  //   const promise = client
+  //     .GET('/api/v1/transaction/user/{id}/receipt', {
+  //       params: {
+  //         path: {
+  //           id: id,
+  //         },
+  //       },
+  //     })
+  //     .then(({ data, error }) => {
+  //       if (error) throw new Error(error.detail ?? 'Unexpected Error');
+  //       return data;
+  //     });
+  //
+  //   return from(promise);
+  // }
 }

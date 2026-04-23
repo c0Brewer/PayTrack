@@ -32,6 +32,7 @@ describe('UserManagementComponent', () => {
       isActive: true,
       profilePictureUrl: '',
       team: { id: 1, name: 'Team A', description: '', displayColor: '' },
+      bankAccounts: [],
     },
     {
       id: 2,
@@ -41,6 +42,7 @@ describe('UserManagementComponent', () => {
       isActive: false,
       profilePictureUrl: '',
       team: { id: 2, name: 'Team B', description: '', displayColor: '' },
+      bankAccounts: [],
     },
   ];
 
@@ -89,10 +91,10 @@ describe('UserManagementComponent', () => {
   });
 
   it('updateFilterOptions should update filter and reload users', () => {
-    component.updateFilterOptions({ name: 'Alice' });
+    component.updateFilterOptions({ Name: 'Alice' });
     expect(component.page).toBe(0);
     expect(userServiceMock.getUser).toHaveBeenCalledTimes(2); // initial load + updateFilter
-    expect(component.filterOptions?.name).toBe('Alice');
+    expect(component.filterOptions?.Name).toBe('Alice');
   });
 
   it('onLimitChange should set limit and reload users', () => {

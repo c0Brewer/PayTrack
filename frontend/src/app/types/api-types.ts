@@ -292,9 +292,10 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["CreatePaymentRequestByUserDto"];
+                    "multipart/form-data": components["schemas"]["CreatePaymentRequestByUserDto"];
+                    "application/x-www-form-urlencoded": components["schemas"]["CreatePaymentRequestByUserDto"];
                 };
             };
             responses: {
@@ -336,6 +337,7 @@ export interface paths {
                 query?: {
                     IncludeBankAccount?: boolean;
                     IncludeCostCentre?: boolean;
+                    IncludeUser?: boolean;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                 };
@@ -436,15 +438,6 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["FileContentHttpResult"];
-                    };
-                };
                 /** @description Bad Request */
                 400: {
                     headers: {
@@ -620,17 +613,6 @@ export interface components {
             bic: string;
             accountHolder: string;
         };
-        ByteReadOnlyMemory: {
-            /** Format: int32 */
-            readonly length?: number;
-            readonly isEmpty?: boolean;
-            span?: components["schemas"]["ByteReadOnlySpan"];
-        };
-        ByteReadOnlySpan: {
-            /** Format: int32 */
-            readonly length?: number;
-            readonly isEmpty?: boolean;
-        };
         CostCentreDto: {
             /** Format: int32 */
             id: number;
@@ -661,21 +643,6 @@ export interface components {
             purposeOfPayment: string;
             /** Format: date-time */
             paidAt: string;
-        };
-        EntityTagHeaderValue: {
-            tag?: components["schemas"]["StringSegment"];
-            readonly isWeak?: boolean;
-        };
-        FileContentHttpResult: {
-            readonly contentType?: string | null;
-            readonly fileDownloadName?: string | null;
-            /** Format: date-time */
-            readonly lastModified?: string | null;
-            entityTag?: components["schemas"]["EntityTagHeaderValue"];
-            readonly enableRangeProcessing?: boolean;
-            /** Format: int64 */
-            readonly fileLength?: number | null;
-            fileContents?: components["schemas"]["ByteReadOnlyMemory"];
         };
         GoogleAuthCallbackDto: {
             idToken: string;
@@ -741,15 +708,6 @@ export interface components {
          * @enum {integer}
          */
         Role: 0 | 1 | 2;
-        StringSegment: {
-            buffer?: string | null;
-            /** Format: int32 */
-            readonly offset?: number;
-            /** Format: int32 */
-            readonly length?: number;
-            readonly value?: string | null;
-            readonly hasValue?: boolean;
-        };
         TeamDto: {
             /** Format: int32 */
             id: number;
@@ -772,11 +730,21 @@ export interface components {
             changedAt: string;
         };
         UpdatePaymentRequestByUserDto: {
+            transaction: components["schemas"]["UpdateTransactionDto"];
             invoiceNumber?: string | null;
             comment?: string | null;
             payoutType?: components["schemas"]["PayoutType"];
             /** Format: int32 */
             bankAccountId?: number | null;
+        };
+        UpdateTransactionDto: {
+            /** Format: int32 */
+            teamId?: number;
+            /** Format: double */
+            amount?: number;
+            purposeOfPayment?: string | null;
+            /** Format: date-time */
+            paidAt?: string;
         };
         UpdateUserDto: {
             name?: string | null;

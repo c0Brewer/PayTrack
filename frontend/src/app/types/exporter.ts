@@ -23,7 +23,6 @@ export type PaginatedPaymentRequestByUserDto =
 export type PaymentRequestByUserDto = components['schemas']['PaymentRequestByUserDto'];
 export type CreatePaymentRequestByUserDto = components['schemas']['CreatePaymentRequestByUserDto'];
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
-export type ReceiptFileResponse = components['schemas']['FileContentHttpResult'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];

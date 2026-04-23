@@ -38,6 +38,7 @@ describe('UserService', () => {
             isActive: true,
             team: { id: 1, name: 'Team 1', description: '', displayColor: '' },
             profilePictureUrl: '',
+            bankAccounts: [],
           },
           {
             id: 2,
@@ -47,6 +48,7 @@ describe('UserService', () => {
             isActive: true,
             team: { id: 1, name: 'Team 1', description: '', displayColor: '' },
             profilePictureUrl: '',
+            bankAccounts: [],
           },
         ],
       };
@@ -54,10 +56,10 @@ describe('UserService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: mockResponse, error: null } as any);
 
-      const result = await firstValueFrom(service.getUser({ limit: 10, offset: 0 }));
+      const result = await firstValueFrom(service.getUser({ Limit: 10, Offset: 0 }));
 
       expect(client.GET).toHaveBeenCalledWith('/api/v1/user', {
-        params: { query: { limit: 10, offset: 0 } },
+        params: { query: { Limit: 10, Offset: 0 } },
       });
       expect(result).toEqual(mockResponse);
     });
@@ -67,7 +69,7 @@ describe('UserService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error } as any);
 
-      await expect(firstValueFrom(service.getUser({ limit: 10, offset: 0 }))).rejects.toThrow(
+      await expect(firstValueFrom(service.getUser({ Limit: 10, Offset: 0 }))).rejects.toThrow(
         'Failed to fetch users',
       );
     });
@@ -76,7 +78,7 @@ describe('UserService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: {} } as any);
 
-      await expect(firstValueFrom(service.getUser({ limit: 10, offset: 0 }))).rejects.toThrow(
+      await expect(firstValueFrom(service.getUser({ Limit: 10, Offset: 0 }))).rejects.toThrow(
         'Unexpected Error',
       );
     });
@@ -98,6 +100,7 @@ describe('UserService', () => {
         isActive: false,
         team: { id: 2, name: 'Team 2', description: '', displayColor: '' },
         profilePictureUrl: '',
+        bankAccounts: [],
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
