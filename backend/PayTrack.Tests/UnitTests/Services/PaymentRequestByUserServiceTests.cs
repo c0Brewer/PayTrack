@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using PayTrack.Application.Dto.PaymentRequestByUser;
+using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
@@ -24,8 +25,8 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var list = new List<PaymentRequestByUser>
             {
-                new() { Id = 1 },
-                new() { Id = 2 }
+                new () { Id = 1, InvoiceNumber = "123" },
+                new () { Id = 2, InvoiceNumber = "456" }
             };
 
             repoMock
@@ -53,7 +54,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var teamMock = new Mock<ITeamService>();
             var fileMock = new Mock<IFileRepository>();
 
-            var entity = new PaymentRequestByUser { Id = 1 };
+            var entity = new PaymentRequestByUser { Id = 1, InvoiceNumber = "123" };
 
             repoMock
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
@@ -67,7 +68,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var result = await service.GetPaymentRequestByUserByIdAsync(1);
 
             result.Should().NotBeNull();
-            result!.Id.Should().Be(1);
+            result.Id.Should().Be(1);
         }
 
         // ----------------------------
@@ -79,6 +80,12 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var fileMock = new Mock<IFileRepository>();
+
+            var team = new Team { Id = 5 };
+
+            teamMock
+                .Setup(t => t.GetTeamByIdAsync(5))
+                .ReturnsAsync(team);
 
             var service = new PaymentRequestByUserService(
                 repoMock.Object,
@@ -92,7 +99,7 @@ namespace PayTrack.Tests.UnitTests.Services
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByUserAsync(
                     1,
-                    1,
+                    5,
                     100,
                     "purpose",
                     file,
@@ -120,7 +127,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(t => t.GetTeamByIdAsync(5))
                 .ReturnsAsync(team);
 
-            var created = new PaymentRequestByUser { Id = 1 };
+            var created = new PaymentRequestByUser { Id = 1, InvoiceNumber = "123" };
 
             repoMock
                 .Setup(r => r.AddAsync(It.IsAny<PaymentRequestByUser>(), It.IsAny<IFormFile>()))
@@ -164,7 +171,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var fileMock = new Mock<IFileRepository>();
 
             repoMock
-                .Setup(r => r.GetByIdAsync(1, It.IsAny<object>()))
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetTransactionQueryById>()))
                 .ReturnsAsync((PaymentRequestByUser?)null);
 
             var service = new PaymentRequestByUserService(
@@ -189,13 +196,12 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var entity = new PaymentRequestByUser
             {
+                InvoiceNumber = "123",
                 Id = 1,
-                Amount = 10,
-                PurposeOfPayment = "old"
             };
 
             repoMock
-                .Setup(r => r.GetByIdAsync(1, It.IsAny<object>()))
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(entity);
 
             repoMock
@@ -228,12 +234,13 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var entity = new PaymentRequestByUser
             {
+                InvoiceNumber = "123",
                 Id = 1,
                 ReceiptUrl = "/files/test.pdf"
             };
 
             repoMock
-                .Setup(r => r.GetByIdAsync(1, It.IsAny<object>()))
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(entity);
 
             fileMock
@@ -259,12 +266,13 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var entity = new PaymentRequestByUser
             {
+                InvoiceNumber = "123",
                 Id = 1,
                 ReceiptUrl = null
             };
 
             repoMock
-                .Setup(r => r.GetByIdAsync(1, It.IsAny<object>()))
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(entity);
 
             var service = new PaymentRequestByUserService(
