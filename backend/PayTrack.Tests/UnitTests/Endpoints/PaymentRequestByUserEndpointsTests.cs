@@ -173,7 +173,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result.Should().NotBeNull();
-            result!.Id.Should().Be(1);
+            result.Id.Should().Be(1);
         }
 
         // ----------------------------

@@ -1,3 +1,7 @@
+// <copyright file="UpdateTransactionDto.cs" company="PayTrack">
+// Copyright (c) PayTrack. All rights reserved.
+// </copyright>
+
 using System.ComponentModel.DataAnnotations;
 
 namespace PayTrack.Application.Dto.Transaction

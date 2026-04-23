@@ -55,7 +55,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var config = CreateConfig(folder);
             var repo = new FileRepository(config);
 
-            var file = CreateMockFile(new byte[] { 1, 2, 3 }, "test.pdf");
+            var file = CreateMockFile([1, 2, 3], "test.pdf");
 
             // Act
             var result = await repo.SaveFile(file, "invoice_123");
@@ -93,7 +93,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var config = CreateConfig(folder);
             var repo = new FileRepository(config);
 
-            var file = CreateMockFile(Array.Empty<byte>());
+            var file = CreateMockFile([]);
 
             // Act
             Func<Task> act = async () =>
@@ -156,7 +156,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var config = CreateConfig(folder);
             var repo = new FileRepository(config);
 
-            var outsidePath = "/etc/passwd";
+            const string outsidePath = "/etc/passwd";
 
             // Act
             Func<Task> act = async () =>

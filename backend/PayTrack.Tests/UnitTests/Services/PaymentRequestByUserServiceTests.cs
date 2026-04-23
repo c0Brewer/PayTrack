@@ -38,10 +38,10 @@ namespace PayTrack.Tests.UnitTests.Services
                 teamMock.Object,
                 fileMock.Object);
 
-            var result = await service.GetAllAsync();
+            var (paymentRequestByUser, totalCount) = await service.GetAllAsync();
 
-            result.paymentRequestByUser.Should().HaveCount(2);
-            result.totalCount.Should().Be(2);
+            paymentRequestByUser.Should().HaveCount(2);
+            totalCount.Should().Be(2);
         }
 
         // ----------------------------
@@ -245,7 +245,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             fileMock
                 .Setup(f => f.GetByPath(entity.ReceiptUrl))
-                .ReturnsAsync(new byte[] { 1, 2, 3 });
+                .ReturnsAsync([1, 2, 3]);
 
             var service = new PaymentRequestByUserService(
                 repoMock.Object,

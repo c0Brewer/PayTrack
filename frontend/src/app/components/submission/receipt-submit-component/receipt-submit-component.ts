@@ -3,11 +3,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
-import { UserService } from '../../../services/user/user-service';
 import {
   TeamDto,
   CreatePaymentRequestByUserDto,

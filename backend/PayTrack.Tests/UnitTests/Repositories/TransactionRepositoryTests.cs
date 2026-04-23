@@ -44,10 +44,10 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var fileRepo = new Mock<IFileRepository>();
             var repo = new TransactionRepository(context, fileRepo.Object);
 
-            var result = await repo.GetAllAsync(null);
+            var (transaction, totalCount) = await repo.GetAllAsync(null);
 
-            result.transaction.Should().HaveCount(2);
-            result.totalCount.Should().Be(2);
+            transaction.Should().HaveCount(2);
+            totalCount.Should().Be(2);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Transactions.AddRange(
                 new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, CostCentreId = 1, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },
-                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, CostCentreId = 1, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out}
+                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, CostCentreId = 1, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out }
             );
 
             await context.SaveChangesAsync();
@@ -65,7 +65,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var fileRepo = new Mock<IFileRepository>();
             var repo = new TransactionRepository(context, fileRepo.Object);
 
-            var result = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
+            var (transaction, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
             {
                 InvoiceNumber = "12",
                 PayoutType = PayoutType.External,
@@ -92,8 +92,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 // IncludeStatusHistory = true
             });
 
-            result.transaction.Should().HaveCount(2);
-            result.totalCount.Should().Be(2);
+            transaction.Should().HaveCount(2);
+            totalCount.Should().Be(2);
         }
 
         // ----------------------------
@@ -121,7 +121,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var dbEntity = await context.Transactions.FindAsync(result.Id);
             dbEntity.Should().NotBeNull();
-            dbEntity!.Amount.Should().Be(123);
+            dbEntity.Amount.Should().Be(123);
         }
 
         // ----------------------------
@@ -170,7 +170,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var entity = new PaymentRequestByUser() { InvoiceNumber = "123" };
 
-            Func<Task> act = async () => await repo.AddAsync(entity);
+            async Task act() => await repo.AddAsync(entity);
 
             var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
 
@@ -222,7 +222,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var entity = new PaymentRequestByUser { Id = 1, InvoiceNumber = "123" };
 
-            Func<Task> act = async () => await repo.UpdateAsync(entity);
+            async Task act() => await repo.UpdateAsync(entity);
 
             var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
 
