@@ -84,6 +84,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 PaymentDirection = PaymentDirection.Out,
                 Offset = 0,
                 Limit = 20,
+                MinCreatedAt = DateTime.Now.AddDays(-2),
+                MaxCreatedAt = DateTime.Now.AddDays(2)
                 // In order to test these we would have to insert teams, cost centres, etc as well
                 // IncludeCostCentre = true,
                 // IncludeTeam = true,
