@@ -388,6 +388,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BudgetDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
         CreateTeamRequestDto: {
             name: string;
             description?: string | null;
@@ -414,26 +426,14 @@ export interface components {
          * @enum {integer}
          */
         Role: 0 | 1 | 2;
-        TeamBudgetDto: {
-            /** Format: int32 */
-            id: number;
-            /** Format: int32 */
-            costCentreId: number;
-            /** Format: double */
-            targetAmount: number;
-            /** Format: date-time */
-            periodStart: string;
-            /** Format: date-time */
-            periodEnd: string;
-        };
         TeamDto: {
             /** Format: int32 */
             id: number;
             name: string;
             description?: string | null;
             displayColor?: string | null;
-            members?: components["schemas"]["TeamMemberDto"][] | null;
-            budgets?: components["schemas"]["TeamBudgetDto"][] | null;
+            members?: components["schemas"]["UserDto"][] | null;
+            budget?: components["schemas"]["BudgetDto"];
         };
         TeamDtoPaginatedResponse: {
             items: components["schemas"]["TeamDto"][] | null;
@@ -445,15 +445,6 @@ export interface components {
             offset: number;
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
-        };
-        TeamMemberDto: {
-            /** Format: int32 */
-            id: number;
-            name: string;
-            email: string;
-            profilePictureUrl?: string | null;
-            role: components["schemas"]["Role"];
-            isActive: boolean;
         };
         UpdateUserDto: {
             name?: string | null;
