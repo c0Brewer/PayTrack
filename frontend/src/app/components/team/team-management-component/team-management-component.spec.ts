@@ -24,6 +24,15 @@ describe('TeamManagementComponent', () => {
   let cdrMock: {
     markForCheck: ReturnType<typeof vi.fn>;
   };
+  const mockMember: NonNullable<TeamDto['members']>[number] = {
+    id: 1,
+    name: 'Alice',
+    email: 'alice@test.com',
+    profilePictureUrl: 'https://example.com/alice.png',
+    role: 0,
+    team: {} as TeamDto,
+    isActive: true,
+  };
 
   const mockTeams: TeamDto[] = [
     {
@@ -31,8 +40,8 @@ describe('TeamManagementComponent', () => {
       name: 'Platform',
       description: 'Builds product features',
       displayColor: '#2563eb',
-      members: [{ id: 1, name: 'Alice', email: 'alice@test.com', role: 0, isActive: true }],
-      budgets: [],
+      members: [mockMember],
+      budget: undefined,
     },
     {
       id: 2,
@@ -40,7 +49,7 @@ describe('TeamManagementComponent', () => {
       description: 'Keeps things running',
       displayColor: null,
       members: [],
-      budgets: [],
+      budget: undefined,
     },
   ];
 
@@ -87,8 +96,8 @@ describe('TeamManagementComponent', () => {
       Description: undefined,
       MinBudget: undefined,
       MaxBudget: undefined,
-      IncludeMembers: undefined,
-      IncludeBudgets: undefined,
+      IncludeMembers: true,
+      IncludeBudgets: true,
       Limit: 10,
       Offset: 0,
     });
@@ -104,7 +113,7 @@ describe('TeamManagementComponent', () => {
       Description: 'Builds',
       MinBudget: 100,
       MaxBudget: 500,
-      IncludeMembers: true,
+      IncludeMembers: false,
       IncludeBudgets: false,
       Limit: undefined,
       Offset: undefined,
@@ -120,7 +129,7 @@ describe('TeamManagementComponent', () => {
       MinBudget: 100,
       MaxBudget: 500,
       IncludeMembers: true,
-      IncludeBudgets: false,
+      IncludeBudgets: true,
       Limit: 25,
       Offset: 50,
     });
@@ -151,8 +160,6 @@ describe('TeamManagementComponent', () => {
       Description: 'running',
       MinBudget: 50,
       MaxBudget: 900,
-      IncludeMembers: true,
-      IncludeBudgets: true,
     });
 
     expect(component.filterOptions).toEqual(
@@ -226,17 +233,19 @@ describe('TeamManagementComponent', () => {
     expect(listComponent.teams).toEqual(mockTeams);
   });
 
-  it('should pass the include flags into the list child component', () => {
-    fixture.detectChanges();
-    component.updateFilterOptions({ IncludeMembers: true, IncludeBudgets: false });
+  it('should keep members and budgets included when filters change', () => {
     fixture.detectChanges();
 
-    const listComponent = fixture.debugElement.query(
-      By.directive(TeamListComponent),
-    ).componentInstance;
+    component.updateFilterOptions({ Name: 'Operations', MaxBudget: 900 });
 
-    expect(listComponent.includeMembers).toBe(true);
-    expect(listComponent.includeBudgets).toBe(false);
+    expect(teamServiceMock.getTeams).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        Name: 'Operations',
+        MaxBudget: 900,
+        IncludeMembers: true,
+        IncludeBudgets: true,
+      }),
+    );
   });
 
   it('should react to the list child edit event in the parent component', () => {
@@ -258,20 +267,15 @@ describe('TeamManagementComponent', () => {
     const filterComponent = fixture.debugElement.query(
       By.directive(TeamFilterComponent),
     ).componentInstance;
-    filterComponent.updateFilter.emit({ Name: 'Platform', IncludeMembers: true });
+    filterComponent.updateFilter.emit({ Name: 'Platform' });
 
     expect(component.filterOptions).toEqual(
       expect.objectContaining({
         Name: 'Platform',
         IncludeMembers: true,
+        IncludeBudgets: true,
       }),
     );
     expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(2);
-    fixture.detectChanges();
-
-    const listComponent = fixture.debugElement.query(
-      By.directive(TeamListComponent),
-    ).componentInstance;
-    expect(listComponent.includeMembers).toBe(true);
   });
 });

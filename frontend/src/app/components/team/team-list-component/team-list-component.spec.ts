@@ -8,6 +8,15 @@ import { TeamListComponent } from './team-list-component';
 describe('TeamListComponent', () => {
   let component: TeamListComponent;
   let fixture: ComponentFixture<TeamListComponent>;
+  const mockMember: NonNullable<TeamDto['members']>[number] = {
+    id: 1,
+    name: 'Alice',
+    email: 'alice@test.com',
+    profilePictureUrl: 'https://example.com/alice.png',
+    role: 0,
+    team: {} as TeamDto,
+    isActive: true,
+  };
 
   const mockTeams: TeamDto[] = [
     {
@@ -15,16 +24,14 @@ describe('TeamListComponent', () => {
       name: 'Platform',
       description: 'Builds product features',
       displayColor: '#2563eb',
-      members: [{ id: 1, name: 'Alice', email: 'alice@test.com', role: 0, isActive: true }],
-      budgets: [
-        {
-          id: 1,
-          costCentreId: 10,
-          targetAmount: 5000,
-          periodStart: '2026-01-01T00:00:00Z',
-          periodEnd: '2026-12-31T00:00:00Z',
-        },
-      ],
+      members: [mockMember],
+      budget: {
+        id: 1,
+        costCentreId: 10,
+        targetAmount: 5000,
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
     },
     {
       id: 2,
@@ -32,9 +39,26 @@ describe('TeamListComponent', () => {
       description: null,
       displayColor: null,
       members: null,
-      budgets: null,
+      budget: undefined,
     },
   ];
+
+  const legacyBudgetTeam: TeamDto = {
+    id: 3,
+    name: 'Finance',
+    description: 'Legacy payload shape',
+    displayColor: '#0f766e',
+    members: [],
+    budget: [
+      {
+        id: 2,
+        costCentreId: 11,
+        targetAmount: 7000,
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
+    ] as unknown as TeamDto['budget'],
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -69,11 +93,12 @@ describe('TeamListComponent', () => {
     expect(component.getDisplayColor(mockTeams[1])).toBe('transparent');
   });
 
-  it('should count members and budgets defensively when relations are missing', () => {
+  it('should count members and read the target amount defensively when relations are missing', () => {
     expect(component.getMembersCount(mockTeams[0])).toBe(1);
     expect(component.getMembersCount(mockTeams[1])).toBe(0);
-    expect(component.getBudgetsCount(mockTeams[0])).toBe(1);
-    expect(component.getBudgetsCount(mockTeams[1])).toBe(0);
+    expect(component.getBudgetTargetAmount(mockTeams[0])).toBe(5000);
+    expect(component.getBudgetTargetAmount(mockTeams[1])).toBeNull();
+    expect(component.getBudgetTargetAmount(legacyBudgetTeam)).toBe(7000);
   });
 
   it('should accept @Input teams and render one row per team', () => {
@@ -87,26 +112,23 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should hide the members and budgets columns unless their include flags are true', () => {
+  it('should always render the members and target amount columns', () => {
     fixture.componentRef.setInput('teams', mockTeams);
-    fixture.detectChanges();
-
-    const text = fixture.nativeElement.textContent;
-
-    expect(text).not.toContain('Members');
-    expect(text).not.toContain('Budgets');
-  });
-
-  it('should render only the requested relation columns', () => {
-    fixture.componentRef.setInput('teams', mockTeams);
-    fixture.componentRef.setInput('includeMembers', true);
-    fixture.componentRef.setInput('includeBudgets', false);
     fixture.detectChanges();
 
     const headers = Array.from(
       fixture.nativeElement.querySelectorAll('thead th') as NodeListOf<HTMLTableCellElement>,
       (header) => header.textContent?.trim(),
     );
+
+    expect(headers).toContain('Members');
+    expect(headers).toContain('Target Amount');
+  });
+
+  it('should render members and the current budget target amount in each row', () => {
+    fixture.componentRef.setInput('teams', mockTeams);
+    fixture.detectChanges();
+
     const columns = fixture.nativeElement.querySelectorAll('colgroup col');
     const firstRowCells = Array.from(
       fixture.nativeElement.querySelectorAll(
@@ -114,11 +136,17 @@ describe('TeamListComponent', () => {
       ) as NodeListOf<HTMLTableCellElement>,
       (cell) => cell.textContent?.trim(),
     );
+    const secondRowCells = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'tbody tr:nth-child(2) td',
+      ) as NodeListOf<HTMLTableCellElement>,
+      (cell) => cell.textContent?.trim(),
+    );
 
-    expect(headers).toContain('Members');
-    expect(headers).not.toContain('Budgets');
-    expect(columns.length).toBe(headers.length);
+    expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
+    expect(firstRowCells).toContain('5000 €');
+    expect(secondRowCells).toContain('No target amount');
   });
 
   it('should render the empty-state row when no teams are available', () => {
@@ -131,12 +159,10 @@ describe('TeamListComponent', () => {
 
   it('should keep the empty-state colspan aligned with the visible columns', () => {
     fixture.componentRef.setInput('teams', []);
-    fixture.componentRef.setInput('includeMembers', true);
-    fixture.componentRef.setInput('includeBudgets', false);
     fixture.detectChanges();
 
     const emptyStateCell = fixture.nativeElement.querySelector('tbody tr td');
 
-    expect(emptyStateCell.getAttribute('colspan')).toBe('4');
+    expect(emptyStateCell.getAttribute('colspan')).toBe('5');
   });
 });

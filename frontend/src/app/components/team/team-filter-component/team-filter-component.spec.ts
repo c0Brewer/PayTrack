@@ -67,26 +67,6 @@ describe('TeamFilterComponent', () => {
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ MaxBudget: 900 }));
   });
 
-  it('should emit IncludeMembers when the checkbox is toggled', () => {
-    const spy = vi.spyOn(component.updateFilter, 'emit');
-    component.filterIncludeMembers = true;
-
-    component.onIncludeMembersFilterChange();
-    vi.advanceTimersByTime(100);
-
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IncludeMembers: true }));
-  });
-
-  it('should preserve a false IncludeBudgets value when the checkbox is cleared', () => {
-    const spy = vi.spyOn(component.updateFilter, 'emit');
-    component.filterIncludeBudgets = false;
-
-    component.onIncludeBudgetsFilterChange();
-    vi.advanceTimersByTime(100);
-
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IncludeBudgets: false }));
-  });
-
   it('should emit the new limit when the page size changes', () => {
     const spy = vi.spyOn(component.limitChange, 'emit');
     component.limit = 25;
@@ -101,8 +81,6 @@ describe('TeamFilterComponent', () => {
     component.filterDescription = 'Core systems';
     component.filterMinBudget = 100;
     component.filterMaxBudget = 900;
-    component.filterIncludeMembers = true;
-    component.filterIncludeBudgets = false;
 
     const options: GetTeamOptions = component.getGetTeamOptions();
 
@@ -111,8 +89,6 @@ describe('TeamFilterComponent', () => {
       Description: 'Core systems',
       MinBudget: 100,
       MaxBudget: 900,
-      IncludeMembers: true,
-      IncludeBudgets: false,
       Limit: undefined,
       Offset: undefined,
     });
