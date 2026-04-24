@@ -1,4 +1,4 @@
-// <copyright file="TeamBudgetDto.cs" company="PayTrack">
+// <copyright file="BudgetDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -9,7 +9,7 @@ namespace PayTrack.Application.Dto.Team
     /// <summary>
     /// Lightweight DTO for a team budget.
     /// </summary>
-    public sealed record class TeamBudgetDto(
+    public sealed record class BudgetDto(
         [property: Required]
         int Id,
 

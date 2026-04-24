@@ -4,7 +4,7 @@ using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Mapper
 {
-    public class TeamBudgetMapperTests
+    public class BudgetMapperTests
     {
         [Fact]
         public async Task MapperListToDto_ReturnsCorrectResult()
@@ -31,7 +31,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 },
             ];
 
-            var budgetDto = TeamBudgetMapper.ListToDto(budgets);
+            var budgetDto = BudgetMapper.ListToDto(budgets);
 
             budgetDto.Should().NotBeNull();
             budgetDto.Should().HaveCount(2);
