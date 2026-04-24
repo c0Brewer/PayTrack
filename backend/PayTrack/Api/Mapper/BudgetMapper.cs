@@ -18,7 +18,7 @@ namespace PayTrack.Api.Mapper
         /// </summary>
         /// <param name="budget">List of Budget objects.</param>
         /// <returns>List of TeamBudgetDto objects.</returns>
-        public static List<BudgetDto> ListToDto(ICollection<Budget> budget)
+        public static List<BudgetDto> CollectionToDto(ICollection<Budget> budget)
         {
             return budget.Select(ToDto).ToList();
         }
