@@ -21,15 +21,11 @@ export class TeamFilterComponent implements OnInit {
   filterDescription: string = '';
   filterMinBudget: number | undefined = undefined;
   filterMaxBudget: number | undefined = undefined;
-  filterIncludeMembers: boolean | undefined = undefined;
-  filterIncludeBudgets: boolean | undefined = undefined;
 
   private readonly filterNameSubject = new Subject<string>();
   private readonly filterDescriptionSubject = new Subject<string>();
   private readonly filterMinBudgetSubject = new Subject<number | undefined>();
   private readonly filterMaxBudgetSubject = new Subject<number | undefined>();
-  private readonly filterIncludeMembersSubject = new Subject<boolean | undefined>();
-  private readonly filterIncludeBudgetsSubject = new Subject<boolean | undefined>();
 
   ngOnInit(): void {
     this.filterNameSubject.pipe(debounceTime(400)).subscribe((value) => {
@@ -51,16 +47,6 @@ export class TeamFilterComponent implements OnInit {
       this.filterMaxBudget = value ?? undefined;
       this.updateFilter.emit(this.getGetTeamOptions());
     });
-
-    this.filterIncludeMembersSubject.pipe(debounceTime(100)).subscribe((value) => {
-      this.filterIncludeMembers = value ?? undefined;
-      this.updateFilter.emit(this.getGetTeamOptions());
-    });
-
-    this.filterIncludeBudgetsSubject.pipe(debounceTime(100)).subscribe((value) => {
-      this.filterIncludeBudgets = value ?? undefined;
-      this.updateFilter.emit(this.getGetTeamOptions());
-    });
   }
 
   getGetTeamOptions(): GetTeamOptions {
@@ -69,8 +55,6 @@ export class TeamFilterComponent implements OnInit {
       Description: this.filterDescription ?? undefined,
       MinBudget: this.filterMinBudget ?? undefined,
       MaxBudget: this.filterMaxBudget ?? undefined,
-      IncludeMembers: this.filterIncludeMembers ?? undefined,
-      IncludeBudgets: this.filterIncludeBudgets ?? undefined,
       Limit: undefined,
       Offset: undefined,
     };
@@ -92,14 +76,6 @@ export class TeamFilterComponent implements OnInit {
   onMaxBudgetFilterChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.filterMaxBudgetSubject.next(value === '' ? undefined : Number(value));
-  }
-
-  onIncludeMembersFilterChange(): void {
-    this.filterIncludeMembersSubject.next(this.filterIncludeMembers);
-  }
-
-  onIncludeBudgetsFilterChange(): void {
-    this.filterIncludeBudgetsSubject.next(this.filterIncludeBudgets);
   }
 
   onLimitChange(): void {

@@ -10,18 +10,8 @@ import { TeamDto } from '../../../types/exporter';
 })
 export class TeamListComponent {
   @Input() teams: TeamDto[] = [];
-  @Input() includeMembers: boolean | undefined = undefined;
-  @Input() includeBudgets: boolean | undefined = undefined;
 
   @Output() openEditTeam = new EventEmitter<TeamDto>();
-
-  get showMembers(): boolean {
-    return this.includeMembers === true;
-  }
-
-  get showBudgets(): boolean {
-    return this.includeBudgets === true;
-  }
 
   onOpenEditTeam(team: TeamDto): void {
     this.openEditTeam.emit(team);
@@ -39,8 +29,18 @@ export class TeamListComponent {
     return team.members?.length ?? 0;
   }
 
-  getBudgetsCount(team: TeamDto): number {
-    return team.budgets?.length ?? 0;
+  getBudgetTargetAmount(team: TeamDto): number | null {
+    const budgetValue = team.budget as
+      | { targetAmount: number }
+      | { targetAmount: number }[]
+      | null
+      | undefined;
+    if (budgetValue == null) {
+      return null;
+    }
+
+    const budget = Array.isArray(budgetValue) ? budgetValue[0] : budgetValue;
+    return budget?.targetAmount ?? null;
   }
 
   getTeamNameTextColor(team: TeamDto): string {
@@ -54,7 +54,7 @@ export class TeamListComponent {
   }
 
   getVisibleColumnCount(): number {
-    return 3 + (this.showMembers ? 1 : 0) + (this.showBudgets ? 1 : 0);
+    return 5;
   }
 }
 

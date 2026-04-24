@@ -10,8 +10,6 @@
 
   <app-team-list-component
     [teams]="teams"
-    [includeMembers]="filterOptions.IncludeMembers"
-    [includeBudgets]="filterOptions.IncludeBudgets"
     (openEditTeam)="openEditTeam($event)"
   ></app-team-list-component>
 
@@ -22,7 +20,7 @@
     [maxPage]="getTotalPages()"
     (next)="nextPage()"
     (prev)="previousPage()"
-    ></app-pagination-component>
+  ></app-pagination-component>
 
   <!-- TODO: EDIT POPUP -->
 </div>

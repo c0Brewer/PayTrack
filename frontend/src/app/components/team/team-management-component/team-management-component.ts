@@ -37,8 +37,8 @@ export class TeamManagementComponent {
     Description: undefined,
     MinBudget: undefined,
     MaxBudget: undefined,
-    IncludeMembers: undefined,
-    IncludeBudgets: undefined,
+    IncludeMembers: true,
+    IncludeBudgets: true,
     Limit: this.limit,
     Offset: this.page * this.limit,
   };
@@ -53,8 +53,8 @@ export class TeamManagementComponent {
       Description: this.filterOptions?.Description ?? undefined,
       MinBudget: this.filterOptions?.MinBudget ?? undefined,
       MaxBudget: this.filterOptions?.MaxBudget ?? undefined,
-      IncludeMembers: this.filterOptions?.IncludeMembers ?? undefined,
-      IncludeBudgets: this.filterOptions?.IncludeBudgets ?? undefined,
+      IncludeMembers: true,
+      IncludeBudgets: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
     };
@@ -85,8 +85,6 @@ export class TeamManagementComponent {
       this.filterOptions.Description = options.Description;
       this.filterOptions.MinBudget = options.MinBudget;
       this.filterOptions.MaxBudget = options.MaxBudget;
-      this.filterOptions.IncludeMembers = options.IncludeMembers;
-      this.filterOptions.IncludeBudgets = options.IncludeBudgets;
       this.page = 0;
       this.loadTeams();
     }

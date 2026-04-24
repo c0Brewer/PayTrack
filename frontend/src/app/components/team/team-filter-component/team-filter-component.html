@@ -1,10 +1,6 @@
 <div class="toolbar">
   <input type="text" placeholder="Name..." (input)="onNameFilterChange($event)" />
-  <input
-    type="text"
-    placeholder="Description..."
-    (input)="onDescriptionFilterChange($event)"
-  />
+  <input type="text" placeholder="Description..." (input)="onDescriptionFilterChange($event)" />
 
   <input
     type="number"
@@ -25,22 +21,4 @@
       <option [value]="l">{{ l }} per page</option>
     }
   </select>
-
-  <label>
-    <input
-      type="checkbox"
-      [(ngModel)]="filterIncludeMembers"
-      (ngModelChange)="onIncludeMembersFilterChange()"
-    />
-    Include members
-  </label>
-
-  <label>
-    <input
-      type="checkbox"
-      [(ngModel)]="filterIncludeBudgets"
-      (ngModelChange)="onIncludeBudgetsFilterChange()"
-    />
-    Include budgets
-  </label>
 </div>
