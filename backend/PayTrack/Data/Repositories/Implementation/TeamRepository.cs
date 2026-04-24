@@ -46,6 +46,12 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.Description != null && t.Description.Contains(query.Description));
             }
 
+            // Check if budget should be included
+            if (query?.IncludeBudgets == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Budgets);
+            }
+
             // Filter by Budget
             if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
             {
@@ -57,14 +63,8 @@ namespace PayTrack.Data.Repositories.Implementation
                     (!query.MaxBudget.HasValue || b.TargetAmount <= query.MaxBudget.Value)));
             }
 
-            // Calculate total count
+            // Calculate total count after filters but before pagination.
             var totalCount = await dbQuery.CountAsync();
-
-            // Check if budget should be included
-            if (query?.IncludeBudgets == true)
-            {
-                dbQuery = dbQuery.Include(t => t.Budgets);
-            }
 
             // Check if members should be included
             if (query?.IncludeMembers == true)

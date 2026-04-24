@@ -28,6 +28,7 @@ namespace PayTrack.Api.Endpoints
                 .RequireAuthorization()
                 .RequireRole(Role.Admin);
 
+            // TODO: Show Members always!
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
             group.MapPost("/", TeamHandler.CreateTeamAsync);
