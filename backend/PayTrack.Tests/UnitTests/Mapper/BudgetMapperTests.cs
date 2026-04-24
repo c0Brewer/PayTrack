@@ -31,7 +31,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 },
             ];
 
-            var budgetDto = BudgetMapper.ListToDto(budgets);
+            var budgetDto = BudgetMapper.CollectionToDto(budgets);
 
             budgetDto.Should().NotBeNull();
             budgetDto.Should().HaveCount(2);

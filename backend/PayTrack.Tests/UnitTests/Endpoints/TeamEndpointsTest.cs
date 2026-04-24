@@ -49,9 +49,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Items[0].Name.Should().Be("Alpha");
             result.Items[1].Name.Should().Be("Beta");
             result.Items[0].Members.Should().NotBeNull().And.BeEmpty();
-            result.Items[0].Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Items[0].Budget.Should().BeNull();
             result.Items[1].Members.Should().NotBeNull().And.BeEmpty();
-            result.Items[1].Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Items[1].Budget.Should().BeNull();
             result.TotalCount.Should().Be(2);
         }
 
@@ -59,6 +59,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetTeams_ForwardsQueryParametersAndMapsOptionalData()
         {
             // Arrange
+            var now = DateTime.UtcNow;
             var teams = new List<Team>
             {
                 new()
@@ -84,8 +85,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                             TeamId = 1,
                             CostCentreId = 12,
                             TargetAmount = 600m,
-                            PeriodStart = new DateTime(2026, 1, 1),
-                            PeriodEnd = new DateTime(2026, 12, 31),
+                            PeriodStart = now.AddDays(-1),
+                            PeriodEnd = now.AddDays(1),
                         },
                     ],
                 },
@@ -119,10 +120,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Offset.Should().Be(2);
             result.Items.Should().ContainSingle();
             result.Items[0].Members.Should().ContainSingle();
-            result.Items[0].Budgets.Should().ContainSingle();
             result.Items[0].Members![0].Email.Should().Be("alice@example.com");
             result.Items[0].Members![0].Team.Should().BeNull();
-            result.Items[0].Budgets![0].TargetAmount.Should().Be(600m);
+            result.Items[0].Budget.Should().NotBeNull();
+            result.Items[0].Budget!.TargetAmount.Should().Be(600m);
         }
 
         [Fact]
@@ -147,7 +148,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result.Name.Should().Be("Team1");
             result.Members.Should().NotBeNull().And.BeEmpty();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Budget.Should().BeNull();
         }
 
         [Fact]
@@ -189,13 +190,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Members.Should().ContainSingle();
             result.Members![0].Email.Should().Be("alice@example.com");
             result.Members![0].Team.Should().BeNull();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Budget.Should().BeNull();
         }
 
         [Fact]
         public async Task GetTeamById_ReturnsBudgets_WhenIncludeBudgetsIsTrue()
         {
             // Arrange
+            var now = DateTime.UtcNow;
             var team = new Team
             {
                 Id = 1,
@@ -208,8 +210,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         TeamId = 1,
                         CostCentreId = 12,
                         TargetAmount = 2500m,
-                        PeriodStart = new DateTime(2026, 1, 1),
-                        PeriodEnd = new DateTime(2026, 12, 31),
+                        PeriodStart = now.AddDays(-1),
+                        PeriodEnd = now.AddDays(1),
                     },
                 ],
             };
@@ -228,10 +230,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result!.Budgets.Should().NotBeNull();
-            result.Budgets.Should().ContainSingle();
-            result.Budgets![0].CostCentreId.Should().Be(12);
-            result.Budgets[0].TargetAmount.Should().Be(2500m);
+            result!.Budget.Should().NotBeNull();
+            result.Budget!.CostCentreId.Should().Be(12);
+            result.Budget.TargetAmount.Should().Be(2500m);
             result.Members.Should().NotBeNull().And.BeEmpty();
         }
 
@@ -276,7 +277,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result.Name.Should().Be("New Team");
             result.Members.Should().NotBeNull().And.BeEmpty();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Budget.Should().BeNull();
         }
 
         [Fact]
