@@ -433,7 +433,7 @@ export interface components {
             description?: string | null;
             displayColor?: string | null;
             members?: components["schemas"]["UserDto"][] | null;
-            budget?: components["schemas"]["BudgetDto"];
+            budgets?: components["schemas"]["BudgetDto"][] | null;
         };
         TeamDtoPaginatedResponse: {
             items: components["schemas"]["TeamDto"][] | null;
