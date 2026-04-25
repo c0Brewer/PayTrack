@@ -121,7 +121,7 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should always render the members and target amount columns', () => {
+  it('should always render the member count and team budget columns', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
@@ -130,11 +130,11 @@ describe('TeamListComponent', () => {
       (header) => header.textContent?.trim(),
     );
 
-    expect(headers).toContain('Members');
-    expect(headers).toContain('Target Amount');
+    expect(headers).toContain('Member Count');
+    expect(headers).toContain('Team Budget');
   });
 
-  it('should render members and the current budget target amount in each row', () => {
+  it('should render the member count and current team budget in each row', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
@@ -155,7 +155,7 @@ describe('TeamListComponent', () => {
     expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
     expect(firstRowCells).toContain('5000 €');
-    expect(secondRowCells).toContain('No target amount');
+    expect(secondRowCells).toContain('No budget set');
   });
 
   it('should render the empty-state row when no teams are available', () => {

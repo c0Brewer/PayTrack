@@ -11,8 +11,8 @@
     <tr>
       <th>Name</th>
       <th>Description</th>
-      <th>Members</th>
-      <th>Target Amount</th>
+      <th>Member Count</th>
+      <th>Team Budget</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -36,7 +36,7 @@
           {{
             getBudgetTargetAmount(team) !== null
               ? `${getBudgetTargetAmount(team)} €`
-              : 'No target amount'
+              : 'No budget set'
           }}
         </td>
 
