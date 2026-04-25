@@ -41,7 +41,7 @@ describe('TeamManagementComponent', () => {
       description: 'Builds product features',
       displayColor: '#2563eb',
       members: [mockMember],
-      budget: undefined,
+      budgets: undefined,
     },
     {
       id: 2,
@@ -49,7 +49,7 @@ describe('TeamManagementComponent', () => {
       description: 'Keeps things running',
       displayColor: null,
       members: [],
-      budget: undefined,
+      budgets: undefined,
     },
   ];
 

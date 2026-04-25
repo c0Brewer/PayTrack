@@ -25,13 +25,22 @@ describe('TeamListComponent', () => {
       description: 'Builds product features',
       displayColor: '#2563eb',
       members: [mockMember],
-      budget: {
-        id: 1,
-        costCentreId: 10,
-        targetAmount: 5000,
-        periodStart: '2026-01-01T00:00:00Z',
-        periodEnd: '2026-12-31T00:00:00Z',
-      },
+      budgets: [
+        {
+          id: 1,
+          costCentreId: 10,
+          targetAmount: 3000,
+          periodStart: buildBudgetDate(-120, 'start'),
+          periodEnd: buildBudgetDate(-60, 'end'),
+        },
+        {
+          id: 2,
+          costCentreId: 10,
+          targetAmount: 5000,
+          periodStart: buildBudgetDate(-30, 'start'),
+          periodEnd: buildBudgetDate(30, 'end'),
+        },
+      ],
     },
     {
       id: 2,
@@ -39,25 +48,25 @@ describe('TeamListComponent', () => {
       description: null,
       displayColor: null,
       members: null,
-      budget: undefined,
+      budgets: undefined,
     },
   ];
 
-  const legacyBudgetTeam: TeamDto = {
+  const nonMatchingBudgetTeam: TeamDto = {
     id: 3,
     name: 'Finance',
-    description: 'Legacy payload shape',
+    description: 'No active budget',
     displayColor: '#0f766e',
     members: [],
-    budget: [
+    budgets: [
       {
-        id: 2,
+        id: 3,
         costCentreId: 11,
         targetAmount: 7000,
-        periodStart: '2026-01-01T00:00:00Z',
-        periodEnd: '2026-12-31T00:00:00Z',
+        periodStart: buildBudgetDate(60, 'start'),
+        periodEnd: buildBudgetDate(120, 'end'),
       },
-    ] as unknown as TeamDto['budget'],
+    ],
   };
 
   beforeEach(async () => {
@@ -93,12 +102,12 @@ describe('TeamListComponent', () => {
     expect(component.getDisplayColor(mockTeams[1])).toBe('transparent');
   });
 
-  it('should count members and read the target amount defensively when relations are missing', () => {
+  it('should count members and return the active target amount for the current date', () => {
     expect(component.getMembersCount(mockTeams[0])).toBe(1);
     expect(component.getMembersCount(mockTeams[1])).toBe(0);
     expect(component.getBudgetTargetAmount(mockTeams[0])).toBe(5000);
     expect(component.getBudgetTargetAmount(mockTeams[1])).toBeNull();
-    expect(component.getBudgetTargetAmount(legacyBudgetTeam)).toBe(7000);
+    expect(component.getBudgetTargetAmount(nonMatchingBudgetTeam)).toBeNull();
   });
 
   it('should accept @Input teams and render one row per team', () => {
@@ -166,3 +175,17 @@ describe('TeamListComponent', () => {
     expect(emptyStateCell.getAttribute('colspan')).toBe('5');
   });
 });
+
+function buildBudgetDate(offsetDays: number, boundary: 'start' | 'end'): string {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+
+  return `${toDateKey(date)}T${boundary === 'start' ? '00:00:00' : '23:59:59'}Z`;
+}
+
+function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
