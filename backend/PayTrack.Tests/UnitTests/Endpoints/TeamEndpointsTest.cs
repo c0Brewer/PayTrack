@@ -281,7 +281,59 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
-        public async Task GetTeams_ReturnsForbidden_WhenUserIsNotAdmin()
+        public async Task GetTeams_ReturnsOk_WhenUserIsRegularUser()
+        {
+            // Arrange
+            await using var factory = new TeamRegularUserApiFactory();
+            var teams = new List<Team>
+            {
+                new() { Id = 1, Name = "Alpha" },
+            };
+
+            factory.TeamServiceMock
+                .Setup(s => s.GetTeamsAsync(It.IsAny<GetTeamQuery>()))
+                .ReturnsAsync((teams, 1));
+
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<TeamDto>>();
+            result.Should().NotBeNull();
+            result!.Items.Should().ContainSingle();
+            result.Items[0].Name.Should().Be("Alpha");
+        }
+
+        [Fact]
+        public async Task GetTeamById_ReturnsOk_WhenUserIsRegularUser()
+        {
+            // Arrange
+            await using var factory = new TeamRegularUserApiFactory();
+            var team = new Team { Id = 1, Name = "Alpha" };
+
+            factory.TeamServiceMock
+                .Setup(s => s.GetTeamByIdAsync(1, It.IsAny<GetTeamQueryById?>()))
+                .ReturnsAsync(team);
+
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team/1");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
+            result.Should().NotBeNull();
+            result!.Name.Should().Be("Alpha");
+        }
+
+        [Fact]
+        public async Task CreateTeam_ReturnsForbidden_WhenUserIsNotAdmin()
         {
             // Arrange
             await using var factory = new TeamRegularUserApiFactory();
@@ -289,7 +341,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
-            var response = await client.GetAsync("api/v1/team");
+            var response = await client.PostAsJsonAsync(
+                "api/v1/team",
+                new CreateTeamRequestDto("New Team", "My Description", "My Color"));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);

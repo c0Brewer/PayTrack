@@ -25,13 +25,11 @@ namespace PayTrack.Api.Endpoints
             var group = app
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
-                .RequireAuthorization()
-                .RequireRole(Role.Admin);
+                .RequireAuthorization();
 
-            // TODO: Show Members always!
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
-            group.MapPost("/", TeamHandler.CreateTeamAsync);
+            group.MapPost("/", TeamHandler.CreateTeamAsync).RequireRole(Role.Admin);
         }
     }
 }

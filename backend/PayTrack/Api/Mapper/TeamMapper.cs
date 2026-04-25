@@ -52,10 +52,8 @@ namespace PayTrack.Api.Mapper
         /// Turns a List of Team objects into a List of TeamDto objects.
         /// </summary>
         /// <param name="team">List of Team objects.</param>
-        /// <param name="includeMembers">Whether to include mapped team members.</param>
-        /// <param name="includeBudgets">Whether to include mapped team budgets.</param>
         /// <returns>List of TeamDto objects.</returns>
-        public static List<TeamDto> ListToDto(List<Team> team, bool includeMembers = false, bool includeBudgets = false)
+        public static List<TeamDto> ListToDto(List<Team> team)
         {
             return team.ConvertAll(ToDto);
         }
