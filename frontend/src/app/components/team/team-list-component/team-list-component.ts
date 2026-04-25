@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { TeamDto } from '../../../types/exporter';
 
+type TeamBudget = NonNullable<TeamDto['budgets']>[number];
+
 @Component({
   selector: 'app-team-list-component',
   imports: [],
@@ -29,18 +31,17 @@ export class TeamListComponent {
     return team.members?.length ?? 0;
   }
 
-  getBudgetTargetAmount(team: TeamDto): number | null {
-    const budgetValue = team.budget as
-      | { targetAmount: number }
-      | { targetAmount: number }[]
-      | null
-      | undefined;
-    if (budgetValue == null) {
+  getCurrentBudget(team: TeamDto): TeamBudget | null {
+    const currentDate = toDateKey(new Date());
+    if (currentDate == null) {
       return null;
     }
 
-    const budget = Array.isArray(budgetValue) ? budgetValue[0] : budgetValue;
-    return budget?.targetAmount ?? null;
+    return team.budgets?.find((budget) => isDateWithinBudgetPeriod(budget, currentDate)) ?? null;
+  }
+
+  getBudgetTargetAmount(team: TeamDto): number | null {
+    return this.getCurrentBudget(team)?.targetAmount ?? null;
   }
 
   getTeamNameTextColor(team: TeamDto): string {
@@ -68,4 +69,27 @@ function hexToRgb(color: string): { red: number; green: number; blue: number } |
     green: Number.parseInt(color.slice(3, 5), 16),
     blue: Number.parseInt(color.slice(5, 7), 16),
   };
+}
+
+function isDateWithinBudgetPeriod(budget: TeamBudget, currentDate: string): boolean {
+  const periodStart = toDateKey(budget.periodStart);
+  const periodEnd = toDateKey(budget.periodEnd);
+
+  if (periodStart == null || periodEnd == null) {
+    return false;
+  }
+
+  return currentDate >= periodStart && currentDate <= periodEnd;
+}
+
+function toDateKey(value: Date | string): string | null {
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const day = `${value.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  const dateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch?.[0] ?? null;
 }
