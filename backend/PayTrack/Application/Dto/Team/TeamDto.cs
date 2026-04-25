@@ -26,5 +26,5 @@ namespace PayTrack.Application.Dto.Team
 
         List<UserDto> Members,
 
-        BudgetDto? Budget);
+        List<BudgetDto> Budgets);
 }

@@ -38,10 +38,6 @@ namespace PayTrack.Api.Mapper
 
             var members = UserMapper.ListToDto(membersToMap);
             var budgets = BudgetMapper.CollectionToDto(team.Budgets);
-            var now = DateTime.UtcNow;
-            var currentBudget = budgets.FirstOrDefault(budget =>
-                budget.PeriodStart <= now &&
-                budget.PeriodEnd >= now);
 
             return new TeamDto(
                 team.Id,
@@ -49,7 +45,7 @@ namespace PayTrack.Api.Mapper
                 team.Description,
                 team.DisplayColor,
                 members,
-                currentBudget);
+                budgets);
         }
 
         /// <summary>
