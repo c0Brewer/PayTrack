@@ -2,14 +2,23 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
+
 namespace PayTrack.Application.Dto.BankAccount
 {
     /// <summary>
-    /// DTO for returning bank account data.
+    /// DTO containing bank account information.
     /// </summary>
     public sealed record class BankAccountDto(
-        int id,
-        string accountHolder,
-        string iban,
-        string bic);
+        [property: Required]
+        int Id,
+
+        [property: Required]
+        string AccountHolder,
+
+        [property: Required]
+        string Iban,
+
+        [property: Required]
+        string Bic);
 }

@@ -14,10 +14,10 @@ namespace PayTrack.Tests.UnitTests.Dto
             var dto = new BankAccountDto(1, "Max Mustermann", "AT611904300234573201", "BKAUATWW");
 
             // Assert
-            dto.id.Should().Be(1);
-            dto.accountHolder.Should().Be("Max Mustermann");
-            dto.iban.Should().Be("AT611904300234573201");
-            dto.bic.Should().Be("BKAUATWW");
+            dto.Id.Should().Be(1);
+            dto.AccountHolder.Should().Be("Max Mustermann");
+            dto.Iban.Should().Be("AT611904300234573201");
+            dto.Bic.Should().Be("BKAUATWW");
         }
 
         [Fact]
@@ -27,9 +27,9 @@ namespace PayTrack.Tests.UnitTests.Dto
             var dto = new CreateBankAccountRequestDto("Max", "AT611904300234573202", "BKAUATWW");
 
             // Assert
-            dto.accountHolder.Should().Be("Max");
-            dto.iban.Should().Be("AT611904300234573202");
-            dto.bic.Should().Be("BKAUATWW");
+            dto.AccountHolder.Should().Be("Max");
+            dto.Iban.Should().Be("AT611904300234573202");
+            dto.Bic.Should().Be("BKAUATWW");
         }
 
         [Fact]
@@ -39,9 +39,9 @@ namespace PayTrack.Tests.UnitTests.Dto
             var dto = new UpdateBankAccountRequestDto("Max", null, "NEWBIC34");
 
             // Assert
-            dto.accountHolder.Should().Be("Max");
-            dto.iban.Should().BeNull();
-            dto.bic.Should().Be("NEWBIC34");
+            dto.AccountHolder.Should().Be("Max");
+            dto.Iban.Should().BeNull();
+            dto.Bic.Should().Be("NEWBIC34");
         }
     }
 }

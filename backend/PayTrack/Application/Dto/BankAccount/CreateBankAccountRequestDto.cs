@@ -13,15 +13,15 @@ namespace PayTrack.Application.Dto.BankAccount
         [property: Required]
         [property: MinLength(3)]
         [property: MaxLength(255)]
-        string accountHolder,
+        string AccountHolder,
 
         [property: Required]
         [property: MinLength(15)]
-        [property: MaxLength(31)]
-        string iban,
+        [property: MaxLength(34)]
+        string Iban,
 
         [property: Required]
         [property: MinLength(8)]
         [property: MaxLength(11)]
-        string bic);
+        string Bic);
 }

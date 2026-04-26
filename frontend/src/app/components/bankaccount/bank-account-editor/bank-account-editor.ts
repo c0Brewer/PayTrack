@@ -45,7 +45,7 @@ export class BankAccountEditorComponent implements OnChanges {
         '',
         [Validators.required, Validators.minLength(3), Validators.maxLength(255)],
       ],
-      iban: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(31)]],
+      iban: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(34)]],
       bic: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
     });
 
@@ -79,7 +79,7 @@ export class BankAccountEditorComponent implements OnChanges {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.validationMessage =
-        'Please enter valid values (Account Holder 3-255, IBAN 15-31, BIC 8-11).';
+        'Please enter valid values (Account Holder 3-255, IBAN 15-34, BIC 8-11).';
       return;
     }
 

@@ -53,8 +53,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<List<BankAccountDto>>();
             result.Should().NotBeNull();
             result.Should().HaveCount(2);
-            result[0].id.Should().Be(10);
-            result[1].id.Should().Be(11);
+            result[0].Id.Should().Be(10);
+            result[1].Id.Should().Be(11);
         }
 
         [Fact]
@@ -88,9 +88,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             {
                 Id = 15,
                 UserId = user.Id,
-                AccountHolder = createDto.accountHolder,
-                Iban = createDto.iban,
-                Bic = createDto.bic,
+                AccountHolder = createDto.AccountHolder,
+                Iban = createDto.Iban,
+                Bic = createDto.Bic,
             };
 
             this.factory.AuthServiceMock
@@ -98,7 +98,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(user);
 
             this.factory.BankAccountServiceMock
-                .Setup(service => service.CreateBankAccountAsync(user.Id, createDto.accountHolder, createDto.iban, createDto.bic))
+                .Setup(service => service.CreateBankAccountAsync(user.Id, createDto.AccountHolder, createDto.Iban, createDto.Bic))
                 .ReturnsAsync(created);
 
             var client = this.factory.CreateClient();
@@ -111,8 +111,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<BankAccountDto>();
             result.Should().NotBeNull();
-            result.id.Should().Be(15);
-            result.accountHolder.Should().Be("Max");
+            result.Id.Should().Be(15);
+            result.AccountHolder.Should().Be("Max");
         }
 
         [Fact]
@@ -140,9 +140,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .Setup(service => service.UpdateBankAccountAsync(
                     user.Id,
                     bankAccountId,
-                    updateDto.accountHolder,
-                    updateDto.iban,
-                    updateDto.bic))
+                    updateDto.AccountHolder,
+                    updateDto.Iban,
+                    updateDto.Bic))
                 .ReturnsAsync(updated);
 
             var client = this.factory.CreateClient();
@@ -155,8 +155,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<BankAccountDto>();
             result.Should().NotBeNull();
-            result.id.Should().Be(bankAccountId);
-            result.bic.Should().Be("NEWBIC12");
+            result.Id.Should().Be(bankAccountId);
+            result.Bic.Should().Be("NEWBIC12");
         }
 
         [Fact]

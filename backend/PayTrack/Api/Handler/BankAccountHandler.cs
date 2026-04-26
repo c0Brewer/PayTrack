@@ -51,9 +51,9 @@ namespace PayTrack.Api.Handler
 
             var createdBankAccount = await bankAccountService.CreateBankAccountAsync(
                 user.Id,
-                createDto.accountHolder,
-                createDto.iban,
-                createDto.bic);
+                createDto.AccountHolder,
+                createDto.Iban,
+                createDto.Bic);
 
             var responseDto = BankAccountMapper.ToDto(createdBankAccount);
 
@@ -79,9 +79,9 @@ namespace PayTrack.Api.Handler
             var updatedBankAccount = await bankAccountService.UpdateBankAccountAsync(
                 user.Id,
                 id,
-                updateDto.accountHolder,
-                updateDto.iban,
-                updateDto.bic);
+                updateDto.AccountHolder,
+                updateDto.Iban,
+                updateDto.Bic);
 
             var responseDto = BankAccountMapper.ToDto(updatedBankAccount);
 

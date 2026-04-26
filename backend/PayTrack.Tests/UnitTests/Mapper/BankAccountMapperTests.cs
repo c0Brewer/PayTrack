@@ -27,10 +27,10 @@ namespace PayTrack.Tests.UnitTests.Mapper
 
             // Assert
             dto.Should().NotBeNull();
-            dto.id.Should().Be(id);
-            dto.accountHolder.Should().Be(accountHolder);
-            dto.iban.Should().Be(iban);
-            dto.bic.Should().Be(bic);
+            dto.Id.Should().Be(id);
+            dto.AccountHolder.Should().Be(accountHolder);
+            dto.Iban.Should().Be(iban);
+            dto.Bic.Should().Be(bic);
         }
 
         [Fact]
@@ -50,8 +50,8 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             result.Should().NotBeNull();
             result.Should().HaveCount(3);
-            result.Select(dto => dto.id).Should().BeEquivalentTo([1, 2, 3]);
-            result.Select(dto => dto.accountHolder).Should().BeEquivalentTo(["A", "B", "C"]);
+            result.Select(dto => dto.Id).Should().BeEquivalentTo([1, 2, 3]);
+            result.Select(dto => dto.AccountHolder).Should().BeEquivalentTo(["A", "B", "C"]);
         }
     }
 }
