@@ -1,50 +1,128 @@
 @use 'variables' as v;
 
-.filter-field {
+.user-table {
+  table-layout: fixed;
   width: 100%;
-  margin-bottom: v.$size-s;
-}
-
-.cost-centre-table {
-  width: 100%;
-}
-
-.name-link {
-  color: v.$primary-color;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.edit-btn,
-.delete-btn {
-  padding: v.$size-xxs v.$size-s;
-  border: 1px solid v.$border-color;
+  border-collapse: collapse;
+  font-size: v.$font-s;
   background: v.$background-light;
-  font-size: v.$font-xs;
-  margin-right: v.$size-xxs;
-  cursor: pointer;
-}
+  border-radius: v.$size-xs;
+  overflow: hidden;
 
-.delete-btn {
-  border-color: v.$accent-color;
-  color: v.$accent-color;
+  thead {
+    background: v.$background-dark;
 
-  &:hover {
+    /* ---------- HEADER ---------- */
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
+  }
+
+  tbody {
+    /* ---------- ROWS ---------- */
+
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .role {
+      padding: v.$size-xxs;
+      font-size: v.$font-xs;
+      border-radius: v.$size-xs;
+      font-weight: v.$font-medium;
+    }
+
+    .regular_user {
+      background-color: v.$background-dark;
+      color: v.$gray-600;
+    }
+
+    .team_lead {
+      background-color: v.$gray-600;
+      color: v.$background-color;
+    }
+
+    .admin {
+      background-color: v.$purple-color;
+      color: v.$background-color;
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
+  }
+
+  /* ---------- TEAM ---------- */
+
+  .team {
+    display: flex;
+    align-items: center;
+    gap: v.$size-xs;
+  }
+
+  .team-color {
+    width: v.$size-xs;
+    height: v.$size-xs;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px v.$background-light;
+  }
+
+  .no-team {
+    color: v.$text-muted;
+    font-style: italic;
+  }
+
+  /* ---------- STATUS ---------- */
+
+  .status-btn {
+    padding: v.$size-xxs v.$size-s;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+  }
+
+  .status-btn.active {
+    background: v.$success-color;
+    color: v.$background-light;
+  }
+
+  .status-btn:not(.active) {
     background: v.$accent-color;
     color: v.$background-light;
   }
-}
 
-.actions-col {
-  white-space: nowrap;
-}
+  .status-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px v.$shadow-color;
+  }
 
-.no-data-cell {
-  padding: v.$size-s;
-  text-align: center;
-  color: v.$text-muted;
-  font-style: italic;
+  /* ---------- EDIT BUTTON ---------- */
+
+  .edit-btn {
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+  }
+
+  /* ---------- ACTION COLUMN ---------- */
+
+  .actions-col {
+    width: 1%;
+    white-space: nowrap;
+  }
 }

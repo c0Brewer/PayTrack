@@ -1,49 +1,39 @@
-<mat-form-field class="filter-field">
-  <mat-label>Filter</mat-label>
-  <input matInput (input)="applyFilter($event)" placeholder="Search cost centres..." />
-</mat-form-field>
+<table class="cost-centre-table" style="width: 100%"> <colgroup>
+    <col style="width: 15%" />
+    <col style="width: 30%" />
+    <col style="width: 30%" />
+    <col style="width: 25%" />
+  </colgroup>
 
-<table mat-table [dataSource]="dataSource" matSort class="cost-centre-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Budgets</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
 
-  <ng-container matColumnDef="id">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-    <td mat-cell *matCellDef="let cc">{{ cc.id }}</td>
-  </ng-container>
+  <tbody>
+    @for (c of costCentres; track c.id) {
+      <tr>
+        <td class="name">{{ c.name }}</td>
 
-  <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-    <td mat-cell *matCellDef="let cc">
-      <a class="name-link" [routerLink]="['/cost-centre', cc.id]">{{ cc.name }}</a>
-    </td>
-  </ng-container>
+        <td class="description">{{ c.description }}</td>
 
-  <ng-container matColumnDef="description">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
-    <td mat-cell *matCellDef="let cc">{{ cc.description ?? '—' }}</td>
-  </ng-container>
+        <td>
+          @if (c.budgets && c.budgets.length > 0) {
+            <span class="has-budgets">Placeholder, has budgets</span>
+          } @else {
+            <span class="no-budgets">no budgets</span>
+          }
+        </td>
 
-  <ng-container matColumnDef="budgets">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Budgets</th>
-    <td mat-cell *matCellDef="let cc">{{ cc.budgets.length }}</td>
-  </ng-container>
-
-  <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef class="actions-col">Actions</th>
-    <td mat-cell *matCellDef="let cc" class="actions-col">
-      <button class="edit-btn" (click)="onOpenEdit(cc)">Edit</button>
-      <button class="delete-btn" (click)="onOpenDelete(cc)">Delete</button>
-    </td>
-  </ng-container>
-
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-  <tr class="mat-row" *matNoDataRow>
-    <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
-      No cost centres match the filter.
-    </td>
-  </tr>
-
+        <td class="actions-col">
+          <button class="edit-btn" (click)="onOpenEdit(c)">Edit</button>
+          <button class="delete-btn" (click)="onOpenDelete(c)">Delete</button>
+        </td>
+      </tr>
+    }
+  </tbody>
 </table>
-
-<mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons />

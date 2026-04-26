@@ -5,6 +5,7 @@ import { vi } from 'vitest';
 import { client } from '../../client';
 import {
   CostCentreDto,
+  CostCentreDtoPaginatedResponse,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
   UpdateCostCentreRequestDto,
@@ -37,15 +38,25 @@ describe('CostCentreService', () => {
   });
 
   describe('getCostCentres', () => {
-    it('should call API and return cost centres', async () => {
+    it('should call API and return paginated cost centres', async () => {
+      const mockPaginated: CostCentreDtoPaginatedResponse = {
+        items: [mockCostCentre],
+        totalCount: 1,
+        limit: 10,
+        offset: 0,
+        hasNext: false,
+        hasPrevious: false,
+      };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: [mockCostCentre], error: null });
+      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: mockPaginated, error: null });
 
       const result = await firstValueFrom(service.getCostCentres());
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/cost-centre', { params: {} });
-      expect(result).toEqual([mockCostCentre]);
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/cost-centre', {
+        params: { query: {} },
+      });
+      expect(result).toEqual(mockPaginated);
     });
 
     it('should throw error with detail when API returns error', async () => {

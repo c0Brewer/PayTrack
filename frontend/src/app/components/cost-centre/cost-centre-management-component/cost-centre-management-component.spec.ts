@@ -7,8 +7,11 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import {
   CostCentreDto,
+  CostCentreDtoPaginatedResponse,
   CostCentreSaveEvent,
   DeleteCostCentrePreviewDto,
+  GetCostCentreOptions,
+  UpsertBudgetEntryDto,
 } from '../../../types/exporter';
 
 import { CostCentreManagementComponent } from './cost-centre-management-component';
@@ -17,6 +20,15 @@ const mockCostCentres: CostCentreDto[] = [
   { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [] },
   { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [] },
 ];
+
+const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
+  items: mockCostCentres,
+  totalCount: 2,
+  limit: 10,
+  offset: 0,
+  hasNext: false,
+  hasPrevious: false,
+};
 
 const mockPreview: DeleteCostCentrePreviewDto = {
   costCentreName: 'Aerodynamics',
@@ -44,7 +56,7 @@ describe('CostCentreManagementComponent', () => {
 
   beforeEach(async () => {
     costCentreServiceMock = {
-      getCostCentres: vi.fn().mockReturnValue(of(mockCostCentres)),
+      getCostCentres: vi.fn().mockReturnValue(of(mockPaginatedResponse)),
       createCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
       updateCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
       getDeletePreview: vi.fn().mockReturnValue(of(mockPreview)),
@@ -213,5 +225,115 @@ describe('CostCentreManagementComponent', () => {
     component.deletingCostCentre = mockCostCentres[0];
     component.confirmDelete();
     expect(notificationServiceMock.showError).toHaveBeenCalled();
+  });
+
+  it('load should show error when response has no items', () => {
+    costCentreServiceMock.getCostCentres.mockReturnValueOnce(
+      of({ items: null, totalCount: 0, limit: 10, offset: 0 }),
+    );
+    component.load();
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith('Error while loading items');
+  });
+
+  it('updateFilterOptions should update filter state and reload', () => {
+    const options: GetCostCentreOptions = {
+      Name: 'Aero',
+      Description: 'test',
+      MinBudget: 100,
+      MaxBudget: 500,
+      Limit: undefined,
+      Offset: undefined,
+    };
+    component.page = 3;
+    component.updateFilterOptions(options);
+    expect(component.filterOptions!.Name).toBe('Aero');
+    expect(component.filterOptions!.Description).toBe('test');
+    expect(component.filterOptions!.MinBudget).toBe(100);
+    expect(component.filterOptions!.MaxBudget).toBe(500);
+    expect(component.page).toBe(0);
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+  });
+
+  it('getTotalPages should return correct page count', () => {
+    component.totalCount = 25;
+    component.limit = 10;
+    expect(component.getTotalPages()).toBe(3);
+  });
+
+  it('getTotalPages should return 1 when totalCount is 0', () => {
+    component.totalCount = 0;
+    component.limit = 10;
+    expect(component.getTotalPages()).toBe(1);
+  });
+
+  it('onLimitChange should update limit, reset page to 0, and reload', () => {
+    component.page = 2;
+    component.onLimitChange(25);
+    expect(component.limit).toBe(25);
+    expect(component.page).toBe(0);
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+  });
+
+  it('nextPage should increment page and reload', () => {
+    component.page = 1;
+    component.nextPage();
+    expect(component.page).toBe(2);
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+  });
+
+  it('previousPage should decrement page and reload when page is positive', () => {
+    component.page = 2;
+    component.previousPage();
+    expect(component.page).toBe(1);
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+  });
+
+  it('previousPage should not decrement page when already at 0', () => {
+    component.page = 0;
+    const callsBefore = costCentreServiceMock.getCostCentres.mock.calls.length;
+    component.previousPage();
+    expect(component.page).toBe(0);
+    expect(costCentreServiceMock.getCostCentres.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('save create should include mapped budgets when budgetsToUpsert is not empty', () => {
+    const budget: UpsertBudgetEntryDto = {
+      id: undefined,
+      teamId: 5,
+      targetAmount: 1000,
+      periodStart: '2024-01-01',
+      periodEnd: '2024-12-31',
+    };
+    const event: CostCentreSaveEvent = {
+      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [] },
+      budgetsToUpsert: [budget],
+      budgetIdsToDelete: [],
+    };
+    component.save(event);
+    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
+      expect.objectContaining({
+        budgets: [{ teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' }],
+      }),
+    );
+  });
+
+  it('save update should include budgetsToUpsert and budgetIdsToDelete when not empty', () => {
+    const budget: UpsertBudgetEntryDto = {
+      id: 10,
+      teamId: 3,
+      targetAmount: 200,
+      periodStart: '2024-01-01',
+      periodEnd: '2024-06-30',
+    };
+    const event: CostCentreSaveEvent = {
+      costCentre: mockCostCentres[0],
+      budgetsToUpsert: [budget],
+      budgetIdsToDelete: [99],
+    };
+    component.save(event);
+    expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ budgetsToUpsert: [budget], budgetIdsToDelete: [99] }),
+    );
   });
 });

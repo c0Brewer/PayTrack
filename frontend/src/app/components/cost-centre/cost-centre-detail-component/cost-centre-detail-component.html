@@ -35,9 +35,9 @@
         <!-- </tbody> -->
       </table>
 
-      <h3>Budgets ({{ costCentre.budgets.length }})</h3>
+      <h3>Budgets ({{ (costCentre.budgets ?? []).length }})</h3>
 
-      @if (costCentre.budgets.length === 0) {
+      @if ((costCentre.budgets ?? []).length === 0) {
         <p class="no-budgets">No budgets assigned.</p>
       } @else {
         <table class="budget-table">
@@ -51,7 +51,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (b of costCentre.budgets; track b.id) {
+            @for (b of (costCentre.budgets ?? []); track b.id) {
               <tr>
                 <td>{{ b.id }}</td>
                 <td>{{ b.teamId }}</td>

@@ -26,60 +26,17 @@ export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
 
 // Cost Centre
-export interface BudgetDto {
-  id: number;
-  teamId: number;
-  costCentreId: number;
-  targetAmount: number;
-  periodStart: string;
-  periodEnd: string;
-}
+export type BudgetDto = components['schemas']['BudgetDto'];
+export type CostCentreDto = components['schemas']['CostCentreDto'];
+export type CostCentreDtoPaginatedResponse = components['schemas']['CostCentreDtoPaginatedResponse'];
+export type CreateBudgetEntryDto = components['schemas']['CreateBudgetEntryDto'];
+export type CreateCostCentreRequestDto = components['schemas']['CreateCostCentreRequestDto'];
+export type UpdateCostCentreRequestDto = components['schemas']['UpdateCostCentreRequestDto'];
+export type UpsertBudgetEntryDto = components['schemas']['UpsertBudgetEntryDto'];
+export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentrePreviewDto'];
 
-export interface CostCentreDto {
-  id: number;
-  name: string;
-  description: string | null;
-  displayColor: string | null;
-  budgets: BudgetDto[];
-}
-
-export interface CreateBudgetEntryDto {
-  teamId: number;
-  targetAmount: number;
-  periodStart: string;
-  periodEnd: string;
-}
-
-export interface CreateCostCentreRequestDto {
-  name: string;
-  description?: string;
-  displayColor?: string;
-  budgets?: CreateBudgetEntryDto[];
-}
-
-export interface UpsertBudgetEntryDto {
-  id: number | null;
-  teamId: number;
-  targetAmount: number;
-  periodStart: string;
-  periodEnd: string;
-}
-
-export interface UpdateCostCentreRequestDto {
-  name?: string;
-  description?: string;
-  displayColor?: string;
-  budgetsToUpsert?: UpsertBudgetEntryDto[];
-  budgetIdsToDelete?: number[];
-}
-
-export interface DeleteCostCentrePreviewDto {
-  costCentreName: string;
-  budgetCount: number;
-  transactionCount: number;
-  affectedUserCount: number;
-  affectedTeamNames: string[];
-}
+// Cost Centre Paths
+export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
 
 export interface CostCentreSaveEvent {
   costCentre: CostCentreDto;

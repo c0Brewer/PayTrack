@@ -4,11 +4,30 @@
     <button class="create-btn" (click)="openCreate()">Create New</button>
   </div>
 
+  <!-- FILTER + LIMIT -->
+  <app-cost-centre-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onLimitChange($event)"
+  ></app-cost-centre-filter-component>
+
+  <!-- COST CENTRE TABLE -->
   <app-cost-centre-list-component
     [costCentres]="costCentres"
     (openEdit)="openEdit($event)"
     (openDelete)="openDelete($event)"
   ></app-cost-centre-list-component>
+
+  <!-- PAGINATION -->
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
 
   @if (editingCostCentre) {
     <app-cost-centre-edit-modal-component

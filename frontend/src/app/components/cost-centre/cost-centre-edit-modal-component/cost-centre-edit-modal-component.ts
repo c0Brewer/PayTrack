@@ -45,7 +45,7 @@ export class CostCentreEditModalComponent implements OnChanges {
   ngOnChanges(): void {
     if (this.costCentre) {
       this.originalCostCentre = structuredClone(this.costCentre);
-      this.workingBudgets = this.costCentre.budgets.map((b: BudgetDto) => ({
+      this.workingBudgets = (this.costCentre.budgets ?? []).map((b: BudgetDto) => ({
         originalId: b.id,
         teamId: b.teamId,
         targetAmount: b.targetAmount,

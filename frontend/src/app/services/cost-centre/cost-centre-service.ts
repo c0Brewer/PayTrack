@@ -4,8 +4,10 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CostCentreDto,
+  CostCentreDtoPaginatedResponse,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
+  GetCostCentreOptions,
   UpdateCostCentreRequestDto,
 } from '../../types/exporter';
 
@@ -19,12 +21,12 @@ export class CostCentreService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly api = client as any;
 
-  public getCostCentres(): Observable<CostCentreDto[]> {
-    const promise: Promise<CostCentreDto[]> = this.api
-      .GET('/api/v1/cost-centre', { params: {} })
+  public getCostCentres(options?: GetCostCentreOptions): Observable<CostCentreDtoPaginatedResponse> {
+    const promise: Promise<CostCentreDtoPaginatedResponse> = this.api
+      .GET('/api/v1/cost-centre', { params: { query: options ?? {} } })
       .then(({ data, error }: ApiResult) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as CostCentreDto[];
+        return data as CostCentreDtoPaginatedResponse;
       });
     return from(promise);
   }

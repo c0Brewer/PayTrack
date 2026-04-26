@@ -1,69 +1,23 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
-  ViewChild,
 } from '@angular/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { RouterLink } from '@angular/router';
 
 import { CostCentreDto } from '../../../types/exporter';
 
 @Component({
   selector: 'app-cost-centre-list-component',
-  imports: [
-    RouterLink,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-  ],
+  imports: [],
   templateUrl: './cost-centre-list-component.html',
   styleUrl: './cost-centre-list-component.scss',
 })
-export class CostCentreListComponent implements OnChanges, AfterViewInit {
+export class CostCentreListComponent {
   @Input() costCentres: CostCentreDto[] = [];
 
   @Output() openEdit = new EventEmitter<CostCentreDto>();
   @Output() openDelete = new EventEmitter<CostCentreDto>();
-
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  displayedColumns = ['id', 'name', 'description', 'budgets', 'actions'];
-  dataSource = new MatTableDataSource<CostCentreDto>([]);
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['costCentres']) {
-      this.dataSource.data = this.costCentres;
-    }
-  }
-
-  ngAfterViewInit(): void {
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sortingDataAccessor = (item, property): string | number => {
-      const key = property as keyof CostCentreDto;
-      if (key === 'budgets') return item.budgets.length;
-      const value = item[key];
-      if (typeof value === 'string' || typeof value === 'number') return value;
-      return '';
-    };
-  }
-
-  applyFilter(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = value.trim().toLowerCase();
-  }
 
   onOpenEdit(costCentre: CostCentreDto): void {
     this.openEdit.emit(costCentre);
