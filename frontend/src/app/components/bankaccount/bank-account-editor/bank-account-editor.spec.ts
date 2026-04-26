@@ -1,7 +1,7 @@
 //AI helped with the test cases
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleChange } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BankAccountEditorComponent } from './bank-account-editor';
 

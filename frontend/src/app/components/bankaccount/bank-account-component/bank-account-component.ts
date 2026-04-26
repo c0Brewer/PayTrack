@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
-import { BankAccountEditorComponent } from '../bank-account-editor/bank-account-editor';
 import {
   BankAccountDto,
   BankAccountService,
   CreateBankAccountRequestDto,
   UpdateBankAccountRequestDto,
 } from '../../../services/bank-account/bank-account-service';
+import { BankAccountEditorComponent } from '../bank-account-editor/bank-account-editor';
 
 @Component({
   selector: 'app-bank-account-component',

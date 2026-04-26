@@ -1,11 +1,12 @@
 //AI helped with the test cases
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChangeDetectorRef } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { BankAccountComponent } from './bank-account-component';
 import { BankAccountService } from '../../../services/bank-account/bank-account-service';
+
+import { BankAccountComponent } from './bank-account-component';
 
 describe('BankAccountComponent', () => {
   let component: BankAccountComponent;

@@ -5,7 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { vi } from 'vitest';
 
 import { client } from '../../client';
-import { BankAccountDto, CreateBankAccountRequestDto, UpdateBankAccountRequestDto } from '../../types/exporter';
+import {
+  BankAccountDto,
+  CreateBankAccountRequestDto,
+  UpdateBankAccountRequestDto,
+} from '../../types/exporter';
 
 import { BankAccountService } from './bank-account-service';
 

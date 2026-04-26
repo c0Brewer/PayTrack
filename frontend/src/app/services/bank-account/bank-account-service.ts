@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 import { client } from '../../client';
-import { BankAccountDto, CreateBankAccountRequestDto, UpdateBankAccountRequestDto } from '../../types/exporter';
+import {
+  BankAccountDto,
+  CreateBankAccountRequestDto,
+  UpdateBankAccountRequestDto,
+} from '../../types/exporter';
 
 export type { BankAccountDto, CreateBankAccountRequestDto, UpdateBankAccountRequestDto };
 
@@ -38,7 +42,10 @@ export class BankAccountService {
     return from(promise);
   }
 
-  public updateBankAccount(id: number, request: UpdateBankAccountRequestDto): Observable<BankAccountDto> {
+  public updateBankAccount(
+    id: number,
+    request: UpdateBankAccountRequestDto,
+  ): Observable<BankAccountDto> {
     const promise = client
       .PUT('/api/v1/bankaccount/{id}', {
         params: {

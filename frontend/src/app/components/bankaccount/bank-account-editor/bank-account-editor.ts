@@ -1,8 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
-import { BankAccountDto, CreateBankAccountRequestDto } from '../../../services/bank-account/bank-account-service';
+import {
+  BankAccountDto,
+  CreateBankAccountRequestDto,
+} from '../../../services/bank-account/bank-account-service';
 import { ModalComponent } from '../../general/modal-component/modal-component';
 
 type BankAccountForm = FormGroup<{
@@ -32,7 +41,10 @@ export class BankAccountEditorComponent implements OnChanges {
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.nonNullable.group({
-      accountHolder: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(255)]],
+      accountHolder: [
+        '',
+        [Validators.required, Validators.minLength(3), Validators.maxLength(255)],
+      ],
       iban: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(31)]],
       bic: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
     });
@@ -66,7 +78,8 @@ export class BankAccountEditorComponent implements OnChanges {
   public onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.validationMessage = 'Please enter valid values (Account Holder 3-255, IBAN 15-31, BIC 8-11).';
+      this.validationMessage =
+        'Please enter valid values (Account Holder 3-255, IBAN 15-31, BIC 8-11).';
       return;
     }
 
