@@ -12,11 +12,18 @@ namespace PayTrack.Data.Repositories.Model
     public interface IBankAccountRepository
     {
         /// <summary>
-        /// Gets a user with all linked bank accounts by email.
+        /// Gets all bank accounts linked to a user.
         /// </summary>
-        /// <param name="email">Email of the user.</param>
-        /// <returns>User with loaded bank accounts if found.</returns>
-        Task<User?> GetUserWithBankAccountsByEmailAsync(string email);
+        /// <param name="userId">Id of the user.</param>
+        /// <returns>Bank accounts of the user.</returns>
+        Task<List<BankAccount>> GetByUserIdAsync(int userId);
+
+        /// <summary>
+        /// Checks whether a user exists.
+        /// </summary>
+        /// <param name="userId">Id of the user.</param>
+        /// <returns><c>true</c> if the user exists; otherwise <c>false</c>.</returns>
+        Task<bool> UserExistsAsync(int userId);
 
         /// <summary>
         /// Stores a bank account to the database.
@@ -28,15 +35,25 @@ namespace PayTrack.Data.Repositories.Model
         /// <summary>
         /// Persists updates of a bank account.
         /// </summary>
-        /// <param name="bankAccount">Bank account object to update.</param>
+        /// <param name="userId">Id of the user.</param>
+        /// <param name="bankAccountId">Id of the bank account to update.</param>
+        /// <param name="accountHolder">Optional account holder name.</param>
+        /// <param name="iban">Optional IBAN value.</param>
+        /// <param name="bic">Optional BIC value.</param>
         /// <returns>Updated bank account instance.</returns>
-        Task<BankAccount> UpdateAsync(BankAccount bankAccount);
+        Task<BankAccount> UpdateAsync(
+            int userId,
+            int bankAccountId,
+            string? accountHolder = null,
+            string? iban = null,
+            string? bic = null);
 
         /// <summary>
-        /// Deletes a bank account.
+        /// Deletes a bank account by id for a given user.
         /// </summary>
-        /// <param name="bankAccount">Bank account object to delete.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task DeleteAsync(BankAccount bankAccount);
+        /// <param name="userId">Id of the user.</param>
+        /// <param name="bankAccountId">Id of the bank account to delete.</param>
+        /// <returns><c>true</c> if a bank account was deleted; otherwise <c>false</c>.</returns>
+        Task<bool> DeleteByIdAsync(int userId, int bankAccountId);
     }
 }

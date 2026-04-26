@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { UserSettingsComponent } from './user-settings-component';
-import { UserService } from '../../../services/user/user-service';
+import { BankAccountComponent } from './bank-account-component';
+import { BankAccountService } from '../../../services/bank-account/bank-account-service';
 
-describe('UserSettingsComponent', () => {
-  let component: UserSettingsComponent;
-  let fixture: ComponentFixture<UserSettingsComponent>;
+describe('BankAccountComponent', () => {
+  let component: BankAccountComponent;
+  let fixture: ComponentFixture<BankAccountComponent>;
 
-  const userServiceMock = {
-    getBankAccounts: () => of({ bankAccounts: [] }),
+  const bankAccountServiceMock = {
+    getBankAccounts: () => of([]),
     createBankAccount: () => of({ id: 1, accountHolder: 'Test', iban: 'AT611904300234573201', bic: 'BKAUATWW' }),
     updateBankAccount: () => of({ id: 1, accountHolder: 'Test', iban: 'AT611904300234573201', bic: 'BKAUATWW' }),
     deleteBankAccount: () => of(void 0),
@@ -17,11 +17,11 @@ describe('UserSettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserSettingsComponent],
-      providers: [{ provide: UserService, useValue: userServiceMock }],
+      imports: [BankAccountComponent],
+      providers: [{ provide: BankAccountService, useValue: bankAccountServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserSettingsComponent);
+    fixture = TestBed.createComponent(BankAccountComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

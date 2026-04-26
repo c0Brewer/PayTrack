@@ -4,19 +4,19 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BankAccountEditorModalComponent } from '../bank-account-editor-modal/bank-account-editor-modal';
 import {
   BankAccountDto,
-  BankAccountRequestDto,
-  BankAccountsResponseDto,
-  UserService,
-} from '../../../services/user/user-service';
+  BankAccountService,
+  CreateBankAccountRequestDto,
+  UpdateBankAccountRequestDto,
+} from '../../../services/bank-account/bank-account-service';
 
 @Component({
-  selector: 'app-user-settings-component',
+  selector: 'app-bank-account-component',
   standalone: true,
   imports: [CommonModule, BankAccountEditorModalComponent],
-  templateUrl: './user-settings-component.html',
-  styleUrl: './user-settings-component.scss',
+  templateUrl: './bank-account-component.html',
+  styleUrl: './bank-account-component.scss',
 })
-export class UserSettingsComponent implements OnInit {
+export class BankAccountComponent implements OnInit {
   public bankAccounts: BankAccountDto[] = [];
 
   public isLoading = false;
@@ -27,7 +27,7 @@ export class UserSettingsComponent implements OnInit {
   public modalErrorMessage = '';
 
   constructor(
-    private readonly userService: UserService,
+    private readonly bankAccountService: BankAccountService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -39,9 +39,9 @@ export class UserSettingsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.userService.getBankAccounts().subscribe({
-      next: (data: BankAccountsResponseDto) => {
-        this.bankAccounts = data.bankAccounts;
+    this.bankAccountService.getBankAccounts().subscribe({
+      next: (data: BankAccountDto[]) => {
+        this.bankAccounts = data;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -74,8 +74,8 @@ export class UserSettingsComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  public createBankAccount(request: BankAccountRequestDto): void {
-    this.userService.createBankAccount(request).subscribe({
+  public createBankAccount(request: CreateBankAccountRequestDto): void {
+    this.bankAccountService.createBankAccount(request).subscribe({
       next: () => {
         this.closeModal();
         this.loadBankAccounts();
@@ -88,12 +88,19 @@ export class UserSettingsComponent implements OnInit {
     });
   }
 
-  public updateBankAccount(request: BankAccountRequestDto): void {
+  public updateBankAccount(request: UpdateBankAccountRequestDto): void {
     if (!this.editingBankAccount) {
       return;
     }
 
-    this.userService.updateBankAccount(this.editingBankAccount.id, request).subscribe({
+    const id = this.editingBankAccount.id;
+    if (id == null) {
+      this.handleModalError(new Error('Missing bank account id'), 'Failed to update bank account');
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.bankAccountService.updateBankAccount(id, request).subscribe({
       next: () => {
         this.closeModal();
         this.loadBankAccounts();
@@ -106,12 +113,18 @@ export class UserSettingsComponent implements OnInit {
     });
   }
 
-  public deleteBankAccount(id: number): void {
+  public deleteBankAccount(id: number | undefined): void {
+    if (id == null) {
+      this.handleError(new Error('Missing bank account id'), 'Failed to delete bank account');
+      this.cdr.detectChanges();
+      return;
+    }
+
     if (!confirm('Delete this bank account?')) {
       return;
     }
 
-    this.userService.deleteBankAccount(id).subscribe({
+    this.bankAccountService.deleteBankAccount(id).subscribe({
       next: () => {
         this.loadBankAccounts();
         this.cdr.detectChanges();

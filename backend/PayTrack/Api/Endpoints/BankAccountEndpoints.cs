@@ -25,8 +25,8 @@ namespace PayTrack.Api.Endpoints
                 .WithTags(GroupName)
                 .RequireAuthorization();
 
-            group.MapGet(string.Empty, BankAccountHandler.GetBankAccountsAsync);
-            group.MapPost(string.Empty, BankAccountHandler.CreateBankAccountAsync);
+            group.MapGet("/", BankAccountHandler.GetBankAccountsAsync);
+            group.MapPost("/", BankAccountHandler.CreateBankAccountAsync);
             group.MapPut("/{id:int}", BankAccountHandler.UpdateBankAccountAsync);
             group.MapDelete("/{id:int}", BankAccountHandler.DeleteBankAccountAsync);
         }

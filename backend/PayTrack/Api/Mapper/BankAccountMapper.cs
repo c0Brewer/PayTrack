@@ -13,13 +13,13 @@ namespace PayTrack.Api.Mapper
     public static class BankAccountMapper
     {
         /// <summary>
-        /// Turns a BankAccount object into a BankAccountResponseDto.
+        /// Turns a BankAccount object into a BankAccountDto.
         /// </summary>
         /// <param name="bankAccount">Bank account to map.</param>
-        /// <returns>BankAccountResponseDto instance.</returns>
-        public static BankAccountResponseDto ToDto(BankAccount bankAccount)
+        /// <returns>BankAccountDto instance.</returns>
+        public static BankAccountDto ToDto(BankAccount bankAccount)
         {
-            return new BankAccountResponseDto(
+            return new BankAccountDto(
                 bankAccount.Id,
                 bankAccount.AccountHolder,
                 bankAccount.Iban,
@@ -27,16 +27,13 @@ namespace PayTrack.Api.Mapper
         }
 
         /// <summary>
-        /// Turns a User with linked BankAccounts into a BankAccountsResponseDto.
+        /// Turns a list of bank account objects into a list of BankAccountDto objects.
         /// </summary>
-        /// <param name="user">User with bank accounts loaded.</param>
-        /// <returns>BankAccountsResponseDto instance.</returns>
-        public static BankAccountsResponseDto ToOverviewDto(User user)
+        /// <param name="bankAccounts">List of bank account objects.</param>
+        /// <returns>List of BankAccountDto objects.</returns>
+        public static List<BankAccountDto> ListToDto(List<BankAccount> bankAccounts)
         {
-            return new BankAccountsResponseDto(
-                user.BankAccounts
-                    .Select(ToDto)
-                    .ToList());
+            return bankAccounts.ConvertAll(ToDto);
         }
     }
 }

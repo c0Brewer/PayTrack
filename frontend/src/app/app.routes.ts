@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
 
+import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { TeamListComponent } from './components/team/team-list-component/team-list-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
-import {UserSettingsComponent} from './components/usersettings/user-settings-component/user-settings-component';
 
 /*
  * FYI: For the other devs: The guestGuard and authGuard protect certain routes from unauthorized access.
@@ -23,7 +23,7 @@ export const routes: Routes = [
   {
     path: 'usersettings',
     canActivate: [authGuard],
-    component: UserSettingsComponent,
+    component: BankAccountComponent,
   },
   {
     path: 'team',

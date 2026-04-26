@@ -17,6 +17,7 @@ export enum Role {
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
 
-// User Settings
-export type UserSettingsDto = components['schemas']['UserSettingsDto'];
+// Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
+export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
+export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];

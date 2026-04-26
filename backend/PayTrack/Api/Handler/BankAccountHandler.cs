@@ -22,15 +22,15 @@ namespace PayTrack.Api.Handler
         /// <param name="authService">Service for resolving the currently signed in user.</param>
         /// <param name="bankAccountService">Service for reading persisted bank accounts.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<BankAccountsResponseDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetBankAccountsAsync(
+        public static async Task<Results<Ok<List<BankAccountDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetBankAccountsAsync(
             IAuthService authService,
             IBankAccountService bankAccountService)
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
-            var userWithBankAccounts = await bankAccountService.GetUserWithBankAccountsAsync(user.Email);
+            var bankAccounts = await bankAccountService.GetBankAccountsAsync(user.Id);
 
-            var responseDto = BankAccountMapper.ToOverviewDto(userWithBankAccounts);
+            var responseDto = BankAccountMapper.ListToDto(bankAccounts);
 
             return TypedResults.Ok(responseDto);
         }
@@ -42,15 +42,15 @@ namespace PayTrack.Api.Handler
         /// <param name="authService">Service for resolving the currently signed in user.</param>
         /// <param name="bankAccountService">Service for writing bank accounts.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<BankAccountResponseDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateBankAccountAsync(
-            [FromBody] BankAccountRequestDto createDto,
+        public static async Task<Results<Ok<BankAccountDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateBankAccountAsync(
+            [FromBody] CreateBankAccountRequestDto createDto,
             IAuthService authService,
             IBankAccountService bankAccountService)
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
             var createdBankAccount = await bankAccountService.CreateBankAccountAsync(
-                user.Email,
+                user.Id,
                 createDto.accountHolder,
                 createDto.iban,
                 createDto.bic);
@@ -68,16 +68,16 @@ namespace PayTrack.Api.Handler
         /// <param name="authService">Service for resolving the currently signed in user.</param>
         /// <param name="bankAccountService">Service for writing bank accounts.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<BankAccountResponseDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UpdateBankAccountAsync(
+        public static async Task<Results<Ok<BankAccountDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UpdateBankAccountAsync(
             [FromRoute] int id,
-            [FromBody] BankAccountRequestDto updateDto,
+            [FromBody] UpdateBankAccountRequestDto updateDto,
             IAuthService authService,
             IBankAccountService bankAccountService)
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
             var updatedBankAccount = await bankAccountService.UpdateBankAccountAsync(
-                user.Email,
+                user.Id,
                 id,
                 updateDto.accountHolder,
                 updateDto.iban,
@@ -102,7 +102,7 @@ namespace PayTrack.Api.Handler
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
-            await bankAccountService.DeleteBankAccountAsync(user.Email, id);
+            await bankAccountService.DeleteBankAccountAsync(user.Id, id);
 
             return TypedResults.NoContent();
         }

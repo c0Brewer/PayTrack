@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { BankAccountDto, BankAccountRequestDto } from '../../../services/user/user-service';
+import { BankAccountDto, CreateBankAccountRequestDto } from '../../../services/bank-account/bank-account-service';
 
 type BankAccountForm = FormGroup<{
   accountHolder: FormControl<string>;
@@ -24,7 +24,7 @@ export class BankAccountEditorModalComponent implements OnChanges {
   @Input() public errorMessage = '';
 
   @Output() public readonly cancel = new EventEmitter<void>();
-  @Output() public readonly submitForm = new EventEmitter<BankAccountRequestDto>();
+  @Output() public readonly submitForm = new EventEmitter<CreateBankAccountRequestDto>();
 
   public readonly form: BankAccountForm;
   public validationMessage = '';
@@ -48,9 +48,9 @@ export class BankAccountEditorModalComponent implements OnChanges {
 
     if (this.initialValue) {
       this.form.setValue({
-        accountHolder: this.initialValue.accountHolder,
-        iban: this.initialValue.iban,
-        bic: this.initialValue.bic,
+        accountHolder: this.initialValue.accountHolder ?? '',
+        iban: this.initialValue.iban ?? '',
+        bic: this.initialValue.bic ?? '',
       });
       return;
     }
