@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { BankAccountDto, CreateBankAccountRequestDto } from '../../../services/bank-account/bank-account-service';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 type BankAccountForm = FormGroup<{
   accountHolder: FormControl<string>;
@@ -11,13 +12,13 @@ type BankAccountForm = FormGroup<{
 }>;
 
 @Component({
-  selector: 'app-bank-account-editor-modal',
+  selector: 'app-bank-account-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './bank-account-editor-modal.html',
-  styleUrl: './bank-account-editor-modal.scss',
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent],
+  templateUrl: './bank-account-editor.html',
+  styleUrl: './bank-account-editor.scss',
 })
-export class BankAccountEditorModalComponent implements OnChanges {
+export class BankAccountEditorComponent implements OnChanges {
   @Input() public title = 'Edit Bank Account';
   @Input() public submitLabel = 'Save';
   @Input() public initialValue: BankAccountDto | null = null;
@@ -60,12 +61,6 @@ export class BankAccountEditorModalComponent implements OnChanges {
       iban: '',
       bic: '',
     });
-  }
-
-  public onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.cancel.emit();
-    }
   }
 
   public onSubmit(): void {

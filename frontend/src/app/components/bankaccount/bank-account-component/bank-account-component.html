@@ -40,7 +40,7 @@
 </div>
 
 @if (isCreateModalOpen) {
-  <app-bank-account-editor-modal
+  <app-bank-account-editor
     title="Create Bank Account"
     submitLabel="Create"
     [initialValue]="null"
@@ -50,7 +50,7 @@
 }
 
 @if (editingBankAccount) {
-  <app-bank-account-editor-modal
+  <app-bank-account-editor
     title="Edit Bank Account"
     submitLabel="Save"
     [initialValue]="editingBankAccount"

@@ -54,13 +54,13 @@ export class UserFilterComponent implements OnInit {
 
   getGetUserOptions(): GetUserOptions {
     return {
-      name: this.filterName ?? undefined,
-      email: this.filterEmail ?? undefined,
-      role: this.filterRole ?? undefined,
-      isActive: this.filterIsActive ?? undefined,
-      includeTeam: undefined,
-      limit: undefined,
-      offset: undefined,
+      Name: this.filterName ?? undefined,
+      Email: this.filterEmail ?? undefined,
+      Role: this.filterRole ?? undefined,
+      IsActive: this.filterIsActive ?? undefined,
+      IncludeTeam: undefined,
+      Limit: undefined,
+      Offset: undefined,
     };
   }
 

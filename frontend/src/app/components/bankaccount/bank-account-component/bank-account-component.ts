@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
-import { BankAccountEditorModalComponent } from '../bank-account-editor-modal/bank-account-editor-modal';
+import { BankAccountEditorComponent } from '../bank-account-editor/bank-account-editor';
 import {
   BankAccountDto,
   BankAccountService,
@@ -12,7 +12,7 @@ import {
 @Component({
   selector: 'app-bank-account-component',
   standalone: true,
-  imports: [CommonModule, BankAccountEditorModalComponent],
+  imports: [CommonModule, BankAccountEditorComponent],
   templateUrl: './bank-account-component.html',
   styleUrl: './bank-account-component.scss',
 })
@@ -28,7 +28,7 @@ export class BankAccountComponent implements OnInit {
 
   constructor(
     private readonly bankAccountService: BankAccountService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   public ngOnInit(): void {
@@ -74,6 +74,29 @@ export class BankAccountComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  public deleteBankAccount(id: number | undefined): void {
+    if (id == null) {
+      this.handleError(new Error('Missing bank account id'), 'Failed to delete bank account');
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!confirm('Delete this bank account?')) {
+      return;
+    }
+
+    this.bankAccountService.deleteBankAccount(id).subscribe({
+      next: () => {
+        this.loadBankAccounts();
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        this.handleError(error, 'Failed to delete bank account');
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   public createBankAccount(request: CreateBankAccountRequestDto): void {
     this.bankAccountService.createBankAccount(request).subscribe({
       next: () => {
@@ -108,29 +131,6 @@ export class BankAccountComponent implements OnInit {
       },
       error: (error: unknown) => {
         this.handleModalError(error, 'Failed to update bank account');
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  public deleteBankAccount(id: number | undefined): void {
-    if (id == null) {
-      this.handleError(new Error('Missing bank account id'), 'Failed to delete bank account');
-      this.cdr.detectChanges();
-      return;
-    }
-
-    if (!confirm('Delete this bank account?')) {
-      return;
-    }
-
-    this.bankAccountService.deleteBankAccount(id).subscribe({
-      next: () => {
-        this.loadBankAccounts();
-        this.cdr.detectChanges();
-      },
-      error: (error: unknown) => {
-        this.handleError(error, 'Failed to delete bank account');
         this.cdr.detectChanges();
       },
     });

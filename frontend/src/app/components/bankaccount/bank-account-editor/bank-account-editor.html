@@ -1,0 +1,39 @@
+<app-modal-component [title]="title" (closeEvent)="cancel.emit()">
+  @if (errorMessage) {
+    <p class="error-message">{{ errorMessage }}</p>
+  }
+  @if (validationMessage) {
+    <p class="error-message">{{ validationMessage }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <label>
+      Account Holder
+      <input type="text" formControlName="accountHolder" maxlength="255" />
+      @if (form.controls.accountHolder.touched && form.controls.accountHolder.invalid) {
+        <small class="hint-error">Use 3-255 characters.</small>
+      }
+    </label>
+
+    <label>
+      IBAN
+      <input type="text" formControlName="iban" maxlength="31" />
+      @if (form.controls.iban.touched && form.controls.iban.invalid) {
+        <small class="hint-error">Use 15-31 characters.</small>
+      }
+    </label>
+
+    <label>
+      BIC
+      <input type="text" formControlName="bic" maxlength="11" />
+      @if (form.controls.bic.touched && form.controls.bic.invalid) {
+        <small class="hint-error">Use 8-11 characters.</small>
+      }
+    </label>
+
+    <div class="actions">
+      <button type="button" class="secondary" (click)="cancel.emit()">Cancel</button>
+      <button type="submit">{{ submitLabel }}</button>
+    </div>
+  </form>
+</app-modal-component>
