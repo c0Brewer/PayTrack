@@ -34,6 +34,7 @@
     <Threshold>90</Threshold>
     <ThresholdType>line</ThresholdType>
     <ThresholdStat>total</ThresholdStat>
+    <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.CostCentre;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
@@ -35,7 +36,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new() { Id = 1, Name = "Aero" },
                 new() { Id = 2, Name = "Electronics" },
             };
-            _factory.ServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(costCentres);
+            _factory.ServiceMock.Setup(s => s.GetAllAsync(It.IsAny<GetCostCentreQuery?>())).ReturnsAsync((costCentres, costCentres.Count));
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
@@ -45,8 +46,33 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<List<CostCentreDto>>();
-            result.Should().HaveCount(2);
+            var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<CostCentreDto>>();
+            result!.Items.Should().HaveCount(2);
+            result.TotalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAll_ForwardsQueryParamsToService()
+        {
+            // Arrange
+            _factory.ServiceMock
+                .Setup(s => s.GetAllAsync(It.IsAny<GetCostCentreQuery?>()))
+                .ReturnsAsync((new List<CostCentre>(), 0));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            await client.GetAsync("api/v1/cost-centre?Name=Aero&MinBudget=100&Limit=5&Offset=10");
+
+            // Assert
+            _factory.ServiceMock.Verify(s => s.GetAllAsync(
+                It.Is<GetCostCentreQuery?>(q =>
+                    q != null &&
+                    q.Name == "Aero" &&
+                    q.MinBudget == 100 &&
+                    q.Limit == 5 &&
+                    q.Offset == 10)), Times.Once);
         }
 
         // ── GET /cost-centre/{id} ─────────────────────────────────────────────

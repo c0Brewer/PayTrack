@@ -20,9 +20,9 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ICostCentreRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<List<CostCentre>> GetAllAsync()
+        public async Task<(List<CostCentre> Items, int TotalCount)> GetAllAsync(GetCostCentreQuery? query = null)
         {
-            return await this.repo.GetAllAsync();
+            return await this.repo.GetAllAsync(query);
         }
 
         /// <inheritdoc/>

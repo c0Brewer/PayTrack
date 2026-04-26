@@ -14,10 +14,11 @@ namespace PayTrack.Application.Services.Model
     public interface ICostCentreService
     {
         /// <summary>
-        /// Returns all cost centers.
+        /// Returns filtered and paginated cost centers.
         /// </summary>
-        /// <returns>List of CostCentre objects.</returns>
-        Task<List<CostCentre>> GetAllAsync();
+        /// <param name="query">Optional filter and pagination parameters.</param>
+        /// <returns>Matching cost centres and total count before pagination.</returns>
+        Task<(List<CostCentre> Items, int TotalCount)> GetAllAsync(GetCostCentreQuery? query = null);
 
         /// <summary>
         /// Gets a cost center by ID.

@@ -128,10 +128,168 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new CostCentreRepository(context);
 
             // Act
-            var result = await repo.GetAllAsync();
+            var (items, totalCount) = await repo.GetAllAsync();
 
             // Assert
-            result.Should().HaveCount(2);
+            items.Should().HaveCount(2);
+            totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithNameFilter_ShouldReturnMatchingCostCentres()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_NameFilter");
+            context.CostCentres.AddRange(
+                new CostCentre { Name = "Aerodynamics" },
+                new CostCentre { Name = "Powertrain" });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Name = "Aero" });
+
+            // Assert
+            items.Should().HaveCount(1);
+            items[0].Name.Should().Be("Aerodynamics");
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithDescriptionFilter_ShouldReturnMatchingCostCentres()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_DescriptionFilter");
+            context.CostCentres.AddRange(
+                new CostCentre { Name = "Aero", Description = "Wind tunnel costs" },
+                new CostCentre { Name = "Electronics", Description = "Sensor costs" });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Description = "Wind" });
+
+            // Assert
+            items.Should().HaveCount(1);
+            items[0].Name.Should().Be("Aero");
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithMinBudgetFilter_ShouldReturnOnlyMatchingCostCentres()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_MinBudget");
+            var team = new Team { Name = "Team Alpha" };
+            context.Teams.Add(team);
+            var costCentreA = new CostCentre { Name = "Aero" };
+            var costCentreB = new CostCentre { Name = "Electronics" };
+            context.CostCentres.AddRange(costCentreA, costCentreB);
+            await context.SaveChangesAsync();
+
+            context.Budgets.AddRange(
+                new Budget { TeamId = team.Id, CostCentreId = costCentreA.Id, TargetAmount = 1000m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) },
+                new Budget { TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 100m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MinBudget = 500m });
+
+            // Assert
+            items.Should().HaveCount(1);
+            items[0].Name.Should().Be("Aero");
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithMaxBudgetFilter_ShouldReturnOnlyMatchingCostCentres()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_MaxBudget");
+            var team = new Team { Name = "Team Alpha" };
+            context.Teams.Add(team);
+            var costCentreA = new CostCentre { Name = "Aero" };
+            var costCentreB = new CostCentre { Name = "Electronics" };
+            context.CostCentres.AddRange(costCentreA, costCentreB);
+            await context.SaveChangesAsync();
+
+            context.Budgets.AddRange(
+                new Budget { TeamId = team.Id, CostCentreId = costCentreA.Id, TargetAmount = 1000m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) },
+                new Budget { TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 100m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MaxBudget = 500m });
+
+            // Assert
+            items.Should().HaveCount(1);
+            items[0].Name.Should().Be("Electronics");
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithBudgetFilter_ShouldExcludeInactiveBudgets()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_InactiveBudget");
+            var team = new Team { Name = "Team Alpha" };
+            context.Teams.Add(team);
+            var costCentre = new CostCentre { Name = "Aero" };
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            // Expired budget — PeriodEnd is in the past, should not match MinBudget filter
+            context.Budgets.Add(new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 1000m,
+                PeriodStart = DateTime.UtcNow.AddDays(-60),
+                PeriodEnd = DateTime.UtcNow.AddDays(-1),
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MinBudget = 500m });
+
+            // Assert
+            items.Should().BeEmpty();
+            totalCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithLimitAndOffset_ShouldReturnCorrectPageAndTotalCount()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllCostCentres_Pagination");
+            context.CostCentres.AddRange(
+                new CostCentre { Name = "Aero" },
+                new CostCentre { Name = "Electronics" },
+                new CostCentre { Name = "Powertrain" },
+                new CostCentre { Name = "Suspension" },
+                new CostCentre { Name = "Tyres" });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Limit = 2, Offset = 1 });
+
+            // Assert
+            totalCount.Should().Be(5); // total before pagination
+            items.Should().HaveCount(2);
+            // OrderBy Name: Aero(0), Electronics(1), Powertrain(2), Suspension(3), Tyres(4)
+            // Offset=1 skips Aero; Limit=2 returns Electronics and Powertrain
+            items[0].Name.Should().Be("Electronics");
+            items[1].Name.Should().Be("Powertrain");
         }
 
         [Fact]

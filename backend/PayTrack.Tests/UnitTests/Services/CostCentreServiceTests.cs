@@ -29,15 +29,33 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "Aero" },
                 new() { Id = 2, Name = "Electronics" },
             };
-            repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(costCentres);
+            repoMock.Setup(r => r.GetAllAsync(null)).ReturnsAsync((costCentres, costCentres.Count));
 
             // Act
-            var result = await service.GetAllAsync();
+            var (items, totalCount) = await service.GetAllAsync();
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(c => c.Name == "Aero");
-            result.Should().ContainSingle(c => c.Name == "Electronics");
+            items.Should().HaveCount(2);
+            items.Should().ContainSingle(c => c.Name == "Aero");
+            items.Should().ContainSingle(c => c.Name == "Electronics");
+            totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldForwardQueryToRepository()
+        {
+            // Arrange
+            var costCentres = new List<CostCentre> { new() { Id = 1, Name = "Aero" } };
+            var query = new GetCostCentreQuery { Name = "Aero", Limit = 10, Offset = 0 };
+            repoMock.Setup(r => r.GetAllAsync(query)).ReturnsAsync((costCentres, 1));
+
+            // Act
+            var (items, totalCount) = await service.GetAllAsync(query);
+
+            // Assert
+            items.Should().HaveCount(1);
+            totalCount.Should().Be(1);
+            repoMock.Verify(r => r.GetAllAsync(query), Times.Once);
         }
 
         [Fact]
