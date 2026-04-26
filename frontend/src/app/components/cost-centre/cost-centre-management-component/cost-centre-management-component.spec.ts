@@ -312,7 +312,9 @@ describe('CostCentreManagementComponent', () => {
     component.save(event);
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
       expect.objectContaining({
-        budgets: [{ teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' }],
+        budgets: [
+          { teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' },
+        ],
       }),
     );
   });

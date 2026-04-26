@@ -28,7 +28,8 @@ export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto
 // Cost Centre
 export type BudgetDto = components['schemas']['BudgetDto'];
 export type CostCentreDto = components['schemas']['CostCentreDto'];
-export type CostCentreDtoPaginatedResponse = components['schemas']['CostCentreDtoPaginatedResponse'];
+export type CostCentreDtoPaginatedResponse =
+  components['schemas']['CostCentreDtoPaginatedResponse'];
 export type CreateBudgetEntryDto = components['schemas']['CreateBudgetEntryDto'];
 export type CreateCostCentreRequestDto = components['schemas']['CreateCostCentreRequestDto'];
 export type UpdateCostCentreRequestDto = components['schemas']['UpdateCostCentreRequestDto'];

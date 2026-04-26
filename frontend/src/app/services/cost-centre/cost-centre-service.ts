@@ -21,7 +21,9 @@ export class CostCentreService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly api = client as any;
 
-  public getCostCentres(options?: GetCostCentreOptions): Observable<CostCentreDtoPaginatedResponse> {
+  public getCostCentres(
+    options?: GetCostCentreOptions,
+  ): Observable<CostCentreDtoPaginatedResponse> {
     const promise: Promise<CostCentreDtoPaginatedResponse> = this.api
       .GET('/api/v1/cost-centre', { params: { query: options ?? {} } })
       .then(({ data, error }: ApiResult) => {

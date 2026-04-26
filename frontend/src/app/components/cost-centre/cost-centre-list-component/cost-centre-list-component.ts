@@ -1,10 +1,5 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { BudgetDto, CostCentreDto } from '../../../types/exporter';
 
@@ -23,7 +18,7 @@ export class CostCentreListComponent {
   getActiveBudget(budgets: BudgetDto[] | null | undefined): BudgetDto | undefined {
     if (!budgets) return undefined;
     const now = new Date();
-    return budgets.find(b => new Date(b.periodStart) <= now && now <= new Date(b.periodEnd));
+    return budgets.find((b) => new Date(b.periodStart) <= now && now <= new Date(b.periodEnd));
   }
 
   onOpenEdit(costCentre: CostCentreDto): void {

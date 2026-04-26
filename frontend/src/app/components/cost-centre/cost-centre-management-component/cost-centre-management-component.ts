@@ -10,11 +10,11 @@ import {
   DeleteCostCentrePreviewDto,
   UpdateCostCentreRequestDto,
 } from '../../../types/exporter';
+import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { CostCentreDeletePreviewModalComponent } from '../cost-centre-delete-preview-modal-component/cost-centre-delete-preview-modal-component';
 import { CostCentreEditModalComponent } from '../cost-centre-edit-modal-component/cost-centre-edit-modal-component';
 import { CostCentreFilterComponent } from '../cost-centre-filter-component/cost-centre-filter-component';
 import { CostCentreListComponent } from '../cost-centre-list-component/cost-centre-list-component';
-import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 
 @Component({
   selector: 'app-cost-centre-management-component',
@@ -33,7 +33,7 @@ export class CostCentreManagementComponent implements OnInit {
     private readonly costCentreService: CostCentreService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   costCentres: CostCentreDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
@@ -100,7 +100,6 @@ export class CostCentreManagementComponent implements OnInit {
     }
   }
 
-
   openCreate(): void {
     this.editingCostCentre = {
       id: -1,
@@ -129,11 +128,11 @@ export class CostCentreManagementComponent implements OnInit {
         budgets:
           budgetsToUpsert.length > 0
             ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
-              teamId,
-              targetAmount,
-              periodStart,
-              periodEnd,
-            }))
+                teamId,
+                targetAmount,
+                periodStart,
+                periodEnd,
+              }))
             : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({
@@ -200,7 +199,6 @@ export class CostCentreManagementComponent implements OnInit {
         this.notificationService.showError('Could not delete cost centre: ' + err.message);
       },
     });
-
   }
 
   getTotalPages(): number {
@@ -226,4 +224,3 @@ export class CostCentreManagementComponent implements OnInit {
     }
   }
 }
-

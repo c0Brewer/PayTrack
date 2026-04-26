@@ -8,12 +8,18 @@ import { CostCentreListComponent } from './cost-centre-list-component';
 
 const now = new Date();
 const activeBudget: BudgetDto = {
-  id: 10, teamId: 1, costCentreId: 1, targetAmount: 500,
+  id: 10,
+  teamId: 1,
+  costCentreId: 1,
+  targetAmount: 500,
   periodStart: new Date(now.getFullYear() - 1, 0, 1).toISOString(),
   periodEnd: new Date(now.getFullYear() + 1, 11, 31).toISOString(),
 };
 const expiredBudget: BudgetDto = {
-  id: 11, teamId: 1, costCentreId: 1, targetAmount: 500,
+  id: 11,
+  teamId: 1,
+  costCentreId: 1,
+  targetAmount: 500,
   periodStart: '2020-01-01T00:00:00Z',
   periodEnd: '2020-12-31T00:00:00Z',
 };
@@ -67,7 +73,9 @@ describe('CostCentreListComponent', () => {
   });
 
   it('should show "No current budget" when a cost centre has no budgets', () => {
-    component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [] }];
+    component.costCentres = [
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [] },
+    ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
     expect(span).not.toBeNull();
@@ -75,7 +83,9 @@ describe('CostCentreListComponent', () => {
   });
 
   it('should show "No current budget" when all budgets are expired', () => {
-    component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget] }];
+    component.costCentres = [
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget] },
+    ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
     expect(span).not.toBeNull();
@@ -83,7 +93,9 @@ describe('CostCentreListComponent', () => {
   });
 
   it('should show the active budget amount when a current budget exists', () => {
-    component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget] }];
+    component.costCentres = [
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget] },
+    ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.has-budgets');
     expect(span).not.toBeNull();
