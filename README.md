@@ -6,7 +6,7 @@ Before you are able to run the application you need to create a .env file. You c
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - [Docker & Docker Compose](https://docs.docker.com/compose/) (for PostgreSQL)
 - `just` command (optional, for running predefined tasks)
 - EF Core CLI for migrations: `dotnet tool install --global dotnet-ef`

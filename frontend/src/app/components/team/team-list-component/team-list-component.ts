@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 
+import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
 
@@ -13,7 +14,10 @@ import { TeamDto } from '../../../types/exporter';
 export class TeamListComponent implements OnInit {
   teams = signal<TeamDto[]>([]);
 
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   ngOnInit(): void {
     this.loadTeams();
@@ -24,7 +28,9 @@ export class TeamListComponent implements OnInit {
       next: (data) => {
         this.teams.set(data);
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
     });
   }
 }

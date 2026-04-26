@@ -1,4 +1,42 @@
+@use 'variables' as v;
+
 /* You can add global styles to this file, and also import other style files */
+
 body {
+  --font-sans:
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+
+  font-family: var(--font-sans);
+  font-size: v.$font-s;
+
   margin: 0;
+
+  color: v.$text-color;
+  background-color: v.$background-color;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  // Default button styling
+  button {
+    font-size: v.$font-s;
+    padding: v.$size-xs v.$size-m;
+    border: none;
+    border-radius: v.$size-xs;
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      transform 0.1s,
+      box-shadow 0.2s;
+
+    &:hover {
+      background: v.$gray-100;
+      transform: translateY(-0.5px);
+      box-shadow: 0 2px 4px v.$shadow-color;
+    }
+  }
 }

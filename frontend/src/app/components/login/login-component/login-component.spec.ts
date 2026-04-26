@@ -14,6 +14,7 @@ describe('LoginComponent', () => {
 
   let authServiceMock: {
     handleGoogleCallback: ReturnType<typeof vi.fn>;
+    loadGoogleScript: ReturnType<typeof vi.fn>;
     storeToken: ReturnType<typeof vi.fn>;
   };
 
@@ -32,6 +33,7 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     authServiceMock = {
       handleGoogleCallback: vi.fn().mockReturnValue(of(mockJwtCallbackResponse)),
+      loadGoogleScript: vi.fn(),
       storeToken: vi.fn(),
     };
 
@@ -72,6 +74,7 @@ describe('LoginComponent', () => {
   });
 
   it('should redirect to home ("") on successful login', () => {
+    authServiceMock.loadGoogleScript.mockReturnValue(of(null));
     authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtCallbackResponse));
 
     component.handleCredentialResponse(mockGoogleCallbackResponse);

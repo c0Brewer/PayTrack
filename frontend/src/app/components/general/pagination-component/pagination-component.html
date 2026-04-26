@@ -1,0 +1,21 @@
+<div class="pagination">
+  <button
+    class="left"
+    (click)="onPrev()"
+    [style.visibility]="hasPrev ? 'visible' : 'hidden'"
+  >
+    Previous
+  </button>
+
+  <span class="center">
+    Page {{ currentPage + 1 }} / {{ maxPage }}
+  </span>
+
+  <button
+    class="right"
+    (click)="onNext()"
+    [style.visibility]="hasNext ? 'visible' : 'hidden'"
+  >
+    Next
+  </button>
+</div>

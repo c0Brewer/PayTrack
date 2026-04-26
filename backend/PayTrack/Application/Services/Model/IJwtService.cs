@@ -2,6 +2,8 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Data.Entities;
+
 namespace PayTrack.Application.Services.Model
 {
     /// <summary>
@@ -13,7 +15,8 @@ namespace PayTrack.Application.Services.Model
         /// Generates a JWT Token from email.
         /// </summary>
         /// <param name="email">email to generate token from.</param>
+        /// <param name="role">role of user.</param>
         /// <returns>Generated Token.</returns>
-        Task<string> GenerateJWTToken(string email);
+        Task<string> GenerateJWTToken(string email, Role role);
     }
 }

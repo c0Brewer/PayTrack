@@ -11,5 +11,7 @@
         "parser": "angular"
       }
     }
-  ]
+  ],
+  "bracketSpacing": true,
+  "arrowParens": "always"
 }

@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -17,27 +18,38 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<User> CreateUserAsync(
-            string name,
-            string email,
-            string? profilePictureUrl,
-            bool isActive = true)
+        public async Task<(List<User> user, int totalCount)> GetAllAsync(
+            GetUserQuery? query = null)
         {
-            var team = new User
-            {
-                Name = name,
-                Email = email,
-                ProfilePictureUrl = profilePictureUrl,
-                IsActive = isActive,
-            };
+            return await this.repo.GetAllAsync(query);
+        }
 
-            return await this.repo.AddAsync(team);
+        /// <inheritdoc/>
+        public async Task<User?> GetUserByIdAsync(int id, GetUserQueryById? query = null)
+        {
+            return await this.repo.GetByIdAsync(id, query);
         }
 
         /// <inheritdoc/>
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await this.repo.GetByEmailAsync(email);
+        }
+
+        /// <inheritdoc/>
+        public async Task<User> CreateUserAsync(
+            string name,
+            string email,
+            string? profilePictureUrl,
+            bool isActive = true)
+        {
+            return await this.repo.AddAsync(name, email, profilePictureUrl, isActive);
+        }
+
+        /// <inheritdoc/>
+        public async Task<User> UpdateUserAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null)
+        {
+            return await this.repo.UpdateAsync(id, name, isActive, teamId, role);
         }
     }
 }

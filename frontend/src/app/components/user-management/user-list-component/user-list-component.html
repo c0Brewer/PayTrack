@@ -1,0 +1,68 @@
+<table class="user-table">
+  <colgroup>
+    <col style="width: 20%" />
+    <col style="width: 25%" />
+    <col style="width: 15%" />
+    <col style="width: 20%" />
+    <col style="width: 10%" />
+    <col style="width: 10%" />
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Team</th>
+      <th>Status</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (u of user; track u.id) {
+      <tr>
+        <td class="name">{{ u.name }}</td>
+
+        <td class="email">{{ u.email }}</td>
+
+        <td>
+          @if (u.role == regular_user) {
+            <span class="regular_user role">{{ roleToText(u.role) }}</span>
+          } @else if (u.role == team_lead) {
+            <span class="team_lead role">{{ roleToText(u.role) }}</span>
+          } @else if (u.role == admin) {
+            <span class="admin role">{{ roleToText(u.role) }}</span>
+          }
+        </td>
+
+        <td>
+          @if (u.team != null && u.team.name) {
+            <div class="team">
+              <span class="team-color" [style.background]="u.team.displayColor">{{
+                u.team.name
+              }}</span>
+            </div>
+          } @else {
+            <span class="no-team">No Team</span>
+          }
+        </td>
+
+        <td>
+          <button
+            class="status-btn"
+            [class.active]="u.isActive"
+            (click)="onToggleActive(u)"
+            [title]="u.isActive ? 'Click to deactivate user' : 'Click to activate user'"
+          >
+            {{ u.isActive ? 'Active' : 'Inactive' }}
+          </button>
+        </td>
+
+        <td class="actions-col">
+          <button class="edit-btn" (click)="onOpenEditUser(u)">Edit</button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

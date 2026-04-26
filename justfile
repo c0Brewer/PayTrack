@@ -1,5 +1,6 @@
 ###################################
-set windows-shell := ["powershell", "-Command"] 
+set windows-shell := ["powershell", "-Command"]
+
 set dotenv-load
 
 ###################################
@@ -7,14 +8,8 @@ set dotenv-load
 # BACKEND
 
 [working-directory: "backend"]
-[unix]
 run-database:
-  sudo docker-compose -f docker-compose-postgres.yml up -d
-
-[working-directory: "backend"]
-[windows]
-run-database:
-  docker-compose -f docker-compose-postgres.yml up -d
+    sudo docker-compose -f docker-compose-postgres.yml up -d
 
 [working-directory: "backend"]
 stop-database:
@@ -26,7 +21,7 @@ run-backend:
 
 [working-directory: "backend"]
 test-backend:
-    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
+    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=90 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
 
 [working-directory: "backend/PayTrack.Tests"]
 print-test-report:

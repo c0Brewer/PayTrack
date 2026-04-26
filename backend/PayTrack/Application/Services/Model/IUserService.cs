@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Model
@@ -12,7 +13,22 @@ namespace PayTrack.Application.Services.Model
     public interface IUserService
     {
         /// <summary>
+        /// Gets all User with an optional offset and limit.
+        /// </summary>
+        /// <param name="query">Query information for search.</param>
+        /// <returns>List of User.</returns>
+        Task<(List<User> user, int totalCount)> GetAllAsync(GetUserQuery? query = null);
+
+        /// <summary>
         /// Gets a specific User by their ID.
+        /// </summary>
+        /// <param name="id">id of User to find.</param>
+        /// <param name="query">Query information for search.</param>
+        /// <returns>User with given id.</returns>
+        Task<User?> GetUserByIdAsync(int id, GetUserQueryById? query = null);
+
+        /// <summary>
+        /// Gets a specific User by their Email.
         /// </summary>
         /// <param name="email">email of User to find.</param>
         /// <returns>User with given email.</returns>
@@ -27,5 +43,16 @@ namespace PayTrack.Application.Services.Model
         /// <param name="isActive">indicates whether a user is currently set to active or not.</param>
         /// <returns>Instance of created User object.</returns>
         Task<User> CreateUserAsync(string name, string email, string? profilePictureUrl, bool isActive = true);
+
+        /// <summary>
+        /// Update a User using the given input.
+        /// </summary>
+        /// <param name="id">The id of the user to update.</param>
+        /// <param name="name">The new name that should be set for the user.</param>
+        /// <param name="isActive">The new isActive status that should be set for the user.</param>
+        /// <param name="teamId">The id of the new team to assign the User to.</param>
+        /// <param name="role">The new role that the User should be assigned.</param>
+        /// <returns>Instance of created User object.</returns>
+        Task<User> UpdateUserAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null);
     }
 }

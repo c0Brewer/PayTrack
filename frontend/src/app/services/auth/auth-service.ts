@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, from, Observable, tap } from 'rxjs';
+import { BehaviorSubject, from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import { GoogleAuthCallbackDto, GoogleAuthResponseDto, UserDto } from '../../types/exporter';
+import { NotificationService } from '../notification/notification-service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,10 +16,22 @@ export class AuthService {
   public loggedIn$ = this.loggedInSubject.asObservable();
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private readonly router: Router) {
+  constructor(
+    private readonly router: Router,
+    private readonly notificationService: NotificationService,
+  ) {
     this.checkExpiryOnStartup();
     if (this.hasValidToken()) {
-      this.fetchAndStoreUser();
+      this.initCurrentUser();
+    }
+  }
+
+  private async initCurrentUser(): Promise<void> {
+    try {
+      await this.fetchAndStoreUser();
+    } catch (error) {
+      this.notificationService.showError('Error while loading User' + error);
+      this.logout();
     }
   }
 
@@ -27,6 +40,20 @@ export class AuthService {
     if (token && this.isTokenExpired(token)) {
       this.logout(); // cleans up and redirects
     }
+  }
+
+  loadGoogleScript(): Promise<void> {
+    return new Promise((resolve) => {
+      if (globalThis.window.google) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = (): void => resolve();
+      document.body.appendChild(script);
+    });
   }
 
   public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
@@ -40,24 +67,23 @@ export class AuthService {
     return from(promise);
   }
 
-  public refreshUser(): Observable<UserDto> {
-    return this.fetchAndStoreUser();
+  public async refreshUser(): Promise<UserDto> {
+    return await this.fetchAndStoreUser();
   }
 
   public getCurrentUser(): Observable<UserDto | null> {
     return this.currentUser$;
   }
 
-  private fetchAndStoreUser(): Observable<UserDto> {
-    const obs$ = from(
-      client.GET('/api/v1/auth/currentuser', { params: {} }).then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data;
-      }),
-    );
+  public async fetchAndStoreUser(): Promise<UserDto> {
+    const { data, error } = await client.GET('/api/v1/auth/currentuser', { params: {} });
 
-    obs$.pipe(tap((user) => this.currentUserSubject.next(user))).subscribe();
-    return obs$;
+    if (error) {
+      throw new Error(error.detail ?? 'Unexpected Error');
+    }
+
+    this.currentUserSubject.next(data);
+    return data;
   }
 
   public logout(): void {
