@@ -14,10 +14,11 @@ namespace PayTrack.Data.Repositories.Model
     public interface ICostCentreRepository
     {
         /// <summary>
-        /// Returns all cost centers from DB, including their budgets.
+        /// Returns filtered and paginated cost centers from DB, including their budgets.
         /// </summary>
-        /// <returns>List of CostCentre objects.</returns>
-        Task<List<CostCentre>> GetAllAsync();
+        /// <param name="query">Optional filter and pagination parameters.</param>
+        /// <returns>Matching cost centres and total count before pagination.</returns>
+        Task<(List<CostCentre> Items, int TotalCount)> GetAllAsync(GetCostCentreQuery? query = null);
 
         /// <summary>
         /// Gets a specific cost center by ID, including its budgets.

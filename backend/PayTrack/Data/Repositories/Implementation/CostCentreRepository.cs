@@ -20,11 +20,47 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<List<CostCentre>> GetAllAsync()
+        public async Task<(List<CostCentre> Items, int TotalCount)> GetAllAsync(GetCostCentreQuery? query = null)
         {
-            return await this.context.CostCentres
+            var today = DateTime.UtcNow;
+            IQueryable<CostCentre> dbQuery = this.context.CostCentres.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query?.Name))
+            {
+                dbQuery = dbQuery.Where(c => EF.Functions.Like(c.Name, $"%{query.Name}%"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query?.Description))
+            {
+                dbQuery = dbQuery.Where(c => c.Description != null && EF.Functions.Like(c.Description, $"%{query.Description}%"));
+            }
+
+            if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(c => c.Budgets.Any(b =>
+                    b.PeriodStart <= today && today <= b.PeriodEnd &&
+                    (!query.MinBudget.HasValue || b.TargetAmount >= query.MinBudget.Value) &&
+                    (!query.MaxBudget.HasValue || b.TargetAmount <= query.MaxBudget.Value)));
+            }
+
+            var totalCount = await dbQuery.CountAsync();
+
+            if (query?.Offset.HasValue == true)
+            {
+                dbQuery = dbQuery.Skip(query.Offset.Value);
+            }
+
+            if (query?.Limit.HasValue == true)
+            {
+                dbQuery = dbQuery.Take(query.Limit.Value);
+            }
+
+            var items = await dbQuery
                 .Include(c => c.Budgets)
+                .OrderBy(c => c.Name)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         /// <inheritdoc/>
@@ -49,8 +85,8 @@ namespace PayTrack.Data.Repositories.Implementation
                         CostCentre = costCentre,
                         TeamId = entry.TeamId,
                         TargetAmount = entry.TargetAmount,
-                        PeriodStart = entry.PeriodStart,
-                        PeriodEnd = entry.PeriodEnd,
+                        PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
+                        PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
                     });
                 }
             }
@@ -110,8 +146,8 @@ namespace PayTrack.Data.Repositories.Implementation
                             CostCentre = costCentre,
                             TeamId = entry.TeamId,
                             TargetAmount = entry.TargetAmount,
-                            PeriodStart = entry.PeriodStart,
-                            PeriodEnd = entry.PeriodEnd,
+                            PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
+                            PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
                         });
                     }
                     else
@@ -120,8 +156,8 @@ namespace PayTrack.Data.Repositories.Implementation
                             ?? throw new NotFoundException($"Budget with id {entry.Id} not found on CostCentre {id}.");
                         existing.TeamId = entry.TeamId;
                         existing.TargetAmount = entry.TargetAmount;
-                        existing.PeriodStart = entry.PeriodStart;
-                        existing.PeriodEnd = entry.PeriodEnd;
+                        existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
+                        existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);
                     }
                 }
             }

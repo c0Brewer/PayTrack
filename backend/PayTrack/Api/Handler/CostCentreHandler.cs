@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
 using PayTrack.Application.Dto.CostCentre;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 
@@ -17,15 +18,19 @@ namespace PayTrack.Api.Handler
     public static class CostCentreHandler
     {
         /// <summary>
-        /// Returns all cost centers.
+        /// Returns filtered and paginated cost centers.
         /// </summary>
+        /// <param name="query">Query object including all filter and pagination options.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<List<CostCentreDto>>, ProblemHttpResult>> GetAllAsync(
+        public static async Task<Results<Ok<PaginatedResponse<CostCentreDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetAllAsync(
+            [AsParameters] GetCostCentreQuery query,
             ICostCentreService service)
         {
-            var costCentres = await service.GetAllAsync();
-            return TypedResults.Ok(CostCentreMapper.ListToDto(costCentres));
+            var (costCentres, totalCount) = await service.GetAllAsync(query);
+            var dtos = CostCentreMapper.ListToDto(costCentres);
+            var paginatedResponse = new PaginatedResponse<CostCentreDto>(dtos, totalCount, query.Limit ?? -1, query.Offset ?? 0);
+            return TypedResults.Ok(paginatedResponse);
         }
 
         /// <summary>
