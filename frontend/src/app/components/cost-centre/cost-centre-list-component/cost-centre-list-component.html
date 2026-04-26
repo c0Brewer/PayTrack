@@ -22,10 +22,10 @@
         <td class="description">{{ c.description }}</td>
 
         <td>
-          @if (c.budgets && c.budgets.length > 0) {
-            <span class="has-budgets">Placeholder, has budgets</span>
+          @if (getActiveBudget(c.budgets); as activeBudget) {
+            <span class="has-budgets">{{ activeBudget.targetAmount | currency:'EUR' }}</span>
           } @else {
-            <span class="no-budgets">no budgets</span>
+            <span class="no-budgets">No current budget</span>
           }
         </td>
 

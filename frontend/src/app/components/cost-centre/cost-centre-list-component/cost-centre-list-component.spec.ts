@@ -2,9 +2,21 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
-import { CostCentreDto } from '../../../types/exporter';
+import { BudgetDto, CostCentreDto } from '../../../types/exporter';
 
 import { CostCentreListComponent } from './cost-centre-list-component';
+
+const now = new Date();
+const activeBudget: BudgetDto = {
+  id: 10, teamId: 1, costCentreId: 1, targetAmount: 500,
+  periodStart: new Date(now.getFullYear() - 1, 0, 1).toISOString(),
+  periodEnd: new Date(now.getFullYear() + 1, 11, 31).toISOString(),
+};
+const expiredBudget: BudgetDto = {
+  id: 11, teamId: 1, costCentreId: 1, targetAmount: 500,
+  periodStart: '2020-01-01T00:00:00Z',
+  periodEnd: '2020-12-31T00:00:00Z',
+};
 
 const mockCostCentres: CostCentreDto[] = [
   { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [] },
@@ -54,20 +66,47 @@ describe('CostCentreListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should show "no budgets" when a cost centre has no budgets', () => {
+  it('should show "No current budget" when a cost centre has no budgets', () => {
     component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [] }];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
     expect(span).not.toBeNull();
-    expect(span.textContent).toContain('no budgets');
+    expect(span.textContent).toContain('No current budget');
   });
 
-  it('should show "has budgets" when a cost centre has budgets', () => {
-    component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [{ id: 10, teamId: 1, costCentreId: 1, targetAmount: 500, periodStart: '2024-01-01', periodEnd: '2024-12-31' }] },
-    ];
+  it('should show "No current budget" when all budgets are expired', () => {
+    component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget] }];
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('.no-budgets');
+    expect(span).not.toBeNull();
+    expect(span.textContent).toContain('No current budget');
+  });
+
+  it('should show the active budget amount when a current budget exists', () => {
+    component.costCentres = [{ id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget] }];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.has-budgets');
     expect(span).not.toBeNull();
+    expect(span.textContent).toContain('500');
+  });
+
+  describe('getActiveBudget', () => {
+    it('should return undefined for null or empty budgets', () => {
+      expect(component.getActiveBudget(null)).toBeUndefined();
+      expect(component.getActiveBudget(undefined)).toBeUndefined();
+      expect(component.getActiveBudget([])).toBeUndefined();
+    });
+
+    it('should return undefined for an expired budget', () => {
+      expect(component.getActiveBudget([expiredBudget])).toBeUndefined();
+    });
+
+    it('should return the active budget', () => {
+      expect(component.getActiveBudget([activeBudget])).toEqual(activeBudget);
+    });
+
+    it('should return only the active budget when mixed with an expired one', () => {
+      expect(component.getActiveBudget([expiredBudget, activeBudget])).toEqual(activeBudget);
+    });
   });
 });
