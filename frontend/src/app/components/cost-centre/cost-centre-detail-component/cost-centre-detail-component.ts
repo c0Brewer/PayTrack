@@ -1,5 +1,5 @@
 import { SlicePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
@@ -18,19 +18,24 @@ export class CostCentreDetailComponent implements OnInit {
     private readonly notificationService: NotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   costCentre: CostCentreDto | null = null;
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.costCentreService.getCostCentre(id).subscribe({
-      next: (data) => {
-        this.costCentre = data;
-      },
-      error: (err: Error) => {
-        this.notificationService.showError('Could not load cost centre: ' + err.message);
-      },
+    this.route.paramMap.subscribe((params) => {
+      const id = Number(params.get('id'));
+
+      this.costCentreService.getCostCentre(id).subscribe({
+        next: (data) => {
+          this.costCentre = data;
+          this.cdr.detectChanges();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load cost centre: ' + err.message);
+        },
+      });
     });
   }
 
