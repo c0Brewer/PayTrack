@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Data.Entities;
 
@@ -20,9 +19,7 @@ namespace PayTrack.Api.Mapper
         /// <returns>CostCentreDto instance.</returns>
         public static CostCentreDto ToDto(CostCentre costCentre)
         {
-            var budgetDtos = costCentre.Budgets
-                .Select(b => new BudgetDto(b.Id, b.TeamId, b.CostCentreId, b.TargetAmount, b.PeriodStart, b.PeriodEnd))
-                .ToList();
+            var budgetDtos = BudgetMapper.ListToDto(costCentre.Budgets.ToList());
 
             return new CostCentreDto(
                 costCentre.Id,
