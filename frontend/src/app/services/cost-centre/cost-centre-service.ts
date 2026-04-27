@@ -11,22 +11,16 @@ import {
   UpdateCostCentreRequestDto,
 } from '../../types/exporter';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ApiResult = { data: any; error: any };
-
 @Injectable({
   providedIn: 'root',
 })
 export class CostCentreService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly api = client as any;
-
   public getCostCentres(
     options?: GetCostCentreOptions,
   ): Observable<CostCentreDtoPaginatedResponse> {
-    const promise: Promise<CostCentreDtoPaginatedResponse> = this.api
+    const promise: Promise<CostCentreDtoPaginatedResponse> = client
       .GET('/api/v1/cost-centre', { params: { query: options ?? {} } })
-      .then(({ data, error }: ApiResult) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data as CostCentreDtoPaginatedResponse;
       });
@@ -34,9 +28,9 @@ export class CostCentreService {
   }
 
   public getCostCentre(id: number): Observable<CostCentreDto> {
-    const promise: Promise<CostCentreDto> = this.api
+    const promise: Promise<CostCentreDto> = client
       .GET('/api/v1/cost-centre/{id}', { params: { path: { id } } })
-      .then(({ data, error }: ApiResult) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data as CostCentreDto;
       });
@@ -44,9 +38,9 @@ export class CostCentreService {
   }
 
   public createCostCentre(request: CreateCostCentreRequestDto): Observable<CostCentreDto> {
-    const promise: Promise<CostCentreDto> = this.api
+    const promise: Promise<CostCentreDto> = client
       .POST('/api/v1/cost-centre', { body: request })
-      .then(({ data, error }: ApiResult) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data as CostCentreDto;
       });
@@ -57,9 +51,9 @@ export class CostCentreService {
     id: number,
     request: UpdateCostCentreRequestDto,
   ): Observable<CostCentreDto> {
-    const promise: Promise<CostCentreDto> = this.api
+    const promise: Promise<CostCentreDto> = client
       .PUT('/api/v1/cost-centre/{id}', { params: { path: { id } }, body: request })
-      .then(({ data, error }: ApiResult) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data as CostCentreDto;
       });
@@ -67,9 +61,9 @@ export class CostCentreService {
   }
 
   public getDeletePreview(id: number): Observable<DeleteCostCentrePreviewDto> {
-    const promise: Promise<DeleteCostCentrePreviewDto> = this.api
+    const promise: Promise<DeleteCostCentrePreviewDto> = client
       .GET('/api/v1/cost-centre/{id}/delete-preview', { params: { path: { id } } })
-      .then(({ data, error }: ApiResult) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data as DeleteCostCentrePreviewDto;
       });
@@ -77,9 +71,9 @@ export class CostCentreService {
   }
 
   public deleteCostCentre(id: number): Observable<void> {
-    const promise: Promise<void> = this.api
+    const promise: Promise<void> = client
       .DELETE('/api/v1/cost-centre/{id}', { params: { path: { id } } })
-      .then(({ error }: ApiResult) => {
+      .then(({ error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
       });
     return from(promise);

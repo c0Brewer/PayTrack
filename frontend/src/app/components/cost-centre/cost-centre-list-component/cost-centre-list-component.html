@@ -17,7 +17,9 @@
   <tbody>
     @for (c of costCentres; track c.id) {
       <tr>
-        <td class="name">{{ c.name }}</td>
+        <td class="name">
+          <a [routerLink]= "[c.id]">{{ c.name }}</a>
+        </td>
 
         <td class="description">{{ c.description }}</td>
 
