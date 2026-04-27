@@ -3,6 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
+import { BankAccountService } from '../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
@@ -45,6 +46,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
     private readonly teamService: TeamService,
+    private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -75,17 +77,28 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   private loadTeams(): void {
     this.teamService
-      .getTeams()
+      .getTeams({})
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (teams) => (this.teams = teams),
+        next: (teams) => {
+          if (teams.items != null) {
+            this.teams = teams.items;
+          }
+        },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
   }
 
   private loadBankAccounts(): void {
-    // TODO: Replace this ugly workaround with regular bank account endpoints once they are finished!!!
-    this.bankAccounts = [{ id: 1, bic: '123', iban: '123', accountHolder: '123' }];
+    this.bankAccountService
+      .getBankAccounts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bankAccounts) => {
+          this.bankAccounts = bankAccounts;
+        },
+        error: () => this.notificationService.showError('Failed to load teams.'),
+      });
   }
 
   onFileSelected(event: Event): void {
