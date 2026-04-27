@@ -11,7 +11,7 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo) : IPaymentRequestByUserService
+    public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
     {
         /// <summary>
         /// Repository for PaymentRequestByUsers.
@@ -19,6 +19,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITransactionRepository repo = repo;
         private readonly IFileRepository fileRepo = _fileRepo;
         private readonly ITeamService teamService = _teamService;
+        private readonly IBankAccountService bankAccountService = _bankAccountService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -46,18 +47,32 @@ namespace PayTrack.Application.Services.Implementation
             PayoutType payoutType,
             int? bankAccountId)
         {
-            // TODO: Check here if bank account valid when bank account service is ready
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
-            // TODO: Check paid at < todays date. Allow paid at to be null when PayoutType is not User
             if (PaidAt > DateTime.Today)
             {
                 throw new InvalidStateException("Paid at cannot be in the future!");
             }
 
-            if (payoutType == PayoutType.User && !bankAccountId.HasValue)
+            // Ensure bank account id is set if payout type is user
+            if (payoutType == PayoutType.User)
             {
-                throw new InvalidStateException("If the money should be paid out to you, you must specify a bankAccount");
+                if (!bankAccountId.HasValue)
+                {
+                    throw new InvalidStateException("If the money should be paid out to you, you must specify a bankAccount");
+                }
+
+                var bankAccounts = await this.bankAccountService.GetBankAccountsAsync(userId) ?? throw new NotFoundException("Bank Accounts could not be found");
+
+                if (!bankAccounts.Any(b => b.Id == bankAccountId.Value))
+                {
+                    throw new InvalidStateException("Could not find specified bank account");
+                }
+            }
+            else
+            {
+                // Ensure bank account is null if payout type is external
+                bankAccountId = null;
             }
 
             var paymentRequest = new PaymentRequestByUser
