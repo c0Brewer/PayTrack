@@ -1,6 +1,53 @@
-<p data-test="header">Teams:</p>
-<button data-test="refresh-teams" (click)="loadTeams()">Refresh:</button>
+<table class="team-table">
+  <colgroup>
+    <col style="width: 20%" />
+    <col />
+    <col style="width: 15%" />
+    <col style="width: 15%" />
+    <col style="width: 10%" />
+  </colgroup>
 
-@for (team of teams(); track team.id) {
-<div [ngClass]="'team-item'" data-test="team-item">Team {{ team.id }}: {{ team.name }}</div>
-}
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Member Count</th>
+      <th>Team Budget</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (team of teams; track team.id) {
+      <tr>
+        <td class="name">
+          <span
+            class="team-name-badge"
+            [style.background]="getDisplayColor(team)"
+            [style.color]="getTeamNameTextColor(team)"
+          >
+            {{ team.name }}
+          </span>
+        </td>
+
+        <td class="description">{{ getDescription(team) }}</td>
+        <td>{{ getMembersCount(team) }}</td>
+        <td>
+          {{
+            getBudgetTargetAmount(team) !== null
+              ? `${getBudgetTargetAmount(team)} €`
+              : 'No budget set'
+          }}
+        </td>
+
+        <td class="actions-col">
+          <button class="edit-btn" (click)="onOpenEditTeam(team)">Edit</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="getVisibleColumnCount()">No teams found.</td>
+      </tr>
+    }
+  </tbody>
+</table>

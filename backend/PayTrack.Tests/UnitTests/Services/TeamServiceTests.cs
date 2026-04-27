@@ -1,5 +1,6 @@
 using Moq;
 using FluentAssertions;
+using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 using PayTrack.Application.Services.Implementation;
@@ -40,21 +41,31 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetTeamByIdAsync_ShouldReturnTeamFromRepo()
+        public async Task GetTeamByIdAsync_ShouldForwardQueryToRepo()
         {
             // Arrange
             const int teamId = 42;
+            var query = new GetTeamQueryById
+            {
+                IncludeMembers = true,
+                IncludeBudgets = true,
+            };
             var expectedTeam = new Team { Id = teamId, Name = "Team42" };
-            repoMock.Setup(r => r.GetByIdAsync(teamId))
+            repoMock.Setup(r => r.GetByIdAsync(
+                    teamId,
+                    It.Is<GetTeamQueryById?>(q => q != null && q.IncludeMembers == true && q.IncludeBudgets == true)))
                     .ReturnsAsync(expectedTeam);
 
             // Act
-            var result = await service.GetTeamByIdAsync(teamId);
+            var result = await service.GetTeamByIdAsync(teamId, query);
 
             // Assert
             result.Should().NotBeNull();
             result.Id.Should().Be(teamId);
             result.Name.Should().Be("Team42");
+            repoMock.Verify(r => r.GetByIdAsync(
+                teamId,
+                It.Is<GetTeamQueryById?>(q => q != null && q.IncludeMembers == true && q.IncludeBudgets == true)), Times.Once);
         }
 
         [Fact]
@@ -66,16 +77,59 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "Team1" },
                 new() { Id = 2, Name = "Team2" }
             };
-            repoMock.Setup(r => r.GetAllAsync())
-                    .ReturnsAsync(teams);
+            repoMock.Setup(r => r.GetAllAsync(null))
+                    .ReturnsAsync((teams, 2));
 
             // Act
-            var result = await service.GetTeamsAsync();
+            var (resultList, totalCount) = await service.GetTeamsAsync();
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(t => t.Name == "Team1");
-            result.Should().ContainSingle(t => t.Name == "Team2");
+            resultList.Should().HaveCount(2);
+            resultList.Should().ContainSingle(t => t.Name == "Team1");
+            resultList.Should().ContainSingle(t => t.Name == "Team2");
+            totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetTeamsAsync_ShouldForwardQueryToRepoAndReturnPaginationData()
+        {
+            // Arrange
+            var query = new GetTeamQuery
+            {
+                Name = "Team",
+                IncludeMembers = true,
+                Limit = 1,
+                Offset = 2,
+            };
+
+            var teams = new List<Team>
+            {
+                new() { Id = 3, Name = "Team3" },
+            };
+
+            repoMock.Setup(r => r.GetAllAsync(
+                    It.Is<GetTeamQuery?>(q =>
+                        q != null &&
+                        q.Name == query.Name &&
+                        q.IncludeMembers == query.IncludeMembers &&
+                        q.Limit == query.Limit &&
+                        q.Offset == query.Offset)))
+                .ReturnsAsync((teams, 4));
+
+            // Act
+            var (resultList, totalCount) = await service.GetTeamsAsync(query);
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Team3");
+            totalCount.Should().Be(4);
+            repoMock.Verify(r => r.GetAllAsync(
+                It.Is<GetTeamQuery?>(q =>
+                    q != null &&
+                    q.Name == query.Name &&
+                    q.IncludeMembers == query.IncludeMembers &&
+                    q.Limit == query.Limit &&
+                    q.Offset == query.Offset)), Times.Once);
         }
     }
 }

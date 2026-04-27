@@ -105,7 +105,16 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    Name?: string;
+                    Description?: string;
+                    MinBudget?: number;
+                    MaxBudget?: number;
+                    IncludeMembers?: boolean;
+                    IncludeBudgets?: boolean;
+                    Limit?: number;
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -118,7 +127,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["TeamDto"][];
+                        "application/json": components["schemas"]["TeamDtoPaginatedResponse"];
                     };
                 };
                 /** @description Bad Request */
@@ -181,7 +190,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeMembers?: boolean;
+                    IncludeBudgets?: boolean;
+                };
                 header?: never;
                 path: {
                     id: number;
@@ -237,14 +249,14 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    name?: string;
-                    email?: string;
-                    teamName?: string;
-                    role?: components["schemas"]["Role"];
-                    isActive?: boolean;
-                    includeTeam?: boolean;
-                    limit?: number;
-                    offset?: number;
+                    Name?: string;
+                    Email?: string;
+                    TeamName?: string;
+                    Role?: components["schemas"]["Role"];
+                    IsActive?: boolean;
+                    IncludeTeam?: boolean;
+                    Limit?: number;
+                    Offset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -289,9 +301,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query: {
-                    includeTeam: boolean;
-                    includeBankAccounts: boolean;
+                query?: {
+                    IncludeTeam?: boolean;
+                    IncludeBankAccounts?: boolean;
                 };
                 header?: never;
                 path: {
@@ -376,6 +388,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BudgetDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
         CreateTeamRequestDto: {
             name: string;
             description?: string | null;
@@ -408,6 +432,19 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+            members?: components["schemas"]["UserDto"][] | null;
+            budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
+        TeamDtoPaginatedResponse: {
+            items: components["schemas"]["TeamDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
         UpdateUserDto: {
             name?: string | null;
