@@ -49,7 +49,7 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor, IList<UpsertBudgetEntryDto>? budgetsToUpsert, IList<int>? budgetIdsToDelete)
+        public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
         {
             if (budgetsToUpsert is not null && budgetIdsToDelete is not null)
             {

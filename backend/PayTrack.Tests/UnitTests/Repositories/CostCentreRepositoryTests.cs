@@ -26,7 +26,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             await using var context = GetInMemoryDbContext("AddCostCentre");
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var entity = new CostCentre { Name = "Aero" };
 
             // Act
@@ -49,7 +49,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Teams.Add(team);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var entity = new CostCentre { Name = "Electronics" };
             var budgets = new List<CreateBudgetEntryDto>
             {
@@ -71,7 +71,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             var failingContext = new FailingDbContext("AddCostCentre_Failing");
-            var repo = new CostCentreRepository(failingContext);
+            var repo = new CostCentreRepository(failingContext, new BudgetRepository(failingContext));
             var entity = new CostCentre { Name = "Fail" };
 
             // Act
@@ -91,7 +91,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var result = await repo.GetByIdAsync(entity.Id);
@@ -106,7 +106,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             await using var context = GetInMemoryDbContext("GetCostCentreById_NotFound");
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var result = await repo.GetByIdAsync(999);
@@ -125,7 +125,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new CostCentre { Name = "Electronics" });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync();
@@ -145,7 +145,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new CostCentre { Name = "Powertrain" });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Name = "Aero" });
@@ -166,7 +166,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new CostCentre { Name = "Electronics", Description = "Sensor costs" });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Description = "Wind" });
@@ -194,7 +194,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new Budget { TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 100m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MinBudget = 500m });
@@ -222,7 +222,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new Budget { TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 100m, PeriodStart = DateTime.UtcNow.AddDays(-30), PeriodEnd = DateTime.UtcNow.AddDays(30) });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MaxBudget = 500m });
@@ -255,7 +255,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { MinBudget = 500m });
@@ -278,7 +278,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new CostCentre { Name = "Tyres" });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var (items, totalCount) = await repo.GetAllAsync(new GetCostCentreQuery { Limit = 2, Offset = 1 });
@@ -301,7 +301,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var result = await repo.UpdateAsync(entity.Id, "New Name", null, null, null, null);
@@ -316,7 +316,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             await using var context = GetInMemoryDbContext("UpdateCostCentre_NotFound");
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
@@ -347,7 +347,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var preview = await repo.GetDeletePreviewAsync(costCentre.Id);
@@ -387,7 +387,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 new PaymentManual { UserId = user2.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 300m, PaymentDirection = PaymentDirection.Out });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             var preview = await repo.GetDeletePreviewAsync(costCentre.Id);
@@ -402,7 +402,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeletePreview_NotFound");
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
@@ -418,7 +418,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             await repo.DeleteAsync(entity.Id);
@@ -452,7 +452,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             });
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidStateException>(
@@ -466,7 +466,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeleteCostCentre_NotFound");
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
@@ -483,7 +483,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             failingContext.CostCentres.Add(entity);
             await failingContext.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(failingContext);
+            var repo = new CostCentreRepository(failingContext, new BudgetRepository(failingContext));
 
             // Act & Assert
             await Assert.ThrowsAsync<InternalErrorException>(
@@ -501,7 +501,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var budgetsToUpsert = new List<UpsertBudgetEntryDto>
             {
                 new(Id: null, TeamId: team.Id, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
@@ -539,7 +539,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Budgets.Add(budget);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var budgetsToUpsert = new List<UpsertBudgetEntryDto>
             {
                 new(Id: budget.Id, TeamId: team.Id, TargetAmount: 9999m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
@@ -576,7 +576,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Budgets.Add(budget);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
             await repo.UpdateAsync(entity.Id, null, null, null, null, [budget.Id]);
@@ -608,7 +608,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Budgets.Add(budgetToDelete);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var budgetsToUpsert = new List<UpsertBudgetEntryDto>
             {
                 new(Id: null, TeamId: team.Id, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 7, 1), PeriodEnd: new DateTime(2026, 12, 31)),
@@ -635,7 +635,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
@@ -651,7 +651,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(entity);
             await context.SaveChangesAsync();
 
-            var repo = new CostCentreRepository(context);
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var budgetsToUpsert = new List<UpsertBudgetEntryDto>
             {
                 new(Id: 999, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
@@ -674,7 +674,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             failingContext.CostCentres.Add(entity);
             await failingContext.SaveChangesAsync(); // uses the 1 allowed success
 
-            var repo = new CostCentreRepository(failingContext);
+            var repo = new CostCentreRepository(failingContext, new BudgetRepository(failingContext));
 
             // Act
             var result = await repo.UpdateAsync(entity.Id, null, null, null, null, null);

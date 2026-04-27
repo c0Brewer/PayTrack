@@ -42,6 +42,7 @@ builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
+builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();

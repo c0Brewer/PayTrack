@@ -12,12 +12,13 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Data.Repositories.Implementation
 {
     /// <inheritdoc/>
-    public class CostCentreRepository(AppDbContext _context) : ICostCentreRepository
+    public class CostCentreRepository(AppDbContext _context, IBudgetRepository _budgetRepository) : ICostCentreRepository
     {
         /// <summary>
         /// Database Context for accessing the DB.
         /// </summary>
         private readonly AppDbContext context = _context;
+        private readonly IBudgetRepository budgetRepository = _budgetRepository;
 
         /// <inheritdoc/>
         public async Task<(List<CostCentre> Items, int TotalCount)> GetAllAsync(GetCostCentreQuery? query = null)
@@ -72,23 +73,12 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateBudgetEntryDto>? budgetEntries)
+        public async Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateBudgetEntryDto>? budgetEntries = null)
         {
             this.context.CostCentres.Add(costCentre);
-
             if (budgetEntries is not null)
             {
-                foreach (var entry in budgetEntries)
-                {
-                    this.context.Budgets.Add(new Budget
-                    {
-                        CostCentre = costCentre,
-                        TeamId = entry.TeamId,
-                        TargetAmount = entry.TargetAmount,
-                        PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
-                        PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
-                    });
-                }
+                await this.budgetRepository.AddRangeAsync(costCentre, budgetEntries);
             }
 
             int res = await this.context.SaveChangesAsync();
@@ -103,7 +93,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> UpdateAsync(int id, string? name, string? description, string? displayColor, IList<UpsertBudgetEntryDto>? budgetsToUpsert, IList<int>? budgetIdsToDelete)
+        public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
         {
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)
@@ -221,8 +211,7 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 throw new InvalidStateException(
                     $"Cannot delete CostCentre '{costCentre.Name}': " +
-                    $"{costCentre.Budgets.Count} budget(s) and {costCentre.Transactions.Count} transaction(s) are still linked. " +
-                    $"Call GET /cost-centre/{id}/delete-preview for the full impact summary.");
+                    $"{costCentre.Budgets.Count} budget(s) and {costCentre.Transactions.Count} transaction(s) are still linked.");
             }
 
             this.context.CostCentres.Remove(costCentre);
