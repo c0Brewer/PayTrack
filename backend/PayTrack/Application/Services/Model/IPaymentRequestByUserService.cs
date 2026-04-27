@@ -58,7 +58,7 @@ namespace PayTrack.Application.Services.Model
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int bankAccountId);
+            int? bankAccountId);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.

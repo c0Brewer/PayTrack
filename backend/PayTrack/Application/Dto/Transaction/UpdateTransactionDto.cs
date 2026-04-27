@@ -12,15 +12,15 @@ namespace PayTrack.Application.Dto.Transaction
     public sealed record class UpdateTransactionDto(
 
         // Optional:
-        int TeamId,
+        int? TeamId,
 
         // Optional:
-        decimal Amount,
+        decimal? Amount,
 
         // Optional:
         [property: MinLength(3)]
-        string PurposeOfPayment,
+        string? PurposeOfPayment,
 
         // Optional:
-        DateTime PaidAt);
+        DateTime? PaidAt);
 }

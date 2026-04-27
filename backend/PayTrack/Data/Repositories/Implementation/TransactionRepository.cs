@@ -223,7 +223,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Include(t => t.StatusHistory);
             }
 
-            dbQuery.Include(t => t.User);
+            dbQuery = dbQuery.Include(t => t.User);
 
             return dbQuery;
         }

@@ -19,7 +19,6 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [property: MinLength(3)]
         string InvoiceNumber,
 
-        [property: Required]
         [property: MinLength(3)]
         string? Comment,
 
@@ -30,5 +29,5 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         PayoutType PayoutType,
 
         [property: Required]
-        int BankAccountId);
+        int? BankAccountId);
 }

@@ -44,7 +44,7 @@ namespace PayTrack.Application.Services.Implementation
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int bankAccountId)
+            int? bankAccountId)
         {
             // TODO: Check here if bank account valid when bank account service is ready
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
@@ -53,6 +53,11 @@ namespace PayTrack.Application.Services.Implementation
             if (PaidAt > DateTime.Today)
             {
                 throw new InvalidStateException("Paid at cannot be in the future!");
+            }
+
+            if (payoutType == PayoutType.User && !bankAccountId.HasValue)
+            {
+                throw new InvalidStateException("If the money should be paid out to you, you must specify a bankAccount");
             }
 
             var paymentRequest = new PaymentRequestByUser
