@@ -27,18 +27,20 @@
       </div>
     </div>
 
+    @if (form.get('payoutType')?.value === PayoutType.User) {
     <div class="field">
       <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
       <select id="bankAccountId" formControlName="bankAccountId" [class.is-invalid]="isInvalid('bankAccountId')">
         <option [ngValue]="null" disabled>Select bank account…</option>
         @for (account of bankAccounts; track account.id) {
-        <option [ngValue]="account.id">{{ account.bic + ' ' + account.iban }}</option>
+        <option [ngValue]="account.id">{{ getShortenedIban(account.iban) + ' (' + account.accountHolder + ')' }}</option>
         }
       </select>
       @if (getError('bankAccountId')) {
       <span class="error-msg">{{ getError('bankAccountId') }}</span>
       }
     </div>
+    }
 
     <div class="field">
       <label for="comment">Comment</label>
@@ -88,7 +90,7 @@
       </div>
 
       <div class="field">
-        <label for="paidAt">Paid At <span class="required">*</span></label>
+        <label for="paidAt">Invoice Date <span class="required">*</span></label>
         <input id="paidAt" type="date" formControlName="paidAt" [class.is-invalid]="isInvalid('paidAt')" />
         @if (getError('paidAt')) {
         <span class="error-msg">{{ getError('paidAt') }}</span>

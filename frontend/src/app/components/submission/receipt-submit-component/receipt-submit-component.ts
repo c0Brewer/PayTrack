@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { BankAccountService } from '../../../services/bank-account/bank-account-service';
@@ -48,6 +49,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +75,23 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       paidAt: ['', Validators.required],
       receipt: [null, Validators.required],
     });
+
+    // add custom check for bank account (only trigger when payouttype is user)
+    this.form
+      .get('payoutType')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        const bankCtrl = this.form.get('bankAccountId');
+
+        if (value === PayoutType.User) {
+          bankCtrl?.setValidators([Validators.required, Validators.min(1)]);
+        } else {
+          bankCtrl?.clearValidators();
+          bankCtrl?.setValue(null); // reset value when hidden
+        }
+
+        bankCtrl?.updateValueAndValidity();
+      });
   }
 
   private loadTeams(): void {
@@ -99,6 +118,19 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
+  }
+
+  getShortenedIban(iban: string): string {
+    if (!iban) return '';
+
+    const cleaned = iban.replace(/\s+/g, '');
+
+    if (cleaned.length <= 8) return cleaned;
+
+    const start = cleaned.slice(0, 4);
+    const end = cleaned.slice(-4);
+
+    return `${start} **** **** ${end}`;
   }
 
   onFileSelected(event: Event): void {
@@ -181,6 +213,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.selectedFile = null;
           this.selectedFileName = '';
           this.isSubmitting = false;
+          this.router.navigate(['/']);
         },
         error: (err: Error) => {
           this.notificationService.showError(err.message ?? 'Submission failed.');

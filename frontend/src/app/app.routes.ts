@@ -5,7 +5,6 @@ import { UnauthorizedComponent } from './components/general/unauthorized-compone
 import { LoginComponent } from './components/login/login-component/login-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
-import { TeamListComponent } from './components/team/team-list-component/team-list-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -36,6 +35,8 @@ export const routes: Routes = [
     path: 'requests',
     canActivate: [authGuard],
     component: ReceiptOverviewComponent,
+  },
+  {
     path: 'bankaccount',
     canActivate: [authGuard],
     component: BankAccountComponent,
