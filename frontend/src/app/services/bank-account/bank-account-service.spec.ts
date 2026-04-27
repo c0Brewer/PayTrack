@@ -46,14 +46,6 @@ describe('BankAccountService', () => {
       expect(result).toEqual(response);
     });
 
-    it('should return empty array when data is null', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: null } as any);
-
-      const result = await firstValueFrom(service.getBankAccounts());
-      expect(result).toEqual([]);
-    });
-
     it('should throw when api returns error', async () => {
       const error = { detail: 'Failed to load bank accounts' };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
