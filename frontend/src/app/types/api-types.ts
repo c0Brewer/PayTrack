@@ -791,10 +791,27 @@ export interface components {
             /** Format: date-time */
             periodEnd: string;
         };
+        CostCentreDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            description?: string | null;
+            displayColor?: string | null;
+        };
         CreateBankAccountRequestDto: {
             accountHolder: string;
             iban: string;
             bic: string;
+        };
+        CreatePaymentRequestByUserDto: {
+            transaction: components["schemas"]["CreateTransactionDto"];
+            invoiceNumber: string;
+            comment: string;
+            /** Format: binary */
+            receipt: string;
+            payoutType: components["schemas"]["PayoutType"];
+            /** Format: int32 */
+            bankAccountId: number;
         };
         CreateTeamRequestDto: {
             name: string;
@@ -894,11 +911,6 @@ export interface components {
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
         };
-        UpdateBankAccountRequestDto: {
-            accountHolder?: string | null;
-            iban?: string | null;
-            bic?: string | null;
-        };
         /**
          * Format: int32
          * @enum {integer}
@@ -912,6 +924,11 @@ export interface components {
             toStatus: components["schemas"]["TransactionStatus"];
             /** Format: date-time */
             changedAt: string;
+        };
+        UpdateBankAccountRequestDto: {
+            accountHolder?: string | null;
+            iban?: string | null;
+            bic?: string | null;
         };
         UpdatePaymentRequestByUserDto: {
             transaction: components["schemas"]["UpdateTransactionDto"];
