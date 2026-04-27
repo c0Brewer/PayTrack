@@ -1,15 +1,19 @@
-import type { components, paths } from '../types/api-types';
+import type { components, paths } from './api-types';
 
 // Error Message
 export type ProblemDetails = components['schemas']['ProblemDetails'];
 
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
+export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
 export type UserDtoPaginatedResponse = components['schemas']['UserDtoPaginatedResponse'];
 export type UpdateUserDto = components['schemas']['UpdateUserDto'];
+
+// Team Path
+export type GetTeamOptions = paths['/api/v1/team']['get']['parameters']['query'];
 
 // User Path
 export type GetUserOptions = paths['/api/v1/user']['get']['parameters']['query'];

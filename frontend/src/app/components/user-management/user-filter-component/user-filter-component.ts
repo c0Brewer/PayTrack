@@ -56,6 +56,7 @@ export class UserFilterComponent implements OnInit {
     return {
       Name: this.filterName ?? undefined,
       Email: this.filterEmail ?? undefined,
+      TeamName: undefined,
       Role: this.filterRole ?? undefined,
       IsActive: this.filterIsActive ?? undefined,
       IncludeTeam: undefined,

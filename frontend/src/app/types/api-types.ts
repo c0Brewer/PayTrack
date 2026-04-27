@@ -259,7 +259,16 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    Name?: string;
+                    Description?: string;
+                    MinBudget?: number;
+                    MaxBudget?: number;
+                    IncludeMembers?: boolean;
+                    IncludeBudgets?: boolean;
+                    Limit?: number;
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -272,7 +281,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["TeamDto"][];
+                        "application/json": components["schemas"]["TeamDtoPaginatedResponse"];
                     };
                 };
                 /** @description Bad Request */
@@ -335,7 +344,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeMembers?: boolean;
+                    IncludeBudgets?: boolean;
+                };
                 header?: never;
                 path: {
                     id: number;
@@ -532,10 +544,22 @@ export interface components {
     schemas: {
         BankAccountDto: {
             /** Format: int32 */
-            id?: number;
-            accountHolder?: string | null;
-            iban?: string | null;
-            bic?: string | null;
+            id: number;
+            accountHolder: string;
+            iban: string;
+            bic: string;
+        };
+        BudgetDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
         };
         CreateBankAccountRequestDto: {
             accountHolder: string;
@@ -574,6 +598,19 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+            members?: components["schemas"]["UserDto"][] | null;
+            budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
+        TeamDtoPaginatedResponse: {
+            items: components["schemas"]["TeamDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
         UpdateBankAccountRequestDto: {
             accountHolder?: string | null;

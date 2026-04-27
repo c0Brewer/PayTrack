@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { TeamListComponent } from './components/team/team-list-component/team-list-component';
+import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
@@ -37,7 +37,7 @@ export const routes: Routes = [
   {
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: TeamListComponent,
+    component: TeamManagementComponent,
   },
   {
     path: 'unauthorized',
@@ -47,6 +47,6 @@ export const routes: Routes = [
     // Fallback. TODO: Replace with proper Component
     path: '**',
     canActivate: [authGuard],
-    component: TeamListComponent,
+    component: TeamManagementComponent,
   },
 ];

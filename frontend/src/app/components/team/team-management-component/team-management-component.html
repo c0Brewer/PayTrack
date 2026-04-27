@@ -1,0 +1,26 @@
+<div class="team-management">
+  <h2>Team Management</h2>
+
+  <app-team-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onLimitChange($event)"
+  ></app-team-filter-component>
+
+  <app-team-list-component
+    [teams]="teams"
+    (openEditTeam)="openEditTeam($event)"
+  ></app-team-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+
+  <!-- TODO: EDIT POPUP -->
+</div>

@@ -96,6 +96,7 @@ describe('UserFilterComponent', () => {
     expect(options).toEqual({
       Name: 'Alice',
       Email: 'a@test.com',
+      TeamName: undefined,
       Role: Role.TEAM_LEAD,
       IsActive: true,
       IncludeTeam: undefined,
