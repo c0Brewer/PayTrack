@@ -21,7 +21,7 @@ export class BankAccountService {
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Failed to load bank accounts');
-        return data ?? [];
+        return data;
       });
 
     return from(promise);
