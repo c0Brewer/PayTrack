@@ -1,0 +1,60 @@
+<div class="settings-page">
+  <div class="settings-card">
+    <div class="settings-header">
+      <h1>Bank Accounts</h1>
+      <p>Manage your bank accounts. Every change is saved immediately.</p>
+    </div>
+
+    @if (errorMessage) {
+      <p class="error-message">{{ errorMessage }}</p>
+    }
+
+    <div class="header-actions">
+      <button type="button" class="add-btn" (click)="openCreateModal()">+ Add Bank Account</button>
+    </div>
+
+    @if (isLoading) {
+      <p class="state-message">Loading bank accounts...</p>
+    } @else {
+      <div class="accounts-list">
+        @for (account of bankAccounts; track account.id) {
+          <article class="bank-card">
+            <div class="bank-card-header">
+              <h3>{{ account.accountHolder }}</h3>
+
+              <div class="card-actions">
+                <button type="button" class="secondary" (click)="openEditModal(account)">Edit</button>
+                <button type="button" class="danger" (click)="deleteBankAccount(account.id)">Delete</button>
+              </div>
+            </div>
+
+            <p><strong>IBAN:</strong> {{ account.iban }}</p>
+            <p><strong>BIC:</strong> {{ account.bic }}</p>
+          </article>
+        } @empty {
+          <p class="state-message">No bank accounts added yet.</p>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+@if (isCreateModalOpen) {
+  <app-bank-account-editor
+    title="Create Bank Account"
+    submitLabel="Create"
+    [initialValue]="null"
+    [errorMessage]="modalErrorMessage"
+    (cancel)="closeModal()"
+    (submitForm)="createBankAccount($event)" />
+}
+
+@if (editingBankAccount) {
+  <app-bank-account-editor
+    title="Edit Bank Account"
+    submitLabel="Save"
+    [initialValue]="editingBankAccount"
+    [errorMessage]="modalErrorMessage"
+    (cancel)="closeModal()"
+    (submitForm)="updateBankAccount($event)" />
+}

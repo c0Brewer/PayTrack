@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
@@ -22,6 +23,11 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     component: LoginComponent,
+  },
+  {
+    path: 'bankaccount',
+    canActivate: [authGuard],
+    component: BankAccountComponent,
   },
   {
     path: 'user',

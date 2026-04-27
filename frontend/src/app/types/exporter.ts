@@ -28,3 +28,8 @@ export enum Role {
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
+
+// Bank Account
+export type BankAccountDto = components['schemas']['BankAccountDto'];
+export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
+export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];
