@@ -7,18 +7,18 @@ using System.ComponentModel.DataAnnotations;
 namespace PayTrack.Application.Dto.BankAccount
 {
     /// <summary>
-    /// Dto containing necessary information about a Bank account
+    /// DTO containing bank account information.
     /// </summary>
     public sealed record class BankAccountDto(
         [property: Required]
         int Id,
 
         [property: Required]
-        string IBAN,
+        string AccountHolder,
 
         [property: Required]
-        string BIC,
+        string Iban,
 
         [property: Required]
-        string AccountHolder);
+        string Bic);
 }

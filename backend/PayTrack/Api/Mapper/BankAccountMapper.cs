@@ -21,15 +21,15 @@ namespace PayTrack.Api.Mapper
         {
             return new BankAccountDto(
                 bankAccount.Id,
+                bankAccount.AccountHolder,
                 bankAccount.Iban,
-                bankAccount.Bic,
-                bankAccount.AccountHolder);
+                bankAccount.Bic);
         }
 
         /// <summary>
-        /// Turns a List of BankAccount objects into a List of BankAccountDto objects.
+        /// Turns a list of bank account objects into a list of BankAccountDto objects.
         /// </summary>
-        /// <param name="bankAccounts">List of BankAccount objects.</param>
+        /// <param name="bankAccounts">List of bank account objects.</param>
         /// <returns>List of BankAccountDto objects.</returns>
         public static List<BankAccountDto> ListToDto(List<BankAccount> bankAccounts)
         {

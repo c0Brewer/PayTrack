@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Model
@@ -14,15 +15,17 @@ namespace PayTrack.Application.Services.Model
         /// <summary>
         /// Returns all Teams from DB.
         /// </summary>
+        /// <param name="query">Query information for search.</param>
         /// <returns>List of Team objects.</returns>
-        Task<List<Team>> GetTeamsAsync();
+        Task<(List<Team> team, int totalCount)> GetTeamsAsync(GetTeamQuery? query = null);
 
         /// <summary>
         /// Gets a specific Team by their ID.
         /// </summary>
         /// <param name="id">id of Team to find.</param>
+        /// <param name="query">Query information for search.</param>
         /// <returns>Team with given ID.</returns>
-        Task<Team?> GetTeamByIdAsync(int id);
+        Task<Team?> GetTeamByIdAsync(int id, GetTeamQueryById? query = null);
 
         /// <summary>
         /// Creates a Team using the given input.

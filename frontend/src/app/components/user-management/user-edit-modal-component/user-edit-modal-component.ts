@@ -61,9 +61,9 @@ export class UserEditModalComponent implements OnInit, OnChanges {
       this.user.team = { id: -1, name: 'test' };
     }
 
-    this.teamService.getTeams().subscribe({
+    this.teamService.getTeams({}).subscribe({
       next: (data) => {
-        this.teams = data;
+        this.teams = data.items ?? [];
         this.cdr.markForCheck();
       },
       error: (err) => {

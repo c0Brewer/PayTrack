@@ -37,12 +37,14 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IFileRepository, FileRepository>();
+builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -113,5 +115,6 @@ apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
+apiV1.MapBankAccountEndpoints();
 
 await app.RunAsync();

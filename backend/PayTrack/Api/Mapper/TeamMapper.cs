@@ -3,6 +3,7 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -19,11 +20,32 @@ namespace PayTrack.Api.Mapper
         /// <returns>TeamDto instance.</returns>
         public static TeamDto ToDto(Team team)
         {
+            // Clear the navigation on copied users to avoid Team -> User -> Team recursion while mapping.
+            var membersToMap = team.Members
+                .Select(member => new User
+                {
+                    Id = member.Id,
+                    Name = member.Name,
+                    Email = member.Email,
+                    ProfilePictureUrl = member.ProfilePictureUrl,
+                    TeamId = member.TeamId,
+                    Team = null!,
+                    Role = member.Role,
+                    IsActive = member.IsActive,
+                    CreatedAt = member.CreatedAt,
+                })
+                .ToList();
+
+            var members = UserMapper.ListToDto(membersToMap);
+            var budgets = BudgetMapper.CollectionToDto(team.Budgets);
+
             return new TeamDto(
                 team.Id,
                 team.Name,
                 team.Description,
-                team.DisplayColor);
+                team.DisplayColor,
+                members,
+                budgets);
         }
 
         /// <summary>

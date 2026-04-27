@@ -1,0 +1,93 @@
+.settings-page {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.settings-card {
+  width: min(860px, 100%);
+  background: #fff;
+  border: 1px solid #dde5ee;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.settings-header h1 {
+  margin: 0;
+}
+
+.settings-header p {
+  margin: 0.25rem 0 0;
+  color: #4b5563;
+}
+
+.header-actions {
+  margin-top: 1rem;
+}
+
+.accounts-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.bank-card {
+  border: 1px solid #dde5ee;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #f9fbfd;
+}
+
+.bank-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bank-card-header h3 {
+  margin: 0;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.add-btn {
+  background: #0f766e;
+  color: #fff;
+}
+
+.secondary {
+  background: #fff;
+  border-color: #ccd5e0;
+  color: #1f2937;
+}
+
+.danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.error-message {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.state-message {
+  margin-top: 1rem;
+  color: #4b5563;
+}

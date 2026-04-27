@@ -1,10 +1,11 @@
-import type { components, paths } from '../types/api-types';
+import type { components, paths } from './api-types';
 
 // Error Message
 export type ProblemDetails = components['schemas']['ProblemDetails'];
 
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
+export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
@@ -12,6 +13,8 @@ export type UserDtoPaginatedResponse = components['schemas']['UserDtoPaginatedRe
 export type UpdateUserDto = components['schemas']['UpdateUserDto'];
 
 export type BankAccount = components['schemas']['BankAccountDto'];
+// Team Path
+export type GetTeamOptions = paths['/api/v1/team']['get']['parameters']['query'];
 
 // User Path
 export type GetUserOptions = paths['/api/v1/user']['get']['parameters']['query'];
@@ -44,3 +47,8 @@ export enum Role {
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
+
+// Bank Account
+export type BankAccountDto = components['schemas']['BankAccountDto'];
+export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
+export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];
