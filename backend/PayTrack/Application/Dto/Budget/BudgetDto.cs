@@ -4,14 +4,17 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
-    /// Lightweight DTO for a team budget.
+    /// Dto representing a Budget entry linked to a cost center.
     /// </summary>
     public sealed record class BudgetDto(
         [property: Required]
         int Id,
+
+        [property: Required]
+        int TeamId,
 
         [property: Required]
         int CostCentreId,

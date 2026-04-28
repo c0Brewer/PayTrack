@@ -1,13 +1,13 @@
-// <copyright file="GetTeamQuery.cs" company="PayTrack">
+// <copyright file="GetCostCentreQuery.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.CostCentre
 {
     /// <summary>
-    /// Data Transfer Object (DTO) representing all information a team can query on GET /team.
+    /// DTO representing all information a user can query on GET /cost-centre.
     /// </summary>
-    public class GetTeamQuery
+    public class GetCostCentreQuery
     {
         /// <summary>
         /// Name to query.
@@ -20,24 +20,14 @@ namespace PayTrack.Application.Dto.Team
         public string? Description { get; init; }
 
         /// <summary>
-        /// Minimum budget to query.
+        /// Minimum active budget amount. Only cost centres with an active budget (PeriodStart &lt;= today &lt;= PeriodEnd) of at least this amount are returned.
         /// </summary>
         public decimal? MinBudget { get; init; }
 
         /// <summary>
-        /// Maximum budget to query.
+        /// Maximum active budget amount. Only cost centres with an active budget (PeriodStart &lt;= today &lt;= PeriodEnd) of at most this amount are returned.
         /// </summary>
         public decimal? MaxBudget { get; init; }
-
-        /// <summary>
-        /// Whether to include team members.
-        /// </summary>
-        public bool? IncludeMembers { get; init; }
-
-        /// <summary>
-        /// Whether to include budgets.
-        /// </summary>
-        public bool? IncludeBudgets { get; init; }
 
         /// <summary>
         /// Limit of query.

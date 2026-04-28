@@ -1,17 +1,16 @@
-// <copyright file="TeamDto.cs" company="PayTrack">
+// <copyright file="CostCentreDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Budget;
-using PayTrack.Application.Dto.User;
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.CostCentre
 {
     /// <summary>
-    /// Dto containing necessary information about a Team
+    /// Dto representing a Cost Center.
     /// </summary>
-    public sealed record class TeamDto(
+    public sealed record class CostCentreDto(
         [property: Required]
         int Id,
 
@@ -19,13 +18,11 @@ namespace PayTrack.Application.Dto.Team
         [property: MinLength(3)]
         string Name,
 
-        [property: MinLength(3)]
         string? Description,
 
-        [property: MinLength(3)]
         string? DisplayColor,
 
-        List<UserDto> Members,
+        IList<BudgetDto> Budgets,
 
-        List<BudgetDto> Budgets);
+        bool IsActive);
 }
