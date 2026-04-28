@@ -34,9 +34,12 @@ namespace PayTrack.Tests.UnitTests.Repositories
         {
             await using var context = GetInMemoryDbContext("GetAllTransactions");
 
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
             context.Transactions.AddRange(
-                new PaymentRequestByUser { Id = 1, Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" },
-                new PaymentRequestByUser { Id = 2, Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" }
+                new PaymentRequestByUser { Id = 1, Amount = 100, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" },
+                new PaymentRequestByUser { Id = 2, Amount = 200, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" }
             );
 
             await context.SaveChangesAsync();
@@ -54,6 +57,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
         public async Task GetAllTransactionsWithAllParameters_ShouldReturnData()
         {
             await using var context = GetInMemoryDbContext("GetAllTransactions");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
 
             context.Transactions.AddRange(
                 new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, CostCentreId = 1, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },

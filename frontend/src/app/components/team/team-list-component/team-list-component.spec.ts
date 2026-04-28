@@ -13,6 +13,7 @@ describe('TeamListComponent', () => {
     name: 'Alice',
     email: 'alice@test.com',
     profilePictureUrl: 'https://example.com/alice.png',
+    bankAccounts: [],
     role: 0,
     team: {} as TeamDto,
     isActive: true,
