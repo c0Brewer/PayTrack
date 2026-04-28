@@ -89,6 +89,24 @@
 
   /* ---------- STATUS ---------- */
 
+  .status-badge {
+    display: inline-block;
+    padding: v.$size-xxs v.$size-s;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+    border-radius: v.$size-xs;
+
+    &.active {
+      background: v.$success-color;
+      color: v.$background-light;
+    }
+
+    &:not(.active) {
+      background: v.$accent-color;
+      color: v.$background-light;
+    }
+  }
+
   .status-btn {
     padding: v.$size-xxs v.$size-s;
     font-size: v.$font-xs;

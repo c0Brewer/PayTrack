@@ -17,8 +17,8 @@ import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { CostCentreManagementComponent } from './cost-centre-management-component';
 
 const mockCostCentres: CostCentreDto[] = [
-  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [] },
-  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [] },
+  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [], isActive: true },
+  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [], isActive: true },
 ];
 
 const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
@@ -60,7 +60,7 @@ describe('CostCentreManagementComponent', () => {
       createCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
       updateCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
       getDeletePreview: vi.fn().mockReturnValue(of(mockPreview)),
-      deleteCostCentre: vi.fn().mockReturnValue(of(undefined)),
+      deleteCostCentre: vi.fn().mockReturnValue(of(null)),
     };
     notificationServiceMock = {
       showError: vi.fn(),
@@ -122,7 +122,7 @@ describe('CostCentreManagementComponent', () => {
 
   it('save with id -1 should call createCostCentre', () => {
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [] },
+      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [], isActive: true },
       budgetsToUpsert: [],
       budgetIdsToDelete: [],
     };
@@ -160,7 +160,7 @@ describe('CostCentreManagementComponent', () => {
       throwError(() => new Error('Create failed')),
     );
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'X', description: null, displayColor: null, budgets: [] },
+      costCentre: { id: -1, name: 'X', description: null, displayColor: null, budgets: [], isActive: true },
       budgetsToUpsert: [],
       budgetIdsToDelete: [],
     };
@@ -204,11 +204,24 @@ describe('CostCentreManagementComponent', () => {
     expect(component.deletePreview).toBeNull();
   });
 
-  it('confirmDelete should call deleteCostCentre and reload', () => {
+  it('confirmDelete should hard-delete and show "deleted successfully" when service returns null', () => {
     component.deletingCostCentre = mockCostCentres[0];
     component.confirmDelete();
     expect(costCentreServiceMock.deleteCostCentre).toHaveBeenCalledWith(1);
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      expect.stringContaining('deleted successfully'),
+    );
+    expect(component.deletingCostCentre).toBeNull();
+  });
+
+  it('confirmDelete should soft-delete and show "deactivated" when service returns a CostCentreDto', () => {
+    const deactivated: CostCentreDto = { ...mockCostCentres[0], isActive: false };
+    costCentreServiceMock.deleteCostCentre.mockReturnValueOnce(of(deactivated));
+    component.deletingCostCentre = mockCostCentres[0];
+    component.confirmDelete();
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      expect.stringContaining('deactivated'),
+    );
     expect(component.deletingCostCentre).toBeNull();
   });
 
@@ -305,7 +318,7 @@ describe('CostCentreManagementComponent', () => {
       periodEnd: '2024-12-31',
     };
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [] },
+      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [], isActive: true },
       budgetsToUpsert: [budget],
       budgetIdsToDelete: [],
     };

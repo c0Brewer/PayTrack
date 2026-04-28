@@ -70,11 +70,12 @@ export class CostCentreService {
     return from(promise);
   }
 
-  public deleteCostCentre(id: number): Observable<void> {
-    const promise: Promise<void> = client
+  public deleteCostCentre(id: number): Observable<CostCentreDto | null> {
+    const promise: Promise<CostCentreDto | null> = client
       .DELETE('/api/v1/cost-centre/{id}', { params: { path: { id } } })
-      .then(({ error }) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data ?? null;
       });
     return from(promise);
   }

@@ -19,6 +19,7 @@ const mockCostCentre: CostCentreDto = {
   description: 'Aero dept costs',
   displayColor: '#FF5733',
   budgets: [],
+  isActive: true,
 };
 
 describe('CostCentreService', () => {
@@ -192,23 +193,34 @@ describe('CostCentreService', () => {
   });
 
   describe('deleteCostCentre', () => {
-    it('should call DELETE API', async () => {
+    it('should return null on 204 (hard delete)', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ error: null });
+      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ data: undefined, error: null });
 
-      await firstValueFrom(service.deleteCostCentre(1));
+      const result = await firstValueFrom(service.deleteCostCentre(1));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((client as any).DELETE).toHaveBeenCalledWith('/api/v1/cost-centre/{id}', {
         params: { path: { id: 1 } },
       });
+      expect(result).toBeNull();
+    });
+
+    it('should return CostCentreDto on 200 (soft delete)', async () => {
+      const deactivated: CostCentreDto = { ...mockCostCentre, isActive: false };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ data: deactivated, error: null });
+
+      const result = await firstValueFrom(service.deleteCostCentre(1));
+
+      expect(result).toEqual(deactivated);
     });
 
     it('should throw error when API returns error', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ error: { detail: 'Cannot delete' } });
+      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ error: { detail: 'Not found' } });
 
-      await expect(firstValueFrom(service.deleteCostCentre(1))).rejects.toThrow('Cannot delete');
+      await expect(firstValueFrom(service.deleteCostCentre(1))).rejects.toThrow('Not found');
     });
 
     it('should throw default error when error has no detail', async () => {

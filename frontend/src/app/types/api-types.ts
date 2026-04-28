@@ -273,21 +273,21 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDto"];
+                    };
+                };
                 /** @description No Content */
                 204: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ProblemDetails"];
-                    };
                 };
                 /** @description Not Found */
                 404: {
@@ -652,6 +652,7 @@ export interface components {
             description?: string | null;
             displayColor?: string | null;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+            isActive: boolean;
         };
         CostCentreDtoPaginatedResponse: {
             items: components["schemas"]["CostCentreDto"][] | null;

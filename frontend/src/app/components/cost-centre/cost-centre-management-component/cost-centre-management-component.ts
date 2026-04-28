@@ -107,6 +107,7 @@ export class CostCentreManagementComponent implements OnInit {
       description: null,
       displayColor: null,
       budgets: [],
+      isActive: true,
     };
   }
 
@@ -188,10 +189,16 @@ export class CostCentreManagementComponent implements OnInit {
     if (!this.deletingCostCentre) return;
 
     this.costCentreService.deleteCostCentre(this.deletingCostCentre.id).subscribe({
-      next: () => {
-        this.notificationService.showSuccess(
-          `Cost centre "${this.deletingCostCentre!.name}" deleted successfully`,
-        );
+      next: (result) => {
+        if (result) {
+          this.notificationService.showSuccess(
+            `Cost centre "${this.deletingCostCentre!.name}" deactivated`,
+          );
+        } else {
+          this.notificationService.showSuccess(
+            `Cost centre "${this.deletingCostCentre!.name}" deleted successfully`,
+          );
+        }
         this.closeDelete();
         this.load();
       },

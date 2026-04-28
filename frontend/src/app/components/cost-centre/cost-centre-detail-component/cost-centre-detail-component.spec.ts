@@ -25,6 +25,7 @@ const mockCostCentre: CostCentreDto = {
   description: 'Aero costs',
   displayColor: '#FF5733',
   budgets: [mockBudget],
+  isActive: true,
 };
 
 describe('CostCentreDetailComponent', () => {

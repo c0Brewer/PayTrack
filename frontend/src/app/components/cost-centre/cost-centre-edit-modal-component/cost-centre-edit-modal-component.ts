@@ -32,6 +32,7 @@ export class CostCentreEditModalComponent implements OnChanges {
     description: null,
     displayColor: null,
     budgets: [],
+    isActive: true,
   };
 
   @Output() saveEvent = new EventEmitter<CostCentreSaveEvent>();

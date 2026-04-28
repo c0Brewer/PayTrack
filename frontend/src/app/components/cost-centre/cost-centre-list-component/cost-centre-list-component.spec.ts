@@ -25,8 +25,8 @@ const expiredBudget: BudgetDto = {
 };
 
 const mockCostCentres: CostCentreDto[] = [
-  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [] },
-  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [] },
+  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [], isActive: true },
+  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [], isActive: false },
 ];
 
 describe('CostCentreListComponent', () => {
@@ -74,7 +74,7 @@ describe('CostCentreListComponent', () => {
 
   it('should show "No current budget" when a cost centre has no budgets', () => {
     component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [] },
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [], isActive: true },
     ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
@@ -84,7 +84,7 @@ describe('CostCentreListComponent', () => {
 
   it('should show "No current budget" when all budgets are expired', () => {
     component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget] },
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget], isActive: true },
     ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
@@ -94,12 +94,30 @@ describe('CostCentreListComponent', () => {
 
   it('should show the active budget amount when a current budget exists', () => {
     component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget] },
+      { id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget], isActive: true },
     ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.has-budgets');
     expect(span).not.toBeNull();
     expect(span.textContent).toContain('500');
+  });
+
+  describe('status badge', () => {
+    it('should show "Active" badge for an active cost centre', () => {
+      component.costCentres = mockCostCentres;
+      fixture.detectChanges();
+      const badges = fixture.nativeElement.querySelectorAll('.status-badge');
+      expect(badges[0].textContent.trim()).toBe('Active');
+      expect(badges[0].classList.contains('active')).toBe(true);
+    });
+
+    it('should show "Inactive" badge for an inactive cost centre', () => {
+      component.costCentres = mockCostCentres;
+      fixture.detectChanges();
+      const badges = fixture.nativeElement.querySelectorAll('.status-badge');
+      expect(badges[1].textContent.trim()).toBe('Inactive');
+      expect(badges[1].classList.contains('active')).toBe(false);
+    });
   });
 
   describe('getActiveBudget', () => {
