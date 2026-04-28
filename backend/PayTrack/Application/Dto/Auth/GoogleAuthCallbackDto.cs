@@ -7,10 +7,10 @@ using System.ComponentModel.DataAnnotations;
 namespace PayTrack.Application.Dto.Auth
 {
     /// <summary>
-    /// Dto containing informatino we get from a google callback
+    /// Dto containing information we get from a google authorization code callback.
     /// </summary>
     public sealed record class GoogleAuthCallbackDto(
         [property: Required]
-        string IdToken
+        string Code
     );
 }

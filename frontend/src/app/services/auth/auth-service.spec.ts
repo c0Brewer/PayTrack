@@ -56,11 +56,11 @@ describe('AuthService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const result = await firstValueFrom(service.handleGoogleCallback('google-id'));
+    const result = await firstValueFrom(service.handleGoogleCallback('google-code'));
 
     expect(client.POST).toHaveBeenCalledWith('/api/v1/auth/google', {
       params: {},
-      body: { idToken: 'google-id' },
+      body: { code: 'google-code' },
     });
 
     expect(result).toEqual(apiResponse);

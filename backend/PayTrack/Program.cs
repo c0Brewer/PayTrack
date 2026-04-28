@@ -17,6 +17,7 @@ using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
+LoadGoogleConfigFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
 
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 
 var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -111,3 +113,43 @@ apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
 
 await app.RunAsync();
+
+static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
+{
+    var dotEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
+
+    if (!File.Exists(dotEnvPath))
+    {
+        return;
+    }
+
+    var values = new Dictionary<string, string?>();
+
+    foreach (var rawLine in File.ReadLines(dotEnvPath))
+    {
+        var line = rawLine.Trim();
+
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#') || !line.Contains('='))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+
+        if (key == "GOOGLE_CLIENT_ID")
+        {
+            values["Authentication:Google:ClientId"] = value;
+        }
+        else if (key == "GOOGLE_CLIENT_SECRET")
+        {
+            values["Authentication:Google:ClientSecret"] = value;
+        }
+    }
+
+    if (values.Count > 0)
+    {
+        builder.Configuration.AddInMemoryCollection(values);
+    }
+}

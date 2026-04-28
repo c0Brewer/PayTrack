@@ -56,8 +56,8 @@ export class AuthService {
     });
   }
 
-  public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
-    const callbackDto: GoogleAuthCallbackDto = { idToken };
+  public handleGoogleCallback(code: string): Observable<GoogleAuthResponseDto> {
+    const callbackDto: GoogleAuthCallbackDto = { code };
     const promise = client
       .POST('/api/v1/auth/google', { params: {}, body: callbackDto })
       .then(({ data, error }) => {

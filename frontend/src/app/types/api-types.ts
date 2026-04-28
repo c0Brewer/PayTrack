@@ -382,7 +382,7 @@ export interface components {
             displayColor?: string | null;
         };
         GoogleAuthCallbackDto: {
-            idToken: string;
+            code: string;
         };
         GoogleAuthResponseDto: {
             jwtToken: string;

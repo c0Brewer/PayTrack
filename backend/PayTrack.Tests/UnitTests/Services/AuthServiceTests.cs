@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using PayTrack.Application.Dto.Auth;
 using PayTrack.Application.Exceptions;
@@ -16,6 +17,8 @@ namespace PayTrack.Tests.UnitTests.Services
         private readonly Mock<IJwtService> jwtMock;
         private readonly Mock<IUserService> userMock;
         private readonly Mock<IHttpContextAccessor> httpContextMock;
+        private readonly Mock<IHttpClientFactory> httpClientFactoryMock;
+        private readonly Mock<IConfiguration> configurationMock;
         private readonly GoogleJsonWebSignature.Payload payloadToReturn;
 
         public AuthServiceTests()
@@ -23,6 +26,8 @@ namespace PayTrack.Tests.UnitTests.Services
             jwtMock = new Mock<IJwtService>();
             userMock = new Mock<IUserService>();
             httpContextMock = new Mock<IHttpContextAccessor>();
+            httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            configurationMock = new Mock<IConfiguration>();
 
             this.payloadToReturn = new GoogleJsonWebSignature.Payload
             {
@@ -31,7 +36,13 @@ namespace PayTrack.Tests.UnitTests.Services
                 Picture = "pic.png"
             };
 
-            service = new TestAuthService(jwtMock.Object, userMock.Object, httpContextMock.Object, payloadToReturn);
+            service = new TestAuthService(
+                jwtMock.Object,
+                userMock.Object,
+                httpContextMock.Object,
+                httpClientFactoryMock.Object,
+                configurationMock.Object,
+                payloadToReturn);
         }
 
         [Fact]
@@ -90,7 +101,7 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task GoogleValidateCallback_ReturnsJwt_WhenUserExists()
         {
             // Arrange
-            var callback = new GoogleAuthCallbackDto("valid-token");
+            var callback = new GoogleAuthCallbackDto("valid-code");
             var user = new User
             {
                 Email = payloadToReturn.Email,
@@ -117,7 +128,7 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task GoogleValidateCallback_CreatesUser_WhenUserDoesNotExist()
         {
             // Arrange
-            var callback = new GoogleAuthCallbackDto("valid-token");
+            var callback = new GoogleAuthCallbackDto("valid-code");
             var user = new User
             {
                 Email = payloadToReturn.Email,
@@ -147,7 +158,7 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task GoogleValidateCallback_ThrowsLockedException_WhenUserIsInactive()
         {
             // Arrange
-            var callback = new GoogleAuthCallbackDto("valid-token");
+            var callback = new GoogleAuthCallbackDto("valid-code");
             var user = new User
             {
                 Email = payloadToReturn.Email,
@@ -165,9 +176,20 @@ namespace PayTrack.Tests.UnitTests.Services
         }
     }
 
-    public class TestAuthService(IJwtService jwtService, IUserService userService, IHttpContextAccessor httpContextAccessor, GoogleJsonWebSignature.Payload payloadToReturn) : AuthService(jwtService, userService, httpContextAccessor)
+    public class TestAuthService(
+        IJwtService jwtService,
+        IUserService userService,
+        IHttpContextAccessor httpContextAccessor,
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
+        GoogleJsonWebSignature.Payload payloadToReturn) : AuthService(jwtService, userService, httpContextAccessor, httpClientFactory, configuration)
     {
         private readonly GoogleJsonWebSignature.Payload payloadToReturn = payloadToReturn;
+
+        protected override Task<string> ExchangeCodeForIdTokenAsync(string code)
+        {
+            return Task.FromResult("valid-token");
+        }
 
         protected override Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
         {
