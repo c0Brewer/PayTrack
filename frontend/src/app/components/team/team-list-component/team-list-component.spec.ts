@@ -13,6 +13,7 @@ describe('TeamListComponent', () => {
     name: 'Alice',
     email: 'alice@test.com',
     profilePictureUrl: 'https://example.com/alice.png',
+    bankAccounts: [],
     role: 0,
     team: {} as TeamDto,
     isActive: true,
@@ -37,7 +38,7 @@ describe('TeamListComponent', () => {
         {
           id: 2,
           costCentreId: 10,
-          teamId: 0,
+          teamId: 1,
           targetAmount: 5000,
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
@@ -64,7 +65,7 @@ describe('TeamListComponent', () => {
       {
         id: 3,
         costCentreId: 11,
-        teamId: 0,
+        teamId: 1,
         targetAmount: 7000,
         periodStart: buildBudgetDate(60, 'start'),
         periodEnd: buildBudgetDate(120, 'end'),

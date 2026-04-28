@@ -1,0 +1,139 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div class="form-section">
+    <h2 class="section-title">Invoice Details</h2>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="invoiceNumber">Invoice Number <span class="required">*</span></label>
+        <input id="invoiceNumber" type="text" formControlName="invoiceNumber" placeholder="INV-2024-001"
+          [class.is-invalid]="isInvalid('invoiceNumber')" />
+        @if (getError('invoiceNumber')) {
+        <span class="error-msg">{{ getError('invoiceNumber') }}</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="payoutType">Payout Type <span class="required">*</span></label>
+        <select id="payoutType" formControlName="payoutType" [class.is-invalid]="isInvalid('payoutType')">
+          <option [ngValue]="null" disabled>Select type…</option>
+
+          <option *ngFor="let type of payoutTypeOptions" [ngValue]="type">
+            {{ payoutTypeLabels[type] }}
+          </option>
+        </select>
+        @if (getError('payoutType')) {
+        <span class="error-msg">{{ getError('payoutType') }}</span>
+        }
+      </div>
+    </div>
+
+    @if (form.get('payoutType')?.value === PayoutType.User) {
+    <div class="field">
+      <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
+      <select id="bankAccountId" formControlName="bankAccountId" [class.is-invalid]="isInvalid('bankAccountId')">
+        <option [ngValue]="null" disabled>Select bank account…</option>
+        @for (account of bankAccounts; track account.id) {
+        <option [ngValue]="account.id">{{ getShortenedIban(account.iban) + ' (' + account.accountHolder + ')' }}</option>
+        }
+      </select>
+      @if (getError('bankAccountId')) {
+      <span class="error-msg">{{ getError('bankAccountId') }}</span>
+      }
+    </div>
+    }
+
+    <div class="field">
+      <label for="comment">Comment</label>
+      <textarea id="comment" formControlName="comment" rows="3" placeholder="Add any relevant notes or context…"
+        [class.is-invalid]="isInvalid('comment')"></textarea>
+      @if (getError('comment')) {
+      <span class="error-msg">{{ getError('comment') }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2 class="section-title">Transaction</h2>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="teamId">Team <span class="required">*</span></label>
+        <select id="teamId" formControlName="teamId" [class.is-invalid]="isInvalid('teamId')">
+          <option [ngValue]="null" disabled>Select team…</option>
+          @for (team of teams; track team.id) {
+          <option [ngValue]="team.id">{{ team.name }}</option>
+          }
+        </select>
+        @if (getError('teamId')) {
+        <span class="error-msg">{{ getError('teamId') }}</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="amount">Amount (€) <span class="required">*</span></label>
+        <input id="amount" type="number" formControlName="amount" placeholder="0.00" step="0.01" min="0.01"
+          [class.is-invalid]="isInvalid('amount')" />
+        @if (getError('amount')) {
+        <span class="error-msg">{{ getError('amount') }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="purposeOfPayment">Purpose of Payment <span class="required">*</span></label>
+        <input id="purposeOfPayment" type="text" formControlName="purposeOfPayment" placeholder="e.g. Office supplies"
+          [class.is-invalid]="isInvalid('purposeOfPayment')" />
+        @if (getError('purposeOfPayment')) {
+        <span class="error-msg">{{ getError('purposeOfPayment') }}</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="paidAt">Invoice Date <span class="required">*</span></label>
+        <input id="paidAt" type="date" formControlName="paidAt" [class.is-invalid]="isInvalid('paidAt')" />
+        @if (getError('paidAt')) {
+        <span class="error-msg">{{ getError('paidAt') }}</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2 class="section-title">Receipt</h2>
+
+    <div class="field">
+      <label for=receiptFile>Receipt File <span class="required">*</span></label>
+      <div class="file-upload" [class.is-invalid]="isInvalid('receipt')">
+        <label for="receiptFile" class="file-upload-label">
+          <span class="file-icon">📎</span>
+          @if (!selectedFileName) {
+          <span>Choose file (PDF, JPG, PNG, WEBP — max 10 MB)</span>
+          }
+          @if (selectedFileName) {
+          <span class="file-name">{{ selectedFileName }}</span>
+          }
+        </label>
+        <input id="receiptFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" (change)="onFileSelected($event)"
+          class="visually-hidden" />
+      </div>
+      @if (getError('receipt')) {
+      <span class="error-msg">{{ getError('receipt') }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-secondary" (click)="form.reset(); selectedFileName = ''">
+      Reset
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+      @if (!isSubmitting) {
+      <span>Submit Invoice</span>
+      }
+      @if (isSubmitting) {
+      <span>Submitting…</span>
+      }
+    </button>
+  </div>
+</form>

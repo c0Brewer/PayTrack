@@ -38,6 +38,7 @@ describe('UserService', () => {
             isActive: true,
             team: { id: 1, name: 'Team 1', description: '', displayColor: '' },
             profilePictureUrl: '',
+            bankAccounts: [],
           },
           {
             id: 2,
@@ -47,6 +48,7 @@ describe('UserService', () => {
             isActive: true,
             team: { id: 1, name: 'Team 1', description: '', displayColor: '' },
             profilePictureUrl: '',
+            bankAccounts: [],
           },
         ],
       };
@@ -98,6 +100,7 @@ describe('UserService', () => {
         isActive: false,
         team: { id: 2, name: 'Team 2', description: '', displayColor: '' },
         profilePictureUrl: '',
+        bankAccounts: [],
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

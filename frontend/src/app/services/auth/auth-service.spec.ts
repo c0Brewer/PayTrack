@@ -105,6 +105,7 @@ describe('AuthService', () => {
       team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
+      bankAccounts: [],
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({
@@ -129,6 +130,7 @@ describe('AuthService', () => {
       team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
+      bankAccounts: [],
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({
@@ -165,6 +167,7 @@ describe('AuthService', () => {
       team: { id: -1, name: '123' },
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
+      bankAccounts: [],
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({

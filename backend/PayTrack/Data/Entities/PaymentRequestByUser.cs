@@ -18,7 +18,7 @@ namespace PayTrack.Data.Entities
         /// Number of Invoice.
         /// </summary>
         [MaxLength(100)]
-        public string? InvoiceNumber { get; set; }
+        required public string InvoiceNumber { get; set; }
 
         /// <summary>
         /// Optional Comment.

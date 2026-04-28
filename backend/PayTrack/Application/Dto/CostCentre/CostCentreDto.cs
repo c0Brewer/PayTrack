@@ -8,7 +8,7 @@ using PayTrack.Application.Dto.Budget;
 namespace PayTrack.Application.Dto.CostCentre
 {
     /// <summary>
-    /// Dto representing a Cost Center.
+    /// Dto containing necessary information about a Cost Centre
     /// </summary>
     public sealed record class CostCentreDto(
         [property: Required]

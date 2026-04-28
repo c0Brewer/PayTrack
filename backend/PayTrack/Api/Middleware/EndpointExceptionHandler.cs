@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Application.Exceptions;
@@ -27,18 +26,21 @@ namespace PayTrack.Api.Middleware
         {
             this.logger.LogError(exception, "Exception occured");
 
-            var statusCode = exception is ApiException apiException
-                ? apiException.StatusCode
-                : StatusCodes.Status500InternalServerError;
+            var problem = exception is ApiException apiException
+                ? new ProblemDetails
+                {
+                    Status = apiException.StatusCode,
+                    Title = exception.GetType().Name,
+                    Detail = exception.Message,
+                }
+                : new ProblemDetails
+                {
+                    Status = 500,
+                    Title = "Internal Server Error",
+                    Detail = "An error occured. Please try again or contact support.",
+                };
 
-            httpContext.Response.StatusCode = statusCode;
-
-            var problem = new ProblemDetails
-            {
-                Status = statusCode,
-                Title = exception.GetType().Name,
-                Detail = exception.Message,
-            };
+            httpContext.Response.StatusCode = problem.Status ?? 500;
 
             await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
 
