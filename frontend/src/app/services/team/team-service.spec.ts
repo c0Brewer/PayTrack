@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { client } from '../../client';
-import { TeamDto } from '../../types/exporter';
+import { TeamDto, TeamDtoPaginatedResponse } from '../../types/exporter';
 
 import { TeamService } from './team-service';
 
@@ -18,49 +18,133 @@ describe('TeamService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should call API and return data for getTeams', async () => {
-    const apiResponse: TeamDto[] = [
-      { id: 123, name: '123', description: 'desc', displayColor: '#123456' },
-    ];
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
-    vi.spyOn(client, 'GET').mockResolvedValue({
-      data: apiResponse,
-      error: null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+  describe('getTeams', () => {
+    it('should call the API with query options and return paginated teams', async () => {
+      const queryOptions = {
+        Name: 'Platform',
+        IncludeMembers: true,
+        Limit: 10,
+        Offset: 0,
+      };
 
-    const result = await firstValueFrom(service.getTeams());
+      const apiResponse: TeamDtoPaginatedResponse = {
+        items: [{ id: 123, name: 'Platform', description: 'desc', displayColor: '#123456' }],
+        totalCount: 1,
+        limit: 10,
+        offset: 0,
+        hasNext: false,
+        hasPrevious: false,
+      };
 
-    expect(client.GET).toHaveBeenCalledWith('/api/v1/team', {
-      params: {},
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await firstValueFrom(service.getTeams(queryOptions));
+
+      expect(client.GET).toHaveBeenCalledWith('/api/v1/team', {
+        params: { query: queryOptions },
+      });
+      expect(result).toEqual(apiResponse);
     });
 
-    expect(result).toEqual(apiResponse);
+    it('should throw the backend error detail when getTeams fails with a specific error', async () => {
+      const error = { detail: 'An error occured' };
+
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeams({}))).rejects.toThrow(error.detail);
+    });
+
+    it('should throw the default error message when getTeams fails without a detail', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: {},
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeams({}))).rejects.toThrow('Unexpected Error');
+    });
+
+    it('should throw when getTeams resolves without data and without an API error', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeams({}))).rejects.toThrow('No data returned');
+    });
   });
 
-  it('should call API and return error if error occurs', async () => {
-    const error = {
-      detail: 'An error occured',
-    };
+  describe('getTeamById', () => {
+    it('should call the API and return a single team', async () => {
+      const teamId = 42;
+      const apiResponse: TeamDto = {
+        id: teamId,
+        name: 'Operations',
+        description: 'Runs production',
+        displayColor: '#334155',
+      };
 
-    vi.spyOn(client, 'GET').mockResolvedValue({
-      data: null,
-      error: error,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
-    await expect(firstValueFrom(service.getTeams())).rejects.toThrow(error.detail);
-  });
+      const result = await firstValueFrom(service.getTeamById(teamId));
 
-  it('should call API and return error if error occurs', async () => {
-    const error = {};
+      expect(client.GET).toHaveBeenCalledWith('/api/v1/team/{id}', {
+        params: {
+          path: {
+            id: teamId,
+          },
+        },
+      });
+      expect(result).toEqual(apiResponse);
+    });
 
-    vi.spyOn(client, 'GET').mockResolvedValue({
-      data: null,
-      error: error,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    it('should throw the backend error detail when getTeamById fails with a specific error', async () => {
+      const error = { detail: 'Team not found' };
 
-    await expect(firstValueFrom(service.getTeams())).rejects.toThrow('Unexpected Error');
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeamById(42))).rejects.toThrow(error.detail);
+    });
+
+    it('should throw the default error message when getTeamById fails without a detail', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: {},
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeamById(42))).rejects.toThrow('Unexpected Error');
+    });
+
+    it('should throw when getTeamById resolves without data and without an API error', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getTeamById(42))).rejects.toThrow('No data returned');
+    });
   });
 });

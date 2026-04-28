@@ -2,19 +2,44 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 import { client } from '../../client';
-import { TeamDto } from '../../types/exporter';
+import { TeamDto, GetTeamOptions, TeamDtoPaginatedResponse } from '../../types/exporter';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TeamService {
-  public getTeams(): Observable<TeamDto[]> {
+  public getTeams(queryOptions: GetTeamOptions): Observable<TeamDtoPaginatedResponse> {
     const promise = client
       .GET('/api/v1/team', {
-        params: {},
+        params: {
+          query: queryOptions,
+        },
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('No data returned');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  // TODO: Add "createTeam"!
+
+  public getTeamById(teamId: number): Observable<TeamDto> {
+    const promise = client
+
+      .GET('/api/v1/team/{id}', {
+        params: {
+          path: {
+            id: teamId,
+          },
+        },
+      })
+
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('No data returned');
         return data;
       });
 

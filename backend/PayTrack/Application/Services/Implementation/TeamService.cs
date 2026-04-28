@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -33,15 +34,15 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Team?> GetTeamByIdAsync(int id)
+        public async Task<Team?> GetTeamByIdAsync(int id, GetTeamQueryById? query = null)
         {
-            return await this.repo.GetByIdAsync(id);
+            return await this.repo.GetByIdAsync(id, query);
         }
 
         /// <inheritdoc/>
-        public async Task<List<Team>> GetTeamsAsync()
+        public async Task<(List<Team> team, int totalCount)> GetTeamsAsync(GetTeamQuery? query = null)
         {
-            return await this.repo.GetAllAsync();
+            return await this.repo.GetAllAsync(query);
         }
     }
 }

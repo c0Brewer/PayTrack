@@ -2,7 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Api.Extensions;
 using PayTrack.Api.Handler;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Endpoints
 {
@@ -17,7 +19,7 @@ namespace PayTrack.Api.Endpoints
         /// <summary>
         /// Maps the Endpoints necessary for Teams.
         /// </summary>
-        /// <param name="app">Webapplication.</param>
+        /// <param name="app">Web application.</param>
         public static void MapTeamEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app
@@ -27,7 +29,7 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
-            group.MapPost("/", TeamHandler.CreateTeamAsync);
+            group.MapPost("/", TeamHandler.CreateTeamAsync).RequireRole(Role.Admin);
         }
     }
 }

@@ -16,12 +16,15 @@ namespace PayTrack.Data.Entities
         /// <summary>
         /// Id of the Team.
         /// </summary>
+        [Key]
         public int Id { get; set; }
 
         /// <summary>
         /// Name of the Team.
         /// </summary>
-        public string Name { get; set; } = default!;
+        [Required]
+        [MaxLength(255)]
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Description of Team.

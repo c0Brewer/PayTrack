@@ -1,15 +1,19 @@
-import type { components, paths } from '../types/api-types';
+import type { components, paths } from './api-types';
 
 // Error Message
 export type ProblemDetails = components['schemas']['ProblemDetails'];
 
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
+export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
 export type UserDtoPaginatedResponse = components['schemas']['UserDtoPaginatedResponse'];
 export type UpdateUserDto = components['schemas']['UpdateUserDto'];
+
+// Team Path
+export type GetTeamOptions = paths['/api/v1/team']['get']['parameters']['query'];
 
 // User Path
 export type GetUserOptions = paths['/api/v1/user']['get']['parameters']['query'];
@@ -24,3 +28,21 @@ export enum Role {
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
+
+// Cost Centre
+export type BudgetDto = components['schemas']['BudgetDto'];
+export type CostCentreDto = components['schemas']['CostCentreDto'];
+export type CostCentreDtoPaginatedResponse =
+  components['schemas']['CostCentreDtoPaginatedResponse'];
+export type CreateBudgetEntryDto = components['schemas']['CreateBudgetEntryDto'];
+export type CreateCostCentreRequestDto = components['schemas']['CreateCostCentreRequestDto'];
+export type UpdateCostCentreRequestDto = components['schemas']['UpdateCostCentreRequestDto'];
+export type UpsertBudgetEntryDto = components['schemas']['UpsertBudgetEntryDto'];
+export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentrePreviewDto'];
+
+// Cost Centre Paths
+export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
+// Bank Account
+export type BankAccountDto = components['schemas']['BankAccountDto'];
+export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
+export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];

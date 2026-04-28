@@ -1,9 +1,12 @@
 import { Routes } from '@angular/router';
 
+import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
+import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
+import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { TeamListComponent } from './components/team/team-list-component/team-list-component';
+import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
@@ -28,6 +31,9 @@ export const routes: Routes = [
     path: '',
     canActivate: [authGuard],
     component: HomeComponent,
+    path: 'bankaccount',
+    canActivate: [authGuard],
+    component: BankAccountComponent,
   },
   {
     path: 'user',
@@ -37,7 +43,17 @@ export const routes: Routes = [
   {
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: TeamListComponent,
+    component: TeamManagementComponent,
+  },
+  {
+    path: 'cost-centre',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: CostCentreManagementComponent,
+  },
+  {
+    path: 'cost-centre/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: CostCentreDetailComponent,
   },
   {
     path: 'unauthorized',
