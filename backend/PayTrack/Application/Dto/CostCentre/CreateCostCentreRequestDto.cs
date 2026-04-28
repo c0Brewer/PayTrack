@@ -1,20 +1,16 @@
-// <copyright file="TeamDto.cs" company="PayTrack">
+// <copyright file="CreateCostCentreRequestDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Budget;
-using PayTrack.Application.Dto.User;
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.CostCentre
 {
     /// <summary>
-    /// Dto containing necessary information about a Team
+    /// Dto containing necessary information for creating a cost center.
     /// </summary>
-    public sealed record class TeamDto(
-        [property: Required]
-        int Id,
-
+    public sealed record class CreateCostCentreRequestDto(
         [property: Required]
         [property: MinLength(3)]
         string Name,
@@ -25,7 +21,5 @@ namespace PayTrack.Application.Dto.Team
         [property: MinLength(3)]
         string? DisplayColor,
 
-        List<UserDto> Members,
-
-        List<BudgetDto> Budgets);
+        IList<CreateBudgetEntryDto>? Budgets);
 }

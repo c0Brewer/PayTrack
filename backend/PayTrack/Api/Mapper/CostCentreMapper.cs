@@ -19,17 +19,21 @@ namespace PayTrack.Api.Mapper
         /// <returns>CostCentreDto instance.</returns>
         public static CostCentreDto ToDto(CostCentre costCentre)
         {
+            var budgetDtos = BudgetMapper.CollectionToDto([.. costCentre.Budgets]);
+
             return new CostCentreDto(
                 costCentre.Id,
                 costCentre.Name,
                 costCentre.Description,
-                costCentre.DisplayColor);
+                costCentre.DisplayColor,
+                budgetDtos,
+                costCentre.IsActive);
         }
 
         /// <summary>
-        /// Turns a List of CostCentre objects into a List of CostCentreDto objects.
+        /// Turns a List of CostCentre entities into a List of CostCentreDto objects.
         /// </summary>
-        /// <param name="costCentres">List of CostCentre objects.</param>
+        /// <param name="costCentres">List of CostCentre entities.</param>
         /// <returns>List of CostCentreDto objects.</returns>
         public static List<CostCentreDto> ListToDto(List<CostCentre> costCentres)
         {

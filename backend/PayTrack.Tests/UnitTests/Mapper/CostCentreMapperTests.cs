@@ -6,57 +6,75 @@ namespace PayTrack.Tests.UnitTests.Mapper
 {
     public class CostCentreMapperTests
     {
-        [Theory]
-        [InlineData(1, "CC1", "Desc1", "#FFFFFF")]
-        [InlineData(42, "Marketing", "Marketing costs", "#FF0000")]
-        [InlineData(999, "IT", "Tech stuff", "#00FF00")]
-        public void MapperToDto_ReturnsCorrectResult(int id, string name, string description, string color)
+        [Fact]
+        public void ToDto_ShouldMapAllFields()
         {
             // Arrange
-            CostCentre costCentre = new()
+            var budget = new Budget
             {
-                Id = id,
-                Name = name,
-                Description = description,
-                DisplayColor = color
+                Id = 10,
+                TeamId = 2,
+                CostCentreId = 1,
+                TargetAmount = 1500m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            };
+
+            var costCentre = new CostCentre
+            {
+                Id = 1,
+                Name = "Aero",
+                Description = "Aerodynamics",
+                DisplayColor = "#00FF00",
+                Budgets = [budget],
             };
 
             // Act
             var dto = CostCentreMapper.ToDto(costCentre);
 
             // Assert
-            dto.Should().NotBeNull();
-            dto.Id.Should().Be(id);
-            dto.Name.Should().Be(name);
-            dto.Description.Should().Be(description);
-            dto.DisplayColor.Should().Be(color);
+            dto.Id.Should().Be(1);
+            dto.Name.Should().Be("Aero");
+            dto.Description.Should().Be("Aerodynamics");
+            dto.DisplayColor.Should().Be("#00FF00");
+            dto.Budgets.Should().HaveCount(1);
+            dto.Budgets[0].Id.Should().Be(10);
+            dto.Budgets[0].TeamId.Should().Be(2);
+            dto.Budgets[0].TargetAmount.Should().Be(1500m);
         }
 
         [Fact]
-        public void MapperListToDto_ReturnsCorrectResult()
+        public void ToDto_ShouldMapNullableFieldsAsNull()
         {
             // Arrange
-            var list = new List<CostCentre>
+            var costCentre = new CostCentre { Id = 2, Name = "Electronics" };
+
+            // Act
+            var dto = CostCentreMapper.ToDto(costCentre);
+
+            // Assert
+            dto.Description.Should().BeNull();
+            dto.DisplayColor.Should().BeNull();
+            dto.Budgets.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ListToDto_ShouldMapAllEntities()
+        {
+            // Arrange
+            var costCentres = new List<CostCentre>
             {
-                new() { Id = 1, Name = "A", Description = "Desc A", DisplayColor = "#111111" },
-                new() { Id = 2, Name = "B", Description = "Desc B", DisplayColor = "#222222" },
-                new() { Id = 3, Name = "C", Description = "Desc C", DisplayColor = "#333333" }
+                new() { Id = 1, Name = "Aero" },
+                new() { Id = 2, Name = "Electronics" },
             };
 
             // Act
-            var result = CostCentreMapper.ListToDto(list);
+            var dtos = CostCentreMapper.ListToDto(costCentres);
 
             // Assert
-            result.Should().NotBeNull();
-            result.Should().HaveCount(list.Count);
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                result[i].Id.Should().Be(list[i].Id);
-                result[i].Name.Should().Be(list[i].Name);
-                result[i].Description.Should().Be(list[i].Description);
-                result[i].DisplayColor.Should().Be(list[i].DisplayColor);
-            }
+            dtos.Should().HaveCount(2);
+            dtos.Should().ContainSingle(d => d.Name == "Aero");
+            dtos.Should().ContainSingle(d => d.Name == "Electronics");
         }
     }
 }

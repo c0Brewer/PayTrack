@@ -38,6 +38,11 @@ namespace PayTrack.Data.Entities
         [MaxLength(7)]
         public string? DisplayColor { get; set; }
 
+        /// <summary>
+        /// Indicates if CostCentre is set active or inactive.
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+
         // --- Navigation ---
 
         /// <summary>
