@@ -33,7 +33,7 @@ export const routes: Routes = [
   },
   {
     path: 'requests',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: ReceiptOverviewComponent,
   },
   {
