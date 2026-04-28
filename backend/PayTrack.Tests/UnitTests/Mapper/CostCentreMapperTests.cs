@@ -37,10 +37,10 @@ namespace PayTrack.Tests.UnitTests.Mapper
             dto.Name.Should().Be("Aero");
             dto.Description.Should().Be("Aerodynamics");
             dto.DisplayColor.Should().Be("#00FF00");
-            dto.Budget.Should().HaveCount(1);
-            dto.Budget[0].Id.Should().Be(10);
-            dto.Budget[0].TeamId.Should().Be(2);
-            dto.Budget[0].TargetAmount.Should().Be(1500m);
+            dto.Budgets.Should().HaveCount(1);
+            dto.Budgets[0].Id.Should().Be(10);
+            dto.Budgets[0].TeamId.Should().Be(2);
+            dto.Budgets[0].TargetAmount.Should().Be(1500m);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             dto.Description.Should().BeNull();
             dto.DisplayColor.Should().BeNull();
-            dto.Budget.Should().BeEmpty();
+            dto.Budgets.Should().BeEmpty();
         }
 
         [Fact]
