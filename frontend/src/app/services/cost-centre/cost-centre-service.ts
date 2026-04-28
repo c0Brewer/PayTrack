@@ -22,7 +22,7 @@ export class CostCentreService {
       .GET('/api/v1/cost-centre', { params: { query: options ?? {} } })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as CostCentreDtoPaginatedResponse;
+        return data;
       });
     return from(promise);
   }
@@ -32,7 +32,7 @@ export class CostCentreService {
       .GET('/api/v1/cost-centre/{id}', { params: { path: { id } } })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as CostCentreDto;
+        return data;
       });
     return from(promise);
   }
@@ -42,7 +42,7 @@ export class CostCentreService {
       .POST('/api/v1/cost-centre', { body: request })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as CostCentreDto;
+        return data;
       });
     return from(promise);
   }
@@ -55,7 +55,7 @@ export class CostCentreService {
       .PUT('/api/v1/cost-centre/{id}', { params: { path: { id } }, body: request })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as CostCentreDto;
+        return data;
       });
     return from(promise);
   }
@@ -65,7 +65,7 @@ export class CostCentreService {
       .GET('/api/v1/cost-centre/{id}/delete-preview', { params: { path: { id } } })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data as DeleteCostCentrePreviewDto;
+        return data;
       });
     return from(promise);
   }

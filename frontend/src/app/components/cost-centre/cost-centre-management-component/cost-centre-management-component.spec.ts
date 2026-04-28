@@ -8,11 +8,11 @@ import { NotificationService } from '../../../services/notification/notification
 import {
   CostCentreDto,
   CostCentreDtoPaginatedResponse,
-  CostCentreSaveEvent,
   DeleteCostCentrePreviewDto,
   GetCostCentreOptions,
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
+import { CostCentreSaveEvent } from '../../../types/misc-types';
 
 import { CostCentreManagementComponent } from './cost-centre-management-component';
 

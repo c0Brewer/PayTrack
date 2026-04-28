@@ -4,12 +4,12 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import {
   CostCentreDto,
-  CostCentreSaveEvent,
   GetCostCentreOptions,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
   UpdateCostCentreRequestDto,
 } from '../../../types/exporter';
+import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { CostCentreDeletePreviewModalComponent } from '../cost-centre-delete-preview-modal-component/cost-centre-delete-preview-modal-component';
 import { CostCentreEditModalComponent } from '../cost-centre-edit-modal-component/cost-centre-edit-modal-component';
@@ -33,7 +33,7 @@ export class CostCentreManagementComponent implements OnInit {
     private readonly costCentreService: CostCentreService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) { }
 
   costCentres: CostCentreDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
@@ -128,11 +128,11 @@ export class CostCentreManagementComponent implements OnInit {
         budgets:
           budgetsToUpsert.length > 0
             ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
-                teamId,
-                targetAmount,
-                periodStart,
-                periodEnd,
-              }))
+              teamId,
+              targetAmount,
+              periodStart,
+              periodEnd,
+            }))
             : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({

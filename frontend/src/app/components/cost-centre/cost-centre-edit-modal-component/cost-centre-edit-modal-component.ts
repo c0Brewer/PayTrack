@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import {
   BudgetDto,
   CostCentreDto,
-  CostCentreSaveEvent,
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
+import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { ModalComponent } from '../../general/modal-component/modal-component';
 
 interface WorkingBudget {
