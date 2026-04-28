@@ -1,9 +1,66 @@
 @let loggedIn = loggedIn$ | async;
 @let user = currentUser$ | async;
+@let isMobileMenuOpen = mobileMenuOpen();
 
 @if (loggedIn) {
-  <nav>
-    <span>User: {{ user?.name }}</span>
-    <button (click)="logout()">Logout</button>
+  <nav class="sidebar">
+    <div class="sidebar__header">
+      <div class="sidebar__brand">
+        <span class="sidebar__logo"><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"></span>
+        <span class="sidebar__title">PayTrack</span>
+      </div>
+
+      <button
+        type="button"
+        class="navbar-toggler sidebar__toggle d-md-none"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        aria-label="Toggle navigation"
+        (click)="toggleMobileMenu()">
+        <span class="material-symbols-outlined">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
+      </button>
+    </div>
+
+    <div class="sidebar__menu" [class.sidebar__menu--open]="isMobileMenuOpen">
+      <div class="sidebar__links">
+        <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"
+           (click)="closeMobileMenu()"><span
+          class="material-symbols-outlined">home</span>
+          Home
+        </a>
+        <a routerLink="/rechnungen" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"
+           (click)="closeMobileMenu()"><span
+          class="material-symbols-outlined">description</span>
+          Meine Rechnungen
+        </a>
+        <a routerLink="/rechnung_einreichen" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"
+           (click)="closeMobileMenu()"><span
+          class="material-symbols-outlined">upload_file</span>
+          Rechnungen einreichen
+        </a>
+      </div>
+
+      @if (user?.role === role.ADMIN || user?.role === role.TEAM_LEAD) {
+        <div class="sidebar__admin">
+          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"><span
+            class="material-symbols-outlined">groups</span>
+            Teams</a>
+          @if (user?.role === role.ADMIN){
+          <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span
+              class="material-symbols-outlined">manage_accounts</span>
+            Benutzerverwaltung</a>
+          }
+        </div>
+      }
+
+      <div class="lower-nav">
+        <button class="sidebar__settings"><span
+          class="material-symbols-outlined">settings</span> Einstellungen
+        </button>
+        <button class="sidebar__logout" (click)="logout()"> <span
+          class="material-symbols-outlined">logout</span> Abmelden
+        </button>
+      </div>
+    </div>
   </nav>
 }

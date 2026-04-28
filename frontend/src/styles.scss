@@ -1,6 +1,12 @@
 @use 'variables' as v;
 
 /* You can add global styles to this file, and also import other style files */
+/* Jakob */
+.background-tur-black{
+  background-color: v.$TUR-primary-black;
+}
+
+
 
 body {
   --font-sans:
@@ -33,10 +39,5 @@ body {
       transform 0.1s,
       box-shadow 0.2s;
 
-    &:hover {
-      background: v.$gray-100;
-      transform: translateY(-0.5px);
-      box-shadow: 0 2px 4px v.$shadow-color;
-    }
   }
 }

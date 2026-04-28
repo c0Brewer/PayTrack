@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
 import { roleGuard } from './guards/role-guard/role-guard';
 import { Role } from './types/exporter';
+import {HomeComponent} from './components/home/home-component/home-component';
 
 /*
  * FYI: For the other devs: The guestGuard and authGuard protect certain routes from unauthorized access.
@@ -24,6 +25,11 @@ export const routes: Routes = [
     component: LoginComponent,
   },
   {
+    path: '',
+    canActivate: [authGuard],
+    component: HomeComponent,
+  },
+  {
     path: 'user',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: UserManagementComponent,
@@ -38,9 +44,7 @@ export const routes: Routes = [
     component: UnauthorizedComponent,
   },
   {
-    // Fallback. TODO: Replace with proper Component
     path: '**',
-    canActivate: [authGuard],
-    component: TeamListComponent,
+    redirectTo: '',
   },
 ];
