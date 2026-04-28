@@ -1,0 +1,17 @@
+<section class="box" [class.box--small]="size() === 'small'" [class.box--medium]="size() === 'medium'" [class.box--large]="size() === 'large'">
+  @if (title() || subtitle()) {
+    <header class="box__header">
+      @if (title()) {
+        <h3 class="box__title">{{ title() }}</h3>
+      }
+
+      @if (subtitle()) {
+        <p class="box__subtitle">{{ subtitle() }}</p>
+      }
+    </header>
+  }
+
+  <div class="box__content">
+    <ng-content></ng-content>
+  </div>
+</section>
