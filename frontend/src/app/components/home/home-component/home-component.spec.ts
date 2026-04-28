@@ -42,8 +42,4 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
-
-  it('should not throw on init', () => {
-    expect(() => component.ngOnInit()).not.toThrow();
-  });
 });

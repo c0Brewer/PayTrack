@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { AuthService } from '../../../services/auth/auth-service';
+import { NotificationService } from '../../../services/notification/notification-service';
 import { GoogleAuthResponseDto } from '../../../types/exporter';
 
 import { LoginComponent } from './login-component';
@@ -22,18 +22,24 @@ describe('LoginComponent', () => {
     navigate: ReturnType<typeof vi.fn>;
   };
 
-  const mockGoogleCallbackResponse = {
-    credential: 'abc',
+  let notificationMock: {
+    showError: ReturnType<typeof vi.fn>;
   };
 
-  const mockJwtCallbackResponse: GoogleAuthResponseDto = {
+  const mockGoogleResponse = {
+    code: 'abc',
+  };
+
+  const mockJwtResponse: GoogleAuthResponseDto = {
     jwtToken: '123',
   };
 
+  const requestCodeMock = vi.fn();
+
   beforeEach(async () => {
     authServiceMock = {
-      handleGoogleCallback: vi.fn().mockReturnValue(of(mockJwtCallbackResponse)),
-      loadGoogleScript: vi.fn(),
+      handleGoogleCallback: vi.fn(),
+      loadGoogleScript: vi.fn().mockResolvedValue(undefined), // ✅ Promise
       storeToken: vi.fn(),
     };
 
@@ -41,13 +47,18 @@ describe('LoginComponent', () => {
       navigate: vi.fn(),
     };
 
-    // mock Google API
+    notificationMock = {
+      showError: vi.fn(),
+    };
+
+    // ✅ Correct Google API mock
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).google = {
       accounts: {
-        id: {
-          initialize: vi.fn(),
-          renderButton: vi.fn(),
+        oauth2: {
+          initCodeClient: vi.fn().mockReturnValue({
+            requestCode: requestCodeMock,
+          }),
         },
       },
     };
@@ -57,6 +68,7 @@ describe('LoginComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceMock },
         { provide: Router, useValue: routerMock },
+        { provide: NotificationService, useValue: notificationMock },
       ],
     }).compileComponents();
 
@@ -68,21 +80,83 @@ describe('LoginComponent', () => {
     vi.clearAllMocks();
   });
 
-  it('should create', () => {
-    fixture.detectChanges(); // triggers ngOnInit
+  // -------------------------
+  // BASIC
+  // -------------------------
+  it('should create', async () => {
+    await component.ngAfterViewInit();
     expect(component).toBeTruthy();
   });
 
-  it('should redirect to home ("") on successful login', () => {
-    authServiceMock.loadGoogleScript.mockReturnValue(of(null));
-    authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtCallbackResponse));
+  // -------------------------
+  // INIT GOOGLE CLIENT
+  // -------------------------
+  it('should initialize google client on view init', async () => {
+    await component.ngAfterViewInit();
 
-    component.handleCredentialResponse(mockGoogleCallbackResponse);
+    expect(authServiceMock.loadGoogleScript).toHaveBeenCalled();
+    expect(window.google?.accounts.oauth2.initCodeClient).toHaveBeenCalled();
+  });
 
-    expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith(
-      mockGoogleCallbackResponse.credential,
-    );
-    expect(authServiceMock.storeToken).toHaveBeenCalledWith(mockJwtCallbackResponse.jwtToken);
+  it('should show error if google not available', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).google = undefined;
+
+    await component.ngAfterViewInit();
+
+    expect(notificationMock.showError).toHaveBeenCalledWith('Google login is not ready yet.');
+  });
+
+  // -------------------------
+  // SIGN IN
+  // -------------------------
+  it('should call requestCode on signInWithGoogle', async () => {
+    await component.ngAfterViewInit();
+
+    component.signInWithGoogle();
+
+    expect(requestCodeMock).toHaveBeenCalled();
+  });
+
+  it('should show error if signIn called before init', () => {
+    component.signInWithGoogle();
+
+    expect(notificationMock.showError).toHaveBeenCalledWith('Google login is not ready yet.');
+  });
+
+  // -------------------------
+  // HANDLE RESPONSE SUCCESS
+  // -------------------------
+  it('should handle google login success', () => {
+    authServiceMock.handleGoogleCallback.mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subscribe: ({ next }: any) => next(mockJwtResponse),
+    });
+
+    component.handleGoogleCodeResponse(mockGoogleResponse);
+
+    expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith('abc');
+    expect(authServiceMock.storeToken).toHaveBeenCalledWith('123');
     expect(routerMock.navigate).toHaveBeenCalledWith(['']);
+  });
+
+  // -------------------------
+  // HANDLE RESPONSE ERROR
+  // -------------------------
+  it('should show error if no code provided', () => {
+    component.handleGoogleCodeResponse({});
+
+    expect(notificationMock.showError).toHaveBeenCalledWith('Google login failed.');
+  });
+
+  it('should handle backend error', () => {
+    authServiceMock.handleGoogleCallback.mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subscribe: ({ error }: any) => error(new Error('Login failed')),
+    });
+
+    component.handleGoogleCodeResponse(mockGoogleResponse);
+
+    expect(notificationMock.showError).toHaveBeenCalledWith('Login failed');
   });
 });

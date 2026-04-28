@@ -13,10 +13,12 @@ export class HomeComponent {
   private greetings = [
     'Willkommen zurück!',
     'Schön, dich wiederzusehen!',
-    '    Schön, dass du wieder da bist!',
+    'Schön, dass du wieder da bist!',
   ];
 
-  getGreeting(): string {
+  greeting = this.getRandomGreeting();
+
+  private getRandomGreeting(): string {
     return this.greetings[Math.floor(Math.random() * this.greetings.length)];
   }
 }
