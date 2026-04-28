@@ -28,9 +28,6 @@ export const routes: Routes = [
     component: LoginComponent,
   },
   {
-    path: '',
-    canActivate: [authGuard],
-    component: HomeComponent,
     path: 'bankaccount',
     canActivate: [authGuard],
     component: BankAccountComponent,
@@ -58,6 +55,11 @@ export const routes: Routes = [
   {
     path: 'unauthorized',
     component: UnauthorizedComponent,
+  },
+  {
+    path: '',
+    canActivate: [authGuard],
+    component: HomeComponent,
   },
   {
     path: '**',
