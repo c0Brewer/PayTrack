@@ -22,5 +22,7 @@ namespace PayTrack.Application.Dto.CostCentre
 
         string? DisplayColor,
 
-        IList<BudgetDto> Budgets);
+        IList<BudgetDto> Budget,
+
+        bool IsActive);
 }

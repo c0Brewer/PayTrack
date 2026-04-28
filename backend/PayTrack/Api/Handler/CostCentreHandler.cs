@@ -92,17 +92,23 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
-        /// Deletes a cost center. Returns 400 if linked budgets or transactions exist.
+        /// Deletes or deactivates a cost center. Returns 204 when hard-deleted (no linked records),
+        /// or 200 with the deactivated DTO when soft-deleted due to existing links.
         /// </summary>
         /// <param name="id">Id from route.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<NoContent, NotFound<ProblemDetails>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeleteAsync(
+        public static async Task<Results<NoContent, Ok<CostCentreDto>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteAsync(
             [FromRoute] int id,
             ICostCentreService service)
         {
-            await service.DeleteAsync(id);
-            return TypedResults.NoContent();
+            var deactivated = await service.DeleteAsync(id);
+            if (deactivated is null)
+            {
+                return TypedResults.NoContent();
+            }
+
+            return TypedResults.Ok(CostCentreMapper.ToDto(deactivated));
         }
     }
 }

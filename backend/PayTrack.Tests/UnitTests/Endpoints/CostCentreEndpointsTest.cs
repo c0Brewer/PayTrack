@@ -254,10 +254,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         // ── DELETE /cost-centre/{id} ──────────────────────────────────────────
 
         [Fact]
-        public async Task Delete_ReturnsNoContent_WhenAdminRole()
+        public async Task Delete_ReturnsNoContent_WhenNoLinkedRecordsExist()
         {
             // Arrange
-            _factory.ServiceMock.Setup(s => s.DeleteAsync(1)).Returns(Task.CompletedTask);
+            _factory.ServiceMock.Setup(s => s.DeleteAsync(1)).ReturnsAsync((CostCentre?)null);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -267,6 +267,26 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsOkWithDeactivatedDto_WhenLinkedRecordsExist()
+        {
+            // Arrange
+            var deactivated = new CostCentre { Id = 2, Name = "Linked", IsActive = false };
+            _factory.ServiceMock.Setup(s => s.DeleteAsync(2)).ReturnsAsync(deactivated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.DeleteAsync("api/v1/cost-centre/2");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<CostCentreDto>();
+            result!.IsActive.Should().BeFalse();
+            result.Name.Should().Be("Linked");
         }
 
         [Fact]

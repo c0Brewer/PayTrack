@@ -162,15 +162,32 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task DeleteAsync_ShouldCallRepo()
+        public async Task DeleteAsync_ShouldReturnNull_WhenRepoPerformsHardDelete()
         {
             // Arrange
-            repoMock.Setup(r => r.DeleteAsync(7)).Returns(Task.CompletedTask);
+            repoMock.Setup(r => r.DeleteAsync(7)).ReturnsAsync((CostCentre?)null);
 
             // Act
-            await service.DeleteAsync(7);
+            var result = await service.DeleteAsync(7);
 
             // Assert
+            result.Should().BeNull();
+            repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldReturnDeactivatedCostCentre_WhenRepoPerformsSoftDelete()
+        {
+            // Arrange
+            var deactivated = new CostCentre { Id = 7, Name = "Linked", IsActive = false };
+            repoMock.Setup(r => r.DeleteAsync(7)).ReturnsAsync(deactivated);
+
+            // Act
+            var result = await service.DeleteAsync(7);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsActive.Should().BeFalse();
             repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
         }
 

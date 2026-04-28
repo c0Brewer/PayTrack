@@ -199,7 +199,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task DeleteAsync(int id)
+        public async Task<CostCentre?> DeleteAsync(int id)
         {
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)
@@ -209,9 +209,9 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (costCentre.Budgets.Count > 0 || costCentre.Transactions.Count > 0)
             {
-                throw new InvalidStateException(
-                    $"Cannot delete CostCentre '{costCentre.Name}': " +
-                    $"{costCentre.Budgets.Count} budget(s) and {costCentre.Transactions.Count} transaction(s) are still linked.");
+                costCentre.IsActive = false;
+                await this.context.SaveChangesAsync();
+                return costCentre;
             }
 
             this.context.CostCentres.Remove(costCentre);
@@ -221,6 +221,8 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 throw new InternalErrorException($"Deleting CostCentre did not end as expected. Affected {res} records.");
             }
+
+            return null;
         }
     }
 }

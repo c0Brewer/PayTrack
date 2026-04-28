@@ -67,10 +67,11 @@ namespace PayTrack.Application.Services.Model
         Task<DeleteCostCentrePreviewDto> GetDeletePreviewAsync(int id);
 
         /// <summary>
-        /// Deletes the cost center. Throws InvalidStateException if linked records exist.
+        /// Deletes or deactivates a cost center. Hard-deletes if no linked records exist and returns null.
+        /// Sets IsActive to false and returns the entity when linked budgets or transactions exist.
         /// </summary>
         /// <param name="id">Id of the cost center to delete.</param>
-        /// <returns>A <see cref="Task"/> representing the async operation.</returns>
-        Task DeleteAsync(int id);
+        /// <returns>Null when hard-deleted; the deactivated entity when soft-deleted.</returns>
+        Task<CostCentre?> DeleteAsync(int id);
     }
 }

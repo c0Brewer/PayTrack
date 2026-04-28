@@ -70,9 +70,9 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task DeleteAsync(int id)
+        public async Task<CostCentre?> DeleteAsync(int id)
         {
-            await this.repo.DeleteAsync(id);
+            return await this.repo.DeleteAsync(id);
         }
     }
 }
