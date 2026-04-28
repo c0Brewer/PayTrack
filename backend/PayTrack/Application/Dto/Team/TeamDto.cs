@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.User;
 
 namespace PayTrack.Application.Dto.Team

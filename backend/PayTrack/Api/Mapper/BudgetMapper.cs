@@ -1,10 +1,8 @@
 // <copyright file="BudgetMapper.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
-using PayTrack.Application.Dto.Budget;
 
-using System.Linq;
-using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -21,7 +19,7 @@ namespace PayTrack.Api.Mapper
         /// <returns>List of TeamBudgetDto objects.</returns>
         public static List<BudgetDto> CollectionToDto(ICollection<Budget> budget)
         {
-            return budget.Select(ToDto).ToList();
+            return [.. budget.Select(ToDto)];
         }
 
         /// <summary>
@@ -33,6 +31,7 @@ namespace PayTrack.Api.Mapper
         {
             return new BudgetDto(
                 budget.Id,
+                budget.TeamId,
                 budget.CostCentreId,
                 budget.TargetAmount,
                 budget.PeriodStart,
