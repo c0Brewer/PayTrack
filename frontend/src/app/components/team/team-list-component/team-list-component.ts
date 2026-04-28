@@ -4,7 +4,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
-import {NavbarComponent} from '../../navbar/navbar-component/navbar-component';
+import { NavbarComponent } from '../../navbar/navbar-component/navbar-component';
 
 @Component({
   selector: 'app-team-list-component',

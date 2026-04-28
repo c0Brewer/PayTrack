@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
-import { TeamService } from '../../../services/team/team-service';
-import { TeamDto } from '../../../types/exporter';
-import {NavbarComponent} from '../../navbar/navbar-component/navbar-component';
-import {BoxComponent} from '../../general/boxes/box-component/box-component';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
+import { NavbarComponent } from '../../navbar/navbar-component/navbar-component';
 
 @Component({
   selector: 'app-home-component',
@@ -14,17 +12,14 @@ import {BoxComponent} from '../../general/boxes/box-component/box-component';
   styleUrl: './home-component.scss',
 })
 export class HomeComponent implements OnInit {
+  private greetings = [
+    'Willkommen zurück!',
+    'Schön, dich wiederzusehen!',
+    '    Schön, dass du wieder da bist!',
+  ];
+  constructor(private readonly notificationService: NotificationService) {}
 
-  private greetings = ["Willkommen zurück!", "Schön, dich wiederzusehen!", "    Schön, dass du wieder da bist!"];
-  constructor(
-    private readonly notificationService: NotificationService,
-  ) {}
-
-  ngOnInit(): void {
+  getGreeting(): string {
+    return this.greetings[Math.floor(Math.random() * this.greetings.length)];
   }
-
-  getGreeting(){
-    return this.greetings[Math.floor(Math.random()*this.greetings.length)];
-  }
-
 }

@@ -5,9 +5,32 @@ import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 
+interface GoogleCodeResponse {
+  code?: string;
+}
+
+interface GoogleCodeClient {
+  requestCode(): void;
+}
+
+interface GoogleCodeClientConfig {
+  client_id: string;
+  scope: string;
+  ux_mode: 'popup' | 'redirect';
+  callback: (response: GoogleCodeResponse) => void;
+}
+
+interface GoogleIdentityServices {
+  accounts: {
+    oauth2: {
+      initCodeClient(config: GoogleCodeClientConfig): GoogleCodeClient;
+    };
+  };
+}
+
 declare global {
   interface Window {
-    google: any;
+    google?: GoogleIdentityServices;
   }
 }
 
@@ -18,7 +41,7 @@ declare global {
   styleUrl: './login-component.scss',
 })
 export class LoginComponent implements AfterViewInit {
-  private codeClient: any;
+  private codeClient?: GoogleCodeClient;
 
   constructor(
     private readonly authService: AuthService,
@@ -29,11 +52,17 @@ export class LoginComponent implements AfterViewInit {
   async ngAfterViewInit(): Promise<void> {
     await this.authService.loadGoogleScript();
 
-    this.codeClient = globalThis.window.google.accounts.oauth2.initCodeClient({
+    const google = globalThis.window.google;
+    if (!google) {
+      this.notificationService.showError('Google login is not ready yet.');
+      return;
+    }
+
+    this.codeClient = google.accounts.oauth2.initCodeClient({
       client_id: environment.googleClientId,
       scope: 'openid email profile',
       ux_mode: 'popup',
-      callback: (response: any) => this.handleGoogleCodeResponse(response),
+      callback: (response: GoogleCodeResponse) => this.handleGoogleCodeResponse(response),
     });
   }
 
@@ -46,22 +75,20 @@ export class LoginComponent implements AfterViewInit {
     this.codeClient.requestCode();
   }
 
-  handleGoogleCodeResponse(response: any): void {
-    console.log('Google response:', response);
-
+  handleGoogleCodeResponse(response: GoogleCodeResponse): void {
     if (!response?.code) {
       this.notificationService.showError('Google login failed.');
       return;
     }
 
     this.authService.handleGoogleCallback(response.code).subscribe({
-      next: (data) => {
+      next: (data): void => {
         this.authService.storeToken(data.jwtToken);
         this.router.navigate(['']);
       },
-      error: (err) => {
+      error: (err): void => {
         console.error(err);
-        this.notificationService.showError(err);
+        this.notificationService.showError(err instanceof Error ? err.message : String(err));
       },
     });
   }
