@@ -33,7 +33,7 @@ export class CostCentreManagementComponent implements OnInit {
     private readonly costCentreService: CostCentreService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   costCentres: CostCentreDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
@@ -129,11 +129,11 @@ export class CostCentreManagementComponent implements OnInit {
         budgets:
           budgetsToUpsert.length > 0
             ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
-              teamId,
-              targetAmount,
-              periodStart,
-              periodEnd,
-            }))
+                teamId,
+                targetAmount,
+                periodStart,
+                periodEnd,
+              }))
             : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({

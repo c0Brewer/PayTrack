@@ -1,4 +1,4 @@
-import type { CostCentreDto, UpsertBudgetEntryDto } from "./exporter";
+import type { CostCentreDto, UpsertBudgetEntryDto } from './exporter';
 
 export interface CostCentreSaveEvent {
   costCentre: CostCentreDto;

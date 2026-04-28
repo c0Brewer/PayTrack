@@ -25,8 +25,22 @@ const expiredBudget: BudgetDto = {
 };
 
 const mockCostCentres: CostCentreDto[] = [
-  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [], isActive: true },
-  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [], isActive: false },
+  {
+    id: 1,
+    name: 'Aerodynamics',
+    description: 'Aero costs',
+    displayColor: '#FF5733',
+    budgets: [],
+    isActive: true,
+  },
+  {
+    id: 2,
+    name: 'Powertrain',
+    description: null,
+    displayColor: null,
+    budgets: [],
+    isActive: false,
+  },
 ];
 
 describe('CostCentreListComponent', () => {
@@ -84,7 +98,14 @@ describe('CostCentreListComponent', () => {
 
   it('should show "No current budget" when all budgets are expired', () => {
     component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [expiredBudget], isActive: true },
+      {
+        id: 1,
+        name: 'A',
+        description: null,
+        displayColor: null,
+        budgets: [expiredBudget],
+        isActive: true,
+      },
     ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.no-budgets');
@@ -94,7 +115,14 @@ describe('CostCentreListComponent', () => {
 
   it('should show the active budget amount when a current budget exists', () => {
     component.costCentres = [
-      { id: 1, name: 'A', description: null, displayColor: null, budgets: [activeBudget], isActive: true },
+      {
+        id: 1,
+        name: 'A',
+        description: null,
+        displayColor: null,
+        budgets: [activeBudget],
+        isActive: true,
+      },
     ];
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('.has-budgets');

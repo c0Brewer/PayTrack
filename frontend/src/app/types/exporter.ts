@@ -38,4 +38,3 @@ export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentre
 
 // Cost Centre Paths
 export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
-

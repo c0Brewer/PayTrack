@@ -2,11 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import {
-  BudgetDto,
-  CostCentreDto,
-  UpsertBudgetEntryDto,
-} from '../../../types/exporter';
+import { BudgetDto, CostCentreDto, UpsertBudgetEntryDto } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { ModalComponent } from '../../general/modal-component/modal-component';
 

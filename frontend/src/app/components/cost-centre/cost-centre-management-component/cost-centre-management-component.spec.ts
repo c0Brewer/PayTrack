@@ -17,7 +17,14 @@ import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { CostCentreManagementComponent } from './cost-centre-management-component';
 
 const mockCostCentres: CostCentreDto[] = [
-  { id: 1, name: 'Aerodynamics', description: 'Aero costs', displayColor: '#FF5733', budgets: [], isActive: true },
+  {
+    id: 1,
+    name: 'Aerodynamics',
+    description: 'Aero costs',
+    displayColor: '#FF5733',
+    budgets: [],
+    isActive: true,
+  },
   { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [], isActive: true },
 ];
 
@@ -122,7 +129,14 @@ describe('CostCentreManagementComponent', () => {
 
   it('save with id -1 should call createCostCentre', () => {
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [], isActive: true },
+      costCentre: {
+        id: -1,
+        name: 'New CC',
+        description: null,
+        displayColor: null,
+        budgets: [],
+        isActive: true,
+      },
       budgetsToUpsert: [],
       budgetIdsToDelete: [],
     };
@@ -160,7 +174,14 @@ describe('CostCentreManagementComponent', () => {
       throwError(() => new Error('Create failed')),
     );
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'X', description: null, displayColor: null, budgets: [], isActive: true },
+      costCentre: {
+        id: -1,
+        name: 'X',
+        description: null,
+        displayColor: null,
+        budgets: [],
+        isActive: true,
+      },
       budgetsToUpsert: [],
       budgetIdsToDelete: [],
     };
@@ -318,7 +339,14 @@ describe('CostCentreManagementComponent', () => {
       periodEnd: '2024-12-31',
     };
     const event: CostCentreSaveEvent = {
-      costCentre: { id: -1, name: 'New CC', description: null, displayColor: null, budgets: [], isActive: true },
+      costCentre: {
+        id: -1,
+        name: 'New CC',
+        description: null,
+        displayColor: null,
+        budgets: [],
+        isActive: true,
+      },
       budgetsToUpsert: [budget],
       budgetIdsToDelete: [],
     };
