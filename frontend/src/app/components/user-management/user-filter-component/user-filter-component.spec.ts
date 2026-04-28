@@ -40,7 +40,7 @@ describe('UserFilterComponent', () => {
     // advance timers by 400ms to trigger debounce
     vi.advanceTimersByTime(400);
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Alice' }));
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ Name: 'Alice' }));
   });
 
   it('should emit updated filter on email change after debounce', async () => {
@@ -51,7 +51,7 @@ describe('UserFilterComponent', () => {
 
     vi.advanceTimersByTime(400);
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ email: 'a@test.com' }));
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ Email: 'a@test.com' }));
   });
 
   it('should emit updated filter on role change after debounce', async () => {
@@ -62,7 +62,7 @@ describe('UserFilterComponent', () => {
 
     vi.advanceTimersByTime(100);
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ role: Role.ADMIN }));
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ Role: Role.ADMIN }));
   });
 
   it('should emit updated filter on isActive change after debounce', async () => {
@@ -73,7 +73,7 @@ describe('UserFilterComponent', () => {
 
     vi.advanceTimersByTime(100);
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ isActive: true }));
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IsActive: true }));
   });
 
   it('should emit limit change correctly', () => {
@@ -94,13 +94,14 @@ describe('UserFilterComponent', () => {
     const options: GetUserOptions = component.getGetUserOptions();
 
     expect(options).toEqual({
-      name: 'Alice',
-      email: 'a@test.com',
-      role: Role.TEAM_LEAD,
-      isActive: true,
-      includeTeam: undefined,
-      limit: undefined,
-      offset: undefined,
+      Name: 'Alice',
+      Email: 'a@test.com',
+      TeamName: undefined,
+      Role: Role.TEAM_LEAD,
+      IsActive: true,
+      IncludeTeam: undefined,
+      Limit: undefined,
+      Offset: undefined,
     });
   });
 });

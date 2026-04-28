@@ -41,13 +41,13 @@ export class UserManagementComponent implements OnInit {
   editingUser: UserDto | null = null;
 
   filterOptions: GetUserOptions = {
-    name: undefined,
-    email: undefined,
-    role: undefined,
-    isActive: undefined,
-    includeTeam: true,
-    limit: this.limit,
-    offset: this.page * this.limit,
+    Name: undefined,
+    Email: undefined,
+    Role: undefined,
+    IsActive: undefined,
+    IncludeTeam: true,
+    Limit: this.limit,
+    Offset: this.page * this.limit,
   };
 
   ngOnInit(): void {
@@ -56,13 +56,13 @@ export class UserManagementComponent implements OnInit {
 
   loadUser(): void {
     const queryOptions: GetUserOptions = {
-      name: this.filterOptions?.name ?? undefined,
-      email: this.filterOptions?.email ?? undefined,
-      role: this.filterOptions?.role ?? undefined,
-      isActive: this.filterOptions?.isActive ?? undefined,
-      includeTeam: true,
-      limit: this.limit,
-      offset: this.page * this.limit,
+      Name: this.filterOptions?.Name ?? undefined,
+      Email: this.filterOptions?.Email ?? undefined,
+      Role: this.filterOptions?.Role ?? undefined,
+      IsActive: this.filterOptions?.IsActive ?? undefined,
+      IncludeTeam: true,
+      Limit: this.limit,
+      Offset: this.page * this.limit,
     };
 
     this.userService.getUser(queryOptions).subscribe({
@@ -87,10 +87,10 @@ export class UserManagementComponent implements OnInit {
 
   updateFilterOptions(options: GetUserOptions): void {
     if (this.filterOptions && options) {
-      this.filterOptions.name = options.name;
-      this.filterOptions.email = options.email;
-      this.filterOptions.role = options.role;
-      this.filterOptions.isActive = options.isActive;
+      this.filterOptions.Name = options.Name;
+      this.filterOptions.Email = options.Email;
+      this.filterOptions.Role = options.Role;
+      this.filterOptions.IsActive = options.IsActive;
       this.page = 0;
       this.loadUser();
     }

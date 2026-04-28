@@ -2,8 +2,16 @@
 @let user = currentUser$ | async;
 
 @if (loggedIn) {
-  <nav>
-    <span>User: {{ user?.name }}</span>
-    <button (click)="logout()">Logout</button>
+  <nav class="navbar-container">
+    <div class="user-info">
+      <span>User: <strong>{{ user?.name }}</strong></span>
+    </div>
+
+    <div class="nav-actions">
+      <a routerLink="/bankaccount" class="nav-link">BankAccount</a>
+      <a routerLink="/user" class="nav-link">User</a>
+      <a routerLink="/team" class="nav-link">Team</a>
+      <button (click)="logout()" class="logout-btn">Logout</button>
+    </div>
   </nav>
 }
