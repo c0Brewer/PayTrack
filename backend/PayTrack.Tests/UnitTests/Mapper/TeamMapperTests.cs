@@ -6,45 +6,54 @@ namespace PayTrack.Tests.UnitTests.Mapper
 {
     public class TeamMapperTests
     {
-        [Theory]
-        [InlineData(1, "name")]
-        [InlineData(100, "better_name")]
-        [InlineData(9999999, "my spaced name")]
-        public async Task MapperToDto_ReturnsCorrectResult(int id, string name)
+        [Fact]
+        public void ToDto_MapsAllBudgets_WhenTeamHasBudgets()
         {
-            Team team = new() { Id = id, Name = name };
+            var now = DateTime.UtcNow;
+            var team = new Team
+            {
+                Id = 1,
+                Name = "Team 1",
+                Budgets =
+                [
+                    new Budget
+                    {
+                        Id = 1,
+                        CostCentreId = 11,
+                        TargetAmount = 100m,
+                        PeriodStart = now.AddDays(-10),
+                        PeriodEnd = now.AddDays(-5),
+                    },
+                    new Budget
+                    {
+                        Id = 2,
+                        CostCentreId = 12,
+                        TargetAmount = 200m,
+                        PeriodStart = now.AddDays(-1),
+                        PeriodEnd = now.AddDays(1),
+                    },
+                ],
+            };
 
             var teamDto = TeamMapper.ToDto(team);
 
-            teamDto.Should().NotBeNull();
-            teamDto.Id.Should().Be(id);
-            teamDto.Name.Should().Be(name);
+            teamDto.Budgets.Should().HaveCount(2);
+            teamDto.Budgets.Should().Contain(b => b.Id == 1 && b.TargetAmount == 100m && b.CostCentreId == 11);
+            teamDto.Budgets.Should().Contain(b => b.Id == 2 && b.TargetAmount == 200m && b.CostCentreId == 12);
         }
 
         [Fact]
-        public async Task MapperListToDto_ReturnsCorrectResult()
+        public void ToDto_ReturnsEmptyBudgetList_WhenTeamHasNoBudgets()
         {
-            var teams = new List<Team>();
+            var team = new Team
+            {
+                Id = 1,
+                Name = "Team 1",
+            };
 
-            Team team1 = new() { Id = 1, Name = "123" };
-            Team team2 = new() { Id = 2, Name = "456" };
-            Team team3 = new() { Id = 3, Name = "789" };
+            var teamDto = TeamMapper.ToDto(team);
 
-            teams.Add(team1);
-            teams.Add(team2);
-            teams.Add(team3);
-
-            var teamsDto = TeamMapper.ListToDto(teams);
-
-            teamsDto.Should().NotBeNull();
-            teamsDto.Should().HaveCount(3);
-            teamsDto.Should().HaveCount(teams.Count);
-            teamsDto[0].Name.Should().Be(team1.Name);
-            teamsDto[1].Name.Should().Be(team2.Name);
-            teamsDto[2].Name.Should().Be(team3.Name);
-            teamsDto[0].Name.Should().Be(teams[0].Name);
-            teamsDto[1].Name.Should().Be(teams[1].Name);
-            teamsDto[2].Name.Should().Be(teams[2].Name);
+            teamDto.Budgets.Should().NotBeNull().And.BeEmpty();
         }
     }
 }
