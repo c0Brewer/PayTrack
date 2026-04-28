@@ -30,7 +30,7 @@ describe('TeamListComponent', () => {
         {
           id: 1,
           costCentreId: 10,
-          teamId: 1,
+          teamId: 0,
           targetAmount: 3000,
           periodStart: buildBudgetDate(-120, 'start'),
           periodEnd: buildBudgetDate(-60, 'end'),
