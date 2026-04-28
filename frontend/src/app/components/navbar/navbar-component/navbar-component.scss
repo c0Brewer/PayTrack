@@ -1,8 +1,12 @@
 @use 'variables' as v;
 
 .sidebar {
+  position: fixed;
   background: v.$TUR-primary-black;
   color: white;
+  height: 100vh;
+  width: 20vw;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: v.$size-l;
