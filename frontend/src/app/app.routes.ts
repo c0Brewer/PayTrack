@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
+import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
+import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
@@ -38,6 +40,16 @@ export const routes: Routes = [
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamManagementComponent,
+  },
+  {
+    path: 'cost-centre',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: CostCentreManagementComponent,
+  },
+  {
+    path: 'cost-centre/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: CostCentreDetailComponent,
   },
   {
     path: 'unauthorized',

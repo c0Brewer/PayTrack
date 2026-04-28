@@ -1,0 +1,12 @@
+<div class="toolbar">
+  <input type="text" placeholder="Filter by name..." (input)="onNameFilterChange($event)" />
+  <input type="text" placeholder="Filter by description..." (input)="onDescriptionFilterChange($event)" />
+  <input type="number" placeholder="Min budget..." min="0" (input)="onMinBudgetFilterChange($event)" />
+  <input type="number" placeholder="Max budget..." min="0" (input)="onMaxBudgetFilterChange($event)" />
+
+  <select [(ngModel)]="limit" (change)="onLimitChange()">
+    @for (l of limitSelection; track l) {
+      <option [value]="l">{{ l }} per page</option>
+    }
+  </select>
+</div>

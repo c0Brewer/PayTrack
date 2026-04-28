@@ -29,6 +29,7 @@ describe('TeamListComponent', () => {
         {
           id: 1,
           costCentreId: 10,
+          teamId: 0,
           targetAmount: 3000,
           periodStart: buildBudgetDate(-120, 'start'),
           periodEnd: buildBudgetDate(-60, 'end'),
@@ -36,6 +37,7 @@ describe('TeamListComponent', () => {
         {
           id: 2,
           costCentreId: 10,
+          teamId: 0,
           targetAmount: 5000,
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
@@ -62,6 +64,7 @@ describe('TeamListComponent', () => {
       {
         id: 3,
         costCentreId: 11,
+        teamId: 0,
         targetAmount: 7000,
         periodStart: buildBudgetDate(60, 'start'),
         periodEnd: buildBudgetDate(120, 'end'),
