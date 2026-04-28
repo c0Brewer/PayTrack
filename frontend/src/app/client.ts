@@ -10,6 +10,7 @@ function isPublicRoute(url: string): boolean {
   return PUBLIC_ROUTES.some((route) => url.includes(route));
 }
 
+// TODO: Inject url
 export const client = createClient<paths>({
   baseUrl: 'http://localhost:5154',
   headers: {

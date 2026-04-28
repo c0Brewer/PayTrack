@@ -6,6 +6,8 @@ import { CostCentreManagementComponent } from './components/cost-centre/cost-cen
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
+import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -26,6 +28,16 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     component: LoginComponent,
+  },
+  {
+    path: 'submit',
+    canActivate: [authGuard],
+    component: ReceiptSubmitComponent,
+  },
+  {
+    path: 'requests',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: ReceiptOverviewComponent,
   },
   {
     path: 'bankaccount',

@@ -10,7 +10,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
         [InlineData(1, "name")]
         [InlineData(100, "better_name")]
         [InlineData(9999999, "my spaced name")]
-        public async Task MapperToDto_ReturnsCorrectResult(int id, string name)
+        public void MapperToDto_ReturnsCorrectResult(int id, string name)
         {
             User user = new() { Id = id, Name = name };
 
@@ -22,7 +22,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
         }
 
         [Fact]
-        public async Task MapperListToDto_ReturnsCorrectResult()
+        public void MapperListToDto_ReturnsCorrectResult()
         {
             var user = new List<User>();
 
@@ -48,7 +48,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
         }
 
         [Fact]
-        public async Task MapperToDto_ShouldContainTeamDto_IfUserContainsTeam()
+        public void MapperToDto_ShouldContainTeamDto_IfUserContainsTeam()
         {
             Team team1 = new() { Id = 3, Name = "Team1" };
 

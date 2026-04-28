@@ -13,7 +13,7 @@ namespace PayTrack.Api.Mapper
     public static class CostCentreMapper
     {
         /// <summary>
-        /// Turns CostCentre entity into a CostCentreDto.
+        /// Turns CostCentre object into a CostCentreDto.
         /// </summary>
         /// <param name="costCentre">CostCentre to map.</param>
         /// <returns>CostCentreDto instance.</returns>

@@ -59,8 +59,7 @@ namespace PayTrack.Data.Entities
         /// <summary>
         /// Foreign Key on CostCentre.
         /// </summary>
-        [Required]
-        public int CostCentreId { get; set; }
+        public int? CostCentreId { get; set; }
 
         /// <summary>
         /// CostCentre Reference.

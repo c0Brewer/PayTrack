@@ -32,6 +32,7 @@ describe('UserManagementComponent', () => {
       isActive: true,
       profilePictureUrl: '',
       team: { id: 1, name: 'Team A', description: '', displayColor: '' },
+      bankAccounts: [],
     },
     {
       id: 2,
@@ -41,6 +42,7 @@ describe('UserManagementComponent', () => {
       isActive: false,
       profilePictureUrl: '',
       team: { id: 2, name: 'Team B', description: '', displayColor: '' },
+      bankAccounts: [],
     },
   ];
 

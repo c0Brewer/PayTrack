@@ -161,7 +161,7 @@ namespace PayTrack.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CostCentreId")
+                    b.Property<int?>("CostCentreId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -335,6 +335,7 @@ namespace PayTrack.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<string>("InvoiceNumber")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -387,8 +388,7 @@ namespace PayTrack.Migrations
                     b.HasOne("PayTrack.Data.Entities.CostCentre", "CostCentre")
                         .WithMany("Transactions")
                         .HasForeignKey("CostCentreId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
                         .WithMany("Transactions")
