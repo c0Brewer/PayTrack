@@ -26,7 +26,8 @@ namespace PayTrack.Api.Mapper
                 costCentre.Name,
                 costCentre.Description,
                 costCentre.DisplayColor,
-                budgetDtos);
+                budgetDtos,
+                costCentre.IsActive);
         }
 
         /// <summary>

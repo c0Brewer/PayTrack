@@ -410,7 +410,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task DeleteAsync_ShouldRemoveCostCentre_WhenNoLinkedRecords()
+        public async Task DeleteAsync_ShouldRemoveCostCentre_AndReturnNull_WhenNoLinkedRecords()
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeleteCostCentre");
@@ -421,15 +421,16 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
             // Act
-            await repo.DeleteAsync(entity.Id);
+            var result = await repo.DeleteAsync(entity.Id);
 
             // Assert
+            result.Should().BeNull();
             var dbEntity = await context.CostCentres.FindAsync(entity.Id);
             dbEntity.Should().BeNull();
         }
 
         [Fact]
-        public async Task DeleteAsync_ShouldThrowInvalidState_WhenBudgetsExist()
+        public async Task DeleteAsync_ShouldDeactivateCostCentre_WhenBudgetsExist()
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeleteCostCentre_WithBudgets");
@@ -454,11 +455,56 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidStateException>(
-                async () => await repo.DeleteAsync(costCentre.Id));
+            // Act
+            var result = await repo.DeleteAsync(costCentre.Id);
 
-            exception.Message.Should().Contain("budget(s)");
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsActive.Should().BeFalse();
+            var dbEntity = await context.CostCentres.FindAsync(costCentre.Id);
+            dbEntity.Should().NotBeNull();
+            dbEntity!.IsActive.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldDeactivateCostCentre_WhenTransactionsExist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteCostCentre_WithTransactions");
+
+            var team = new Team { Name = "Team Beta" };
+            context.Teams.Add(team);
+            await context.SaveChangesAsync();
+
+            var user = new User { Name = "Alice", Email = "alice@test.com", TeamId = team.Id };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var costCentre = new CostCentre { Name = "WithTransactions" };
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            context.PaymentManuals.Add(new PaymentManual
+            {
+                UserId = user.Id,
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                Amount = 200m,
+                PaymentDirection = PaymentDirection.Out,
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new CostCentreRepository(context, new BudgetRepository(context));
+
+            // Act
+            var result = await repo.DeleteAsync(costCentre.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsActive.Should().BeFalse();
+            var dbEntity = await context.CostCentres.FindAsync(costCentre.Id);
+            dbEntity.Should().NotBeNull();
+            dbEntity!.IsActive.Should().BeFalse();
         }
 
         [Fact]
