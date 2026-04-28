@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
@@ -11,7 +11,7 @@ import { NavbarComponent } from '../../navbar/navbar-component/navbar-component'
   templateUrl: './home-component.html',
   styleUrl: './home-component.scss',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
   private greetings = [
     'Willkommen zurück!',
     'Schön, dich wiederzusehen!',
