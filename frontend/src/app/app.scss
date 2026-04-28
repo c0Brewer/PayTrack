@@ -1,0 +1,20 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 400px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app-shell__sidebar {
+  width: 20vw;
+}
+
+.app-shell__content {
+  min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+}

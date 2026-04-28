@@ -27,7 +27,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GoogleAuthCallback_ReturnsJwtToken()
         {
             // Arrange
-            var googleCallback = new GoogleAuthCallbackDto(IdToken: "123");
+            var googleCallback = new GoogleAuthCallbackDto(Code: "123");
             const string jwtToken = "123";
 
             _factory.AuthServiceMock
@@ -50,7 +50,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GoogleAuthCallback_ReturnsInternalError_WhenServiceThrows()
         {
             // Arrange
-            var googleCallback = new GoogleAuthCallbackDto(IdToken: "123");
+            var googleCallback = new GoogleAuthCallbackDto(Code: "123");
 
             _factory.AuthServiceMock
                 .Setup(s => s.GoogleValidateCallback(googleCallback))

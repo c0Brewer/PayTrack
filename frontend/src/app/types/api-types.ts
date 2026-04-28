@@ -1124,7 +1124,7 @@ export interface components {
             affectedTeamNames: string[];
         };
         GoogleAuthCallbackDto: {
-            idToken: string;
+            code: string;
         };
         GoogleAuthResponseDto: {
             jwtToken: string;

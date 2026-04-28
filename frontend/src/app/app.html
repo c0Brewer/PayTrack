@@ -1,3 +1,15 @@
-<app-navbar-component />
-<router-outlet />
+@if (showNavbar()) {
+  <div class="app-shell">
+    <aside class="app-shell__sidebar">
+      <app-navbar-component />
+    </aside>
+
+    <main class="app-shell__content">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <router-outlet />
+}
+
 <app-notification-component />

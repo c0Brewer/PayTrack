@@ -4,6 +4,7 @@ import { BankAccountComponent } from './components/bankaccount/bank-account-comp
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
+import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
@@ -68,9 +69,12 @@ export const routes: Routes = [
     component: UnauthorizedComponent,
   },
   {
-    // Fallback. TODO: Replace with proper Component
-    path: '**',
+    path: '',
     canActivate: [authGuard],
-    component: TeamManagementComponent,
+    component: HomeComponent,
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];
