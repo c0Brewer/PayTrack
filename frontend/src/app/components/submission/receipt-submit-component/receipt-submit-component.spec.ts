@@ -77,7 +77,7 @@ describe('ReceiptSubmitComponent', () => {
   it('should reject oversized file', () => {
     component.ngOnInit();
 
-    const file = new File([new ArrayBuffer(11 * 1024 * 1024)], 'big.pdf', {
+    const file = new File([new ArrayBuffer(21 * 1024 * 1024)], 'big.pdf', {
       type: 'application/pdf',
     });
 
