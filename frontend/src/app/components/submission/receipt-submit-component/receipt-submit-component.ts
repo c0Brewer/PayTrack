@@ -14,7 +14,7 @@ import {
   PayoutType,
   BankAccount,
 } from '../../../types/exporter';
-import {BoxComponent} from '../../general/boxes/box-component/box-component';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-receipt-submit-component',
