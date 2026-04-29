@@ -14,11 +14,12 @@ import {
   PayoutType,
   BankAccount,
 } from '../../../types/exporter';
+import {BoxComponent} from '../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent],
   templateUrl: './receipt-submit-component.html',
   styleUrl: './receipt-submit-component.scss',
 })
@@ -138,22 +139,46 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
-    const maxSizeMb = 10;
+    this.setReceiptFile(file);
+  }
+
+  onFileDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) return;
+
+    this.setReceiptFile(file);
+  }
+
+  private setReceiptFile(file: File): void {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const maxSizeMb = 20;
+    const receiptControl = this.form.get('receipt')!;
+
+    receiptControl.markAsTouched();
 
     if (!allowedTypes.includes(file.type)) {
-      this.form.get('receipt')!.setErrors({ invalidType: true });
+      this.selectedFile = null;
+      this.selectedFileName = '';
+      receiptControl.setErrors({ invalidType: true });
       return;
     }
     if (file.size > maxSizeMb * 1024 * 1024) {
-      this.form.get('receipt')!.setErrors({ tooLarge: true });
+      this.selectedFile = null;
+      this.selectedFileName = '';
+      receiptControl.setErrors({ tooLarge: true });
       return;
     }
 
     this.selectedFile = file;
     this.selectedFileName = file.name;
-    this.form.get('receipt')!.setValue(file.name);
-    this.form.get('receipt')!.setErrors(null);
+    receiptControl.setValue(file.name);
+    receiptControl.setErrors(null);
   }
 
   getError(field: string): string | null {
@@ -165,8 +190,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     if (errors['min']) return `Minimum value is ${errors['min'].min}.`;
     if (errors['maxLength'])
       return `Maximum length is ${errors['maxLength'].requiredLength} characters.`;
-    if (errors['invalidType']) return 'Only PDF, JPG, PNG, or WEBP files are allowed.';
-    if (errors['tooLarge']) return 'File must be smaller than 10 MB.';
+    if (errors['invalidType']) return 'Only PDF, JPG, or PNG files are allowed.';
+    if (errors['tooLarge']) return 'File must be smaller than 20 MB.';
     return 'Invalid value.';
   }
 
