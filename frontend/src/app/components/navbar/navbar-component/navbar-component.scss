@@ -1,5 +1,12 @@
 @use 'variables' as v;
 
+.lower-nav button:hover{
+  cursor: pointer;
+  background-color: rgb(129 122 122 / 0.29);
+}
+
+
+
 .sidebar {
   position: fixed;
   background: v.$TUR-primary-black;
@@ -134,7 +141,17 @@
     flex-direction: column;
     gap: v.$size-s;
     height: auto;
-    padding: v.$size-s;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: v.$size-xs v.$size-s;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .sidebar__header {
+    align-items: center;
   }
 
   .sidebar__brand {
@@ -147,6 +164,7 @@
   .sidebar__title {
     margin-top: 0;
     font-size: v.$font-l;
+    white-space: nowrap;
   }
 
   .sidebar__logo img {
@@ -165,6 +183,7 @@
 
   .sidebar__menu.sidebar__menu--open {
     display: flex;
+    padding-top: v.$size-xs;
   }
 
   .sidebar__links {
@@ -172,10 +191,13 @@
     align-items: stretch;
     flex: initial;
     flex-direction: column;
+    gap: v.$size-xxs;
+    margin-bottom: v.$size-s;
   }
 
   .sidebar__admin {
-    margin-top: v.$size-s;
+    margin-bottom: v.$size-s;
+    margin-top: 0;
   }
 
   .lower-nav {
@@ -183,7 +205,23 @@
     margin-top: v.$size-s;
   }
 
+  .sidebar__links a,
+  .sidebar__admin a,
+  .sidebar__settings,
+  .sidebar__logout {
+    display: flex;
+    justify-content: flex-start;
+    min-height: 2.75rem;
+    padding: v.$size-xs v.$size-s;
+    width: 100%;
+  }
+
+  .sidebar__settings,
+  .sidebar__logout {
+    border: 0;
+  }
+
   .sidebar__logo img{
-    width:75%
+    width: 3rem;
   }
 }
