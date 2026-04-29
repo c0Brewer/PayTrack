@@ -39,7 +39,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
           ><span class="material-symbols-outlined">description</span>
-          Meine Rechnungen
+          My Invoices
         </a>
         <a
           routerLink="/submit"
@@ -47,7 +47,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
           ><span class="material-symbols-outlined">upload_file</span>
-          Rechnungen einreichen
+          Submit An Invoice
         </a>
       </div>
 
@@ -59,7 +59,7 @@
           @if (user?.role === role.ADMIN) {
             <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
               <span class="material-symbols-outlined">manage_accounts</span>
-              Benutzerverwaltung</a
+              User Management</a
             >
           }
           @if (user?.role === role.ADMIN) {
@@ -73,10 +73,10 @@
 
       <div class="lower-nav">
         <button class="sidebar__settings" (click)="settings()">
-          <span class="material-symbols-outlined">settings</span> Einstellungen
+          <span class="material-symbols-outlined">settings</span> Settings
         </button>
         <button class="sidebar__logout" (click)="logout()">
-          <span class="material-symbols-outlined">logout</span> Abmelden
+          <span class="material-symbols-outlined">logout</span> Sign Out
         </button>
       </div>
     </div>
