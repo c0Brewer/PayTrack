@@ -39,6 +39,7 @@ export class NavbarComponent {
   }
 
   settings(): void {
+    this.closeMobileMenu();
     this.router.navigate(['bankaccount']);
   }
 }
