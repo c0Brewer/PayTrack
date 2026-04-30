@@ -1,0 +1,50 @@
+<div class="toolbar">
+  <input
+    type="text"
+    placeholder="Invoice number..."
+    (input)="onInvoiceNumberChange($event)"
+  />
+
+ <input
+    type="text"
+    placeholder="Purpose of payment..."
+    (input)="onPurposeChange($event)"
+  />
+
+  <select (change)="onStatusChange($event)">
+    <option value="">All statuses</option>
+
+    @for (status of transactionStatusOptions; track status) {
+        <option [value]="status">
+          {{ TransactionStatusLabels[status] }}
+        </option>
+      }
+  </select>
+
+  <select (change)="onTeamChange($event)">
+    <option value="">All teams</option>
+    @for (team of teams; track team.id) {
+      <option [value]="team.id">{{ team.name }}</option>
+    }
+  </select>
+
+  <select (change)="onPayoutTypeChange($event)">
+    <option value="">All Payout Types</option>
+
+    @for (type of payoutTypeOptions; track type) {
+        <option [value]="type">
+          {{ PayoutTypeLabels[type] }}
+        </option>
+      }
+  </select>
+
+  <input type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
+  <input type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
+
+  <input type="date" title="From date" (input)="onMinDateChange($event)" />
+  <input type="date" title="To date" (input)="onMaxDateChange($event)" />
+
+  @if (showCostCentreFilter) {
+    <!-- Cost centre filter implemented in issue 15 -->
+  }
+</div>

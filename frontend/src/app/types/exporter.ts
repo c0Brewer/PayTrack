@@ -31,11 +31,19 @@ export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
+export type GetMyInvoicesOptions = paths['/api/v1/my-invoices']['get']['parameters']['query'];
+export type GetMyInvoiceByIdOptions =
+  paths['/api/v1/my-invoices/{id}']['get']['parameters']['query'];
 
 export enum PayoutType {
   User = 0,
   External = 1,
 }
+
+export const PayoutTypeLabels: Record<PayoutType, string> = {
+  [PayoutType.User]: 'User',
+  [PayoutType.External]: 'External',
+};
 
 // Roles
 export enum Role {
@@ -43,6 +51,22 @@ export enum Role {
   TEAM_LEAD = 1,
   ADMIN = 2,
 }
+// TransactionStatus
+export enum TransactionStatus {
+  Submitted = 0,
+  ChangesRequested = 1,
+  Approved = 2,
+  Paid = 3,
+  Declined = 4,
+}
+
+export const TransactionStatusLabels: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'Submitted',
+  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.Approved]: 'Approved',
+  [TransactionStatus.Paid]: 'Paid',
+  [TransactionStatus.Declined]: 'Declined',
+};
 
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];

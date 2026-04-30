@@ -4,6 +4,7 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreatePaymentRequestByUserDto,
+  GetMyInvoicesOptions,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
   PaginatedPaymentRequestByUserDto,
@@ -132,4 +133,38 @@ export class PaymentRequestByUserService {
   //
   //   return from(promise);
   // }
+
+  public getMyInvoices(
+    queryOptions: GetMyInvoicesOptions,
+  ): Observable<PaginatedPaymentRequestByUserDto> {
+    const promise = client
+      .GET('/api/v1/my-invoices', {
+        params: {
+          query: queryOptions,
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public downloadMyReceipt(id: number): Observable<Blob> {
+    // TODO: Inject url
+    const promise = fetch(`http://localhost:5154/api/v1/my-invoices/${id}/receipt`, {
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.blob();
+    });
+
+    return from(promise);
+  }
 }
