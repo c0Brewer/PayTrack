@@ -167,7 +167,10 @@
       <div class="form-actions">
         <button type="submit" class="btn" [disabled]="isSubmitting">
           @if (!isSubmitting) {
-            <span>Submit Invoice</span>
+            <span class="submit-button__content">
+              <span class="material-symbols-outlined">check_circle</span>
+              Submit Invoice
+            </span>
           }
           @if (isSubmitting) {
             <span>Submitting…</span>

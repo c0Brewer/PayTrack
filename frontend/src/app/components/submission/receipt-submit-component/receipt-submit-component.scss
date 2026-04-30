@@ -32,6 +32,18 @@
   }
 }
 
+.submit-button__content {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+  line-height: 1;
+}
+
+.submit-button__content .material-symbols-outlined {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
 .input-wrapper{
   input,
   select,
@@ -263,5 +275,4 @@
     grid-template-columns: 1fr;
   }
 }
-
 
