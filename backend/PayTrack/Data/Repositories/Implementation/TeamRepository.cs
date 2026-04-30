@@ -21,6 +21,11 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<Team> AddAsync(Team team)
         {
+            if (await this.context.Teams.AnyAsync(t => t.Name == team.Name))
+            {
+                throw new InvalidStateException($"A team with the name '{team.Name}' already exists.");
+            }
+
             this.context.Teams.Add(team);
             var res = await this.context.SaveChangesAsync();
 
@@ -173,6 +178,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (name is not null && team.Name != name)
             {
+                var duplicateNameExists = await this.context.Teams.AnyAsync(t => t.Id != id && t.Name == name);
+                if (duplicateNameExists)
+                {
+                    throw new InvalidStateException($"A team with the name '{name}' already exists.");
+                }
+
                 team.Name = name;
                 hasChanges = true;
             }
