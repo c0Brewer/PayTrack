@@ -141,8 +141,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("Team1");
-            result.Members.Should().BeNull();
-            result.Budgets.Should().BeNull();
+            result.Members.Should().BeEmpty();
+            result.Budgets.Should().BeEmpty();
         }
 
         [Fact]
@@ -182,8 +182,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result!.Members.Should().NotBeNull();
             result.Members.Should().ContainSingle();
-            result.Members![0].Email.Should().Be("alice@example.com");
-            result.Budgets.Should().BeNull();
+            result.Members[0].Email.Should().Be("alice@example.com");
+            result.Budgets.Should().BeEmpty();
         }
 
         [Fact]
@@ -224,9 +224,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result!.Budgets.Should().NotBeNull();
             result.Budgets.Should().ContainSingle();
-            result.Budgets![0].CostCentreId.Should().Be(12);
+            result.Budgets[0].CostCentreId.Should().Be(12);
             result.Budgets[0].TargetAmount.Should().Be(2500m);
-            result.Members.Should().BeNull();
+            result.Members.Should().BeEmpty();
         }
 
         [Fact]
@@ -251,11 +251,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsOkWithCreatedTeam()
         {
             // Arrange
-            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color");
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "#112233");
             var createdTeam = new Team { Id = 1, Name = "New Team" };
 
             _factory.TeamServiceMock
-                .Setup(s => s.CreateTeamAsync(requestDto.name, requestDto.description, requestDto.displayColor))
+                .Setup(s => s.CreateTeamAsync(requestDto.Name, requestDto.Description, requestDto.DisplayColor))
                 .ReturnsAsync(createdTeam);
 
             var client = _factory.CreateClient();
@@ -269,8 +269,27 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("New Team");
-            result.Members.Should().BeNull();
-            result.Budgets.Should().BeNull();
+            result.Members.Should().BeEmpty();
+            result.Budgets.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task CreateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
+        {
+            // Arrange
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color");
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/team", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _factory.TeamServiceMock.Verify(
+                s => s.CreateTeamAsync(requestDto.Name, requestDto.Description, requestDto.DisplayColor),
+                Times.Never);
         }
 
         [Fact]

@@ -41,6 +41,22 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task AddAsync_ShouldThrowInvalidStateException_WhenTeamNameAlreadyExists()
+        {
+            await using var context = GetInMemoryDbContext("AddTeamDuplicateName");
+            context.Teams.Add(new Team { Name = "Finance" });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            var act = async () => await repo.AddAsync(new Team { Name = "Finance" });
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("A team with the name 'Finance' already exists.");
+        }
+
+        [Fact]
         public async Task GetByIdAsync_ShouldReturnTeam_WhenExists()
         {
             // Arrange
@@ -549,6 +565,25 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Assert
             Assert.Contains("teams", exception.Message);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldThrowInvalidStateException_WhenAnotherTeamAlreadyUsesTheName()
+        {
+            await using var context = GetInMemoryDbContext("UpdateTeamDuplicateName");
+            context.Teams.AddRange(
+                new Team { Name = "Finance" },
+                new Team { Name = "Platform" });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+            var teamToRename = await context.Teams.SingleAsync(t => t.Name == "Platform");
+
+            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("A team with the name 'Finance' already exists.");
         }
     }
 }
