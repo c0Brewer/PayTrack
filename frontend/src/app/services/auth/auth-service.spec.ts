@@ -106,6 +106,8 @@ describe('AuthService', () => {
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({
@@ -131,6 +133,8 @@ describe('AuthService', () => {
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({
@@ -168,6 +172,8 @@ describe('AuthService', () => {
       role: Role.REGULAR_USER,
       profilePictureUrl: '',
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     };
 
     vi.spyOn(client, 'GET').mockResolvedValue({
@@ -219,9 +225,12 @@ describe('AuthService', () => {
     delete (globalThis.window as any).google;
     const scriptAppendSpy = vi.spyOn(document.body, 'appendChild');
 
-    await service.loadGoogleScript();
-
+    const loadPromise = service.loadGoogleScript();
     const script = scriptAppendSpy.mock.calls[0][0] as HTMLScriptElement;
+    script.onload?.(new Event('load'));
+
+    await loadPromise;
+
     expect(script.src).toContain('https://accounts.google.com/gsi/client');
   });
 
@@ -233,5 +242,68 @@ describe('AuthService', () => {
     await service.loadGoogleScript();
 
     expect(scriptAppendSpy).not.toHaveBeenCalled();
+  });
+
+  it('needsBankInformation should return true only if user has neither bank info nor skip flag', () => {
+    expect(
+      service.needsBankInformation({
+        id: 1,
+        name: 'name',
+        email: 'email',
+        isActive: true,
+        team: { id: -1, name: '123' },
+        role: Role.REGULAR_USER,
+        profilePictureUrl: '',
+        hasBankInformation: false,
+        bankInformationSkipped: false,
+        bankAccounts: [],
+      }),
+    ).toBe(true);
+
+    expect(
+      service.needsBankInformation({
+        id: 1,
+        name: 'name',
+        email: 'email',
+        isActive: true,
+        team: { id: -1, name: '123' },
+        role: Role.REGULAR_USER,
+        profilePictureUrl: '',
+        hasBankInformation: true,
+        bankInformationSkipped: false,
+        bankAccounts: [],
+      }),
+    ).toBe(false);
+
+    expect(service.needsBankInformation(null)).toBe(false);
+  });
+
+  it('skipBankInformation should call backend and update current user', async () => {
+    const currentUserApiResponse: UserDto = {
+      id: 123,
+      name: 'name',
+      email: 'email',
+      isActive: true,
+      team: { id: -1, name: '123' },
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+      hasBankInformation: false,
+      bankInformationSkipped: true,
+      bankAccounts: [],
+    };
+
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: currentUserApiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await service.skipBankInformation();
+
+    expect(client.POST).toHaveBeenCalledWith('/api/v1/bankaccount/onboarding/skip', {
+      params: {},
+    });
+    expect(result).toEqual(currentUserApiResponse);
+    expect(await firstValueFrom(service.getCurrentUser())).toEqual(currentUserApiResponse);
   });
 });

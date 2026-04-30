@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.BankAccount;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -184,6 +185,84 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
             this.factory.BankAccountServiceMock.Verify(service => service.DeleteBankAccountAsync(user.Id, bankAccountId), Times.Once);
         }
+
+        [Fact]
+        public async Task CreateBankAccountOnboarding_ReturnsUpdatedUser()
+        {
+            var user = new User { Id = 2, Name = "Test", Email = "test2@test.com", IsActive = true };
+            var createDto = new CreateBankAccountRequestDto("Max", "AT611904300234573203", "BKAUATWW");
+            var updatedUser = new User
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                IsActive = true,
+                BankAccounts =
+                [
+                    new BankAccount
+                    {
+                        Id = 15,
+                        UserId = user.Id,
+                        AccountHolder = createDto.AccountHolder,
+                        Iban = createDto.Iban,
+                        Bic = createDto.Bic,
+                    },
+                ],
+            };
+
+            this.factory.AuthServiceMock
+                .Setup(service => service.GetCurrentUser())
+                .ReturnsAsync(user);
+            this.factory.BankAccountServiceMock
+                .Setup(service => service.CreateBankAccountOnboardingAsync(user.Id, createDto.AccountHolder, createDto.Iban, createDto.Bic))
+                .ReturnsAsync(updatedUser.BankAccounts.Single());
+            this.factory.UserServiceMock
+                .Setup(service => service.GetUserByIdAsync(
+                    user.Id,
+                    It.Is<GetUserQueryById>(query => query.IncludeBankAccounts == true && query.IncludeTeam == true)))
+                .ReturnsAsync(updatedUser);
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var response = await client.PostAsJsonAsync("api/v1/bankaccount/onboarding", createDto);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<UserDto>();
+            result.Should().NotBeNull();
+            result.HasBankInformation.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SkipCurrentUserBankInformation_ReturnsUpdatedUser()
+        {
+            var user = new User { Id = 4, Name = "Test", Email = "test4@test.com", IsActive = true };
+            var updatedUser = new User
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                IsActive = true,
+                BankInformationSkipped = true,
+            };
+
+            this.factory.AuthServiceMock
+                .Setup(service => service.GetCurrentUser())
+                .ReturnsAsync(user);
+            this.factory.UserServiceMock
+                .Setup(service => service.UpdateBankInformationSkippedAsync(user.Id, true))
+                .ReturnsAsync(updatedUser);
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var response = await client.PostAsync("api/v1/bankaccount/onboarding/skip", null);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<UserDto>();
+            result.Should().NotBeNull();
+            result.BankInformationSkipped.Should().BeTrue();
+        }
     }
 
     public class BankAccountApiFactory : WebApplicationFactory<Program>
@@ -191,6 +270,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public Mock<IAuthService> AuthServiceMock { get; } = new();
 
         public Mock<IBankAccountService> BankAccountServiceMock { get; } = new();
+
+        public Mock<IUserService> UserServiceMock { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -227,8 +308,16 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     services.Remove(bankAccountServiceDescriptor);
                 }
 
+                var userServiceDescriptor = services.SingleOrDefault(
+                    descriptor => descriptor.ServiceType == typeof(IUserService));
+                if (userServiceDescriptor is not null)
+                {
+                    services.Remove(userServiceDescriptor);
+                }
+
                 services.AddSingleton(this.AuthServiceMock.Object);
                 services.AddSingleton(this.BankAccountServiceMock.Object);
+                services.AddSingleton(this.UserServiceMock.Object);
             });
         }
     }

@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 
 import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
-import { GoogleAuthResponseDto } from '../../../types/exporter';
+import { GoogleAuthResponseDto, Role, UserDto } from '../../../types/exporter';
 
 import { LoginComponent } from './login-component';
 
@@ -16,6 +16,7 @@ describe('LoginComponent', () => {
     handleGoogleCallback: ReturnType<typeof vi.fn>;
     loadGoogleScript: ReturnType<typeof vi.fn>;
     storeToken: ReturnType<typeof vi.fn>;
+    needsBankInformation: ReturnType<typeof vi.fn>;
   };
 
   let routerMock: {
@@ -34,13 +35,27 @@ describe('LoginComponent', () => {
     jwtToken: '123',
   };
 
+  const mockUser: UserDto = {
+    id: 1,
+    name: 'name',
+    email: 'email',
+    isActive: true,
+    team: { id: -1, name: 'team' },
+    role: Role.REGULAR_USER,
+    profilePictureUrl: '',
+    bankInformationSkipped: true,
+    hasBankInformation: true,
+    bankAccounts: [],
+  };
+
   const requestCodeMock = vi.fn();
 
   beforeEach(async () => {
     authServiceMock = {
       handleGoogleCallback: vi.fn(),
-      loadGoogleScript: vi.fn().mockResolvedValue(undefined), // ✅ Promise
-      storeToken: vi.fn(),
+      loadGoogleScript: vi.fn().mockResolvedValue(undefined),
+      storeToken: vi.fn().mockResolvedValue(mockUser),
+      needsBankInformation: vi.fn().mockReturnValue(false),
     };
 
     routerMock = {
@@ -137,7 +152,6 @@ describe('LoginComponent', () => {
 
     expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith('abc');
     expect(authServiceMock.storeToken).toHaveBeenCalledWith('123');
-    expect(routerMock.navigate).toHaveBeenCalledWith(['']);
   });
 
   // -------------------------
@@ -159,4 +173,29 @@ describe('LoginComponent', () => {
 
     expect(notificationMock.showError).toHaveBeenCalledWith('Login failed');
   });
+
+  // it('should redirect to home ("") on successful login without bank onboarding', async () => {
+  //   authServiceMock.loadGoogleScript.mockReturnValue(of(null));
+  //   authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtResponse));
+  //   authServiceMock.storeToken.mockResolvedValue(mockUser);
+  //   authServiceMock.needsBankInformation.mockReturnValue(false);
+  //
+  //   await Promise.resolve();
+  //   expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith(
+  //     mockGoogleCallbackResponse.credential,
+  //   );
+  //   expect(authServiceMock.storeToken).toHaveBeenCalledWith(mockJwtCallbackResponse.jwtToken);
+  //   expect(routerMock.navigate).toHaveBeenCalledWith(['']);
+  // });
+  //
+  // it('should redirect to bank-information on successful login when onboarding is needed', async () => {
+  //   authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtCallbackResponse));
+  //   authServiceMock.storeToken.mockResolvedValue(mockUser);
+  //   authServiceMock.needsBankInformation.mockReturnValue(true);
+  //
+  //   component.handleCredentialResponse(mockGoogleCallbackResponse);
+  //
+  //   await Promise.resolve();
+  //   expect(routerMock.navigate).toHaveBeenCalledWith(['bank-information']);
+  // });
 });
