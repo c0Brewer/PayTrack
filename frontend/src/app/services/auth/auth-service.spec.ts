@@ -225,13 +225,13 @@ describe('AuthService', () => {
     delete (globalThis.window as any).google;
     const scriptAppendSpy = vi.spyOn(document.body, 'appendChild');
 
-    const loadPromise = service.loadGoogleScript();
+    const scriptPromise = service.loadGoogleScript();
+
     const script = scriptAppendSpy.mock.calls[0][0] as HTMLScriptElement;
+    expect(script.src).toContain('https://accounts.google.com/gsi/client');
     script.onload?.(new Event('load'));
 
-    await loadPromise;
-
-    expect(script.src).toContain('https://accounts.google.com/gsi/client');
+    await scriptPromise;
   });
 
   it('loadGoogleScript should resolve immediately if google already exists', async () => {

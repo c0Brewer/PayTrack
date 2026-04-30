@@ -2,6 +2,7 @@
 
 :host {
   display: block;
+  height: 100%;
 }
 
 .box {
@@ -35,17 +36,20 @@
 }
 
 .box__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   min-width: 0;
 }
 
 .box--small {
-  min-height: 15rem;
+  min-height: 10rem;
 }
 
 .box--medium {
-  min-height: 30rem;
+  min-height: 20rem;
 }
 
 .box--large {
-  min-height: 15rem;
+  min-height: 10rem;
 }

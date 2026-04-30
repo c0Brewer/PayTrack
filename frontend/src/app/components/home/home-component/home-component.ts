@@ -10,11 +10,7 @@ import { BoxComponent } from '../../general/boxes/box-component/box-component';
   styleUrl: './home-component.scss',
 })
 export class HomeComponent {
-  private greetings = [
-    'Willkommen zurück!',
-    'Schön, dich wiederzusehen!',
-    'Schön, dass du wieder da bist!',
-  ];
+  private greetings = ['Welcome back!', 'Nice to see you again!', 'Great to have you back!'];
 
   greeting = this.getRandomGreeting();
 
