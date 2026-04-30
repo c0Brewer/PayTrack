@@ -72,9 +72,15 @@
       }
 
       <div class="lower-nav">
-        <button class="sidebar__settings" (click)="settings()">
+        <a
+          class="sidebar__settings"
+          routerLink="/bankaccount"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        >
           <span class="material-symbols-outlined">settings</span> Settings
-        </button>
+        </a>
         <button class="sidebar__logout" (click)="logout()">
           <span class="material-symbols-outlined">logout</span> Sign Out
         </button>
