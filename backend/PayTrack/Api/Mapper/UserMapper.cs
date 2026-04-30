@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.BankAccount;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
@@ -27,11 +26,9 @@ namespace PayTrack.Api.Mapper
                 teamDto = TeamMapper.ToDto(user.Team);
             }
 
-            List<BankAccountDto> bankAccountsDto = [];
-            if (user.BankAccounts != null)
-            {
-                bankAccountsDto = BankAccountMapper.ListToDto([.. user.BankAccounts]);
-            }
+            var bankAccounts = user.BankAccounts
+                .Select(BankAccountMapper.ToDto)
+                .ToList();
 
             return new UserDto(
                 user.Id,
@@ -41,7 +38,9 @@ namespace PayTrack.Api.Mapper
                 user.Role,
                 user.IsActive,
                 teamDto,
-                bankAccountsDto);
+                user.BankInformationSkipped,
+                bankAccounts.Count > 0,
+                bankAccounts);
         }
 
         /// <summary>

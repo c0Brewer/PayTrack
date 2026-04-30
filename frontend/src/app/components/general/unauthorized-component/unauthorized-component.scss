@@ -1,5 +1,92 @@
 @use 'variables' as v;
 
-.warn-text {
-  color: v.$warning-light;
+.unauthorized-page {
+  align-items: center;
+  background: v.$TUR-secondary-background;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.unauthorized-panel {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 32rem;
+  text-align: center;
+  width: 100%;
+}
+
+.unauthorized-icon {
+  align-items: center;
+  background: v.$TUR-primary-orange;
+  border-radius: 50%;
+  color: white;
+  display: inline-flex;
+  height: 6rem;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+  width: 6rem;
+}
+
+.unauthorized-icon .material-symbols-outlined {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+h1 {
+  color: #111827;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.unauthorized-message {
+  color: #6b7280;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 0 0 2rem;
+}
+
+.unauthorized-note {
+  background: white;
+  border: 1px solid #dfe3ea;
+  border-radius: 0.75rem;
+  color: #5f6878;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  padding: 1.6rem 2rem;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .unauthorized-page {
+    padding: 1.5rem;
+  }
+
+  .unauthorized-icon {
+    height: 5rem;
+    margin-bottom: 1.4rem;
+    width: 5rem;
+  }
+
+  .unauthorized-icon .material-symbols-outlined {
+    font-size: 2.5rem;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  .unauthorized-message {
+    font-size: 1.05rem;
+  }
+
+  .unauthorized-note {
+    padding: 1.25rem 1.4rem;
+  }
 }

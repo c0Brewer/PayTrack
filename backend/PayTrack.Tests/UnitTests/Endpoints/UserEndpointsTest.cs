@@ -130,6 +130,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.IsActive.Should().BeFalse();
             result.Role.Should().Be(Role.Admin);
         }
+
     }
 
     /// <summary>

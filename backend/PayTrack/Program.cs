@@ -120,6 +120,7 @@ apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
+apiV1.MapMyInvoicesEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
 

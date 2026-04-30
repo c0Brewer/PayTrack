@@ -27,6 +27,8 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/", BankAccountHandler.GetBankAccountsAsync);
             group.MapPost("/", BankAccountHandler.CreateBankAccountAsync);
+            group.MapPost("/onboarding", BankAccountHandler.CreateBankAccountOnboardingAsync);
+            group.MapPost("/onboarding/skip", BankAccountHandler.SkipCurrentUserBankInformationAsync);
             group.MapPut("/{id:int}", BankAccountHandler.UpdateBankAccountAsync);
             group.MapDelete("/{id:int}", BankAccountHandler.DeleteBankAccountAsync);
         }

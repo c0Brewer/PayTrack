@@ -15,6 +15,6 @@ export class App {
   constructor(private readonly router: Router) {}
 
   protected showNavbar(): boolean {
-    return !this.router.url.startsWith('/login');
+    return !this.router.url.startsWith('/login') && !this.router.url.startsWith('/initial-setup');
   }
 }

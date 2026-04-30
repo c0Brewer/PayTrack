@@ -33,6 +33,8 @@ describe('UserListComponent', () => {
       role: Role.REGULAR_USER,
       profilePictureUrl: 'pic.png',
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     };
 
     const spy = vi.spyOn(component.toggleActive, 'emit');
@@ -53,6 +55,8 @@ describe('UserListComponent', () => {
       role: Role.TEAM_LEAD,
       profilePictureUrl: 'pic2.png',
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     };
 
     const spy = vi.spyOn(component.openEditUser, 'emit');
@@ -81,6 +85,8 @@ describe('UserListComponent', () => {
         role: Role.ADMIN,
         profilePictureUrl: '',
         bankAccounts: [],
+        bankInformationSkipped: true,
+        hasBankInformation: true,
       },
       {
         id: 2,
@@ -91,6 +97,8 @@ describe('UserListComponent', () => {
         role: Role.TEAM_LEAD,
         profilePictureUrl: '',
         bankAccounts: [],
+        bankInformationSkipped: true,
+        hasBankInformation: true,
       },
     ];
 

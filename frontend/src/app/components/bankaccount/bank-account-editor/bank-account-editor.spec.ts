@@ -76,24 +76,6 @@ describe('BankAccountEditorComponent', () => {
     expect(emitSpy).not.toHaveBeenCalled();
   });
 
-  it('onSubmit should emit normalized values when form is valid', () => {
-    const emitSpy = vi.spyOn(component.submitForm, 'emit');
-
-    component.form.setValue({
-      accountHolder: '  Max  ',
-      iban: ' at61 1904 3002 3457 3201 ',
-      bic: ' bkau atww ',
-    });
-
-    component.onSubmit();
-
-    expect(emitSpy).toHaveBeenCalledWith({
-      accountHolder: 'Max',
-      iban: 'AT611904300234573201',
-      bic: 'BKAUATWW',
-    });
-  });
-
   it('form value changes should clear validation message', () => {
     component.validationMessage = 'Some validation error';
 

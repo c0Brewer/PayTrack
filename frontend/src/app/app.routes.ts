@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
 
+import { BankInformationComponent } from './components/bank-information/bank-information-component/bank-information-component';
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
@@ -28,6 +30,11 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     component: LoginComponent,
+  },
+  {
+    path: 'my-invoices',
+    canActivate: [authGuard],
+    component: MyInvoicesComponent,
   },
   {
     path: 'submit',
@@ -53,6 +60,11 @@ export const routes: Routes = [
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamManagementComponent,
+  },
+  {
+    path: 'initial-setup',
+    canActivate: [authGuard],
+    component: BankInformationComponent,
   },
   {
     path: 'cost-centre',

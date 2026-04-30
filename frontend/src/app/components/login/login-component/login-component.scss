@@ -50,6 +50,10 @@
       font-size: 1.2rem;
       font-weight: 500;
     }
+
+    &:hover {
+      transform: scale(1.01);
+    }
   }
 
   .google-custom-btn img {

@@ -1,0 +1,103 @@
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+
+import { NotificationService } from '../../../services/notification/notification-service';
+import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
+import { GetMyInvoicesOptions, PaymentRequestByUserDto } from '../../../types/exporter';
+import { PaginationComponent } from '../../general/pagination-component/pagination-component';
+import { InvoiceFilterComponent } from '../invoice-filter-component/invoice-filter-component';
+import { InvoiceListComponent } from '../invoice-list-component/invoice-list-component';
+
+@Component({
+  selector: 'app-my-invoices-component',
+  imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent],
+  templateUrl: './my-invoices-component.html',
+  styleUrl: './my-invoices-component.scss',
+})
+export class MyInvoicesComponent implements OnInit {
+  constructor(
+    private readonly paymentRequestService: PaymentRequestByUserService,
+    private readonly notificationService: NotificationService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
+
+  invoices: PaymentRequestByUserDto[] = [];
+
+  limit: number = 10;
+  page: number = 0;
+  totalCount: number = 0;
+  hasNext: boolean = false;
+  hasPrev: boolean = false;
+
+  filterOptions: GetMyInvoicesOptions = {
+    IncludeTeam: true,
+  };
+
+  ngOnInit(): void {
+    this.loadInvoices();
+  }
+
+  loadInvoices(): void {
+    const query: GetMyInvoicesOptions = {
+      ...this.filterOptions,
+      IncludeTeam: true,
+      Limit: this.limit,
+      Offset: this.page * this.limit,
+    };
+
+    this.paymentRequestService.getMyInvoices(query).subscribe({
+      next: (data) => {
+        if (data?.items) {
+          this.invoices = data.items;
+          this.totalCount = data.totalCount;
+          this.hasNext = data.hasNext ?? false;
+          this.hasPrev = data.hasPrevious ?? false;
+          this.cdr.markForCheck();
+        } else {
+          this.notificationService.showError('Error while loading invoices');
+        }
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
+  }
+
+  updateFilterOptions(options: GetMyInvoicesOptions): void {
+    this.filterOptions = { ...this.filterOptions, ...options };
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onOpenDetail(invoice: PaymentRequestByUserDto): void {
+    this.paymentRequestService.downloadMyReceipt(invoice.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `receipt-${invoice.invoiceNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
+  }
+
+  getTotalPages(): number {
+    const pages = Math.ceil(this.totalCount / this.limit);
+    return pages > 0 ? pages : 1;
+  }
+
+  nextPage(): void {
+    this.page++;
+    this.loadInvoices();
+  }
+
+  previousPage(): void {
+    if (this.page > 0) {
+      this.page--;
+      this.loadInvoices();
+    }
+  }
+}
