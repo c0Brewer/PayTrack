@@ -12,11 +12,12 @@ namespace PayTrack.Application.Dto.Team
     public sealed record class CreateTeamRequestDto(
         [property: Required]
         [property: MinLength(3)]
-        string name,
+        string Name,
 
-        [property: MinLength(3)]
-        string description,
+        [property: MinLength(2)]
+        string? Description,
 
-        [property: MinLength(3)]
-        string displayColor);
+        [property: MaxLength(7)]
+        [property: RegularExpression("^#[0-9A-Fa-f]{6}$")]
+        string? DisplayColor);
 }
