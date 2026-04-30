@@ -40,9 +40,27 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<DeleteTeamImpactDto?> GetDeleteTeamImpactAsync(int id)
+        {
+            return await this.repo.GetDeleteTeamImpactAsync(id);
+        }
+
+        /// <inheritdoc/>
         public async Task<(List<Team> team, int totalCount)> GetTeamsAsync(GetTeamQuery? query = null)
         {
             return await this.repo.GetAllAsync(query);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Team> UpdateTeamAsync(int id, string? name, string? description, string? displayColor)
+        {
+            return await this.repo.UpdateAsync(id, name, description, displayColor);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Team> DeleteTeamAsync(int id)
+        {
+            return await this.repo.DeleteAsync(id);
         }
     }
 }

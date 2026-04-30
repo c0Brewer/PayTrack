@@ -66,5 +66,58 @@ namespace PayTrack.Api.Handler
 
             return TypedResults.Ok(createdTeamDto);
         }
+
+        /// <summary>
+        /// Updates a Team.
+        /// </summary>
+        /// <param name="id">Id of the Team to update.</param>
+        /// <param name="updateTeamDto">request for team creation.</param>
+        /// <param name="teamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UpdateTeamAsync(
+            [FromRoute] int id,
+            [FromBody] UpdateTeamDto updateTeamDto,
+            ITeamService teamService)
+        {
+            var updatedTeam = await teamService.UpdateTeamAsync(
+                id,
+                updateTeamDto.Name,
+                updateTeamDto.Description,
+                updateTeamDto.DisplayColor);
+            var updatedTeamDto = TeamMapper.ToDto(updatedTeam);
+            return TypedResults.Ok(updatedTeamDto);
+        }
+
+        /// <summary>
+        /// Deletes a Team.
+        /// </summary>
+        /// <param name="id">Id of the Team to delete.</param>
+        /// <param name="teamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeleteTeamAsync(
+            [FromRoute] int id,
+            ITeamService teamService)
+        {
+            var deletedTeam = await teamService.DeleteTeamAsync(id);
+
+            var deletedTeamDto = TeamMapper.ToDto(deletedTeam);
+
+            return TypedResults.Ok(deletedTeamDto);
+        }
+
+        /// <summary>
+        /// Returns the impact of deleting a Team by ID.
+        /// </summary>
+        /// <param name="id">Id of the Team to inspect.</param>
+        /// <param name="teamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<DeleteTeamImpactDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> GetDeleteTeamImpactAsync(
+            [FromRoute] int id,
+            ITeamService teamService)
+        {
+            var deleteImpact = await teamService.GetDeleteTeamImpactAsync(id) ?? throw new NotFoundException("Team could not be found");
+
+            return TypedResults.Ok(deleteImpact);
+        }
     }
 }

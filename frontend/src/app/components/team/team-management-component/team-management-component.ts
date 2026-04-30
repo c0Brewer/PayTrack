@@ -3,14 +3,21 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { TeamDto, GetTeamOptions } from '../../../types/exporter';
+import { TeamDto, GetTeamOptions, UpdateTeamDto } from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
+import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
 
 @Component({
   selector: 'app-team-management-component',
-  imports: [CommonModule, PaginationComponent, TeamFilterComponent, TeamListComponent],
+  imports: [
+    CommonModule,
+    PaginationComponent,
+    TeamFilterComponent,
+    TeamListComponent,
+    TeamEditModalComponent,
+  ],
   templateUrl: './team-management-component.html',
   styleUrl: './team-management-component.scss',
 })
@@ -115,5 +122,30 @@ export class TeamManagementComponent {
 
   openEditTeam(team: TeamDto): void {
     this.editingTeam = { ...team };
+  }
+
+  closeEdit(): void {
+    this.editingTeam = null;
+  }
+
+  saveTeam(team: TeamDto): void {
+    if (!team) return;
+
+    const updateRequest: UpdateTeamDto = {
+      name: team.name,
+      description: team.description,
+      displayColor: team.displayColor,
+    };
+
+    this.teamService.updateTeam(team.id, updateRequest).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Successfully updated team ' + team.name);
+        this.loadTeams();
+        this.closeEdit();
+      },
+      error: (error: Error) => {
+        this.notificationService.showError('Could not update Team: ' + error);
+      },
+    });
   }
 }

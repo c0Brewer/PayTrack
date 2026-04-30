@@ -25,11 +25,17 @@ namespace PayTrack.Api.Endpoints
             var group = app
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
-                .RequireAuthorization();
+                .RequireAuthorization()
+                .RequireRole(Role.Admin); // Who is finance team user?
 
             group.MapGet("/", TeamHandler.GetTeamsAsync);
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
-            group.MapPost("/", TeamHandler.CreateTeamAsync).RequireRole(Role.Admin);
+            group.MapGet("/{id:int}/delete-impact", TeamHandler.GetDeleteTeamImpactAsync);
+            group.MapGet("/{id:int}/delete_impact", TeamHandler.GetDeleteTeamImpactAsync)
+                .ExcludeFromDescription();
+            group.MapPost("/", TeamHandler.CreateTeamAsync);
+            group.MapPut("/{id:int}", TeamHandler.UpdateTeamAsync);
+            group.MapDelete("/{id:int}", TeamHandler.DeleteTeamAsync);
         }
     }
 }

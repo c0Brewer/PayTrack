@@ -6,6 +6,7 @@ export type ProblemDetails = components['schemas']['ProblemDetails'];
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
 export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
+export type UpdateTeamDto = components['schemas']['UpdateTeamDto'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
