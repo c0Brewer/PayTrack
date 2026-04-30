@@ -1,0 +1,24 @@
+<div class="requests">
+  <h2>Requests</h2>
+
+  <app-invoice-filter-component
+    [showCostCentreFilter]="true"
+    (updateFilter)="updateFilterOptions($event)"
+  ></app-invoice-filter-component>
+
+  <app-invoice-list-component
+    [invoices]="invoices"
+    [showCostCentreColumn]="true"
+    [showUserNameColumn]="true"
+    (openDetail)="onOpenDetail($event)"
+  ></app-invoice-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

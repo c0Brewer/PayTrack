@@ -45,6 +45,11 @@
   <input type="date" title="To date" (input)="onMaxDateChange($event)" />
 
   @if (showCostCentreFilter) {
-    <!-- Cost centre filter implemented in issue 15 -->
+    <select (change)="onCostCentreChange($event)">
+      <option value="">All cost centres</option>
+      @for (cc of costCentres; track cc.id) {
+        <option [value]="cc.id">{{ cc.name }}</option>
+      }
+    </select>
   }
 </div>

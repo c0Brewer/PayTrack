@@ -68,6 +68,12 @@
               Cost Centre Mangement</a
             >
           }
+          @if (user?.role === role.ADMIN) {
+            <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+              <span class="material-symbols-outlined">description</span>
+              View Requests</a
+            >
+          }
         </div>
       }
 
