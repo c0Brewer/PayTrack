@@ -196,7 +196,26 @@
   font-size: 0.95rem;
   font-weight: 500;
   margin-bottom: 0.65rem;
-  width: auto;
+  width: 100%;
+}
+
+.payout-type__legend {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+
+  button{
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+    line-height: 1;
+    color: v.$TUR-primary-orange;
+    background-color: transparent;
+  }
+  button:hover{
+    cursor: pointer;
+    color: #b85402;
+  }
 }
 
 .payout-type__options {
@@ -275,4 +294,3 @@
     grid-template-columns: 1fr;
   }
 }
-

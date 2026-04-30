@@ -117,7 +117,18 @@
       <div class="col-12">
         <app-box-component title="Transaction" subtitle="Select the payout method and, if applicable, your bank account." size="large">
           <fieldset class="payout-type" [class.payout-type--invalid]="isInvalid('payoutType')">
-            <legend>Payout Type <span class="required">*</span></legend>
+            <legend class="payout-type__legend">
+              <span>Payout Type <span class="required">*</span></span>
+              <button
+                type="button"
+                class="btn"
+                id="manage-bank-accounts"
+                (click)="onManageBankAccountClick($event)"
+              >
+                <span class="material-symbols-outlined">settings</span>
+                Manage Bank Accounts
+              </button>
+            </legend>
             <div class="payout-type__options">
               <label
                 class="payout-type__option"

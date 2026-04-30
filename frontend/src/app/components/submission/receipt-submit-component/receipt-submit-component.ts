@@ -155,6 +155,12 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.setReceiptFile(file);
   }
 
+  onManageBankAccountClick(event: Event): void {
+    event.preventDefault();
+
+    alert('Coming Soon!');
+  }
+
   private setReceiptFile(file: File): void {
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     const maxSizeMb = 20;
@@ -252,4 +258,6 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
   }
+
+  protected readonly event = event;
 }

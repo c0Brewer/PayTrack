@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../services/notification/notification-service';
@@ -25,6 +26,10 @@ describe('ReceiptSubmitComponent', () => {
     showError: vi.fn(),
   };
 
+  const routerMock = {
+    navigate: vi.fn(),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
@@ -32,6 +37,7 @@ describe('ReceiptSubmitComponent', () => {
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
 
@@ -116,6 +122,17 @@ describe('ReceiptSubmitComponent', () => {
   it('should convert payout type correctly', () => {
     expect(component.toPayoutType(PayoutType.User)).toBe(PayoutType.User);
     expect(component.toPayoutType(999)).toBeNull();
+  });
+
+  it('should navigate to bank account management', () => {
+    const event = {
+      preventDefault: vi.fn(),
+    } as unknown as Event;
+
+    component.onManageBankAccountClick(event);
+
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    //TODO: add when actual settings exist expect(routerMock.navigate).toHaveBeenCalledWith(['/bankaccount']);
   });
 
   // -------------------------
