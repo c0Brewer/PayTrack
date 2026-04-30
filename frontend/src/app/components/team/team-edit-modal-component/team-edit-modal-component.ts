@@ -11,6 +11,8 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
   styleUrl: './team-edit-modal-component.scss',
 })
 export class TeamEditModalComponent implements OnChanges {
+  readonly defaultColor = '#2563eb';
+
   @Input() team: TeamDto = {
     id: -1,
     name: '',
@@ -28,6 +30,10 @@ export class TeamEditModalComponent implements OnChanges {
       // Deep clone to avoid mutating the original reference during editing.
       this.originalTeam = structuredClone(this.team);
     }
+  }
+
+  get selectedColor(): string {
+    return this.isHexColor(this.team.displayColor) ? this.team.displayColor : this.defaultColor;
   }
 
   hasTeamBeenChanged(): boolean {
@@ -49,7 +55,31 @@ export class TeamEditModalComponent implements OnChanges {
     this.saveEvent.emit(this.team);
   }
 
+  setDisplayColor(color: string): void {
+    const normalizedColor = this.normalizeHexColor(color);
+
+    if (!normalizedColor) {
+      return;
+    }
+
+    this.team.displayColor = normalizedColor;
+  }
+
   onClose(): void {
     this.closeEvent.emit();
+  }
+
+  private isHexColor(color: string | null | undefined): color is string {
+    return /^#[0-9a-f]{6}$/i.test(color ?? '');
+  }
+
+  private normalizeHexColor(color: string | null | undefined): string | null {
+    const trimmedColor = color?.trim() ?? '';
+
+    if (!this.isHexColor(trimmedColor)) {
+      return null;
+    }
+
+    return trimmedColor.toLowerCase();
   }
 }

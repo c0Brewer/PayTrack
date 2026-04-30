@@ -18,8 +18,23 @@
 
     <label>
       Color
-      <input [(ngModel)]="team.displayColor"/>
+      <div class="color-picker">
+        <input
+          type="color"
+          [ngModel]="selectedColor"
+          (ngModelChange)="setDisplayColor($event)"
+          aria-label="Choose team color"
+        />
+        <span class="color-value">{{ selectedColor }}</span>
+      </div>
     </label>
+
+    <div class="team-preview">
+      <span class="team-preview__label">Preview</span>
+      <span class="team-preview__badge" [style.background]="selectedColor">
+        {{ team.name || 'Team name' }}
+      </span>
+    </div>
 
     <div class="modal-actions">
       <button (click)="onClose()">Cancel</button>

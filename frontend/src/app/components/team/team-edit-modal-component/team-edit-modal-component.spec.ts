@@ -48,6 +48,22 @@ describe('TeamEditModalComponent', () => {
     expect(component.hasTeamBeenChanged()).toBe(false);
   });
 
+  it('selectedColor should fall back to the default color for invalid values', () => {
+    component.team.displayColor = 'blue';
+
+    expect(component.selectedColor).toBe(component.defaultColor);
+  });
+
+  it('setDisplayColor should only accept valid hex colors', () => {
+    component.team.displayColor = '#2563eb';
+
+    component.setDisplayColor('#dc2626');
+    expect(component.team.displayColor).toBe('#dc2626');
+
+    component.setDisplayColor('red');
+    expect(component.team.displayColor).toBe('#dc2626');
+  });
+
   it('onSave should emit saveEvent if team changed', () => {
     component.team.name = 'Platform';
     component.originalTeam = { ...component.team, name: 'Operations' };

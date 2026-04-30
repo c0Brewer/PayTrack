@@ -35,6 +35,46 @@ textarea {
   resize: vertical;
 }
 
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: v.$size-s;
+}
+
+input[type='color'] {
+  width: 3.5rem;
+  min-width: 3.5rem;
+  height: 2.5rem;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+.color-value {
+  font-family: monospace;
+  color: v.$text-muted;
+}
+
+.team-preview {
+  margin-bottom: v.$size-m;
+}
+
+.team-preview__label {
+  display: block;
+  margin-bottom: v.$size-xs;
+  font-size: v.$font-s;
+  color: v.$text-color;
+}
+
+.team-preview__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  color: v.$background-light;
+  font-weight: 600;
+}
+
 .modal-actions {
   margin-top: v.$size-l;
   display: flex;
