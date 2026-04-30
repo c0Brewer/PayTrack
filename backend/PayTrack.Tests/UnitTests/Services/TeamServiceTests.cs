@@ -26,18 +26,18 @@ namespace PayTrack.Tests.UnitTests.Services
             const string teamDescription = "My Description";
             const string teamColor = "My Color";
             var expectedTeam = new Team { Name = teamName, Description = teamDescription, DisplayColor = teamColor };
-            repoMock.Setup(r => r.AddAsync(It.IsAny<Team>()))
-                    .ReturnsAsync((Team t) => t);
+            repoMock.Setup(r => r.AddAsync(It.IsAny<Team>(), null))
+                    .ReturnsAsync((Team t, IList<CreateTeamBudgetEntryDto>? _) => t);
 
             // Act
-            var result = await service.CreateTeamAsync(teamName, teamDescription, teamColor);
+            var result = await service.CreateTeamAsync(teamName, teamDescription, teamColor, null);
 
             // Assert
             result.Should().NotBeNull();
             result.Name.Should().Be(teamName);
             result.Description.Should().Be(teamDescription);
             result.DisplayColor.Should().Be(teamColor);
-            repoMock.Verify(r => r.AddAsync(It.Is<Team>(t => t.Name == teamName)), Times.Once);
+            repoMock.Verify(r => r.AddAsync(It.Is<Team>(t => t.Name == teamName), null), Times.Once);
         }
 
         [Fact]
@@ -144,15 +144,15 @@ namespace PayTrack.Tests.UnitTests.Services
                 DisplayColor = "#112233",
             };
 
-            repoMock.Setup(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233"))
+            repoMock.Setup(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233", null, null))
                 .ReturnsAsync(expectedTeam);
 
             // Act
-            var result = await service.UpdateTeamAsync(8, "Updated Team", "New Description", "#112233");
+            var result = await service.UpdateTeamAsync(8, "Updated Team", "New Description", "#112233", null, null);
 
             // Assert
             result.Should().BeSameAs(expectedTeam);
-            repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233"), Times.Once);
+            repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233", null, null), Times.Once);
         }
 
         [Fact]

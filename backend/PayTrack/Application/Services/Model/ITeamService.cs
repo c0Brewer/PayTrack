@@ -33,8 +33,13 @@ namespace PayTrack.Application.Services.Model
         /// <param name="name">name of team.</param>
         /// <param name="description">description of team.</param>
         /// <param name="displayColor">displayColor of team.</param>
+        /// <param name="budgetEntries">Optional budgets to create together with the team.</param>
         /// <returns>Instance of created Team object.</returns>
-        Task<Team> CreateTeamAsync(string name, string? description, string? displayColor);
+        Task<Team> CreateTeamAsync(
+            string name,
+            string? description,
+            string? displayColor,
+            IList<CreateTeamBudgetEntryDto>? budgetEntries);
 
         /// <summary>
         /// Update a Team using the given input.
@@ -43,8 +48,16 @@ namespace PayTrack.Application.Services.Model
         /// <param name="name">The new name that should be set for the team.</param>
         /// <param name="description">The new description that should be set for the team.</param>
         /// <param name="displayColor">The new display color that should be set for the team.</param>
+        /// <param name="budgetsToUpsert">Optional budgets to create or update for the team.</param>
+        /// <param name="budgetIdsToDelete">Optional budget ids to remove from the team.</param>
         /// <returns>Instance of created Team object.</returns>
-        Task<Team> UpdateTeamAsync(int id, string? name, string? description, string? displayColor);
+        Task<Team> UpdateTeamAsync(
+            int id,
+            string? name,
+            string? description,
+            string? displayColor,
+            IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
+            IList<int>? budgetIdsToDelete);
 
         /// <summary>
         /// Deletes a Team by id.

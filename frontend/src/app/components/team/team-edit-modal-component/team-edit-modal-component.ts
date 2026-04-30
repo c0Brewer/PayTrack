@@ -1,8 +1,23 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { TeamDto } from '../../../types/exporter';
+import {
+  BudgetDto,
+  CostCentreDto,
+  TeamDto,
+  UpsertTeamBudgetEntryDto,
+} from '../../../types/exporter';
+import { TeamSaveEvent } from '../../../types/misc-types';
 import { ModalComponent } from '../../general/modal-component/modal-component';
+
+interface WorkingBudget {
+  originalId: number;
+  costCentreId: number;
+  targetAmount: number;
+  periodStart: string;
+  periodEnd: string;
+  markedForDeletion: boolean;
+}
 
 @Component({
   selector: 'app-team-edit-modal-component',
@@ -12,24 +27,53 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
 })
 export class TeamEditModalComponent implements OnChanges {
   readonly defaultColor = '#2563eb';
+  readonly minDescriptionLength = 3;
 
   @Input() team: TeamDto = {
     id: -1,
     name: '',
     description: '',
     displayColor: '',
+    members: [],
+    budgets: [],
   };
+  @Input() costCentres: CostCentreDto[] = [];
 
-  @Output() saveEvent = new EventEmitter<TeamDto>();
+  @Output() saveEvent = new EventEmitter<TeamSaveEvent>();
   @Output() closeEvent = new EventEmitter<void>();
 
   originalTeam: TeamDto | null = null;
+  workingBudgets: WorkingBudget[] = [];
+  newBudgets: UpsertTeamBudgetEntryDto[] = [];
+  newBudgetDraft: UpsertTeamBudgetEntryDto = this.emptyDraft();
+  touchedFields: Record<'name' | 'description', boolean> = {
+    name: false,
+    description: false,
+  };
 
   ngOnChanges(): void {
     if (this.team) {
       // Deep clone to avoid mutating the original reference during editing.
       this.originalTeam = structuredClone(this.team);
+      this.workingBudgets = (this.team.budgets ?? []).map((budget: BudgetDto) => ({
+        originalId: budget.id,
+        costCentreId: budget.costCentreId,
+        targetAmount: budget.targetAmount,
+        periodStart: budget.periodStart,
+        periodEnd: budget.periodEnd,
+        markedForDeletion: false,
+      }));
+      this.newBudgets = [];
+      this.newBudgetDraft = this.emptyDraft();
+      this.touchedFields = {
+        name: false,
+        description: false,
+      };
     }
+  }
+
+  get isCreating(): boolean {
+    return this.team.id === -1;
   }
 
   get selectedColor(): string {
@@ -42,17 +86,49 @@ export class TeamEditModalComponent implements OnChanges {
     return (
       this.team.name !== this.originalTeam.name ||
       this.team.description !== this.originalTeam.description ||
-      this.team.displayColor !== this.originalTeam.displayColor
+      this.team.displayColor !== this.originalTeam.displayColor ||
+      this.newBudgets.length > 0 ||
+      this.workingBudgets.some(
+        (budget, index) =>
+          budget.markedForDeletion ||
+          !this.matchesOriginalBudget(budget, this.originalTeam?.budgets?.[index] ?? null),
+      )
     );
   }
 
   onSave(): void {
+    this.markAllFieldsTouched();
+
+    if (this.isInvalid()) {
+      return;
+    }
+
     if (!this.hasTeamBeenChanged()) {
       this.onClose();
       return;
     }
 
-    this.saveEvent.emit(this.team);
+    const budgetIdsToDelete = this.workingBudgets
+      .filter((budget) => budget.markedForDeletion)
+      .map((budget) => budget.originalId);
+
+    const budgetsToUpsert: UpsertTeamBudgetEntryDto[] = [
+      ...this.workingBudgets
+        .filter((budget) => !budget.markedForDeletion)
+        .map((budget) => ({
+          id: budget.originalId,
+          costCentreId: budget.costCentreId,
+          targetAmount: budget.targetAmount,
+          periodStart: budget.periodStart,
+          periodEnd: budget.periodEnd,
+        })),
+      ...this.newBudgets.map((budget) => ({
+        ...budget,
+        id: null,
+      })),
+    ];
+
+    this.saveEvent.emit({ team: this.team, budgetsToUpsert, budgetIdsToDelete });
   }
 
   setDisplayColor(color: string): void {
@@ -65,8 +141,52 @@ export class TeamEditModalComponent implements OnChanges {
     this.team.displayColor = normalizedColor;
   }
 
+  toggleBudgetDeletion(budget: WorkingBudget): void {
+    budget.markedForDeletion = !budget.markedForDeletion;
+  }
+
+  addNewBudget(): void {
+    if (
+      !this.newBudgetDraft.costCentreId ||
+      !this.newBudgetDraft.periodStart ||
+      !this.newBudgetDraft.periodEnd
+    ) {
+      return;
+    }
+
+    this.newBudgets.push({ ...this.newBudgetDraft });
+    this.newBudgetDraft = this.emptyDraft();
+  }
+
+  removeNewBudget(index: number): void {
+    this.newBudgets.splice(index, 1);
+  }
+
+  onFieldBlur(field: keyof typeof this.touchedFields): void {
+    this.touchedFields[field] = true;
+  }
+
+  hasFieldError(field: keyof typeof this.touchedFields): boolean {
+    return this.touchedFields[field] && this.getFieldError(field).length > 0;
+  }
+
+  getFieldError(field: keyof typeof this.touchedFields): string {
+    if (field === 'name') {
+      return this.getNameError();
+    }
+
+    return this.getDescriptionError();
+  }
+
   onClose(): void {
     this.closeEvent.emit();
+  }
+
+  getCostCentreName(costCentreId: number): string {
+    return (
+      this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
+      `Cost Centre #${costCentreId}`
+    );
   }
 
   private isHexColor(color: string | null | undefined): color is string {
@@ -81,5 +201,53 @@ export class TeamEditModalComponent implements OnChanges {
     }
 
     return trimmedColor.toLowerCase();
+  }
+
+  private isInvalid(): boolean {
+    return this.getNameError().length > 0 || this.getDescriptionError().length > 0;
+  }
+
+  private getNameError(): string {
+    if ((this.team.name?.trim() ?? '').length === 0) {
+      return 'Name is required.';
+    }
+
+    return '';
+  }
+
+  private getDescriptionError(): string {
+    const descriptionLength = this.team.description?.trim().length ?? 0;
+
+    if (descriptionLength > 0 && descriptionLength < this.minDescriptionLength) {
+      return `Description must be at least ${this.minDescriptionLength} characters long.`;
+    }
+
+    return '';
+  }
+
+  private markAllFieldsTouched(): void {
+    this.touchedFields.name = true;
+    this.touchedFields.description = true;
+  }
+
+  private emptyDraft(): UpsertTeamBudgetEntryDto {
+    return { id: null, costCentreId: 0, targetAmount: 0, periodStart: '', periodEnd: '' };
+  }
+
+  private matchesOriginalBudget(
+    workingBudget: WorkingBudget,
+    originalBudget: BudgetDto | null,
+  ): boolean {
+    if (!originalBudget) {
+      return false;
+    }
+
+    return (
+      workingBudget.originalId === originalBudget.id &&
+      workingBudget.costCentreId === originalBudget.costCentreId &&
+      workingBudget.targetAmount === originalBudget.targetAmount &&
+      workingBudget.periodStart === originalBudget.periodStart &&
+      workingBudget.periodEnd === originalBudget.periodEnd
+    );
   }
 }

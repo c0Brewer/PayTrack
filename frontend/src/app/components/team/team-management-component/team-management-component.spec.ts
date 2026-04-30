@@ -4,9 +4,10 @@ import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { TeamDto } from '../../../types/exporter';
+import { CostCentreDtoPaginatedResponse, TeamDto } from '../../../types/exporter';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
 
@@ -17,7 +18,11 @@ describe('TeamManagementComponent', () => {
   let fixture: ComponentFixture<TeamManagementComponent>;
   let teamServiceMock: {
     getTeams: ReturnType<typeof vi.fn>;
+    createTeam: ReturnType<typeof vi.fn>;
     updateTeam: ReturnType<typeof vi.fn>;
+  };
+  let costCentreServiceMock: {
+    getCostCentres: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -57,6 +62,17 @@ describe('TeamManagementComponent', () => {
       budgets: undefined,
     },
   ];
+  const mockCostCentres: CostCentreDtoPaginatedResponse = {
+    items: [
+      { id: 1, name: 'Aerodynamics', description: 'Aero', displayColor: '#ff5733', budgets: [] },
+      { id: 2, name: 'Operations', description: 'Ops', displayColor: '#0f766e', budgets: [] },
+    ],
+    totalCount: 2,
+    limit: 1000,
+    offset: 0,
+    hasNext: false,
+    hasPrevious: false,
+  };
 
   beforeEach(async () => {
     teamServiceMock = {
@@ -65,7 +81,11 @@ describe('TeamManagementComponent', () => {
         .mockReturnValue(
           of({ items: mockTeams, totalCount: 2, hasNext: false, hasPrevious: false }),
         ),
+      createTeam: vi.fn().mockReturnValue(of({})),
       updateTeam: vi.fn().mockReturnValue(of({})),
+    };
+    costCentreServiceMock = {
+      getCostCentres: vi.fn().mockReturnValue(of(mockCostCentres)),
     };
 
     notificationServiceMock = {
@@ -80,6 +100,7 @@ describe('TeamManagementComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TeamManagementComponent],
       providers: [
+        { provide: CostCentreService, useValue: costCentreServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -98,6 +119,10 @@ describe('TeamManagementComponent', () => {
   it('ngOnInit should load teams and initialize pagination metadata', () => {
     component.ngOnInit();
 
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledWith({
+      Limit: 1000,
+      Offset: 0,
+    });
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,
       Description: undefined,
@@ -230,6 +255,19 @@ describe('TeamManagementComponent', () => {
     expect(component.editingTeam).not.toBe(mockTeams[0]);
   });
 
+  it('openCreate should initialize a new team draft like the cost centre flow', () => {
+    component.openCreate();
+
+    expect(component.editingTeam).toEqual({
+      id: -1,
+      name: '',
+      description: '',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [],
+    });
+  });
+
   it('closeEdit should reset editingTeam', () => {
     component.editingTeam = { ...mockTeams[0] };
 
@@ -242,12 +280,14 @@ describe('TeamManagementComponent', () => {
     const loadTeamsSpy = vi.spyOn(component, 'loadTeams');
     component.editingTeam = { ...mockTeams[0] };
 
-    component.saveTeam(mockTeams[0]);
+    component.saveTeam({ team: mockTeams[0], budgetsToUpsert: [], budgetIdsToDelete: [] });
 
     expect(teamServiceMock.updateTeam).toHaveBeenCalledWith(mockTeams[0].id, {
       name: mockTeams[0].name,
       description: mockTeams[0].description,
       displayColor: mockTeams[0].displayColor,
+      budgetsToUpsert: undefined,
+      budgetIdsToDelete: undefined,
     });
     expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
       'Successfully updated team ' + mockTeams[0].name,
@@ -256,13 +296,128 @@ describe('TeamManagementComponent', () => {
     expect(component.editingTeam).toBeNull();
   });
 
+  it('saveTeam should call createTeam for new teams, reload the list, show success, and close the modal', () => {
+    const loadTeamsSpy = vi.spyOn(component, 'loadTeams');
+    component.editingTeam = {
+      id: -1,
+      name: 'New Team',
+      description: 'Freshly created',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [],
+    };
+
+    component.saveTeam({ team: component.editingTeam, budgetsToUpsert: [], budgetIdsToDelete: [] });
+
+    expect(teamServiceMock.createTeam).toHaveBeenCalledWith({
+      name: 'New Team',
+      description: 'Freshly created',
+      displayColor: '#2563eb',
+      budgets: undefined,
+    });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Successfully created team New Team',
+    );
+    expect(loadTeamsSpy).toHaveBeenCalledOnce();
+    expect(component.editingTeam).toBeNull();
+  });
+
   it('saveTeam should surface update errors through the notification service', () => {
     teamServiceMock.updateTeam.mockReturnValueOnce(throwError(() => new Error('Update failed')));
 
-    component.saveTeam(mockTeams[0]);
+    component.saveTeam({ team: mockTeams[0], budgetsToUpsert: [], budgetIdsToDelete: [] });
 
     expect(notificationServiceMock.showError).toHaveBeenCalledWith(
       'Could not update Team: Error: Update failed',
+    );
+  });
+
+  it('saveTeam should surface create errors through the notification service', () => {
+    teamServiceMock.createTeam.mockReturnValueOnce(throwError(() => new Error('Create failed')));
+
+    component.saveTeam({
+      team: {
+        id: -1,
+        name: 'New Team',
+        description: 'Freshly created',
+        displayColor: '#2563eb',
+        members: [],
+        budgets: [],
+      },
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
+    });
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not create Team: Error: Create failed',
+    );
+  });
+
+  it('saveTeam should include budgets in create requests when provided', () => {
+    component.saveTeam({
+      team: {
+        id: -1,
+        name: 'New Team',
+        description: 'Freshly created',
+        displayColor: '#2563eb',
+        members: [],
+        budgets: [],
+      },
+      budgetsToUpsert: [
+        {
+          id: null,
+          costCentreId: 2,
+          targetAmount: 500,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-06-30',
+        },
+      ],
+      budgetIdsToDelete: [],
+    });
+
+    expect(teamServiceMock.createTeam).toHaveBeenCalledWith(
+      expect.objectContaining({
+        budgets: [
+          {
+            costCentreId: 2,
+            targetAmount: 500,
+            periodStart: '2026-01-01',
+            periodEnd: '2026-06-30',
+          },
+        ],
+      }),
+    );
+  });
+
+  it('saveTeam should include budget upserts and deletions in update requests', () => {
+    component.saveTeam({
+      team: mockTeams[0],
+      budgetsToUpsert: [
+        {
+          id: 10,
+          costCentreId: 2,
+          targetAmount: 500,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-06-30',
+        },
+      ],
+      budgetIdsToDelete: [15],
+    });
+
+    expect(teamServiceMock.updateTeam).toHaveBeenCalledWith(
+      mockTeams[0].id,
+      expect.objectContaining({
+        budgetsToUpsert: [
+          {
+            id: 10,
+            costCentreId: 2,
+            targetAmount: 500,
+            periodStart: '2026-01-01',
+            periodEnd: '2026-06-30',
+          },
+        ],
+        budgetIdsToDelete: [15],
+      }),
     );
   });
 

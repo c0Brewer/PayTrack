@@ -19,7 +19,7 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<Team> AddAsync(Team team)
+        public async Task<Team> AddAsync(Team team, IList<CreateTeamBudgetEntryDto>? budgetEntries = null)
         {
             if (await this.context.Teams.AnyAsync(t => t.Name == team.Name))
             {
@@ -27,10 +27,26 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             this.context.Teams.Add(team);
-            var res = await this.context.SaveChangesAsync();
+            if (budgetEntries is not null)
+            {
+                foreach (var entry in budgetEntries)
+                {
+                    this.context.Budgets.Add(new Budget
+                    {
+                        Team = team,
+                        CostCentreId = entry.CostCentreId,
+                        TargetAmount = entry.TargetAmount,
+                        PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
+                        PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                    });
+                }
+            }
 
-            return res != 1
-                ? throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} teams.")
+            var res = await this.context.SaveChangesAsync();
+            var expectedCount = 1 + (budgetEntries?.Count ?? 0);
+
+            return res != expectedCount
+                ? throw new InternalErrorException($"Saving Team did not end as expected. Saved {res} records.")
                     : team;
         }
 
@@ -171,9 +187,18 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Team> UpdateAsync(int id, string? name, string? description, string? displayColor)
+        public async Task<Team> UpdateAsync(
+            int id,
+            string? name,
+            string? description,
+            string? displayColor,
+            IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
+            IList<int>? budgetIdsToDelete)
         {
-            var team = await this.context.Teams.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException($"Team with id {id} not found.");
+            var team = await this.context.Teams
+                .Include(t => t.Budgets)
+                .FirstOrDefaultAsync(t => t.Id == id)
+                ?? throw new NotFoundException($"Team with id {id} not found.");
             var hasChanges = false;
 
             if (name is not null && team.Name != name)
@@ -200,6 +225,46 @@ namespace PayTrack.Data.Repositories.Implementation
                 hasChanges = true;
             }
 
+            if (budgetIdsToDelete is not null)
+            {
+                foreach (var budgetId in budgetIdsToDelete)
+                {
+                    var budget = team.Budgets.FirstOrDefault(b => b.Id == budgetId)
+                        ?? throw new NotFoundException($"Budget with id {budgetId} not found on Team {id}.");
+                    this.context.Budgets.Remove(budget);
+                    hasChanges = true;
+                }
+            }
+
+            if (budgetsToUpsert is not null)
+            {
+                foreach (var entry in budgetsToUpsert)
+                {
+                    if (entry.Id is null or 0)
+                    {
+                        this.context.Budgets.Add(new Budget
+                        {
+                            Team = team,
+                            CostCentreId = entry.CostCentreId,
+                            TargetAmount = entry.TargetAmount,
+                            PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
+                            PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                        });
+                    }
+                    else
+                    {
+                        var existing = team.Budgets.FirstOrDefault(b => b.Id == entry.Id)
+                            ?? throw new NotFoundException($"Budget with id {entry.Id} not found on Team {id}.");
+                        existing.CostCentreId = entry.CostCentreId;
+                        existing.TargetAmount = entry.TargetAmount;
+                        existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
+                        existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);
+                    }
+
+                    hasChanges = true;
+                }
+            }
+
             if (!hasChanges)
             {
                 return team;
@@ -207,8 +272,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             var res = await this.context.SaveChangesAsync();
 
-            return res != 1
-                ? throw new InternalErrorException($"Updating Team did not end as expected. Updated {res} teams.")
+            return res < 1
+                ? throw new InternalErrorException($"Updating Team did not end as expected. Updated {res} records.")
                 : team;
         }
 

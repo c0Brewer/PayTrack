@@ -29,7 +29,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var team = new Team { Name = "Test Team" };
 
             // Act
-            var result = await repo.AddAsync(team);
+            var result = await repo.AddAsync(team, null);
 
             // Assert
             result.Should().NotBeNull();
@@ -49,7 +49,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var repo = new TeamRepository(context);
 
-            var act = async () => await repo.AddAsync(new Team { Name = "Finance" });
+            var act = async () => await repo.AddAsync(new Team { Name = "Finance" }, null);
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
@@ -413,7 +413,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
 
             // Act
-            var result = await repo.UpdateAsync(team.Id, "After", "New", "#ffffff");
+            var result = await repo.UpdateAsync(team.Id, "After", "New", "#ffffff", null, null);
 
             // Assert
             result.Name.Should().Be("After");
@@ -560,11 +560,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act
             var exception = await Assert.ThrowsAsync<InternalErrorException>(
-                async () => await repo.AddAsync(team)
+                async () => await repo.AddAsync(team, null)
             );
 
             // Assert
-            Assert.Contains("teams", exception.Message);
+            exception.Message.Should().Contain("Team");
         }
 
         [Fact]
@@ -579,7 +579,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
             var teamToRename = await context.Teams.SingleAsync(t => t.Name == "Platform");
 
-            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null);
+            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null);
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()

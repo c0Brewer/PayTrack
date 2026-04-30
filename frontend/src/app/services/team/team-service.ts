@@ -3,6 +3,7 @@ import { from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import {
+  CreateTeamRequestDto,
   TeamDto,
   GetTeamOptions,
   TeamDtoPaginatedResponse,
@@ -37,6 +38,20 @@ export class TeamService {
             id: teamId,
           },
         },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('No data returned');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public createTeam(createRequest: CreateTeamRequestDto): Observable<TeamDto> {
+    const promise = client
+      .POST('/api/v1/team', {
+        body: createRequest,
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');

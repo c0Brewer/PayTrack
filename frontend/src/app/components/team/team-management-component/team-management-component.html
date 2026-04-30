@@ -1,5 +1,8 @@
 <div class="team-management">
-  <h2>Team Management</h2>
+  <div class="header">
+    <h2>Team Management</h2>
+    <button class="create-btn" (click)="openCreate()">Create New</button>
+  </div>
 
   <app-team-filter-component
     [limitSelection]="limitSelection"
@@ -26,6 +29,7 @@
   @if (editingTeam) {
     <app-team-edit-modal-component
       [team]="editingTeam"
+      [costCentres]="costCentres"
       (saveEvent)="saveTeam($event)"
       (closeEvent)="closeEdit()"
     ></app-team-edit-modal-component>

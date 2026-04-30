@@ -73,7 +73,11 @@ namespace PayTrack.Api.Handler
                 });
             }
 
-            var createdTeam = await teamService.CreateTeamAsync(teamDto.Name, teamDto.Description, teamDto.DisplayColor);
+            var createdTeam = await teamService.CreateTeamAsync(
+                teamDto.Name,
+                teamDto.Description,
+                teamDto.DisplayColor,
+                teamDto.Budgets);
 
             var createdTeamDto = TeamMapper.ToDto(createdTeam);
 
@@ -96,7 +100,9 @@ namespace PayTrack.Api.Handler
                 id,
                 updateTeamDto.Name,
                 updateTeamDto.Description,
-                updateTeamDto.DisplayColor);
+                updateTeamDto.DisplayColor,
+                updateTeamDto.BudgetsToUpsert,
+                updateTeamDto.BudgetIdsToDelete);
             var updatedTeamDto = TeamMapper.ToDto(updatedTeam);
             return TypedResults.Ok(updatedTeamDto);
         }

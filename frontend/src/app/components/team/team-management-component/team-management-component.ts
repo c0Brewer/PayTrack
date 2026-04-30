@@ -1,9 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectorRef } from '@angular/core';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { TeamDto, GetTeamOptions, UpdateTeamDto } from '../../../types/exporter';
+import {
+  CostCentreDto,
+  CreateTeamBudgetEntryDto,
+  CreateTeamRequestDto,
+  TeamDto,
+  GetTeamOptions,
+  UpdateTeamDto,
+} from '../../../types/exporter';
+import { TeamSaveEvent } from '../../../types/misc-types';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
@@ -23,12 +32,14 @@ import { TeamListComponent } from '../team-list-component/team-list-component';
 })
 export class TeamManagementComponent {
   constructor(
+    private readonly costCentreService: CostCentreService,
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   teams: TeamDto[] = [];
+  costCentres: CostCentreDto[] = [];
   editingTeam: TeamDto | null = null;
 
   limitSelection: number[] = [10, 25, 50];
@@ -51,7 +62,25 @@ export class TeamManagementComponent {
   };
 
   ngOnInit(): void {
+    this.loadCostCentres();
     this.loadTeams();
+  }
+
+  loadCostCentres(): void {
+    this.costCentreService
+      .getCostCentres({
+        Limit: 1000,
+        Offset: 0,
+      })
+      .subscribe({
+        next: (data) => {
+          this.costCentres = data?.items ?? [];
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load cost centres: ' + err.message);
+        },
+      });
   }
 
   loadTeams(): void {
@@ -120,21 +149,71 @@ export class TeamManagementComponent {
     }
   }
 
+  openCreate(): void {
+    this.editingTeam = {
+      id: -1,
+      name: '',
+      description: '',
+      displayColor: this.getDefaultDisplayColor(),
+      members: [],
+      budgets: [],
+    };
+  }
+
   openEditTeam(team: TeamDto): void {
-    this.editingTeam = { ...team };
+    this.editingTeam = structuredClone(team);
   }
 
   closeEdit(): void {
     this.editingTeam = null;
   }
 
-  saveTeam(team: TeamDto): void {
-    if (!team) return;
+  saveTeam(event: TeamSaveEvent): void {
+    const { team, budgetsToUpsert, budgetIdsToDelete } = event;
+
+    if (team.id === -1) {
+      const createRequest: CreateTeamRequestDto = {
+        name: team.name,
+        description: team.description,
+        displayColor: team.displayColor,
+        budgets:
+          budgetsToUpsert.length > 0
+            ? budgetsToUpsert.map(
+                ({
+                  costCentreId,
+                  targetAmount,
+                  periodStart,
+                  periodEnd,
+                }): CreateTeamBudgetEntryDto => ({
+                  costCentreId,
+                  targetAmount,
+                  periodStart,
+                  periodEnd,
+                }),
+              )
+            : undefined,
+      };
+
+      this.teamService.createTeam(createRequest).subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Successfully created team ' + team.name);
+          this.loadTeams();
+          this.closeEdit();
+        },
+        error: (error: Error) => {
+          this.notificationService.showError('Could not create Team: ' + error);
+        },
+      });
+
+      return;
+    }
 
     const updateRequest: UpdateTeamDto = {
       name: team.name,
       description: team.description,
       displayColor: team.displayColor,
+      budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+      budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
     };
 
     this.teamService.updateTeam(team.id, updateRequest).subscribe({
@@ -147,5 +226,9 @@ export class TeamManagementComponent {
         this.notificationService.showError('Could not update Team: ' + error);
       },
     });
+  }
+
+  private getDefaultDisplayColor(): string {
+    return '#2563eb';
   }
 }

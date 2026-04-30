@@ -1314,6 +1314,17 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+            budgets?: components["schemas"]["CreateTeamBudgetEntryDto"][] | null;
+        };
+        CreateTeamBudgetEntryDto: {
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
         };
         CreateTransactionDto: {
             /** Format: int32 */
@@ -1471,6 +1482,8 @@ export interface components {
             name?: string | null;
             description?: string | null;
             displayColor?: string | null;
+            budgetsToUpsert?: components["schemas"]["UpsertTeamBudgetEntryDto"][] | null;
+            budgetIdsToDelete?: number[] | null;
         };
         UpdateTransactionDto: {
             /** Format: int32 */
@@ -1493,6 +1506,18 @@ export interface components {
             id?: number | null;
             /** Format: int32 */
             teamId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
+        UpsertTeamBudgetEntryDto: {
+            /** Format: int32 */
+            id?: number | null;
+            /** Format: int32 */
+            costCentreId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */

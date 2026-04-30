@@ -31,8 +31,9 @@ namespace PayTrack.Data.Repositories.Model
         /// Stores a Team to the Database.
         /// </summary>
         /// <param name="team">Team object to store.</param>
+        /// <param name="budgetEntries">Optional budgets to create together with the team.</param>
         /// <returns>Instance of created Team object.</returns>
-        Task<Team> AddAsync(Team team);
+        Task<Team> AddAsync(Team team, IList<CreateTeamBudgetEntryDto>? budgetEntries = null);
 
         /// <summary>
         /// Updates a Team with optional values.
@@ -41,8 +42,16 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="name">Name to optionally set.</param>
         /// <param name="description">Description to optionally set.</param>
         /// <param name="displayColor">Display color to optionally set.</param>
+        /// <param name="budgetsToUpsert">Optional budgets to create or update for the team.</param>
+        /// <param name="budgetIdsToDelete">Optional budget ids to remove from the team.</param>
         /// <returns>Updated Team instance.</returns>
-        Task<Team> UpdateAsync(int id, string? name, string? description, string? displayColor);
+        Task<Team> UpdateAsync(
+            int id,
+            string? name,
+            string? description,
+            string? displayColor,
+            IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
+            IList<int>? budgetIdsToDelete);
 
         /// <summary>
         /// Deletes a Team by id.

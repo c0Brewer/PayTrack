@@ -10,6 +10,8 @@ namespace PayTrack.Application.Dto.Team
     public sealed record class UpdateTeamDto(
         string? Name,
         string? Description,
-        string? DisplayColor
+        string? DisplayColor,
+        IList<UpsertTeamBudgetEntryDto>? BudgetsToUpsert,
+        IList<int>? BudgetIdsToDelete
     );
 }

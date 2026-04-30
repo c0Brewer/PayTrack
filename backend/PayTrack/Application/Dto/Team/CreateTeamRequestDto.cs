@@ -19,5 +19,7 @@ namespace PayTrack.Application.Dto.Team
 
         [property: MaxLength(7)]
         [property: RegularExpression("^#[0-9A-Fa-f]{6}$")]
-        string? DisplayColor);
+        string? DisplayColor,
+
+        IList<CreateTeamBudgetEntryDto>? Budgets);
 }

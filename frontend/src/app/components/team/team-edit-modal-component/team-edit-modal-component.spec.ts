@@ -28,6 +28,8 @@ describe('TeamEditModalComponent', () => {
       name: 'Platform',
       description: 'Builds product features',
       displayColor: '#2563eb',
+      members: [],
+      budgets: [],
     };
 
     component.team = team;
@@ -64,6 +66,36 @@ describe('TeamEditModalComponent', () => {
     expect(component.team.displayColor).toBe('#dc2626');
   });
 
+  it('onFieldBlur should mark a field as touched', () => {
+    component.onFieldBlur('name');
+
+    expect(component.touchedFields.name).toBe(true);
+  });
+
+  it('hasFieldError should require both touch state and invalid input', () => {
+    component.team.name = '';
+
+    expect(component.hasFieldError('name')).toBe(false);
+
+    component.onFieldBlur('name');
+
+    expect(component.hasFieldError('name')).toBe(true);
+  });
+
+  it('getFieldError should require a name', () => {
+    component.team.name = ' ';
+
+    expect(component.getFieldError('name')).toBe('Name is required.');
+  });
+
+  it('getFieldError should reject descriptions shorter than three characters', () => {
+    component.team.description = 'ab';
+
+    expect(component.getFieldError('description')).toBe(
+      'Description must be at least 3 characters long.',
+    );
+  });
+
   it('onSave should emit saveEvent if team changed', () => {
     component.team.name = 'Platform';
     component.originalTeam = { ...component.team, name: 'Operations' };
@@ -71,10 +103,34 @@ describe('TeamEditModalComponent', () => {
 
     component.onSave();
 
-    expect(emitSpy).toHaveBeenCalledWith(component.team);
+    expect(emitSpy).toHaveBeenCalledWith({
+      team: component.team,
+      budgetsToUpsert: [],
+      budgetIdsToDelete: [],
+    });
+  });
+
+  it('onSave should not emit when validation fails and should mark fields as touched', () => {
+    component.team.name = '';
+    component.team.description = 'ab';
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+
+    component.onSave();
+
+    expect(component.touchedFields.name).toBe(true);
+    expect(component.touchedFields.description).toBe(true);
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('onSave should close the modal if team is unchanged', () => {
+    component.team = {
+      id: 1,
+      name: 'Platform',
+      description: 'Builds product features',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [],
+    };
     component.originalTeam = { ...component.team };
     const closeSpy = vi.spyOn(component, 'onClose');
 
@@ -89,5 +145,60 @@ describe('TeamEditModalComponent', () => {
     component.onClose();
 
     expect(emitSpy).toHaveBeenCalledOnce();
+  });
+
+  it('onSave should include edited and new budgets plus deletions', () => {
+    component.team = {
+      id: 1,
+      name: 'Platform',
+      description: 'Builds product features',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [
+        {
+          id: 10,
+          teamId: 1,
+          costCentreId: 2,
+          targetAmount: 100,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+        },
+      ],
+    };
+    component.ngOnChanges();
+    component.workingBudgets[0].targetAmount = 250;
+    component.newBudgets = [
+      {
+        id: null,
+        costCentreId: 3,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-06-30',
+      },
+    ];
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+
+    component.onSave();
+
+    expect(emitSpy).toHaveBeenCalledWith({
+      team: component.team,
+      budgetsToUpsert: [
+        {
+          id: 10,
+          costCentreId: 2,
+          targetAmount: 250,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+        },
+        {
+          id: null,
+          costCentreId: 3,
+          targetAmount: 500,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-06-30',
+        },
+      ],
+      budgetIdsToDelete: [],
+    });
   });
 });

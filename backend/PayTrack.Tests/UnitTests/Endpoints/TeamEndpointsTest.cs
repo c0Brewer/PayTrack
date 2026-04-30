@@ -251,11 +251,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsOkWithCreatedTeam()
         {
             // Arrange
-            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "#112233");
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "#112233", null);
             var createdTeam = new Team { Id = 1, Name = "New Team" };
 
             _factory.TeamServiceMock
-                .Setup(s => s.CreateTeamAsync(requestDto.Name, requestDto.Description, requestDto.DisplayColor))
+                .Setup(s => s.CreateTeamAsync(
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.Budgets))
                 .ReturnsAsync(createdTeam);
 
             var client = _factory.CreateClient();
@@ -277,7 +281,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
         {
             // Arrange
-            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color");
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color", null);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -288,8 +292,75 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             _factory.TeamServiceMock.Verify(
-                s => s.CreateTeamAsync(requestDto.Name, requestDto.Description, requestDto.DisplayColor),
+                s => s.CreateTeamAsync(
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                requestDto.Budgets),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateTeam_ReturnsOkWithUpdatedTeam()
+        {
+            // Arrange
+            var requestDto = new UpdateTeamDto("Updated Team", "Updated Description", "#445566", null, null);
+            var updatedTeam = new Team
+            {
+                Id = 1,
+                Name = "Updated Team",
+                Description = "Updated Description",
+                DisplayColor = "#445566",
+            };
+
+            _factory.TeamServiceMock
+                .Setup(s => s.UpdateTeamAsync(
+                    1,
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.BudgetsToUpsert,
+                    requestDto.BudgetIdsToDelete))
+                .ReturnsAsync(updatedTeam);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PutAsJsonAsync("api/v1/team/1", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(1);
+            result.Name.Should().Be("Updated Team");
+            result.Description.Should().Be("Updated Description");
+            result.DisplayColor.Should().Be("#445566");
+        }
+
+        [Fact]
+        public async Task DeleteTeam_ReturnsOkWithDeletedTeam()
+        {
+            // Arrange
+            var deletedTeam = new Team { Id = 1, Name = "Deleted Team" };
+
+            _factory.TeamServiceMock
+                .Setup(s => s.DeleteTeamAsync(1))
+                .ReturnsAsync(deletedTeam);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.DeleteAsync("api/v1/team/1");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(1);
+            result.Name.Should().Be("Deleted Team");
         }
 
         [Fact]

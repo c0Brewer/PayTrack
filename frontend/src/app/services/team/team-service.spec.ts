@@ -2,7 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { client } from '../../client';
-import { TeamDto, TeamDtoPaginatedResponse, UpdateTeamDto } from '../../types/exporter';
+import {
+  CreateTeamRequestDto,
+  TeamDto,
+  TeamDtoPaginatedResponse,
+  UpdateTeamDto,
+} from '../../types/exporter';
 
 import { TeamService } from './team-service';
 
@@ -207,6 +212,62 @@ describe('TeamService', () => {
 
       await expect(firstValueFrom(service.updateTeam(42, updateRequest))).rejects.toThrow(
         'Unexpected Error',
+      );
+    });
+  });
+
+  describe('createTeam', () => {
+    it('should call API and return the created team', async () => {
+      const createRequest: CreateTeamRequestDto = {
+        name: 'New Team',
+        description: 'Freshly created',
+        displayColor: '#2563eb',
+      };
+      const apiResponse: TeamDto = {
+        id: 99,
+        name: 'New Team',
+        description: 'Freshly created',
+        displayColor: '#2563eb',
+      };
+
+      vi.spyOn(client, 'POST').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await firstValueFrom(service.createTeam(createRequest));
+
+      expect(client.POST).toHaveBeenCalledWith('/api/v1/team', {
+        body: createRequest,
+      });
+      expect(result).toEqual(apiResponse);
+    });
+
+    it('should throw the backend error detail when createTeam fails with a specific error', async () => {
+      const createRequest: CreateTeamRequestDto = { name: 'New Team' };
+      const error = { detail: 'Create failed' };
+
+      vi.spyOn(client, 'POST').mockResolvedValue({
+        data: null,
+        error,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.createTeam(createRequest))).rejects.toThrow(error.detail);
+    });
+
+    it('should throw when createTeam resolves without data and without an API error', async () => {
+      const createRequest: CreateTeamRequestDto = { name: 'New Team' };
+
+      vi.spyOn(client, 'POST').mockResolvedValue({
+        data: null,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.createTeam(createRequest))).rejects.toThrow(
+        'No data returned',
       );
     });
   });

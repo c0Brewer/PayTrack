@@ -6,7 +6,10 @@ export type ProblemDetails = components['schemas']['ProblemDetails'];
 // Team
 export type TeamDto = components['schemas']['TeamDto'];
 export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
+export type CreateTeamRequestDto = components['schemas']['CreateTeamRequestDto'];
+export type CreateTeamBudgetEntryDto = components['schemas']['CreateTeamBudgetEntryDto'];
 export type UpdateTeamDto = components['schemas']['UpdateTeamDto'];
+export type UpsertTeamBudgetEntryDto = components['schemas']['UpsertTeamBudgetEntryDto'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
