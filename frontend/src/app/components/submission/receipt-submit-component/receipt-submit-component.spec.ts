@@ -132,7 +132,7 @@ describe('ReceiptSubmitComponent', () => {
     component.onManageBankAccountClick(event);
 
     expect(event.preventDefault).toHaveBeenCalledOnce();
-    //TODO: add when actual settings exist expect(routerMock.navigate).toHaveBeenCalledWith(['/bankaccount']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/settings'], { fragment: 'bank-accounts' });
   });
 
   // -------------------------

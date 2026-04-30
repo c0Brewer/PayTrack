@@ -1,4 +1,4 @@
-<div id="invoice-page">
+<div id="invoice-page" class="main-page-container">
   <h1>Invoice Submission</h1>
   <p>Upload your invoice and provide the details.</p>
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
@@ -117,17 +117,8 @@
       <div class="col-12">
         <app-box-component title="Transaction" subtitle="Select the payout method and, if applicable, your bank account." size="large">
           <fieldset class="payout-type" [class.payout-type--invalid]="isInvalid('payoutType')">
-            <legend class="payout-type__legend">
+            <legend>
               <span>Payout Type <span class="required">*</span></span>
-              <button
-                type="button"
-                class="btn"
-                id="manage-bank-accounts"
-                (click)="onManageBankAccountClick($event)"
-              >
-                <span class="material-symbols-outlined">settings</span>
-                Manage Bank Accounts
-              </button>
             </legend>
             <div class="payout-type__options">
               <label
@@ -161,7 +152,19 @@
 
           @if (form.get('payoutType')?.value === PayoutType.User) {
             <div class="field input-wrapper payout-type__bank-account">
-              <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
+              <div class="payout-type__legend">
+                  <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
+                <button
+                  type="button"
+                  title="Manage Bank Accounts"
+                  class="btn mb-2"
+                  id="manage-bank-accounts"
+                  (click)="onManageBankAccountClick($event)"
+                >
+                  <span class="material-symbols-outlined">settings</span>
+                  Manage Bank Accounts
+                </button>
+              </div>
               <select id="bankAccountId" formControlName="bankAccountId" [class.is-invalid]="isInvalid('bankAccountId')">
                 <option [ngValue]="null" disabled>Select bank account…</option>
                 @for (account of bankAccounts; track account.id) {

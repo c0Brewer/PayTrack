@@ -158,7 +158,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   onManageBankAccountClick(event: Event): void {
     event.preventDefault();
 
-    alert('Coming Soon!');
+    this.router.navigate(['/settings'], { fragment: 'bank-accounts' });
   }
 
   private setReceiptFile(file: File): void {
