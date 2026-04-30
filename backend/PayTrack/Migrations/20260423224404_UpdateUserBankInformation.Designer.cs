@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PayTrack.Data;
@@ -11,9 +12,11 @@ using PayTrack.Data;
 namespace PayTrack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423224404_UpdateUserBankInformation")]
+    partial class UpdateUserBankInformation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,9 +108,6 @@ namespace PayTrack.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -139,8 +139,7 @@ namespace PayTrack.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -161,7 +160,7 @@ namespace PayTrack.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("CostCentreId")
+                    b.Property<int>("CostCentreId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -338,7 +337,6 @@ namespace PayTrack.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<string>("InvoiceNumber")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -391,7 +389,8 @@ namespace PayTrack.Migrations
                     b.HasOne("PayTrack.Data.Entities.CostCentre", "CostCentre")
                         .WithMany("Transactions")
                         .HasForeignKey("CostCentreId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
                         .WithMany("Transactions")

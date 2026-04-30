@@ -41,6 +41,8 @@ export class UserEditModalComponent implements OnInit, OnChanges {
       displayColor: '',
     },
     isActive: true,
+    bankInformationSkipped: true,
+    hasBankInformation: true,
   };
 
   teams: TeamDto[] = [];

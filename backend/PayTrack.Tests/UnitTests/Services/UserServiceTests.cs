@@ -156,5 +156,20 @@ namespace PayTrack.Tests.UnitTests.Services
 
             userRepoMock.Verify(r => r.UpdateAsync(1, "Dave", true, 2, Role.Admin), Times.Once);
         }
+
+        [Fact]
+        public async Task UpdateBankInformationSkippedAsync_ShouldDelegateToRepository()
+        {
+            var user = new User { Id = 1, BankInformationSkipped = true };
+
+            userRepoMock
+                .Setup(r => r.UpdateBankInformationSkippedAsync(1, true))
+                .ReturnsAsync(user);
+
+            var result = await service.UpdateBankInformationSkippedAsync(1, true);
+
+            result.Should().BeSameAs(user);
+            userRepoMock.Verify(r => r.UpdateBankInformationSkippedAsync(1, true), Times.Once);
+        }
     }
 }

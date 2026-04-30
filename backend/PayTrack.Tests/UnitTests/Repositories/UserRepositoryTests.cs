@@ -406,5 +406,58 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await act.Should().ThrowAsync<InternalErrorException>()
                 .WithMessage("Updating user failed*");
         }
+
+        [Fact]
+        public async Task UpdateBankInformationSkippedAsync_ShouldSetSkipFlag()
+        {
+            await using var context = GetInMemoryDbContext("SkipBankInfo_Success");
+            var user = new User
+            {
+                Name = "Test",
+                Email = "test@example.com",
+                BankInformationSkipped = false,
+            };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var repo = new UserRepository(context);
+
+            var result = await repo.UpdateBankInformationSkippedAsync(user.Id, true);
+
+            result.BankInformationSkipped.Should().BeTrue();
+            (await context.User.FindAsync(user.Id))!.BankInformationSkipped.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task UpdateBankInformationSkippedAsync_ShouldThrowNotFoundException_WhenUserDoesNotExist()
+        {
+            await using var context = GetInMemoryDbContext("SkipBankInfo_NotFound");
+            var repo = new UserRepository(context);
+
+            var act = async () => await repo.UpdateBankInformationSkippedAsync(999, true);
+
+            await act.Should().ThrowAsync<NotFoundException>()
+                .WithMessage("User with id 999 not found.");
+        }
+
+        [Fact]
+        public async Task UpdateBankInformationSkippedAsync_ShouldThrowInternalErrorException_WhenSaveFails()
+        {
+            var failingContext = new FailingDbContext("SkipBankInfo_Failing", _countOfSuccessBeforeFailure: 1);
+            var user = new User
+            {
+                Name = "Fail",
+                Email = "fail@example.com",
+            };
+            failingContext.User.Add(user);
+            await failingContext.SaveChangesAsync();
+
+            var repo = new UserRepository(failingContext);
+
+            var act = async () => await repo.UpdateBankInformationSkippedAsync(user.Id, true);
+
+            await act.Should().ThrowAsync<InternalErrorException>()
+                .WithMessage("Updating bank information state failed*");
+        }
     }
 }
