@@ -4,6 +4,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PayTrack.Api.Endpoints;
@@ -17,6 +18,7 @@ using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
+var shutdownRequested = false;
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
 
@@ -46,6 +48,12 @@ builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -71,10 +79,19 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
+        if (corsOrigin == "*")
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            return;
+        }
+
         policy
-        .WithOrigins(corsOrigin)
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+            .WithOrigins(corsOrigin)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -96,13 +113,44 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("frontend");
+
+app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
+app.MapGet("/health/prepareShutdown", () =>
+{
+    shutdownRequested = true;
+    return Results.Ok(new { status = "draining" });
+});
+app.MapGet("/health/ready", async (IServiceProvider services) =>
+{
+    if (shutdownRequested)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+
+    if (isTestEnv)
+    {
+        return Results.Ok(new { status = "ready" });
+    }
+
+    await using var scope = services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var canConnect = await db.Database.CanConnectAsync();
+    return canConnect
+        ? Results.Ok(new { status = "ready" })
+        : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+});
 
 var apiV1 = app
     .MapGroup("/api/v1")
