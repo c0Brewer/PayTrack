@@ -1,0 +1,134 @@
+<div class="row gx-4 gx-xl-5 gy-4">
+  <div class="col-12">
+    <app-box-component title="Bank Accounts" subtitle="Manage reimbursement accounts used for payouts." size="large">
+      <div class="bank-accounts-toolbar">
+        <div>
+          <p class="bank-accounts-kicker">Payout settings</p>
+          <p class="bank-accounts-summary">
+            @if (user(); as currentUser) {
+              Bank accounts for {{ currentUser.name }}
+            } @else {
+              Bank accounts for your profile
+            }
+          </p>
+        </div>
+        <button type="button" class="bank-accounts-primary" (click)="openCreateModal()">
+          <span class="material-symbols-outlined">add_card</span>
+          Add Bank Account
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <p class="bank-accounts-error">
+          <span class="material-symbols-outlined">error</span>
+          {{ errorMessage }}
+        </p>
+      }
+
+      @if (isLoading) {
+        <p class="bank-accounts-state">Loading bank accounts...</p>
+      } @else {
+        <div class="bank-accounts-list">
+          @for (account of bankAccounts; track account.id) {
+            <article class="bank-account-card">
+              <div class="bank-account-card__main">
+                <div class="bank-account-card__avatar" aria-hidden="true">
+                  <span class="material-symbols-outlined">account_balance</span>
+                </div>
+                <div class="bank-account-card__details">
+                  <h3>{{ account.accountHolder }}</h3>
+                  <dl>
+                    <div>
+                      <dt>IBAN</dt>
+                      <dd>{{ account.iban }}</dd>
+                    </div>
+                    <div>
+                      <dt>BIC</dt>
+                      <dd>{{ account.bic }}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+
+              <div class="bank-account-card__actions">
+                <button type="button" class="bank-accounts-secondary" (click)="openEditModal(account)">
+                  <span class="material-symbols-outlined">edit</span>
+                  Edit
+                </button>
+                <button type="button" class="bank-accounts-danger" (click)="openDeleteModal(account)">
+                  <span class="material-symbols-outlined">delete</span>
+                  Delete
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="bank-accounts-empty">
+              <span class="material-symbols-outlined">credit_card_off</span>
+              <h3>No bank accounts added yet.</h3>
+              <p>Add a bank account to receive reimbursements for paid invoices.</p>
+              <button type="button" class="bank-accounts-primary" (click)="openCreateModal()">
+                <span class="material-symbols-outlined">add_card</span>
+                Add Bank Account
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </app-box-component>
+  </div>
+</div>
+
+@if (isCreateModalOpen) {
+  <app-bank-account-editor
+    title="Create Bank Account"
+    submitLabel="Create"
+    [initialValue]="null"
+    [errorMessage]="modalErrorMessage"
+    (cancel)="closeModal()"
+    (submitForm)="createBankAccount($event)" />
+}
+
+@if (editingBankAccount) {
+  <app-bank-account-editor
+    title="Edit Bank Account"
+    submitLabel="Save"
+    [initialValue]="editingBankAccount"
+    [errorMessage]="modalErrorMessage"
+    (cancel)="closeModal()"
+    (submitForm)="updateBankAccount($event)" />
+}
+
+@if (bankAccountPendingDelete) {
+  <app-modal-component title="Delete Bank Account" (closeEvent)="closeDeleteModal()">
+    <div class="delete-modal">
+      <div class="delete-modal__icon" aria-hidden="true">
+        <span class="material-symbols-outlined">delete</span>
+      </div>
+      <h3>Delete this bank account?</h3>
+      <p>
+        This will remove the account for
+        <strong>{{ bankAccountPendingDelete.accountHolder }}</strong>
+        from your payout settings.
+      </p>
+      <div class="delete-modal__details">
+        <span>IBAN</span>
+        <strong>{{ bankAccountPendingDelete.iban }}</strong>
+      </div>
+
+      @if (modalErrorMessage) {
+        <p class="bank-accounts-error">
+          <span class="material-symbols-outlined">error</span>
+          {{ modalErrorMessage }}
+        </p>
+      }
+
+      <div class="delete-modal__actions">
+        <button type="button" class="bank-accounts-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="bank-accounts-danger" (click)="deleteBankAccount()">
+          <span class="material-symbols-outlined">delete</span>
+          Delete
+        </button>
+      </div>
+    </div>
+  </app-modal-component>
+}

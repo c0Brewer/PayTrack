@@ -1,19 +1,21 @@
 @if (visible) {
   <div class="modal-overlay" (click)="onClose()">
-    <div class="modal" (click)="$event.stopPropagation()">
+    <section class="app-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
       @if (title) {
         <div class="modal-header">
-          <span class="title">{{ title }}</span>
-          <div class="close" (click)="onClose()">
-            <span class="material-symbols-outlined"> close </span>
+          <div class="modal-title-group">
+            <span class="modal-icon material-symbols-outlined" aria-hidden="true">edit_square</span>
+            <span class="title">{{ title }}</span>
           </div>
+          <button type="button" class="close" aria-label="Close modal" (click)="onClose()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
       }
 
       <div class="content">
-        <!-- Project any content here -->
         <ng-content></ng-content>
       </div>
-    </div>
+    </section>
   </div>
 }

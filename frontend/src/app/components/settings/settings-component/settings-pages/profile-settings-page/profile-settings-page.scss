@@ -1,0 +1,25 @@
+@use 'variables' as v;
+
+:host {
+  display: block;
+}
+
+.input-wrapper {
+  input,
+  select,
+  textarea {
+    width: 100%;
+    border: 1px solid white;
+    background-color: v.$TUR-secondary-background;
+    height: 2.2rem;
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+  }
+  label{
+    margin-bottom: 0.5rem;
+  }
+  #name{
+    margin-bottom: 1rem;
+  }
+}

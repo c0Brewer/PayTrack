@@ -1,0 +1,23 @@
+<div class="row gx-4 gx-xl-5 gy-4">
+  <div class="col-12 col-xl-4">
+    <app-box-component title="Profile" subtitle="Personal details" size="medium">
+      <div class="input-wrapper">
+        <label for="name">Name</label><br />
+        <input id="name" type="text" disabled [value]="user()?.name ?? ''" />
+        <label for="email">Email</label><br />
+        <input id="email" type="text" disabled [value]="user()?.email ?? ''" />
+      </div>
+    </app-box-component>
+  </div>
+  <div class="col-12 col-xl-8">
+    <app-box-component title="Account Information" subtitle="Name, email, and team assignment" size="medium">
+    </app-box-component>
+  </div>
+</div>
+
+<div class="row gx-4 gx-xl-5 gy-4 mt-1">
+  <div class="col-12">
+    <app-box-component title="Profile Activity" subtitle="Recent account changes" size="large">
+    </app-box-component>
+  </div>
+</div>
