@@ -4,6 +4,7 @@ using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 using PayTrack.Application.Services.Implementation;
+using PayTrack.Application.Exceptions;
 
 namespace PayTrack.Tests.UnitTests.Services
 {
@@ -153,6 +154,34 @@ namespace PayTrack.Tests.UnitTests.Services
             // Assert
             result.Should().BeSameAs(expectedTeam);
             repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233", null, null), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateTeamAsync_ShouldThrow_WhenBudgetIdIsUpsertedAndDeleted()
+        {
+            // Arrange
+            var budgetsToUpsert = new List<UpsertTeamBudgetEntryDto>
+            {
+                new(5, 10, 100m, new DateTime(2026, 1, 1), new DateTime(2026, 1, 31)),
+            };
+            var budgetIdsToDelete = new List<int> { 5 };
+
+            // Act
+            var act = async () => await service.UpdateTeamAsync(8, null, null, null, budgetsToUpsert, budgetIdsToDelete);
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("A budget ID cannot appear in both BudgetsToUpsert and BudgetIdsToDelete.");
+            repoMock.Verify(
+                r => r.UpdateAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<IList<UpsertTeamBudgetEntryDto>?>(),
+                    It.IsAny<IList<int>?>()),
+                Times.Never);
         }
 
         [Fact]

@@ -422,6 +422,70 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task UpdateAsync_ShouldDeleteAndUpdateBudgetEntries()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateAsync_BudgetEntries");
+            var team = new Team { Name = "Budget Team" };
+            var oldCostCentre = new CostCentre { Name = "Old Cost Centre" };
+            var newCostCentre = new CostCentre { Name = "New Cost Centre" };
+
+            context.Teams.Add(team);
+            context.CostCentres.AddRange(oldCostCentre, newCostCentre);
+            await context.SaveChangesAsync();
+
+            var budgetToUpdate = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = oldCostCentre.Id,
+                TargetAmount = 100m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 1, 31),
+            };
+            var budgetToDelete = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = oldCostCentre.Id,
+                TargetAmount = 200m,
+                PeriodStart = new DateTime(2026, 2, 1),
+                PeriodEnd = new DateTime(2026, 2, 28),
+            };
+
+            context.Budgets.AddRange(budgetToUpdate, budgetToDelete);
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+            var newStart = new DateTime(2026, 3, 1);
+            var newEnd = new DateTime(2026, 3, 31);
+
+            // Act
+            var result = await repo.UpdateAsync(
+                team.Id,
+                null,
+                null,
+                null,
+                [
+                    new UpsertTeamBudgetEntryDto(
+                        budgetToUpdate.Id,
+                        newCostCentre.Id,
+                        999m,
+                        newStart,
+                        newEnd),
+                ],
+                [budgetToDelete.Id]);
+
+            // Assert
+            result.Budgets.Should().ContainSingle();
+            var remainingBudget = result.Budgets.Single();
+            remainingBudget.Id.Should().Be(budgetToUpdate.Id);
+            remainingBudget.CostCentreId.Should().Be(newCostCentre.Id);
+            remainingBudget.TargetAmount.Should().Be(999m);
+            remainingBudget.PeriodStart.Should().Be(DateTime.SpecifyKind(newStart, DateTimeKind.Utc));
+            remainingBudget.PeriodEnd.Should().Be(DateTime.SpecifyKind(newEnd, DateTimeKind.Utc));
+            (await context.Budgets.FindAsync(budgetToDelete.Id)).Should().BeNull();
+        }
+
+        [Fact]
         public async Task GetDeleteTeamImpactAsync_ShouldReturnCountsForRelatedData()
         {
             // Arrange
