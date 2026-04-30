@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { BankInformationComponent } from './components/bank-information/bank-information-component/bank-information-component';
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
@@ -53,6 +54,11 @@ export const routes: Routes = [
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamManagementComponent,
+  },
+  {
+    path: 'initial-setup',
+    canActivate: [authGuard],
+    component: BankInformationComponent,
   },
   {
     path: 'cost-centre',

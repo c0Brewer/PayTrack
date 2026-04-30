@@ -82,9 +82,10 @@ export class LoginComponent implements AfterViewInit {
     }
 
     this.authService.handleGoogleCallback(response.code).subscribe({
-      next: (data): void => {
-        this.authService.storeToken(data.jwtToken);
-        this.router.navigate(['']);
+      next: async (data) => {
+        const user = await this.authService.storeToken(data.jwtToken);
+        const target = this.authService.needsBankInformation(user) ? ['initial-setup'] : [''];
+        this.router.navigate(target);
       },
       error: (err): void => {
         console.error(err);

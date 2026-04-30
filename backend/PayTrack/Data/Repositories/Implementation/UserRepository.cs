@@ -100,7 +100,9 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await this.context.User.FirstOrDefaultAsync(u => u.Email == email);
+            return await this.context.User
+                .Include(u => u.BankAccounts)
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         /// <inheritdoc/>
@@ -160,6 +162,25 @@ namespace PayTrack.Data.Repositories.Implementation
             if (res != 1)
             {
                 throw new InternalErrorException($"Updating user failed. Updated {res} rows.");
+            }
+
+            return user;
+        }
+
+        /// <inheritdoc/>
+        public async Task<User> UpdateBankInformationSkippedAsync(int userId, bool bankInformationSkipped)
+        {
+            var user = await this.context.User
+                .Include(u => u.BankAccounts)
+                .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new NotFoundException($"User with id {userId} not found.");
+
+            user.BankInformationSkipped = bankInformationSkipped;
+
+            var res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Updating bank information state failed. Updated {res} rows.");
             }
 
             return user;

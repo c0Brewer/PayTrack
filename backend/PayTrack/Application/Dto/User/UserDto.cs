@@ -38,5 +38,10 @@ namespace PayTrack.Application.Dto.User
         TeamDto? Team,
 
         [property: Required]
-        List<BankAccountDto> BankAccounts);
+        bool BankInformationSkipped,
+
+        [property: Required]
+        bool HasBankInformation,
+
+        IReadOnlyCollection<BankAccountDto> BankAccounts);
 }
