@@ -57,14 +57,14 @@ export class InvoiceFilterComponent implements OnInit {
     (v) => typeof v === 'number',
   ) as PayoutType[];
 
-  constructor(private readonly teamService: TeamService) {}
+  constructor(private readonly teamService: TeamService) { }
 
   ngOnInit(): void {
     this.teamService.getTeams({ Limit: 1000 }).subscribe({
       next: (data) => {
         this.teams = data.items ?? [];
       },
-      error: () => {},
+      error: () => { },
     });
 
     this.filterInvoiceNumberSubject.pipe(debounceTime(400)).subscribe((value) => {
@@ -127,7 +127,7 @@ export class InvoiceFilterComponent implements OnInit {
       MaxAmount: this.filterMaxAmount ? Number(this.filterMaxAmount) : undefined,
       PurposeOfPayment: this.filterPurpose || undefined,
       TeamId: this.filterTeamId,
-      PayoutType: this.filterPayoutType as (0 | 1) | undefined,
+      PayoutType: this.filterPayoutType,
     };
   }
 

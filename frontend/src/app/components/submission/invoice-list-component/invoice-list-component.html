@@ -26,8 +26,8 @@
         <td>{{ invoice.amount }}</td>
         <td>{{ invoice.purposeOfPayment }}</td>
         <td>{{ invoice.team.name }}</td>
-        <td>{{ payoutTypeToText(invoice.payoutType) }}</td>
-        <td>{{ statusToText(invoice.status) }}</td>
+        <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+        <td>{{ getTransactionStatusLabel(invoice.status) }}</td>
         @if (showCostCentreColumn) {
           <td>{{ invoice.costCentre.name }}</td>
         }
