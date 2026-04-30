@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
@@ -60,7 +61,19 @@ namespace PayTrack.Api.Handler
             [FromBody] CreateTeamRequestDto teamDto,
             ITeamService teamService)
         {
-            var createdTeam = await teamService.CreateTeamAsync(teamDto.name, teamDto.description, teamDto.displayColor);
+            // validates the attributes defined in CreateTeamRequestDto for the incoming request body teamDto 
+            var validationResults = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(teamDto, new ValidationContext(teamDto), validationResults, true))
+            {
+                return TypedResults.BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Validation failed",
+                    Detail = string.Join(" ", validationResults.Select(result => result.ErrorMessage)),
+                });
+            }
+
+            var createdTeam = await teamService.CreateTeamAsync(teamDto.Name, teamDto.Description, teamDto.DisplayColor);
 
             var createdTeamDto = TeamMapper.ToDto(createdTeam);
 
