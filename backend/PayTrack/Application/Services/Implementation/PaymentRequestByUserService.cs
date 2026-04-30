@@ -49,7 +49,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
-            if (PaidAt > DateTime.Today)
+            if (PaidAt.Date > DateTime.Today)
             {
                 throw new InvalidStateException("Paid at cannot be in the future!");
             }

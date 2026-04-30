@@ -72,27 +72,32 @@
 }
 
 .sidebar__links,
-.sidebar__admin {
+.sidebar__admin,
+.lower-nav {
   margin-bottom: 2rem;
-  a {
+  a,
+  button {
     align-items: center;
+    background: transparent;
+    border: 0;
     border-radius: 8px;
     color: white;
     display: inline-flex;
     gap: v.$size-xs;
     padding: v.$size-xs v.$size-s;
     text-decoration: none;
+    width: 100%;
   }
 
   a:hover,
-  a.is-active {
+  a.is-active,
+  button:hover {
     background: rgba(v.$TUR-primary-orange, 1);
     color: white;
   }
 }
 
 .sidebar__admin {
-  border-top: 2px solid grey;
   display: flex;
   flex-direction: column;
   gap: v.$size-xs;
@@ -108,13 +113,12 @@
   display: flex;
   flex-direction: column;
   border-top: 2px solid grey;
+  gap: v.$size-xs;
+  margin-top: auto;
+  padding-top: v.$size-s;
 }
 .sidebar__settings,
 .sidebar__logout {
-  background: none;
-  color: v.$TUR-primary-grey;
-  display: inline-flex;
-  gap: v.$size-xxs;
   font-weight: v.$font-semibold;
 }
 
@@ -125,16 +129,22 @@
 }
 
 @media (max-width: 767.98px) {
-  .lower-nav button:hover{
-    color: white;
-  }
-
   .sidebar {
     align-items: stretch;
     flex-direction: column;
     gap: v.$size-s;
     height: auto;
-    padding: v.$size-s;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: v.$size-xs v.$size-s;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .sidebar__header {
+    align-items: center;
   }
 
   .sidebar__brand {
@@ -147,6 +157,7 @@
   .sidebar__title {
     margin-top: 0;
     font-size: v.$font-l;
+    white-space: nowrap;
   }
 
   .sidebar__logo img {
@@ -165,6 +176,7 @@
 
   .sidebar__menu.sidebar__menu--open {
     display: flex;
+    padding-top: v.$size-xs;
   }
 
   .sidebar__links {
@@ -172,18 +184,38 @@
     align-items: stretch;
     flex: initial;
     flex-direction: column;
+    gap: v.$size-xxs;
+    margin-bottom: v.$size-s;
   }
 
   .sidebar__admin {
-    margin-top: v.$size-s;
+    margin-bottom: v.$size-s;
+    margin-top: 0;
   }
 
   .lower-nav {
     gap: v.$size-xxs;
     margin-top: v.$size-s;
+    margin-bottom: 0;
+  }
+
+  .sidebar__links a,
+  .sidebar__admin a,
+  .sidebar__settings,
+  .sidebar__logout {
+    display: flex;
+    justify-content: flex-start;
+    min-height: 2.75rem;
+    padding: v.$size-xs v.$size-s;
+    width: 100%;
+  }
+
+  .sidebar__settings,
+  .sidebar__logout {
+    border: 0;
   }
 
   .sidebar__logo img{
-    width:75%
+    width: 3rem;
   }
 }

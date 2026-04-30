@@ -33,6 +33,8 @@ describe('UserManagementComponent', () => {
       profilePictureUrl: '',
       team: { id: 1, name: 'Team A', description: '', displayColor: '' },
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     },
     {
       id: 2,
@@ -43,6 +45,8 @@ describe('UserManagementComponent', () => {
       profilePictureUrl: '',
       team: { id: 2, name: 'Team B', description: '', displayColor: '' },
       bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     },
   ];
 

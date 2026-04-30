@@ -19,6 +19,9 @@ namespace PayTrack.Tests.UnitTests.Mapper
             userDto.Should().NotBeNull();
             userDto.Id.Should().Be(id);
             userDto.Name.Should().Be(name);
+            userDto.BankAccounts.Should().BeEmpty();
+            userDto.HasBankInformation.Should().BeFalse();
+            userDto.BankInformationSkipped.Should().BeFalse();
         }
 
         [Fact]
@@ -60,6 +63,36 @@ namespace PayTrack.Tests.UnitTests.Mapper
             userDto.Team.Should().NotBeNull();
             userDto.Team.Id.Should().Be(3);
             userDto.Team.Name.Should().Be("Team1");
+        }
+
+        [Fact]
+        public async Task MapperToDto_ShouldMapBankInformation()
+        {
+            User user = new()
+            {
+                Id = 5,
+                Name = "Alice",
+                BankInformationSkipped = true,
+                BankAccounts =
+                [
+                    new BankAccount
+                    {
+                        Id = 7,
+                        Iban = "AT611904300234573201",
+                        Bic = "BKAUATWW",
+                        AccountHolder = "Alice Example",
+                    },
+                ],
+            };
+
+            var userDto = UserMapper.ToDto(user);
+
+            userDto.BankInformationSkipped.Should().BeTrue();
+            userDto.HasBankInformation.Should().BeTrue();
+            userDto.BankAccounts.Should().ContainSingle();
+            userDto.BankAccounts.Single().Iban.Should().Be("AT611904300234573201");
+            userDto.BankAccounts.Single().Bic.Should().Be("BKAUATWW");
+            userDto.BankAccounts.Single().AccountHolder.Should().Be("Alice Example");
         }
     }
 }

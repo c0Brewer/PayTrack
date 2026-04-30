@@ -33,6 +33,8 @@ describe('TeamManagementComponent', () => {
     role: 0,
     team: {} as TeamDto,
     isActive: true,
+    bankInformationSkipped: true,
+    hasBankInformation: true,
   };
 
   const mockTeams: TeamDto[] = [

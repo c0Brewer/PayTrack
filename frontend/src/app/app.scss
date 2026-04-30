@@ -17,4 +17,8 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
+
+  .app-shell__sidebar {
+    width: 100%;
+  }
 }
