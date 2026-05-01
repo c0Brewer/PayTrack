@@ -1,9 +1,9 @@
 <table class="team-table">
   <colgroup>
     <col style="width: 20%" />
-    <col />
+    <col style="width: 25%" />
     <col style="width: 15%" />
-    <col style="width: 15%" />
+    <col style="width: 30%" />
     <col style="width: 10%" />
   </colgroup>
 
@@ -12,7 +12,7 @@
       <th>Name</th>
       <th>Description</th>
       <th>Member Count</th>
-      <th>Team Budget</th>
+      <th>Team Budgets</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -32,12 +32,26 @@
 
         <td class="description">{{ getDescription(team) }}</td>
         <td>{{ getMembersCount(team) }}</td>
-        <td>
-          {{
-            getBudgetTargetAmount(team) !== null
-              ? `${getBudgetTargetAmount(team)} €`
-              : 'No budget set'
-          }}
+        <td class="budget-cell">
+          @if (getCurrentBudgets(team).length > 0) {
+            <div class="budget-list">
+              @for (budget of getVisibleCurrentBudgets(team); track budget.id) {
+                <span class="budget-amount">{{ getBudgetDisplayValue(budget) }}</span>
+              }
+            </div>
+
+            @if (hasHiddenCurrentBudgets(team)) {
+              <button class="budget-toggle-btn" type="button" (click)="toggleBudgetList(team)">
+                {{
+                  isBudgetListExpanded(team)
+                    ? 'Show less'
+                    : `Show all (${getCurrentBudgets(team).length})`
+                }}
+              </button>
+            }
+          } @else {
+            No budget set
+          }
         </td>
 
         <td class="actions-col">

@@ -61,6 +61,42 @@
     color: v.$text-light;
   }
 
+  .budget-cell {
+    color: v.$text-color;
+  }
+
+  .budget-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-xxs;
+  }
+
+  .budget-amount {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 v.$size-xs;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    background: v.$gray-100;
+    font-weight: v.$font-medium;
+    white-space: nowrap;
+  }
+
+  .budget-toggle-btn {
+    margin-top: v.$size-xxs;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: v.$primary-color;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+  }
+
+  .budget-toggle-btn:hover {
+    text-decoration: underline;
+  }
+
   .edit-btn {
     padding: v.$size-xxs v.$size-s;
     border: 1px solid v.$border-color;
