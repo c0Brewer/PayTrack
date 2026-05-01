@@ -296,7 +296,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     requestDto.Name,
                     requestDto.Description,
                     requestDto.DisplayColor,
-                requestDto.Budgets),
+                    requestDto.Budgets),
                 Times.Never);
         }
 
@@ -304,7 +304,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task UpdateTeam_ReturnsOkWithUpdatedTeam()
         {
             // Arrange
-            var requestDto = new UpdateTeamDto("Updated Team", "Updated Description", "#445566", null, null);
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "#445566", null, null);
             var updatedTeam = new Team
             {
                 Id = 1,
@@ -337,6 +337,31 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Name.Should().Be("Updated Team");
             result.Description.Should().Be("Updated Description");
             result.DisplayColor.Should().Be("#445566");
+        }
+
+        [Fact]
+        public async Task UpdateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
+        {
+            // Arrange
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "My Color", null, null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PutAsJsonAsync("api/v1/team/1", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _factory.TeamServiceMock.Verify(
+                s => s.UpdateTeamAsync(
+                    1,
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.BudgetsToUpsert,
+                    requestDto.BudgetIdsToDelete),
+                Times.Never);
         }
 
         [Fact]

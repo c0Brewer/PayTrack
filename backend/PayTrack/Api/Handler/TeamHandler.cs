@@ -88,21 +88,32 @@ namespace PayTrack.Api.Handler
         /// Updates a Team.
         /// </summary>
         /// <param name="id">Id of the Team to update.</param>
-        /// <param name="updateTeamDto">request for team creation.</param>
+        /// <param name="updateTeamRequestDto">request for team creation.</param>
         /// <param name="teamService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UpdateTeamAsync(
             [FromRoute] int id,
-            [FromBody] UpdateTeamDto updateTeamDto,
+            [FromBody] UpdateTeamRequestDto updateTeamRequestDto,
             ITeamService teamService)
         {
+            var validationResults = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(updateTeamRequestDto, new ValidationContext(updateTeamRequestDto), validationResults, true))
+            {
+                return TypedResults.BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Validation failed",
+                    Detail = string.Join(" ", validationResults.Select(result => result.ErrorMessage)),
+                });
+            }
+
             var updatedTeam = await teamService.UpdateTeamAsync(
                 id,
-                updateTeamDto.Name,
-                updateTeamDto.Description,
-                updateTeamDto.DisplayColor,
-                updateTeamDto.BudgetsToUpsert,
-                updateTeamDto.BudgetIdsToDelete);
+                updateTeamRequestDto.Name,
+                updateTeamRequestDto.Description,
+                updateTeamRequestDto.DisplayColor,
+                updateTeamRequestDto.BudgetsToUpsert,
+                updateTeamRequestDto.BudgetIdsToDelete);
             var updatedTeamDto = TeamMapper.ToDto(updatedTeam);
             return TypedResults.Ok(updatedTeamDto);
         }
