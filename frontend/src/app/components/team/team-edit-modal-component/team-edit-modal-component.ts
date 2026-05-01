@@ -27,6 +27,7 @@ interface WorkingBudget {
 })
 export class TeamEditModalComponent implements OnChanges {
   readonly defaultColor = '#2563eb';
+  readonly minNameLength = 3;
   readonly minDescriptionLength = 3;
 
   @Input() team: TeamDto = {
@@ -208,8 +209,14 @@ export class TeamEditModalComponent implements OnChanges {
   }
 
   private getNameError(): string {
-    if ((this.team.name?.trim() ?? '').length === 0) {
+    const nameLength = this.team.name?.trim().length ?? 0;
+
+    if (nameLength === 0) {
       return 'Name is required.';
+    }
+
+    if (nameLength < this.minNameLength) {
+      return `Name must be at least ${this.minNameLength} characters long.`;
     }
 
     return '';

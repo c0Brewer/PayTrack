@@ -88,6 +88,12 @@ describe('TeamEditModalComponent', () => {
     expect(component.getFieldError('name')).toBe('Name is required.');
   });
 
+  it('getFieldError should reject names shorter than three characters', () => {
+    component.team.name = 'ab';
+
+    expect(component.getFieldError('name')).toBe('Name must be at least 3 characters long.');
+  });
+
   it('getFieldError should reject descriptions shorter than three characters', () => {
     component.team.description = 'ab';
 
@@ -111,7 +117,7 @@ describe('TeamEditModalComponent', () => {
   });
 
   it('onSave should not emit when validation fails and should mark fields as touched', () => {
-    component.team.name = '';
+    component.team.name = 'ab';
     component.team.description = 'ab';
     const emitSpy = vi.spyOn(component.saveEvent, 'emit');
 
