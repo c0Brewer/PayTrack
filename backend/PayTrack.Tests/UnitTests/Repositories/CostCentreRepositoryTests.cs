@@ -51,7 +51,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
             var entity = new CostCentre { Name = "Electronics" };
-            var budgets = new List<CreateBudgetEntryDto>
+            var budgets = new List<CreateCostCentreBudgetEntryDto>
             {
                 new(TeamId: team.Id, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
@@ -548,7 +548,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: null, TeamId: team.Id, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
@@ -586,7 +586,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: budget.Id, TeamId: team.Id, TargetAmount: 9999m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
@@ -655,7 +655,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: null, TeamId: team.Id, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 7, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
@@ -698,7 +698,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: 999, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };

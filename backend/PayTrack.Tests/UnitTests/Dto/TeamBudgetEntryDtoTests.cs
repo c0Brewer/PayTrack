@@ -1,5 +1,5 @@
 using FluentAssertions;
-using PayTrack.Application.Dto.Team;
+using PayTrack.Application.Dto.Budget;
 
 namespace PayTrack.Tests.UnitTests.Dto
 {

@@ -1,4 +1,4 @@
-// <copyright file="CreateBudgetEntryDto.cs" company="PayTrack">
+// <copyright file="CreateTeamBudgetEntryDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -7,11 +7,11 @@ using System.ComponentModel.DataAnnotations;
 namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
-    /// Dto for a budget entry supplied during cost center creation.
+    /// Dto for a budget entry supplied during team creation.
     /// </summary>
-    public sealed record class CreateBudgetEntryDto(
+    public sealed record class CreateTeamBudgetEntryDto(
         [property: Required]
-        int TeamId,
+        int CostCentreId,
 
         [property: Required]
         [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]

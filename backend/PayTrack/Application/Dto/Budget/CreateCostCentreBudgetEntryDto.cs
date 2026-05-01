@@ -1,19 +1,17 @@
-// <copyright file="UpsertTeamBudgetEntryDto.cs" company="PayTrack">
+// <copyright file="CreateCostCentreBudgetEntryDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
 
-namespace PayTrack.Application.Dto.Team
+namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
-    /// Dto for upserting a budget entry during team update.
+    /// Dto for a budget entry supplied during cost center creation.
     /// </summary>
-    public sealed record class UpsertTeamBudgetEntryDto(
-        int? Id,
-
+    public sealed record class CreateCostCentreBudgetEntryDto(
         [property: Required]
-        int CostCentreId,
+        int TeamId,
 
         [property: Required]
         [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]

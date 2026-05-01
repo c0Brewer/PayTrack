@@ -39,7 +39,7 @@ namespace PayTrack.Application.Services.Model
             string name,
             string? description,
             string? displayColor,
-            IList<CreateBudgetEntryDto>? budgetEntries);
+            IList<CreateCostCentreBudgetEntryDto>? budgetEntries);
 
         /// <summary>
         /// Partially updates a cost center. Null fields are left unchanged.
@@ -56,7 +56,7 @@ namespace PayTrack.Application.Services.Model
             string? name,
             string? description,
             string? displayColor,
-            IList<UpsertBudgetEntryDto>? budgetsToUpsert,
+            IList<UpsertCostCentreBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete);
 
         /// <summary>

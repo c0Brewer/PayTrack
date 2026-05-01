@@ -1,15 +1,15 @@
-// <copyright file="UpsertBudgetEntryDto.cs" company="PayTrack">
+// <copyright file="UpsertCostCentreBudgetEntryDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
 
-namespace PayTrack.Application.Dto.CostCentre
+namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
     /// Dto for upserting a budget entry during cost centre update.
     /// </summary>
-    public sealed record class UpsertBudgetEntryDto(
+    public sealed record class UpsertCostCentreBudgetEntryDto(
         int? Id,
 
         [property: Required]
