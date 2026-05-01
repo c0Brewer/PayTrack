@@ -179,6 +179,10 @@ export class TeamEditModalComponent implements OnChanges {
     );
   }
 
+  formatBudgetAmount(amount: number): string {
+    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+  }
+
   getCostCentreOptionLabel(costCentre: CostCentreDto): string {
     return costCentre.isActive === false ? `${costCentre.name} (inactive)` : costCentre.name;
   }

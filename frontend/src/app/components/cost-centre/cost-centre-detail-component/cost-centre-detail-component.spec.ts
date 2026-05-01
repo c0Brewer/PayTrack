@@ -166,9 +166,9 @@ describe('CostCentreDetailComponent', () => {
       expect(rows.length).toBe(1);
     });
 
-    it('should display the budget target amount', () => {
+    it('should display the formatted budget target amount', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.textContent).toContain('1500');
+      expect(fixture.nativeElement.textContent).toContain('1.500');
     });
 
     it('should display budget period dates sliced to YYYY-MM-DD', () => {

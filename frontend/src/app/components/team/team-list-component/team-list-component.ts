@@ -50,7 +50,11 @@ export class TeamListComponent {
   }
 
   getBudgetDisplayValue(budget: TeamBudget): string {
-    return `${this.getCostCentreName(budget.costCentreId)}: ${budget.targetAmount} €`;
+    return `${this.getCostCentreName(budget.costCentreId)}: ${this.formatBudgetAmount(budget.targetAmount)} €`;
+  }
+
+  formatBudgetAmount(amount: number): string {
+    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
   hasHiddenCurrentBudgets(team: TeamDto): boolean {

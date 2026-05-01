@@ -196,9 +196,9 @@ describe('TeamListComponent', () => {
   it('should include the corresponding cost centre name in the budget display value', () => {
     component.costCentres = mockCostCentres;
 
-    expect(component.getBudgetDisplayValue(mockTeams[0].budgets![1])).toBe('Vehicle: 5000 €');
+    expect(component.getBudgetDisplayValue(mockTeams[0].budgets![1])).toBe('Vehicle: 5.000 €');
     expect(component.getBudgetDisplayValue(nonMatchingBudgetTeam.budgets![0])).toBe(
-      'Cost centre #11: 7000 €',
+      'Cost centre #11: 7.000 €',
     );
   });
 
@@ -250,11 +250,11 @@ describe('TeamListComponent', () => {
 
     expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
-    expect(firstBudgetCell.textContent).toContain('Vehicle: 5000 €');
-    expect(firstBudgetCell.textContent).toContain('Operations: 6000 €');
-    expect(firstBudgetCell.textContent).toContain('Software: 7000 €');
+    expect(firstBudgetCell.textContent).toContain('Vehicle: 5.000 €');
+    expect(firstBudgetCell.textContent).toContain('Operations: 6.000 €');
+    expect(firstBudgetCell.textContent).toContain('Software: 7.000 €');
     expect(firstBudgetCell.textContent).toContain('Show all (4)');
-    expect(firstBudgetCell.textContent).not.toContain('Travel: 8000 €');
+    expect(firstBudgetCell.textContent).not.toContain('Travel: 8.000 €');
     expect(secondRowCells).toContain('No budget set');
   });
 
@@ -273,7 +273,7 @@ describe('TeamListComponent', () => {
       'tbody tr:first-child .budget-cell',
     ) as HTMLTableCellElement;
 
-    expect(firstBudgetCell.textContent).toContain('Travel: 8000 €');
+    expect(firstBudgetCell.textContent).toContain('Travel: 8.000 €');
     expect(firstBudgetCell.textContent).toContain('Show less');
   });
 

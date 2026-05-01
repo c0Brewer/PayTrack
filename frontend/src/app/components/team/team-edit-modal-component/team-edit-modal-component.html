@@ -97,7 +97,7 @@
             @for (budget of workingBudgets; track budget.originalId) {
               <tr [class.deleted]="budget.markedForDeletion">
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
-                <td>{{ budget.targetAmount }}</td>
+                <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
                 <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
                 <td>
@@ -126,7 +126,7 @@
             @for (budget of newBudgets; track $index) {
               <tr>
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
-                <td>{{ budget.targetAmount }}</td>
+                <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart }}</td>
                 <td>{{ budget.periodEnd }}</td>
                 <td>
