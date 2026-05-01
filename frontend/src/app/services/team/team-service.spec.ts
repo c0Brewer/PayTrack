@@ -115,6 +115,7 @@ describe('TeamService', () => {
           path: {
             id: teamId,
           },
+          query: {},
         },
       });
       expect(result).toEqual(apiResponse);

@@ -1,6 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
@@ -104,6 +105,7 @@ describe('TeamManagementComponent', () => {
         { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
+        provideRouter([]),
       ],
     }).compileComponents();
 

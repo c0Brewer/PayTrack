@@ -19,6 +19,7 @@ export type UpdateUserDto = components['schemas']['UpdateUserDto'];
 export type BankAccount = components['schemas']['BankAccountDto'];
 // Team Path
 export type GetTeamOptions = paths['/api/v1/team']['get']['parameters']['query'];
+export type GetTeamByIdOptions = paths['/api/v1/team/{id}']['get']['parameters']['query'];
 
 // User Path
 export type GetUserOptions = paths['/api/v1/user']['get']['parameters']['query'];

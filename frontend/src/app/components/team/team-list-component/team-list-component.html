@@ -21,13 +21,14 @@
     @for (team of teams; track team.id) {
       <tr>
         <td class="name">
-          <span
+          <a
+            [routerLink]="[team.id]"
             class="team-name-badge"
             [style.background]="getDisplayColor(team)"
             [style.color]="getTeamNameTextColor(team)"
           >
             {{ team.name }}
-          </span>
+          </a>
         </td>
 
         <td class="description">{{ getDescription(team) }}</td>

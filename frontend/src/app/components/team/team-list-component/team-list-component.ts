@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { CostCentreDto, TeamDto } from '../../../types/exporter';
 
@@ -6,7 +7,7 @@ type TeamBudget = NonNullable<TeamDto['budgets']>[number];
 
 @Component({
   selector: 'app-team-list-component',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './team-list-component.html',
   styleUrl: './team-list-component.scss',
 })

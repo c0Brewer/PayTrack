@@ -1,12 +1,30 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TeamDto } from '../../../types/exporter';
+import { CostCentreDto, TeamDto } from '../../../types/exporter';
 
 import { TeamEditModalComponent } from './team-edit-modal-component';
 
 describe('TeamEditModalComponent', () => {
   let component: TeamEditModalComponent;
   let fixture: ComponentFixture<TeamEditModalComponent>;
+  const costCentres: CostCentreDto[] = [
+    {
+      id: 1,
+      name: 'Active Cost Centre',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    },
+    {
+      id: 2,
+      name: 'Inactive Cost Centre',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: false,
+    },
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -56,6 +74,12 @@ describe('TeamEditModalComponent', () => {
     expect(component.selectedColor).toBe(component.defaultColor);
   });
 
+  it('selectedColor should return the configured hex color for valid values', () => {
+    component.team.displayColor = '#2563eb';
+
+    expect(component.selectedColor).toBe('#2563eb');
+  });
+
   it('setDisplayColor should only accept valid hex colors', () => {
     component.team.displayColor = '#2563eb';
 
@@ -100,6 +124,14 @@ describe('TeamEditModalComponent', () => {
     expect(component.getFieldError('description')).toBe(
       'Description must be at least 3 characters long.',
     );
+  });
+
+  it('getFieldError should allow valid name and description values', () => {
+    component.team.name = 'Platform';
+    component.team.description = 'Builds product features';
+
+    expect(component.getFieldError('name')).toBe('');
+    expect(component.getFieldError('description')).toBe('');
   });
 
   it('onSave should emit saveEvent if team changed', () => {
@@ -153,7 +185,7 @@ describe('TeamEditModalComponent', () => {
     expect(emitSpy).toHaveBeenCalledOnce();
   });
 
-  it('onSave should include edited and new budgets plus deletions', () => {
+  it('onSave should include new budgets and existing budget deletions', () => {
     component.team = {
       id: 1,
       name: 'Platform',
@@ -172,7 +204,7 @@ describe('TeamEditModalComponent', () => {
       ],
     };
     component.ngOnChanges();
-    component.workingBudgets[0].targetAmount = 250;
+    component.toggleBudgetDeletion(component.workingBudgets[0]);
     component.newBudgets = [
       {
         id: null,
@@ -190,13 +222,6 @@ describe('TeamEditModalComponent', () => {
       team: component.team,
       budgetsToUpsert: [
         {
-          id: 10,
-          costCentreId: 2,
-          targetAmount: 250,
-          periodStart: '2026-01-01',
-          periodEnd: '2026-12-31',
-        },
-        {
           id: null,
           costCentreId: 3,
           targetAmount: 500,
@@ -204,7 +229,117 @@ describe('TeamEditModalComponent', () => {
           periodEnd: '2026-06-30',
         },
       ],
-      budgetIdsToDelete: [],
+      budgetIdsToDelete: [10],
     });
+  });
+
+  it('should add and remove new budgets with active cost centres', () => {
+    component.costCentres = costCentres;
+    component.newBudgetDraft = {
+      id: null,
+      costCentreId: 1,
+      targetAmount: 500,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+    };
+
+    component.addNewBudget();
+
+    expect(component.newBudgets).toEqual([
+      {
+        id: null,
+        costCentreId: 1,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+      },
+    ]);
+    expect(component.newBudgetDraft).toEqual({
+      id: null,
+      costCentreId: 0,
+      targetAmount: 0,
+      periodStart: '',
+      periodEnd: '',
+    });
+
+    component.removeNewBudget(0);
+
+    expect(component.newBudgets).toEqual([]);
+  });
+
+  it('should mark existing budgets for deletion and restore them', () => {
+    component.team = {
+      id: 1,
+      name: 'Platform',
+      description: 'Builds product features',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [
+        {
+          id: 10,
+          teamId: 1,
+          costCentreId: 2,
+          targetAmount: 100,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+        },
+      ],
+    };
+    component.ngOnChanges();
+
+    component.toggleBudgetDeletion(component.workingBudgets[0]);
+
+    expect(component.workingBudgets[0].markedForDeletion).toBe(true);
+    expect(component.hasTeamBeenChanged()).toBe(true);
+
+    component.toggleBudgetDeletion(component.workingBudgets[0]);
+
+    expect(component.workingBudgets[0].markedForDeletion).toBe(false);
+  });
+
+  it('should resolve cost centre names and fall back to the id', () => {
+    component.costCentres = costCentres;
+
+    expect(component.getCostCentreName(1)).toBe('Active Cost Centre');
+    expect(component.getCostCentreName(99)).toBe('Cost Centre #99');
+  });
+
+  it('should label inactive cost centre options and prevent adding them to new budgets', () => {
+    component.costCentres = costCentres;
+    component.newBudgetDraft = {
+      id: null,
+      costCentreId: 2,
+      targetAmount: 500,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+    };
+
+    component.addNewBudget();
+
+    expect(component.getCostCentreOptionLabel(costCentres[1])).toBe(
+      'Inactive Cost Centre (inactive)',
+    );
+    expect(component.isCostCentreActive(1)).toBe(true);
+    expect(component.isCostCentreActive(2)).toBe(false);
+    expect(component.newBudgets).toEqual([]);
+  });
+
+  it('should leave active cost centre labels unchanged and treat unknown ids as selectable', () => {
+    component.costCentres = costCentres;
+
+    expect(component.getCostCentreOptionLabel(costCentres[0])).toBe('Active Cost Centre');
+    expect(component.isCostCentreActive(999)).toBe(true);
+  });
+
+  it('should render inactive cost centres as disabled select options', () => {
+    fixture.componentRef.setInput('costCentres', costCentres);
+    fixture.detectChanges();
+
+    const inactiveOption = Array.from(
+      fixture.nativeElement.querySelectorAll('option') as NodeListOf<HTMLOptionElement>,
+    ).find((option) => option.textContent?.trim() === 'Inactive Cost Centre (inactive)');
+
+    expect(inactiveOption).toBeTruthy();
+    expect(inactiveOption?.disabled).toBe(true);
   });
 });

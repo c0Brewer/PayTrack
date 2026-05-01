@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -21,7 +22,7 @@ interface WorkingBudget {
 
 @Component({
   selector: 'app-team-edit-modal-component',
-  imports: [FormsModule, ModalComponent],
+  imports: [DatePipe, FormsModule, ModalComponent],
   templateUrl: './team-edit-modal-component.html',
   styleUrl: './team-edit-modal-component.scss',
 })
@@ -89,11 +90,7 @@ export class TeamEditModalComponent implements OnChanges {
       this.team.description !== this.originalTeam.description ||
       this.team.displayColor !== this.originalTeam.displayColor ||
       this.newBudgets.length > 0 ||
-      this.workingBudgets.some(
-        (budget, index) =>
-          budget.markedForDeletion ||
-          !this.matchesOriginalBudget(budget, this.originalTeam?.budgets?.[index] ?? null),
-      )
+      this.workingBudgets.some((budget) => budget.markedForDeletion)
     );
   }
 
@@ -114,15 +111,6 @@ export class TeamEditModalComponent implements OnChanges {
       .map((budget) => budget.originalId);
 
     const budgetsToUpsert: UpsertTeamBudgetEntryDto[] = [
-      ...this.workingBudgets
-        .filter((budget) => !budget.markedForDeletion)
-        .map((budget) => ({
-          id: budget.originalId,
-          costCentreId: budget.costCentreId,
-          targetAmount: budget.targetAmount,
-          periodStart: budget.periodStart,
-          periodEnd: budget.periodEnd,
-        })),
       ...this.newBudgets.map((budget) => ({
         ...budget,
         id: null,
@@ -149,6 +137,7 @@ export class TeamEditModalComponent implements OnChanges {
   addNewBudget(): void {
     if (
       !this.newBudgetDraft.costCentreId ||
+      !this.isCostCentreActive(this.newBudgetDraft.costCentreId) ||
       !this.newBudgetDraft.periodStart ||
       !this.newBudgetDraft.periodEnd
     ) {
@@ -187,6 +176,16 @@ export class TeamEditModalComponent implements OnChanges {
     return (
       this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
       `Cost Centre #${costCentreId}`
+    );
+  }
+
+  getCostCentreOptionLabel(costCentre: CostCentreDto): string {
+    return costCentre.isActive === false ? `${costCentre.name} (inactive)` : costCentre.name;
+  }
+
+  isCostCentreActive(costCentreId: number): boolean {
+    return (
+      this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.isActive !== false
     );
   }
 
@@ -239,22 +238,5 @@ export class TeamEditModalComponent implements OnChanges {
 
   private emptyDraft(): UpsertTeamBudgetEntryDto {
     return { id: null, costCentreId: 0, targetAmount: 0, periodStart: '', periodEnd: '' };
-  }
-
-  private matchesOriginalBudget(
-    workingBudget: WorkingBudget,
-    originalBudget: BudgetDto | null,
-  ): boolean {
-    if (!originalBudget) {
-      return false;
-    }
-
-    return (
-      workingBudget.originalId === originalBudget.id &&
-      workingBudget.costCentreId === originalBudget.costCentreId &&
-      workingBudget.targetAmount === originalBudget.targetAmount &&
-      workingBudget.periodStart === originalBudget.periodStart &&
-      workingBudget.periodEnd === originalBudget.periodEnd
-    );
   }
 }

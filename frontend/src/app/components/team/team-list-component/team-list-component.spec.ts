@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
 import { CostCentreDto, TeamDto } from '../../../types/exporter';
@@ -137,6 +138,7 @@ describe('TeamListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TeamListComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TeamListComponent);

@@ -5,6 +5,7 @@ import { client } from '../../client';
 import {
   CreateTeamRequestDto,
   TeamDto,
+  GetTeamByIdOptions,
   GetTeamOptions,
   TeamDtoPaginatedResponse,
   UpdateTeamDto,
@@ -30,13 +31,14 @@ export class TeamService {
     return from(promise);
   }
 
-  public getTeamById(teamId: number): Observable<TeamDto> {
+  public getTeamById(teamId: number, options?: GetTeamByIdOptions): Observable<TeamDto> {
     const promise = client
       .GET('/api/v1/team/{id}', {
         params: {
           path: {
             id: teamId,
           },
+          query: options ?? {},
         },
       })
       .then(({ data, error }) => {
