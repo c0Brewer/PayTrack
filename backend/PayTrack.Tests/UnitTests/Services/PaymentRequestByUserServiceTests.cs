@@ -268,7 +268,8 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var result = await service.GetReceiptForPaymentRequestByUserByIdAsync(1);
 
-            result.Should().Equal(1, 2, 3);
+            result.content.Should().Equal(1, 2, 3);
+            result.contentType.Should().Be("application/pdf");
         }
 
         [Fact]

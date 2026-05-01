@@ -1,7 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { PaymentRequestByUserDto, PayoutType, PayoutTypeLabels, TransactionStatus, TransactionStatusLabels } from '../../../types/exporter';
+import {
+  PaymentRequestByUserDto,
+  PayoutType,
+  PayoutTypeLabels,
+  TransactionStatus,
+  TransactionStatusLabels,
+} from '../../../types/exporter';
 
 @Component({
   selector: 'app-invoice-list-component',

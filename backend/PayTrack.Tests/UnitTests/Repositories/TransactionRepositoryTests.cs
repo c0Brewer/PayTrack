@@ -216,6 +216,79 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         // ----------------------------
+        // GET BY ID (PaymentRequestByUser)
+        // ----------------------------
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnEntity_WhenExists()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdAsync_Found");
+
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser
+            {
+                Id = 42,
+                InvoiceNumber = "INV-42",
+                Amount = 500,
+                CreatedAt = DateTime.UtcNow,
+            });
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var result = await repo.GetByIdAsync(42, null);
+
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(42);
+            result.InvoiceNumber.Should().Be("INV-42");
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdAsync_NotFound");
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var result = await repo.GetByIdAsync(999, null);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ShouldIncludeBankAccount_WhenRequested()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdAsync_WithBankAccount");
+
+            var bankAccount = new BankAccount
+            {
+                Id = 1,
+                UserId = 99,
+                Iban = "AT611904300234573201",
+                Bic = "BKAUATWW",
+                AccountHolder = "Test User",
+            };
+            context.BankAccounts.Add(bankAccount);
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "INV-1",
+                BankAccountId = 1,
+                CreatedAt = DateTime.UtcNow,
+            });
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var result = await repo.GetByIdAsync(1, new GetPaymentRequestByUserQueryById { IncludeBankAccount = true });
+
+            result.Should().NotBeNull();
+            result!.BankAccount.Should().NotBeNull();
+            result.BankAccount!.Iban.Should().Be("AT611904300234573201");
+        }
+
+        // ----------------------------
         // UPDATE FAILURE
         // ----------------------------
         [Fact]

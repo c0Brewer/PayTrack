@@ -124,9 +124,9 @@ namespace PayTrack.Api.Handler
             [FromRoute] int id,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
-            var file = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id) ?? throw new NotFoundException("Could not load file");
+            var (file, contentType) = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id);
 
-            return TypedResults.File(file, "application/octet-stream");
+            return TypedResults.File(file, contentType);
         }
     }
 }

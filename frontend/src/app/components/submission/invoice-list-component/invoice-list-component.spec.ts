@@ -39,16 +39,16 @@ describe('InvoiceListComponent', () => {
     expect(emitted).toEqual(invoice);
   });
 
-  it('should return correct text for payoutTypeToText', () => {
-    expect(component.payoutTypeToText(0)).toBe('Internal');
-    expect(component.payoutTypeToText(1)).toBe('External');
+  it('should return correct text for getPayoutTypeLabel', () => {
+    expect(component.getPayoutTypeLabel(0)).toBe('User');
+    expect(component.getPayoutTypeLabel(1)).toBe('External');
   });
 
-  it('should return correct text for statusToText', () => {
-    expect(component.statusToText(0)).toBe('Submitted');
-    expect(component.statusToText(1)).toBe('Changes requested');
-    expect(component.statusToText(2)).toBe('Approved');
-    expect(component.statusToText(3)).toBe('Paid');
-    expect(component.statusToText(4)).toBe('Declined');
+  it('should return correct text for getTransactionStatusLabel', () => {
+    expect(component.getTransactionStatusLabel(0)).toBe('Submitted');
+    expect(component.getTransactionStatusLabel(1)).toBe('Changes requested');
+    expect(component.getTransactionStatusLabel(2)).toBe('Approved');
+    expect(component.getTransactionStatusLabel(3)).toBe('Paid');
+    expect(component.getTransactionStatusLabel(4)).toBe('Declined');
   });
 });

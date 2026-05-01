@@ -170,16 +170,29 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id)
+        public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
 
-            if (paymentRequest?.ReceiptUrl == null)
+            if (string.IsNullOrEmpty(paymentRequest?.ReceiptUrl))
             {
                 throw new InvalidStateException("Receipt URL is null although it should not be.");
             }
 
-            return await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var content = await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var contentType = GetContentTypeFromPath(paymentRequest.ReceiptUrl);
+            return (content, contentType);
+        }
+
+        private static string GetContentTypeFromPath(string filePath)
+        {
+            return Path.GetExtension(filePath).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".pdf" => "application/pdf",
+                _ => "application/octet-stream",
+            };
         }
     }
 }

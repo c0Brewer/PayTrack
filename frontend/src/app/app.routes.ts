@@ -7,6 +7,7 @@ import { CostCentreManagementComponent } from './components/cost-centre/cost-cen
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
 import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
@@ -35,6 +36,11 @@ export const routes: Routes = [
     path: 'my-invoices',
     canActivate: [authGuard],
     component: MyInvoicesComponent,
+  },
+  {
+    path: 'my-invoices/:id',
+    canActivate: [authGuard],
+    component: MyInvoiceDetailComponent,
   },
   {
     path: 'submit',

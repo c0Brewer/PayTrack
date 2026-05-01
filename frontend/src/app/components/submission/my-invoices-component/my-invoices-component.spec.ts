@@ -1,5 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../services/notification/notification-service';
@@ -15,7 +16,10 @@ describe('MyInvoicesComponent', () => {
 
   const paymentServiceMock = {
     getMyInvoices: vi.fn(),
-    downloadMyReceipt: vi.fn(),
+  };
+
+  const routerMock = {
+    navigate: vi.fn(),
   };
 
   const notificationMock = {
@@ -38,6 +42,7 @@ describe('MyInvoicesComponent', () => {
         { provide: NotificationService, useValue: notificationMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
+        { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
 
@@ -94,25 +99,12 @@ describe('MyInvoicesComponent', () => {
     expect(paymentServiceMock.getMyInvoices).toHaveBeenCalled();
   });
 
-  it('should download receipt on open detail', () => {
+  it('should navigate to detail page on open detail', () => {
     const invoice = { id: 1, invoiceNumber: 'INV-001' } as PaymentRequestByUserDto;
-    const blob = new Blob([new Uint8Array([1, 2, 3])]);
-    paymentServiceMock.downloadMyReceipt.mockReturnValue(of(blob));
-    URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
-    URL.revokeObjectURL = vi.fn();
 
     component.onOpenDetail(invoice);
 
-    expect(paymentServiceMock.downloadMyReceipt).toHaveBeenCalledWith(1);
-  });
-
-  it('should show error when receipt download fails', () => {
-    const invoice = { id: 1, invoiceNumber: 'INV-001' } as PaymentRequestByUserDto;
-    paymentServiceMock.downloadMyReceipt.mockReturnValue(throwError(() => 'download error'));
-
-    component.onOpenDetail(invoice);
-
-    expect(notificationMock.showError).toHaveBeenCalledWith('download error');
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 1]);
   });
 
   it('should return 1 for getTotalPages when totalCount is 0', () => {
