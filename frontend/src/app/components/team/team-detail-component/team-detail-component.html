@@ -36,7 +36,7 @@
         <table class="budget-table">
           <thead>
             <tr>
-              <th>Cost Centre ID</th>
+              <th>Cost Centre</th>
               <th>Target Amount</th>
               <th>Period Start</th>
               <th>Period End</th>
@@ -45,7 +45,11 @@
           <tbody>
             @for (budget of team.budgets ?? []; track budget.id) {
               <tr>
-                <td>{{ budget.costCentreId }}</td>
+                <td>
+                  <a [routerLink]="['/cost-centre', budget.costCentreId]">
+                    {{ getCostCentreName(budget.costCentreId) }}
+                  </a>
+                </td>
                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart | slice: 0 : 10 }}</td>
                 <td>{{ budget.periodEnd | slice: 0 : 10 }}</td>
