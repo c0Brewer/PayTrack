@@ -4,6 +4,7 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreatePaymentRequestByUserDto,
+  GetMyInvoiceByIdOptions,
   GetMyInvoicesOptions,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
@@ -142,6 +143,22 @@ export class PaymentRequestByUserService {
         params: {
           query: queryOptions,
         },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public getMyInvoiceById(
+    id: number,
+    queryOptions: GetMyInvoiceByIdOptions,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .GET('/api/v1/my-invoices/{id}', {
+        params: { path: { id }, query: queryOptions },
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');

@@ -1,0 +1,114 @@
+<div class="invoice-detail">
+  <button class="back-btn" (click)="back.emit()">
+    <span class="material-symbols-outlined">arrow_back</span> Back
+  </button>
+
+  @if (loading) {
+    <p>Loading...</p>
+  } @else if (invoice) {
+    <div class="detail-card">
+      <h2>Invoice {{ invoice.invoiceNumber }}</h2>
+
+      <table class="info-table">
+        <tbody>
+          <tr>
+            <th>Invoice Number</th>
+            <td>{{ invoice.invoiceNumber }}</td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td>{{ getStatusLabel(invoice.status) }}</td>
+          </tr>
+          <tr>
+            <th>Amount</th>
+            <td>{{ invoice.amount | currency: 'EUR' }}</td>
+          </tr>
+          <tr>
+            <th>Team</th>
+            <td>{{ invoice.team?.name ?? '—' }}</td>
+          </tr>
+          <tr>
+            <th>Purpose</th>
+            <td>{{ invoice.purposeOfPayment }}</td>
+          </tr>
+          <tr>
+            <th>Payout Type</th>
+            <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+          </tr>
+          <tr>
+            <th>Comment</th>
+            <td>{{ invoice.comment }}</td>
+          </tr>
+          <tr>
+            <th>Submitted</th>
+            <td>{{ invoice.createdAt | date: 'mediumDate' }}</td>
+          </tr>
+          <tr>
+            <th>Paid At</th>
+            <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
+          </tr>
+          @if (showUserName) {
+            <tr>
+              <th>User</th>
+              <td>{{ invoice.user?.name ?? '—' }}</td>
+            </tr>
+          }
+          @if (showCostCentre && invoice.costCentre) {
+            <tr>
+              <th>Cost Centre</th>
+              <td>{{ invoice.costCentre.name }}</td>
+            </tr>
+          }
+          <tr>
+            <th>Bank Account (IBAN)</th>
+            <td>{{ invoice.bankAccount?.iban ?? '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if ((invoice.statusHistory?.length ?? 0) > 0) {
+        <h3>Status History</h3>
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>From</th>
+              <th>To</th>
+              <th>Changed At</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of invoice.statusHistory ?? []; track entry.changedAt) {
+              <tr>
+                <td>{{ getStatusLabel(entry.fromStatus) }}</td>
+                <td>{{ getStatusLabel(entry.toStatus) }}</td>
+                <td>{{ entry.changedAt | date: 'medium' }}</td>
+                <td>{{ entry.comment }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <div class="receipt-section">
+        <h3>Receipt</h3>
+        @if (receiptBlobUrl) {
+          @if (isReceiptImage) {
+            <img class="receipt-image" [src]="safeReceiptUrl" alt="Receipt" />
+          } @else {
+            <iframe class="receipt-frame" [src]="safeReceiptUrl" title="Receipt"></iframe>
+          }
+        } @else if (!hasReceipt) {
+          <p>Loading receipt...</p>
+        } @else {
+          <p>Preview not available.</p>
+        }
+        @if (hasReceipt) {
+          <button class="download-btn" (click)="downloadReceipt.emit()">
+            <span class="material-symbols-outlined">download</span> Download Receipt
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

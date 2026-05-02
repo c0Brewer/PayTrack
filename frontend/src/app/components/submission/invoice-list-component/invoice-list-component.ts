@@ -1,7 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { PaymentRequestByUserDto } from '../../../types/exporter';
+import {
+  PaymentRequestByUserDto,
+  PayoutType,
+  PayoutTypeLabels,
+  TransactionStatus,
+  TransactionStatusLabels,
+} from '../../../types/exporter';
 
 @Component({
   selector: 'app-invoice-list-component',
@@ -20,24 +26,11 @@ export class InvoiceListComponent {
     this.openDetail.emit(invoice);
   }
 
-  payoutTypeToText(payoutType: 0 | 1): string {
-    return payoutType === 0 ? 'Internal' : 'External';
+  getPayoutTypeLabel(type: PayoutType): string {
+    return PayoutTypeLabels[type] ?? 'Unknown';
   }
 
-  statusToText(status: 0 | 1 | 2 | 3 | 4): string {
-    switch (status) {
-      case 0:
-        return 'Submitted';
-      case 1:
-        return 'Changes requested';
-      case 2:
-        return 'Approved';
-      case 3:
-        return 'Paid';
-      case 4:
-        return 'Declined';
-      default:
-        return 'Unknown';
-    }
+  getTransactionStatusLabel(status: TransactionStatus): string {
+    return TransactionStatusLabels[status] ?? 'Unknown';
   }
 }

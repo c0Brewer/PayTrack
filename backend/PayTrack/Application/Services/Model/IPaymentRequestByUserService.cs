@@ -31,8 +31,8 @@ namespace PayTrack.Application.Services.Model
         /// Gets a specific receipt for a PaymentRequestByUser by their ID.
         /// </summary>
         /// <param name="id">id of PaymentRequestByUser to find.</param>
-        /// <returns>PaymentRequestByUser with given id.</returns>
-        Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id);
+        /// <returns>Tuple of file bytes and MIME content type.</returns>
+        Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id);
 
         /// <summary>
         /// Creates a PaymentRequestByUser using the given input.

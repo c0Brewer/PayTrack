@@ -231,7 +231,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             _factory.ServiceMock
                 .Setup(s => s.GetReceiptForPaymentRequestByUserByIdAsync(1))
-                .ReturnsAsync(fileBytes);
+                .ReturnsAsync((fileBytes, "application/pdf"));
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");

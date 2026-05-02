@@ -85,7 +85,34 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<PaymentRequestByUser?> GetByIdAsync(int id, GetPaymentRequestByUserQueryById? query = null)
         {
-            throw new NotImplementedException();
+            IQueryable<PaymentRequestByUser> dbQuery = this.context.PaymentRequestsByUser.AsQueryable();
+
+            if (query?.IncludeCostCentre == true)
+            {
+                dbQuery = dbQuery.Include(t => t.CostCentre);
+            }
+
+            if (query?.IncludeUser == true)
+            {
+                dbQuery = dbQuery.Include(t => t.User);
+            }
+
+            if (query?.IncludeTeam == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Team);
+            }
+
+            if (query?.IncludeStatusHistory == true)
+            {
+                dbQuery = dbQuery.Include(t => t.StatusHistory);
+            }
+
+            if (query?.IncludeBankAccount == true)
+            {
+                dbQuery = dbQuery.Include(t => t.BankAccount);
+            }
+
+            return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <inheritdoc/>

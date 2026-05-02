@@ -1392,24 +1392,24 @@ export interface components {
         PaymentRequestByUserDto: {
             /** Format: int32 */
             id: number;
-            user: components["schemas"]["UserDto"];
+            user?: components["schemas"]["UserDto"];
             /** Format: double */
             amount: number;
-            purposeOfPayment: string;
-            paymentReference: string;
+            purposeOfPayment?: string | null;
+            paymentReference?: string | null;
             status: components["schemas"]["TransactionStatus"];
-            costCentre: components["schemas"]["CostCentreDto"];
-            team: components["schemas"]["TeamDto"];
-            paymentDirection: components["schemas"]["PaymentDirection"];
-            statusHistory: components["schemas"]["TransactionStatusHistoryDto"][];
+            costCentre?: components["schemas"]["CostCentreDto"];
+            team?: components["schemas"]["TeamDto"];
+            paymentDirection?: components["schemas"]["PaymentDirection"];
+            statusHistory?: components["schemas"]["TransactionStatusHistoryDto"][] | null;
             /** Format: date-time */
-            createdAt: string;
+            createdAt?: string | null;
             /** Format: date-time */
-            paidAt: string;
+            paidAt?: string | null;
             invoiceNumber: string;
-            comment: string;
+            comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
-            bankAccount: components["schemas"]["BankAccountDto"];
+            bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;
