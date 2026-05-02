@@ -34,7 +34,21 @@ describe('MyInvoiceDetailComponent', () => {
     paramMap: of(convertToParamMap({ id: '5' })),
   };
 
-  const mockInvoice = { id: 5, invoiceNumber: 'INV-005' } as PaymentRequestByUserDto;
+  const mockInvoice = {
+    id: 5,
+    invoiceNumber: 'INV-005',
+    status: 0,
+    amount: 50,
+    team: { name: 'Engineering' },
+    purposeOfPayment: 'Test',
+    payoutType: 0,
+    comment: '',
+    createdAt: '2026-01-01T00:00:00Z',
+    paidAt: null,
+    bankAccount: { iban: 'AT611904300234573201' },
+    user: { name: 'Alice' },
+    statusHistory: [],
+  } as unknown as PaymentRequestByUserDto;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -114,6 +128,22 @@ describe('MyInvoiceDetailComponent', () => {
     expect(component.rawReceiptBlobUrl).toBe('blob:test');
     expect(component.receiptBlobUrl).toBe('blob:test');
     expect(component.isReceiptImage).toBe(false);
+  });
+
+  it('should render img tag in DOM when receipt is an image', () => {
+    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
+    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('img.receipt-image')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).toBeNull();
+  });
+
+  it('should render iframe in DOM when receipt is a PDF', () => {
+    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
+    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('img.receipt-image')).toBeNull();
   });
 
   it('should set rawReceiptBlobUrl but null receiptBlobUrl for non-displayable blob types', () => {

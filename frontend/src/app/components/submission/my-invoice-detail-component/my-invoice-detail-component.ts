@@ -56,7 +56,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
           this.rawReceiptBlobUrl = URL.createObjectURL(blob);
           this.receiptMimeType = blob.type;
           this.isReceiptImage = blob.type.startsWith('image/');
-          const isDisplayable = this.isReceiptImage || blob.type === 'application/pdf';
+          const isDisplayable = this.isReceiptImage || blob.type.startsWith('application/pdf');
           this.receiptBlobUrl = isDisplayable ? this.rawReceiptBlobUrl : null;
           this.cdr.detectChanges();
         },
