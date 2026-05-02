@@ -19,7 +19,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   invoice: PaymentRequestByUserDto | null = null;
   receiptBlobUrl: string | null = null;
