@@ -52,4 +52,13 @@
       }
     </select>
   }
+
+  @if (showUserFilter) {
+    <select (change)="onUserChange($event)">
+      <option value="">All users</option>
+      @for (user of users; track user.id) {
+        <option [value]="user.id">{{ user.name }}</option>
+      }
+    </select>
+  }
 </div>

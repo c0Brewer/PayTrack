@@ -4,6 +4,7 @@ import { debounceTime, Subject } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { TeamService } from '../../../services/team/team-service';
+import { UserService } from '../../../services/user/user-service';
 import {
   CostCentreDto,
   GetMyInvoicesOptions,
@@ -12,6 +13,7 @@ import {
   TeamDto,
   TransactionStatus,
   TransactionStatusLabels,
+  UserDto,
 } from '../../../types/exporter';
 
 @Component({
@@ -22,11 +24,13 @@ import {
 })
 export class InvoiceFilterComponent implements OnInit {
   @Input() showCostCentreFilter: boolean = false;
+  @Input() showUserFilter: boolean = false;
 
   @Output() updateFilter = new EventEmitter<GetMyInvoicesOptions>();
 
   teams: TeamDto[] = [];
   costCentres: CostCentreDto[] = [];
+  users: UserDto[] = [];
 
   filterInvoiceNumber: string = '';
   filterStatus: TransactionStatus | undefined = undefined;
@@ -38,6 +42,7 @@ export class InvoiceFilterComponent implements OnInit {
   filterTeamId: number | undefined = undefined;
   filterPayoutType: PayoutType | undefined = undefined;
   filterCostCentreId: number | undefined = undefined;
+  filterUserId: number | undefined = undefined;
 
   private readonly filterInvoiceNumberSubject = new Subject<string>();
   private readonly filterPurposeSubject = new Subject<string>();
@@ -49,6 +54,7 @@ export class InvoiceFilterComponent implements OnInit {
   private readonly filterTeamSubject = new Subject<number | undefined>();
   private readonly filterPayoutTypeSubject = new Subject<PayoutType | undefined>();
   private readonly filterCostCentreSubject = new Subject<number | undefined>();
+  private readonly filterUserSubject = new Subject<number | undefined>();
 
   TransactionStatus = TransactionStatus;
   TransactionStatusLabels = TransactionStatusLabels;
@@ -65,14 +71,15 @@ export class InvoiceFilterComponent implements OnInit {
   constructor(
     private readonly teamService: TeamService,
     private readonly costCentreService: CostCentreService,
-  ) { }
+    private readonly userService: UserService,
+  ) {}
 
   ngOnInit(): void {
     this.teamService.getTeams({ Limit: 1000 }).subscribe({
       next: (data) => {
         this.teams = data.items ?? [];
       },
-      error: () => { },
+      error: () => {},
     });
 
     if (this.showCostCentreFilter) {
@@ -80,12 +87,26 @@ export class InvoiceFilterComponent implements OnInit {
         next: (data) => {
           this.costCentres = data.items ?? [];
         },
-        error: () => { },
+        error: () => {},
+      });
+    }
+
+    if (this.showUserFilter) {
+      this.userService.getUser({ Limit: 1000 }).subscribe({
+        next: (data) => {
+          this.users = data.items ?? [];
+        },
+        error: () => {},
       });
     }
 
     this.filterCostCentreSubject.pipe(debounceTime(100)).subscribe((value) => {
       this.filterCostCentreId = value;
+      this.emitFilter();
+    });
+
+    this.filterUserSubject.pipe(debounceTime(100)).subscribe((value) => {
+      this.filterUserId = value;
       this.emitFilter();
     });
 
@@ -151,6 +172,7 @@ export class InvoiceFilterComponent implements OnInit {
       TeamId: this.filterTeamId,
       PayoutType: this.filterPayoutType,
       CostCentreId: this.filterCostCentreId,
+      UserId: this.filterUserId,
     };
   }
 
@@ -196,5 +218,10 @@ export class InvoiceFilterComponent implements OnInit {
   onCostCentreChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filterCostCentreSubject.next(value !== '' ? Number(value) : undefined);
+  }
+
+  onUserChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filterUserSubject.next(value !== '' ? Number(value) : undefined);
   }
 }
