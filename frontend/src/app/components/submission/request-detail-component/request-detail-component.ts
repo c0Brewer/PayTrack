@@ -7,12 +7,12 @@ import { PaymentRequestByUserDto } from '../../../types/exporter';
 import { InvoiceDetailComponent } from '../invoice-detail-component/invoice-detail-component';
 
 @Component({
-  selector: 'app-my-invoice-detail-component',
+  selector: 'app-request-detail-component',
   imports: [InvoiceDetailComponent],
-  templateUrl: './my-invoice-detail-component.html',
-  styleUrl: './my-invoice-detail-component.scss',
+  templateUrl: './request-detail-component.html',
+  styleUrl: './request-detail-component.scss',
 })
-export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
+export class RequestDetailComponent implements OnInit, OnDestroy {
   constructor(
     private readonly service: PaymentRequestByUserService,
     private readonly notificationService: NotificationService,
@@ -33,8 +33,10 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
       const id = Number(params.get('id'));
 
       this.service
-        .getMyInvoiceById(id, {
+        .getPaymentRequestsByUserById(id, {
+          IncludeUser: true,
           IncludeTeam: true,
+          IncludeCostCentre: true,
           IncludeBankAccount: true,
           IncludeStatusHistory: true,
         })
@@ -50,7 +52,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
           },
         });
 
-      this.service.downloadMyReceipt(id).subscribe({
+      this.service.downloadAdminReceipt(id).subscribe({
         next: (blob) => {
           if (this.rawReceiptBlobUrl) URL.revokeObjectURL(this.rawReceiptBlobUrl);
           this.rawReceiptBlobUrl = URL.createObjectURL(blob);
@@ -94,6 +96,6 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/my-invoices']);
+    this.router.navigate(['/requests']);
   }
 }

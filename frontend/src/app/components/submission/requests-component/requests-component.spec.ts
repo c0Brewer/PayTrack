@@ -1,5 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
@@ -23,6 +24,10 @@ describe('RequestsComponent', () => {
     showError: vi.fn(),
   };
 
+  const routerMock = {
+    navigate: vi.fn(),
+  };
+
   const cdrMock = {
     markForCheck: vi.fn(),
   };
@@ -43,6 +48,7 @@ describe('RequestsComponent', () => {
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: CostCentreService, useValue: costCentreServiceMock },
@@ -54,17 +60,13 @@ describe('RequestsComponent', () => {
   });
 
   it('should create', () => {
-    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(
-      of({ items: [], totalCount: 0 }),
-    );
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should load invoices on init', () => {
-    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(
-      of({ items: [], totalCount: 0 }),
-    );
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
     const spy = vi.spyOn(component, 'loadInvoices');
     component.ngOnInit();
     expect(spy).toHaveBeenCalled();
@@ -89,9 +91,7 @@ describe('RequestsComponent', () => {
   });
 
   it('should show error on API failure', () => {
-    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(
-      throwError(() => 'API error'),
-    );
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(throwError(() => 'API error'));
 
     component.loadInvoices();
 
@@ -99,9 +99,7 @@ describe('RequestsComponent', () => {
   });
 
   it('should reset page to 0 and reload when filter options are updated', () => {
-    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(
-      of({ items: [], totalCount: 0 }),
-    );
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
     component.page = 3;
 
     component.updateFilterOptions({ Status: 2 as 0 | 1 | 2 | 3 | 4 });
@@ -110,25 +108,12 @@ describe('RequestsComponent', () => {
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
   });
 
-  it('should download receipt on open detail', () => {
+  it('should navigate to detail page on open detail', () => {
     const invoice = { id: 1, invoiceNumber: 'INV-001' } as PaymentRequestByUserDto;
-    const blob = new Blob([new Uint8Array([1, 2, 3])]);
-    paymentServiceMock.downloadAdminReceipt.mockReturnValue(of(blob));
-    URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
-    URL.revokeObjectURL = vi.fn();
 
     component.onOpenDetail(invoice);
 
-    expect(paymentServiceMock.downloadAdminReceipt).toHaveBeenCalledWith(1);
-  });
-
-  it('should show error when receipt download fails', () => {
-    const invoice = { id: 1, invoiceNumber: 'INV-001' } as PaymentRequestByUserDto;
-    paymentServiceMock.downloadAdminReceipt.mockReturnValue(throwError(() => 'download error'));
-
-    component.onOpenDetail(invoice);
-
-    expect(notificationMock.showError).toHaveBeenCalledWith('download error');
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/requests', 1]);
   });
 
   it('should return 1 for getTotalPages when totalCount is 0', () => {

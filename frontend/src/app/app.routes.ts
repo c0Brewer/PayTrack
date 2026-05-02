@@ -9,8 +9,9 @@ import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
 import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
-import { RequestsComponent } from './components/submission/requests-component/requests-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
+import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
+import { RequestsComponent } from './components/submission/requests-component/requests-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -51,6 +52,11 @@ export const routes: Routes = [
     path: 'requests',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: RequestsComponent,
+  },
+  {
+    path: 'requests/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: RequestDetailComponent,
   },
   {
     path: 'bankaccount',

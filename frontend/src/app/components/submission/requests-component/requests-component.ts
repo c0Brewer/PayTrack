@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -17,6 +18,7 @@ export class RequestsComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly notificationService: NotificationService,
+    private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -71,19 +73,7 @@ export class RequestsComponent implements OnInit {
   }
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
-    this.paymentRequestService.downloadAdminReceipt(invoice.id).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `receipt-${invoice.invoiceNumber}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.notificationService.showError(err);
-      },
-    });
+    this.router.navigate(['/requests', invoice.id]);
   }
 
   getTotalPages(): number {
