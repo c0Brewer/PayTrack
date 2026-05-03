@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
@@ -47,7 +48,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var fileRepo = new Mock<IFileRepository>();
             var repo = new TransactionRepository(context, fileRepo.Object);
 
-            var (transaction, totalCount) = await repo.GetAllAsync(null);
+            var (transaction, totalCount) = await repo.GetAllAsync(new Application.Dto.Transaction.GetTransactionQuery());
 
             transaction.Should().HaveCount(2);
             totalCount.Should().Be(2);
@@ -56,7 +57,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         [Fact]
         public async Task GetAllTransactionsWithAllParameters_ShouldReturnData()
         {
-            await using var context = GetInMemoryDbContext("GetAllTransactions");
+            await using var context = GetInMemoryDbContext("GetAllTransactionsWithParams");
 
             context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
             context.Teams.Add(new Team { Id = 1, Name = "test123" });
@@ -100,6 +101,57 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             transaction.Should().HaveCount(2);
             totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_ShouldReturnData()
+        {
+            await using var context = GetInMemoryDbContext("GetAllTeam");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, CreatedAt = DateTime.UtcNow },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, CreatedAt = DateTime.UtcNow }
+            );
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (result, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery());
+
+            result.Should().HaveCount(2);
+            count.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllTransactions_ShouldFilterByAmount()
+        {
+            await using var context = GetInMemoryDbContext("FilterAmount");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.Transactions.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 50, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123" }
+            );
+
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (result, count) = await repo.GetAllAsync(new Application.Dto.Transaction.GetTransactionQuery
+            {
+                MinAmount = 100
+            });
+
+            result.Should().HaveCount(1);
+            result.First().Amount.Should().Be(200);
+            count.Should().Be(1);
         }
 
         // ----------------------------
@@ -233,6 +285,40 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
 
             ex.Message.Should().Contain("Transaction");
+        }
+
+        [Fact]
+        public async Task GetAllTransactions_ShouldApplyOffsetAndLimit()
+        {
+            await using var context = GetInMemoryDbContext("OffsetLimit");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            for (int i = 1; i <= 5; i++)
+            {
+                context.Transactions.Add(new PaymentRequestByUser
+                {
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = i * 10,
+                    CreatedAt = DateTime.UtcNow.AddMinutes(i),
+                    InvoiceNumber = "123"
+                });
+            }
+
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (result, count) = await repo.GetAllAsync(new Application.Dto.Transaction.GetTransactionQuery
+            {
+                Offset = 1,
+                Limit = 2
+            });
+
+            count.Should().Be(5);
+            result.Should().HaveCount(2);
         }
     }
 }
