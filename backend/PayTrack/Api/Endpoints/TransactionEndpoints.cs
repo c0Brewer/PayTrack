@@ -44,6 +44,14 @@ namespace PayTrack.Api.Endpoints
             // group.MapGet("/team/", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             // group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
             // group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync);
+            
+            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
+            //schicke gleiche sachen wie bei create nur ohne file
+            //zurück, wenns passt -> leere Liste
+            //wenns Duplikate gibt -> Liste von Duplikaten (maximal 10)
+            //eigene DTO für Duplikate im PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto
+            
+            //Invoice number, Amount (vielleicht Fuzzy matcher)
         }
     }
 }

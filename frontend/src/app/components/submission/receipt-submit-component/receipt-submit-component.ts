@@ -234,6 +234,9 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       },
     };
 
+    //call getduplicate -> wenn leer, normal submitten und sonst anzeigen welche duplicate -> möglichkeit auf trotzdem absenden
+    //so wie payload ins backend schicken (ohne receipt)
+
     this.paymentRequestByUserService
       .createPaymentRequestByUser(payload, this.selectedFile) // <- we pass the actual File here
       .pipe(takeUntil(this.destroy$))
