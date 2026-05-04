@@ -82,7 +82,7 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Team> DeleteTeamAsync(int id)
+        public async Task<Team?> DeleteTeamAsync(int id)
         {
             return await this.repo.DeleteAsync(id);
         }

@@ -64,8 +64,8 @@ namespace PayTrack.Application.Services.Model
         /// Deletes a Team by id.
         /// </summary>
         /// <param name="id">The id of the team to delete.</param>
-        /// <returns>Deleted team instance.</returns>
-        Task<Team> DeleteTeamAsync(int id);
+        /// <returns>Null if the team was deleted, or the deactivated Team instance if linked records block deletion.</returns>
+        Task<Team?> DeleteTeamAsync(int id);
 
         /// <summary>
         /// Gets a preview of the impact of deleting a Team.
