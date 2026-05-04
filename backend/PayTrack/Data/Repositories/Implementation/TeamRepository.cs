@@ -52,23 +52,25 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Team> DeleteAsync(int id)
+        public async Task<Team?> DeleteAsync(int id)
         {
             var deleteImpact = await this.GetDeleteTeamImpactAsync(id) ?? throw new NotFoundException($"Team with id {id} not found.");
+            var team = await this.context.Teams.FirstAsync(t => t.Id == id);
 
             if (!deleteImpact.CanDelete)
             {
-                throw new InvalidStateException(deleteImpact.WarningMessage);
+                team.IsActive = false;
+                await this.context.SaveChangesAsync();
+                return team;
             }
 
-            var team = await this.context.Teams.FirstAsync(t => t.Id == id);
             this.context.Teams.Remove(team);
 
             var res = await this.context.SaveChangesAsync();
 
             return res != 1
                 ? throw new InternalErrorException($"Deleting Team did not end as expected. Deleted {res} teams.")
-                : team;
+                    : null;
         }
 
         /// <inheritdoc/>
