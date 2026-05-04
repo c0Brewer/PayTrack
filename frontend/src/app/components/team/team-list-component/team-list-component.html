@@ -1,10 +1,11 @@
 <table class="team-table">
   <colgroup>
-    <col style="width: 20%" />
-    <col style="width: 25%" />
-    <col style="width: 15%" />
-    <col style="width: 30%" />
+    <col style="width: 18%" />
+    <col style="width: 22%" />
+    <col style="width: 13%" />
     <col style="width: 10%" />
+    <col style="width: 30%" />
+    <col style="width: 7%" />
   </colgroup>
 
   <thead>
@@ -12,6 +13,7 @@
       <th>Name</th>
       <th>Description</th>
       <th>Member Count</th>
+      <th>Status</th>
       <th>Team Budgets</th>
       <th class="actions-col">Actions</th>
     </tr>
@@ -33,6 +35,11 @@
 
         <td class="description">{{ getDescription(team) }}</td>
         <td>{{ getMembersCount(team) }}</td>
+        <td>
+          <span class="status-badge" [class.active]="team.isActive">
+            {{ team.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
         <td class="budget-cell">
           @if (getCurrentBudgets(team).length > 0) {
             <div class="budget-list">

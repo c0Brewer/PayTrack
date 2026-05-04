@@ -8,6 +8,12 @@
   @if (!isCreating && team.id < 0) {
     <span>Team not found.</span>
   } @else {
+    @if (!isCreating) {
+      <div class="modal-top-actions">
+        <button type="button" class="delete-btn" (click)="onDelete()">Delete Team</button>
+      </div>
+    }
+
     <label>
       Name
       <input

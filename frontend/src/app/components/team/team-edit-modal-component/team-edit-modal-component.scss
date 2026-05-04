@@ -21,7 +21,9 @@ textarea {
   border: 1px solid v.$border-color;
   border-radius: 0.375rem;
   background: v.$background-light;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 
   &:focus {
     outline: none;
@@ -84,6 +86,25 @@ input[type='color'] {
   border-radius: 999px;
   color: v.$background-light;
   font-weight: 600;
+}
+
+.modal-top-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: v.$size-m;
+}
+
+.delete-btn {
+  padding: v.$size-xxs v.$size-s;
+  border: 1px solid v.$accent-color;
+  background: v.$accent-color;
+  color: v.$background-light;
+  font-size: v.$font-xs;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px v.$shadow-color;
+  }
 }
 
 .budgets-section {

@@ -42,6 +42,7 @@ export class TeamEditModalComponent implements OnChanges {
   @Input() costCentres: CostCentreDto[] = [];
 
   @Output() saveEvent = new EventEmitter<TeamSaveEvent>();
+  @Output() deleteEvent = new EventEmitter<TeamDto>();
   @Output() closeEvent = new EventEmitter<void>();
 
   originalTeam: TeamDto | null = null;
@@ -170,6 +171,12 @@ export class TeamEditModalComponent implements OnChanges {
 
   onClose(): void {
     this.closeEvent.emit();
+  }
+
+  onDelete(): void {
+    if (this.isCreating) return;
+
+    this.deleteEvent.emit(this.team);
   }
 
   getCostCentreName(costCentreId: number): string {

@@ -92,7 +92,7 @@ export class TeamListComponent {
   }
 
   getVisibleColumnCount(): number {
-    return 5;
+    return 6;
   }
 }
 

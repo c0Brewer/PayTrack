@@ -32,7 +32,17 @@
       [team]="editingTeam"
       [costCentres]="costCentres"
       (saveEvent)="saveTeam($event)"
+      (deleteEvent)="openDeleteTeam($event)"
       (closeEvent)="closeEdit()"
     ></app-team-edit-modal-component>
+  }
+
+  @if (deletingTeam && deleteImpact) {
+    <app-team-delete-impact-modal-component
+      [impact]="deleteImpact"
+      [isTeamActive]="deletingTeam.isActive !== false"
+      (confirmDelete)="confirmDelete()"
+      (closeEvent)="closeDelete()"
+    ></app-team-delete-impact-modal-component>
   }
 </div>

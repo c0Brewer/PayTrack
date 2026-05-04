@@ -68,6 +68,24 @@
     color: v.$text-light;
   }
 
+  .status-badge {
+    display: inline-block;
+    padding: v.$size-xxs v.$size-s;
+    border-radius: v.$size-xs;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+
+    &.active {
+      background: v.$success-color;
+      color: v.$background-light;
+    }
+
+    &:not(.active) {
+      background: v.$accent-color;
+      color: v.$background-light;
+    }
+  }
+
   .budget-cell {
     color: v.$text-color;
   }
