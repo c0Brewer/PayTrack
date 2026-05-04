@@ -53,8 +53,6 @@ export class TeamManagementComponent {
   filterOptions: NonNullable<GetTeamOptions> = {
     Name: undefined,
     Description: undefined,
-    MinBudget: undefined,
-    MaxBudget: undefined,
     IncludeMembers: true,
     IncludeBudgets: true,
     Limit: this.limit,
@@ -87,8 +85,6 @@ export class TeamManagementComponent {
     const queryOptions: NonNullable<GetTeamOptions> = {
       Name: this.filterOptions?.Name ?? undefined,
       Description: this.filterOptions?.Description ?? undefined,
-      MinBudget: this.filterOptions?.MinBudget ?? undefined,
-      MaxBudget: this.filterOptions?.MaxBudget ?? undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: this.limit,
@@ -119,8 +115,6 @@ export class TeamManagementComponent {
     if (this.filterOptions && options) {
       this.filterOptions.Name = options.Name;
       this.filterOptions.Description = options.Description;
-      this.filterOptions.MinBudget = options.MinBudget;
-      this.filterOptions.MaxBudget = options.MaxBudget;
       this.page = 0;
       this.loadTeams();
     }

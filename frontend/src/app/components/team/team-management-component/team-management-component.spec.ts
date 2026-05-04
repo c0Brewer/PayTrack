@@ -128,8 +128,6 @@ describe('TeamManagementComponent', () => {
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,
       Description: undefined,
-      MinBudget: undefined,
-      MaxBudget: undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: 10,
@@ -145,8 +143,6 @@ describe('TeamManagementComponent', () => {
     component.filterOptions = {
       Name: 'Platform',
       Description: 'Builds',
-      MinBudget: 100,
-      MaxBudget: 500,
       IncludeMembers: false,
       IncludeBudgets: false,
       Limit: undefined,
@@ -160,8 +156,6 @@ describe('TeamManagementComponent', () => {
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: 'Platform',
       Description: 'Builds',
-      MinBudget: 100,
-      MaxBudget: 500,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: 25,
@@ -192,16 +186,12 @@ describe('TeamManagementComponent', () => {
     component.updateFilterOptions({
       Name: 'Operations',
       Description: 'running',
-      MinBudget: 50,
-      MaxBudget: 900,
     });
 
     expect(component.filterOptions).toEqual(
       expect.objectContaining({
         Name: 'Operations',
         Description: 'running',
-        MinBudget: 50,
-        MaxBudget: 900,
         IncludeMembers: true,
         IncludeBudgets: true,
       }),
@@ -436,12 +426,11 @@ describe('TeamManagementComponent', () => {
   it('should keep members and budgets included when filters change', () => {
     fixture.detectChanges();
 
-    component.updateFilterOptions({ Name: 'Operations', MaxBudget: 900 });
+    component.updateFilterOptions({ Name: 'Operations' });
 
     expect(teamServiceMock.getTeams).toHaveBeenLastCalledWith(
       expect.objectContaining({
         Name: 'Operations',
-        MaxBudget: 900,
         IncludeMembers: true,
         IncludeBudgets: true,
       }),
