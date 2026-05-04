@@ -7,10 +7,17 @@ import { TeamDto, GetTeamOptions } from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-team-management-component',
-  imports: [CommonModule, PaginationComponent, TeamFilterComponent, TeamListComponent],
+  imports: [
+    CommonModule,
+    BoxComponent,
+    PaginationComponent,
+    TeamFilterComponent,
+    TeamListComponent,
+  ],
   templateUrl: './team-management-component.html',
   styleUrl: './team-management-component.scss',
 })

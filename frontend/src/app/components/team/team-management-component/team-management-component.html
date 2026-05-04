@@ -1,6 +1,23 @@
-<div class="team-management">
-  <h2>Team Management</h2>
+<div class="main-page-container">
+  <div class="d-flex ">
+  <h2 class="align-self-start">Team Management</h2>
+  </div>
+  <div class="row gy-3">
+    <app-box-component size="small" class="col-md-3 col-sm-12" title="Gesamt Benutzer">
 
+    </app-box-component>
+    <app-box-component size="small" class="col-md-3 col-sm-12" title="Aktiv">
+
+    </app-box-component>
+    <app-box-component size="small" class="col-md-3 col-sm-12" title="Inaktiv">
+
+    </app-box-component>
+    <app-box-component size="small" class="col-md-3 col-sm-12" title="Admins">
+
+    </app-box-component>
+  </div>
+
+  <!--
   <app-team-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
@@ -20,7 +37,7 @@
     [maxPage]="getTotalPages()"
     (next)="nextPage()"
     (prev)="previousPage()"
-  ></app-pagination-component>
+  ></app-pagination-component>-->
 
   <!-- TODO: EDIT POPUP -->
 </div>
