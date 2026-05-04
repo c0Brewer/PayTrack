@@ -54,7 +54,7 @@
       @if (user?.role === role.ADMIN || user?.role === role.TEAM_LEAD) {
         <div class="sidebar__admin">
           <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
-            ><span class="material-symbols-outlined">groups</span> Teams</a
+            ><span class="material-symbols-outlined">groups</span> Team Management</a
           >
           @if (user?.role === role.ADMIN) {
             <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
