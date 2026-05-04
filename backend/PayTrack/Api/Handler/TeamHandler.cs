@@ -124,11 +124,15 @@ namespace PayTrack.Api.Handler
         /// <param name="id">Id of the Team to delete.</param>
         /// <param name="teamService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeleteTeamAsync(
+        public static async Task<Results<NoContent, Ok<TeamDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeleteTeamAsync(
             [FromRoute] int id,
             ITeamService teamService)
         {
             var deletedTeam = await teamService.DeleteTeamAsync(id);
+            if (deletedTeam is null)
+            {
+                return TypedResults.NoContent();
+            }
 
             var deletedTeamDto = TeamMapper.ToDto(deletedTeam);
 
