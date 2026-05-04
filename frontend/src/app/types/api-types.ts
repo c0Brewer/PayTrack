@@ -743,7 +743,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UpdateTeamDto"];
+                    "application/json": components["schemas"]["UpdateTeamRequestDto"];
                 };
             };
             responses: {
@@ -787,6 +787,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["TeamDto"];
                     };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description Bad Request */
                 400: {
@@ -1284,7 +1291,7 @@ export interface components {
             iban: string;
             bic: string;
         };
-        CreateBudgetEntryDto: {
+        CreateCostCentreBudgetEntryDto: {
             /** Format: int32 */
             teamId: number;
             /** Format: double */
@@ -1298,7 +1305,7 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
-            budgets?: components["schemas"]["CreateBudgetEntryDto"][] | null;
+            budgets?: components["schemas"]["CreateCostCentreBudgetEntryDto"][] | null;
         };
         CreatePaymentRequestByUserDto: {
             transaction: components["schemas"]["CreateTransactionDto"];
@@ -1310,12 +1317,6 @@ export interface components {
             /** Format: int32 */
             bankAccountId: number;
         };
-        CreateTeamRequestDto: {
-            name: string;
-            description?: string | null;
-            displayColor?: string | null;
-            budgets?: components["schemas"]["CreateTeamBudgetEntryDto"][] | null;
-        };
         CreateTeamBudgetEntryDto: {
             /** Format: int32 */
             costCentreId: number;
@@ -1325,6 +1326,12 @@ export interface components {
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+        };
+        CreateTeamRequestDto: {
+            name: string;
+            description?: string | null;
+            displayColor?: string | null;
+            budgets?: components["schemas"]["CreateTeamBudgetEntryDto"][] | null;
         };
         CreateTransactionDto: {
             /** Format: int32 */
@@ -1432,6 +1439,7 @@ export interface components {
             displayColor?: string | null;
             members?: components["schemas"]["UserDto"][] | null;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+            isActive?: boolean;
         };
         TeamDtoPaginatedResponse: {
             items: components["schemas"]["TeamDto"][] | null;
@@ -1467,7 +1475,7 @@ export interface components {
             name?: string | null;
             description?: string | null;
             displayColor?: string | null;
-            budgetsToUpsert?: components["schemas"]["UpsertBudgetEntryDto"][] | null;
+            budgetsToUpsert?: components["schemas"]["UpsertCostCentreBudgetEntryDto"][] | null;
             budgetIdsToDelete?: number[] | null;
         };
         UpdatePaymentRequestByUserDto: {
@@ -1478,7 +1486,7 @@ export interface components {
             /** Format: int32 */
             bankAccountId?: number | null;
         };
-        UpdateTeamDto: {
+        UpdateTeamRequestDto: {
             name?: string | null;
             description?: string | null;
             displayColor?: string | null;
@@ -1501,7 +1509,7 @@ export interface components {
             /** Format: int32 */
             teamId?: number | null;
         };
-        UpsertBudgetEntryDto: {
+        UpsertCostCentreBudgetEntryDto: {
             /** Format: int32 */
             id?: number | null;
             /** Format: int32 */

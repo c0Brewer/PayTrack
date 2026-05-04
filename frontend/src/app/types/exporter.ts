@@ -8,8 +8,9 @@ export type TeamDto = components['schemas']['TeamDto'];
 export type TeamDtoPaginatedResponse = components['schemas']['TeamDtoPaginatedResponse'];
 export type CreateTeamRequestDto = components['schemas']['CreateTeamRequestDto'];
 export type CreateTeamBudgetEntryDto = components['schemas']['CreateTeamBudgetEntryDto'];
-export type UpdateTeamDto = components['schemas']['UpdateTeamDto'];
+export type UpdateTeamDto = components['schemas']['UpdateTeamRequestDto'];
 export type UpsertTeamBudgetEntryDto = components['schemas']['UpsertTeamBudgetEntryDto'];
+export type DeleteTeamImpactDto = components['schemas']['DeleteTeamImpactDto'];
 
 // User
 export type UserDto = components['schemas']['UserDto'];
@@ -58,10 +59,10 @@ export type BudgetDto = components['schemas']['BudgetDto'];
 export type CostCentreDto = components['schemas']['CostCentreDto'];
 export type CostCentreDtoPaginatedResponse =
   components['schemas']['CostCentreDtoPaginatedResponse'];
-export type CreateBudgetEntryDto = components['schemas']['CreateBudgetEntryDto'];
+export type CreateBudgetEntryDto = components['schemas']['CreateCostCentreBudgetEntryDto'];
 export type CreateCostCentreRequestDto = components['schemas']['CreateCostCentreRequestDto'];
 export type UpdateCostCentreRequestDto = components['schemas']['UpdateCostCentreRequestDto'];
-export type UpsertBudgetEntryDto = components['schemas']['UpsertBudgetEntryDto'];
+export type UpsertBudgetEntryDto = components['schemas']['UpsertCostCentreBudgetEntryDto'];
 export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentrePreviewDto'];
 
 // Cost Centre Paths
