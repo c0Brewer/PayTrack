@@ -4,6 +4,7 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreateTeamRequestDto,
+  DeleteTeamImpactDto,
   TeamDto,
   GetTeamByIdOptions,
   GetTeamOptions,
@@ -77,6 +78,41 @@ export class TeamService {
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
+      });
+
+    return from(promise);
+  }
+
+  public getDeleteImpact(teamId: number): Observable<DeleteTeamImpactDto> {
+    const promise = client
+      .GET('/api/v1/team/{id}/delete-impact', {
+        params: {
+          path: {
+            id: teamId,
+          },
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('No data returned');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public deleteTeam(teamId: number): Observable<TeamDto | null> {
+    const promise = client
+      .DELETE('/api/v1/team/{id}', {
+        params: {
+          path: {
+            id: teamId,
+          },
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data ?? null;
       });
 
     return from(promise);
