@@ -20,7 +20,7 @@ export class RequestsComponent implements OnInit {
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   invoices: PaymentRequestByUserDto[] = [];
 

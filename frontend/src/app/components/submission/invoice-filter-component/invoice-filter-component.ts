@@ -10,6 +10,9 @@ import {
   TeamDto,
   TransactionStatus,
   TransactionStatusLabels,
+  CostCentreDto,
+  PayoutType,
+  PayoutTypeLabels,
   UserDto,
 } from '../../../types/exporter';
 
@@ -243,6 +246,16 @@ export class InvoiceFilterComponent implements OnInit {
   onPayoutTypeChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filterPayoutTypeSubject.next(value !== '' ? Number(value) : undefined);
+  }
+
+  onCostCentreChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filterCostCentreSubject.next(value !== '' ? Number(value) : undefined);
+  }
+
+  onUserChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filterUserSubject.next(value !== '' ? Number(value) : undefined);
   }
 
   onLimitChange(): void {
