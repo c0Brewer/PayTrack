@@ -15,7 +15,7 @@ describe('RequestDetailComponent', () => {
 
   const serviceMock = {
     getPaymentRequestsByUserById: vi.fn(),
-    downloadAdminReceipt: vi.fn(),
+    downloadReceipt: vi.fn(),
   };
 
   const notificationMock = {
@@ -76,21 +76,21 @@ describe('RequestDetailComponent', () => {
 
   it('should create', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should call getPaymentRequestsByUserById with the route id on init', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
     expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, expect.any(Object));
   });
 
   it('should call getPaymentRequestsByUserById with all includes on init', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
     expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
       IncludeUser: true,
@@ -101,16 +101,16 @@ describe('RequestDetailComponent', () => {
     });
   });
 
-  it('should call downloadAdminReceipt with the route id on init', () => {
+  it('should call downloadReceipt with the route id on init', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
-    expect(serviceMock.downloadAdminReceipt).toHaveBeenCalledWith(7);
+    expect(serviceMock.downloadReceipt).toHaveBeenCalledWith(7);
   });
 
   it('should set invoice and clear loading on successful invoice load', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
     expect(component.invoice).toEqual(mockInvoice);
     expect(component.loading).toBe(false);
@@ -120,7 +120,7 @@ describe('RequestDetailComponent', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(
       throwError(() => new Error('Not found')),
     );
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
     expect(notificationMock.showError).toHaveBeenCalledWith('Could not load invoice: Not found');
     expect(component.loading).toBe(false);
@@ -128,7 +128,7 @@ describe('RequestDetailComponent', () => {
 
   it('should set rawReceiptBlobUrl and receiptBlobUrl for image blobs', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
     component.ngOnInit();
     expect(component.rawReceiptBlobUrl).toBe('blob:test');
     expect(component.receiptBlobUrl).toBe('blob:test');
@@ -138,9 +138,7 @@ describe('RequestDetailComponent', () => {
 
   it('should set rawReceiptBlobUrl and receiptBlobUrl for PDF blobs', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(
-      of(new Blob([''], { type: 'application/pdf' })),
-    );
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
     component.ngOnInit();
     expect(component.rawReceiptBlobUrl).toBe('blob:test');
     expect(component.receiptBlobUrl).toBe('blob:test');
@@ -149,7 +147,7 @@ describe('RequestDetailComponent', () => {
 
   it('should render img tag in DOM when receipt is an image', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('img.receipt-image')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).toBeNull();
@@ -157,9 +155,7 @@ describe('RequestDetailComponent', () => {
 
   it('should render iframe in DOM when receipt is a PDF', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(
-      of(new Blob([''], { type: 'application/pdf' })),
-    );
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('img.receipt-image')).toBeNull();
@@ -167,7 +163,7 @@ describe('RequestDetailComponent', () => {
 
   it('should set rawReceiptBlobUrl but null receiptBlobUrl for non-displayable blob types', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(
+    serviceMock.downloadReceipt.mockReturnValue(
       of(new Blob([''], { type: 'application/octet-stream' })),
     );
     component.ngOnInit();
@@ -177,7 +173,7 @@ describe('RequestDetailComponent', () => {
 
   it('should show error when receipt download fails', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadAdminReceipt.mockReturnValue(throwError(() => new Error('Network error')));
+    serviceMock.downloadReceipt.mockReturnValue(throwError(() => new Error('Network error')));
     component.ngOnInit();
     expect(notificationMock.showError).toHaveBeenCalledWith(
       'Could not load receipt: Network error',

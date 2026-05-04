@@ -71,8 +71,11 @@
           @if (user?.role === role.ADMIN) {
             <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
               <span class="material-symbols-outlined">description</span>
-              View Requests</a
-            >
+              View Requests
+              @if (submittedCount() > 0) {
+                <span class="nav-badge">{{ submittedCount() }}</span>
+              }
+            </a>
           }
         </div>
       }

@@ -52,7 +52,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
           },
         });
 
-      this.service.downloadAdminReceipt(id).subscribe({
+      this.service.downloadReceipt(id).subscribe({
         next: (blob) => {
           if (this.rawReceiptBlobUrl) URL.revokeObjectURL(this.rawReceiptBlobUrl);
           this.rawReceiptBlobUrl = URL.createObjectURL(blob);

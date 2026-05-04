@@ -17,7 +17,6 @@ describe('RequestsComponent', () => {
 
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
-    downloadAdminReceipt: vi.fn(),
   };
 
   const notificationMock = {
