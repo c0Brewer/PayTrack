@@ -28,6 +28,7 @@ describe('TeamListComponent', () => {
       name: 'Platform',
       description: 'Builds product features',
       displayColor: '#2563eb',
+      isActive: true,
       members: [mockMember],
       budgets: [
         {
@@ -77,6 +78,7 @@ describe('TeamListComponent', () => {
       name: 'Operations',
       description: null,
       displayColor: null,
+      isActive: false,
       members: null,
       budgets: undefined,
     },
@@ -122,6 +124,7 @@ describe('TeamListComponent', () => {
     name: 'Finance',
     description: 'No active budget',
     displayColor: '#0f766e',
+    isActive: true,
     members: [],
     budgets: [
       {
@@ -213,7 +216,7 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should always render the member count and team budget columns', () => {
+  it('should always render the member count, status, and team budget columns', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
@@ -223,7 +226,20 @@ describe('TeamListComponent', () => {
     );
 
     expect(headers).toContain('Member Count');
+    expect(headers).toContain('Status');
     expect(headers).toContain('Team Budgets');
+  });
+
+  it('should render status badges for active and inactive teams', () => {
+    fixture.componentRef.setInput('teams', mockTeams);
+    fixture.detectChanges();
+
+    const badges = Array.from(
+      fixture.nativeElement.querySelectorAll('.status-badge') as NodeListOf<HTMLSpanElement>,
+      (badge) => badge.textContent?.trim(),
+    );
+
+    expect(badges).toEqual(['Active', 'Inactive']);
   });
 
   it('should render the member count and first three current team budgets in each row', () => {
@@ -248,8 +264,10 @@ describe('TeamListComponent', () => {
       'tbody tr:first-child .budget-cell',
     ) as HTMLTableCellElement;
 
-    expect(columns.length).toBe(5);
+    expect(columns.length).toBe(6);
     expect(firstRowCells).toContain('1');
+    expect(firstRowCells).toContain('Active');
+    expect(secondRowCells).toContain('Inactive');
     expect(firstBudgetCell.textContent).toContain('Vehicle: 5.000 €');
     expect(firstBudgetCell.textContent).toContain('Operations: 6.000 €');
     expect(firstBudgetCell.textContent).toContain('Software: 7.000 €');
@@ -291,7 +309,7 @@ describe('TeamListComponent', () => {
 
     const emptyStateCell = fixture.nativeElement.querySelector('tbody tr td');
 
-    expect(emptyStateCell.getAttribute('colspan')).toBe('5');
+    expect(emptyStateCell.getAttribute('colspan')).toBe('6');
   });
 });
 

@@ -185,6 +185,38 @@ describe('TeamEditModalComponent', () => {
     expect(emitSpy).toHaveBeenCalledOnce();
   });
 
+  it('onDelete should emit deleteEvent for existing teams', () => {
+    component.team = {
+      id: 1,
+      name: 'Platform',
+      description: 'Builds product features',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [],
+    };
+    const emitSpy = vi.spyOn(component.deleteEvent, 'emit');
+
+    component.onDelete();
+
+    expect(emitSpy).toHaveBeenCalledWith(component.team);
+  });
+
+  it('onDelete should not emit deleteEvent while creating a team', () => {
+    component.team = {
+      id: -1,
+      name: 'New Team',
+      description: '',
+      displayColor: '#2563eb',
+      members: [],
+      budgets: [],
+    };
+    const emitSpy = vi.spyOn(component.deleteEvent, 'emit');
+
+    component.onDelete();
+
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
   it('onSave should include new budgets and existing budget deletions', () => {
     component.team = {
       id: 1,

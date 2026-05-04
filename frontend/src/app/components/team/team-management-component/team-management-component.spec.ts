@@ -9,6 +9,7 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { CostCentreDtoPaginatedResponse, TeamDto } from '../../../types/exporter';
+import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
 
@@ -21,6 +22,8 @@ describe('TeamManagementComponent', () => {
     getTeams: ReturnType<typeof vi.fn>;
     createTeam: ReturnType<typeof vi.fn>;
     updateTeam: ReturnType<typeof vi.fn>;
+    getDeleteImpact: ReturnType<typeof vi.fn>;
+    deleteTeam: ReturnType<typeof vi.fn>;
   };
   let costCentreServiceMock: {
     getCostCentres: ReturnType<typeof vi.fn>;
@@ -84,6 +87,19 @@ describe('TeamManagementComponent', () => {
         ),
       createTeam: vi.fn().mockReturnValue(of({})),
       updateTeam: vi.fn().mockReturnValue(of({})),
+      getDeleteImpact: vi.fn().mockReturnValue(
+        of({
+          teamId: 1,
+          teamName: 'Platform',
+          canDelete: true,
+          affectedUserCount: 0,
+          blockingBudgetCount: 0,
+          blockingTransactionCount: 0,
+          invoiceCount: 0,
+          warningMessage: '',
+        }),
+      ),
+      deleteTeam: vi.fn().mockReturnValue(of(null)),
     };
     costCentreServiceMock = {
       getCostCentres: vi.fn().mockReturnValue(of(mockCostCentres)),
@@ -255,6 +271,7 @@ describe('TeamManagementComponent', () => {
       name: '',
       description: '',
       displayColor: '#2563eb',
+      isActive: true,
       members: [],
       budgets: [],
     });
@@ -413,6 +430,79 @@ describe('TeamManagementComponent', () => {
     );
   });
 
+  it('openDeleteTeam should load delete impact, close edit, and open the impact modal state', () => {
+    component.editingTeam = { ...mockTeams[0] };
+
+    component.openDeleteTeam(mockTeams[0]);
+
+    expect(teamServiceMock.getDeleteImpact).toHaveBeenCalledWith(mockTeams[0].id);
+    expect(component.editingTeam).toBeNull();
+    expect(component.deletingTeam).toEqual(mockTeams[0]);
+    expect(component.deleteImpact).toEqual(
+      expect.objectContaining({
+        teamName: 'Platform',
+        canDelete: true,
+      }),
+    );
+  });
+
+  it('openDeleteTeam should surface delete impact errors', () => {
+    teamServiceMock.getDeleteImpact.mockReturnValueOnce(
+      throwError(() => new Error('Impact failed')),
+    );
+
+    component.openDeleteTeam(mockTeams[0]);
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not load delete impact: Impact failed',
+    );
+  });
+
+  it('confirmDelete should delete teams without impact', () => {
+    const loadTeamsSpy = vi.spyOn(component, 'loadTeams');
+    component.deletingTeam = mockTeams[0];
+    component.deleteImpact = {
+      teamId: 1,
+      teamName: 'Platform',
+      canDelete: true,
+      affectedUserCount: 0,
+      blockingBudgetCount: 0,
+      blockingTransactionCount: 0,
+      invoiceCount: 0,
+      warningMessage: '',
+    };
+
+    component.confirmDelete();
+
+    expect(teamServiceMock.deleteTeam).toHaveBeenCalledWith(mockTeams[0].id);
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Team "Platform" deleted successfully',
+    );
+    expect(component.deletingTeam).toBeNull();
+    expect(component.deleteImpact).toBeNull();
+    expect(loadTeamsSpy).toHaveBeenCalledOnce();
+  });
+
+  it('confirmDelete should report deactivation when the delete endpoint returns a team', () => {
+    teamServiceMock.deleteTeam.mockReturnValueOnce(of({ ...mockTeams[0], isActive: false }));
+    component.deletingTeam = mockTeams[0];
+
+    component.confirmDelete();
+
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Team "Platform" deactivated');
+  });
+
+  it('confirmDelete should surface delete errors', () => {
+    teamServiceMock.deleteTeam.mockReturnValueOnce(throwError(() => new Error('Delete failed')));
+    component.deletingTeam = mockTeams[0];
+
+    component.confirmDelete();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not delete team: Delete failed',
+    );
+  });
+
   it('should pass loaded teams into the list child component', () => {
     fixture.detectChanges();
 
@@ -466,5 +556,16 @@ describe('TeamManagementComponent', () => {
       }),
     );
     expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(2);
+  });
+
+  it('should route edit modal delete requests through the delete impact flow', () => {
+    const openDeleteSpy = vi.spyOn(component, 'openDeleteTeam');
+    const editComponent = TestBed.createComponent(TeamEditModalComponent).componentInstance;
+    editComponent.deleteEvent.subscribe((team) => component.openDeleteTeam(team));
+
+    editComponent.deleteEvent.emit(mockTeams[0]);
+
+    expect(openDeleteSpy).toHaveBeenCalledWith(mockTeams[0]);
+    expect(teamServiceMock.getDeleteImpact).toHaveBeenCalledWith(mockTeams[0].id);
   });
 });

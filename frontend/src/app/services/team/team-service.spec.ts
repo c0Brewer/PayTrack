@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { client } from '../../client';
 import {
   CreateTeamRequestDto,
+  DeleteTeamImpactDto,
   TeamDto,
   TeamDtoPaginatedResponse,
   UpdateTeamDto,
@@ -270,6 +271,97 @@ describe('TeamService', () => {
       await expect(firstValueFrom(service.createTeam(createRequest))).rejects.toThrow(
         'No data returned',
       );
+    });
+  });
+
+  describe('getDeleteImpact', () => {
+    it('should call API and return delete impact', async () => {
+      const apiResponse: DeleteTeamImpactDto = {
+        teamId: 42,
+        teamName: 'Platform',
+        canDelete: false,
+        affectedUserCount: 2,
+        blockingBudgetCount: 1,
+        blockingTransactionCount: 3,
+        invoiceCount: 0,
+        warningMessage: 'Deleting this team has impact.',
+      };
+
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await firstValueFrom(service.getDeleteImpact(42));
+
+      expect(client.GET).toHaveBeenCalledWith('/api/v1/team/{id}/delete-impact', {
+        params: {
+          path: {
+            id: 42,
+          },
+        },
+      });
+      expect(result).toEqual(apiResponse);
+    });
+
+    it('should throw the backend error detail when getDeleteImpact fails', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Impact failed' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getDeleteImpact(42))).rejects.toThrow('Impact failed');
+    });
+  });
+
+  describe('deleteTeam', () => {
+    it('should call API and return null when the team is deleted', async () => {
+      vi.spyOn(client, 'DELETE').mockResolvedValue({
+        data: undefined,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await firstValueFrom(service.deleteTeam(42));
+
+      expect(client.DELETE).toHaveBeenCalledWith('/api/v1/team/{id}', {
+        params: {
+          path: {
+            id: 42,
+          },
+        },
+      });
+      expect(result).toBeNull();
+    });
+
+    it('should return the team when the delete endpoint deactivates it', async () => {
+      const apiResponse: TeamDto = {
+        id: 42,
+        name: 'Platform',
+        description: null,
+        displayColor: '#2563eb',
+        isActive: false,
+      };
+
+      vi.spyOn(client, 'DELETE').mockResolvedValue({
+        data: apiResponse,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.deleteTeam(42))).resolves.toEqual(apiResponse);
+    });
+
+    it('should throw the backend error detail when deleteTeam fails', async () => {
+      vi.spyOn(client, 'DELETE').mockResolvedValue({
+        data: null,
+        error: { detail: 'Delete failed' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.deleteTeam(42))).rejects.toThrow('Delete failed');
     });
   });
 });
