@@ -102,6 +102,60 @@ namespace PayTrack.Tests.UnitTests.Repositories
             totalCount.Should().Be(2);
         }
 
+        [Fact]
+        public async Task GetAllTransactions_FilterByMinPaidAt_ShouldExcludeUnpaidAndEarlier()
+        {
+            await using var context = GetInMemoryDbContext("FilterByMinPaidAt");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            var cutoff = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            context.Transactions.AddRange(
+                new PaymentRequestByUser { Id = 1, Amount = 100, UserId = 1, TeamId = 1, InvoiceNumber = "1", PaidAt = cutoff.AddDays(1) },
+                new PaymentRequestByUser { Id = 2, Amount = 200, UserId = 1, TeamId = 1, InvoiceNumber = "2", PaidAt = cutoff.AddDays(-1) },
+                new PaymentRequestByUser { Id = 3, Amount = 300, UserId = 1, TeamId = 1, InvoiceNumber = "3", PaidAt = null }
+            );
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (transactions, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery { MinPaidAt = cutoff });
+
+            totalCount.Should().Be(1);
+            transactions.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        [Fact]
+        public async Task GetAllTransactions_FilterByMaxPaidAt_ShouldExcludeLaterAndUnpaid()
+        {
+            await using var context = GetInMemoryDbContext("FilterByMaxPaidAt");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            var cutoff = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            context.Transactions.AddRange(
+                new PaymentRequestByUser { Id = 1, Amount = 100, UserId = 1, TeamId = 1, InvoiceNumber = "1", PaidAt = cutoff.AddDays(-1) },
+                new PaymentRequestByUser { Id = 2, Amount = 200, UserId = 1, TeamId = 1, InvoiceNumber = "2", PaidAt = cutoff.AddDays(1) },
+                new PaymentRequestByUser { Id = 3, Amount = 300, UserId = 1, TeamId = 1, InvoiceNumber = "3", PaidAt = null }
+            );
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (transactions, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery { MaxPaidAt = cutoff });
+
+            totalCount.Should().Be(1);
+            transactions.Should().ContainSingle(t => t.Id == 1);
+        }
+
         // ----------------------------
         // ADD TRANSACTION
         // ----------------------------

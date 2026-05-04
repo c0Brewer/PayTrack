@@ -40,8 +40,8 @@ describe('InvoiceListComponent', () => {
   });
 
   it('should return correct text for getPayoutTypeLabel', () => {
-    expect(component.getPayoutTypeLabel(0)).toBe('User');
-    expect(component.getPayoutTypeLabel(1)).toBe('External');
+    expect(component.getPayoutTypeLabel(0)).toBe('Pay to User');
+    expect(component.getPayoutTypeLabel(1)).toBe('Pay to Supplier');
   });
 
   it('should return correct text for getTransactionStatusLabel', () => {

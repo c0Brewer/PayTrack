@@ -1,0 +1,34 @@
+@use 'variables' as v;
+
+.status {
+  padding: v.$size-xxs;
+  font-size: v.$font-xs;
+  border-radius: v.$size-xs;
+  font-weight: v.$font-medium;
+  white-space: nowrap;
+}
+
+.status-submitted {
+  background-color: v.$info-color;
+  color: v.$background-light;
+}
+
+.status-changes-requested {
+  background-color: v.$warning-color;
+  color: v.$background-light;
+}
+
+.status-approved {
+  background-color: v.$success-color;
+  color: v.$background-light;
+}
+
+.status-paid {
+  background-color: v.$teal-color;
+  color: v.$background-light;
+}
+
+.status-declined {
+  background-color: v.$accent-color;
+  color: v.$background-light;
+}

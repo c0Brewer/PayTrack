@@ -41,8 +41,37 @@
   <input type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
   <input type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
 
-  <input type="date" title="From date" (input)="onMinDateChange($event)" />
-  <input type="date" title="To date" (input)="onMaxDateChange($event)" />
+  <div class="date-group">
+    <label>Submitted</label>
+    <input
+      type="date"
+      title="Submitted from"
+      [value]="filterMinCreatedAt"
+      (input)="onMinDateChange($event)"
+    />
+    <input
+      type="date"
+      title="Submitted to"
+      [value]="filterMaxCreatedAt"
+      (input)="onMaxDateChange($event)"
+    />
+  </div>
+
+  <div class="date-group">
+    <label>Paid</label>
+    <input
+      type="date"
+      title="Paid from"
+      [value]="filterMinPaidAt"
+      (input)="onMinPaidAtChange($event)"
+    />
+    <input
+      type="date"
+      title="Paid to"
+      [value]="filterMaxPaidAt"
+      (input)="onMaxPaidAtChange($event)"
+    />
+  </div>
 
   @if (showCostCentreFilter) {
     <select (change)="onCostCentreChange($event)">
@@ -61,4 +90,11 @@
       }
     </select>
   }
+
+  <select [(ngModel)]="limit" (change)="onLimitChange()">
+    @for (l of limitSelection; track l) {
+      <option [value]="l">{{ l }} per page</option>
+    }
+  </select>
+
 </div>

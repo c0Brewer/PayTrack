@@ -20,11 +20,13 @@ export class RequestsComponent implements OnInit {
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   invoices: PaymentRequestByUserDto[] = [];
 
-  limit: number = 10;
+  limitSelection: number[] = [10, 25, 50];
+
+  limit: number = this.limitSelection[0];
   page: number = 0;
   totalCount: number = 0;
   hasNext: boolean = false;

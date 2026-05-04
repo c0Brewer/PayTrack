@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
@@ -15,7 +16,7 @@ describe('MyInvoicesComponent', () => {
   let fixture: ComponentFixture<MyInvoicesComponent>;
 
   const paymentServiceMock = {
-    getMyInvoices: vi.fn(),
+    getPaymentRequestsByUser: vi.fn(),
   };
 
   const routerMock = {
@@ -34,11 +35,19 @@ describe('MyInvoicesComponent', () => {
     getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0, limit: 1000, offset: 0 })),
   };
 
+  const authServiceMock = {
+    getCurrentUser: vi.fn(),
+  };
+
   beforeEach(async () => {
+    authServiceMock.getCurrentUser.mockReturnValue(of(null));
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
+
     await TestBed.configureTestingModule({
       imports: [MyInvoicesComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: AuthService, useValue: authServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
@@ -51,13 +60,11 @@ describe('MyInvoicesComponent', () => {
   });
 
   it('should create', () => {
-    paymentServiceMock.getMyInvoices.mockReturnValue(of({ items: [], totalCount: 0 }));
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should load invoices on init', () => {
-    paymentServiceMock.getMyInvoices.mockReturnValue(of({ items: [], totalCount: 0 }));
     const spy = vi.spyOn(component, 'loadInvoices');
     component.ngOnInit();
     expect(spy).toHaveBeenCalled();
@@ -73,7 +80,7 @@ describe('MyInvoicesComponent', () => {
       hasNext: false,
       hasPrevious: false,
     };
-    paymentServiceMock.getMyInvoices.mockReturnValue(of(apiResponse));
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of(apiResponse));
 
     component.loadInvoices();
 
@@ -82,7 +89,7 @@ describe('MyInvoicesComponent', () => {
   });
 
   it('should show error on API failure', () => {
-    paymentServiceMock.getMyInvoices.mockReturnValue(throwError(() => 'API error'));
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(throwError(() => 'API error'));
 
     component.loadInvoices();
 
@@ -90,13 +97,12 @@ describe('MyInvoicesComponent', () => {
   });
 
   it('should reset page to 0 and reload when filter options are updated', () => {
-    paymentServiceMock.getMyInvoices.mockReturnValue(of({ items: [], totalCount: 0 }));
     component.page = 3;
 
     component.updateFilterOptions({ Status: 2 as 0 | 1 | 2 | 3 | 4 });
 
     expect(component.page).toBe(0);
-    expect(paymentServiceMock.getMyInvoices).toHaveBeenCalled();
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
   });
 
   it('should navigate to detail page on open detail', () => {

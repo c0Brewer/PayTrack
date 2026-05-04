@@ -7,6 +7,7 @@ import {
   PayoutType,
   PayoutTypeLabels,
   TransactionStatus,
+  TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../types/exporter';
 
@@ -38,6 +39,10 @@ export class InvoiceDetailComponent {
 
   getStatusLabel(status: TransactionStatus): string {
     return TransactionStatusLabels[status] ?? 'Unknown';
+  }
+
+  getStatusClass(status: TransactionStatus): string {
+    return TransactionStatusCssClass[status] ?? '';
   }
 
   getPayoutTypeLabel(type: PayoutType): string {

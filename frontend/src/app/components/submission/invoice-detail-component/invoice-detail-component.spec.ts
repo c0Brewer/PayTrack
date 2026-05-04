@@ -144,8 +144,8 @@ describe('InvoiceDetailComponent', () => {
   });
 
   it('should return correct payout type labels', () => {
-    expect(component.getPayoutTypeLabel(PayoutType.User)).toBe('User');
-    expect(component.getPayoutTypeLabel(PayoutType.External)).toBe('External');
+    expect(component.getPayoutTypeLabel(PayoutType.User)).toBe('Pay to User');
+    expect(component.getPayoutTypeLabel(PayoutType.External)).toBe('Pay to Supplier');
     expect(component.getPayoutTypeLabel(99 as PayoutType)).toBe('Unknown');
   });
 

@@ -14,8 +14,8 @@ describe('MyInvoiceDetailComponent', () => {
   let fixture: ComponentFixture<MyInvoiceDetailComponent>;
 
   const serviceMock = {
-    getMyInvoiceById: vi.fn(),
-    downloadMyReceipt: vi.fn(),
+    getPaymentRequestsByUserById: vi.fn(),
+    downloadReceipt: vi.fn(),
   };
 
   const notificationMock = {
@@ -55,6 +55,9 @@ describe('MyInvoiceDetailComponent', () => {
     URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
     URL.revokeObjectURL = vi.fn();
 
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
+
     await TestBed.configureTestingModule({
       imports: [MyInvoiceDetailComponent],
       providers: [
@@ -75,45 +78,37 @@ describe('MyInvoiceDetailComponent', () => {
   });
 
   it('should create', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob()));
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should call getMyInvoiceById with the route id on init', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob()));
+  it('should call getPaymentRequestsByUserById with the route id on init', () => {
     component.ngOnInit();
-    expect(serviceMock.getMyInvoiceById).toHaveBeenCalledWith(5, expect.any(Object));
+    expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(5, expect.any(Object));
   });
 
-  it('should call downloadMyReceipt with the route id on init', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob()));
+  it('should call downloadReceipt with the route id on init', () => {
     component.ngOnInit();
-    expect(serviceMock.downloadMyReceipt).toHaveBeenCalledWith(5);
+    expect(serviceMock.downloadReceipt).toHaveBeenCalledWith(5);
   });
 
   it('should set invoice and clear loading on successful invoice load', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob()));
     component.ngOnInit();
     expect(component.invoice).toEqual(mockInvoice);
     expect(component.loading).toBe(false);
   });
 
   it('should show error and clear loading when invoice load fails', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(throwError(() => new Error('Not found')));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob()));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(
+      throwError(() => new Error('Not found')),
+    );
     component.ngOnInit();
     expect(notificationMock.showError).toHaveBeenCalledWith('Could not load invoice: Not found');
     expect(component.loading).toBe(false);
   });
 
   it('should set rawReceiptBlobUrl and receiptBlobUrl for image blobs', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
     component.ngOnInit();
     expect(component.rawReceiptBlobUrl).toBe('blob:test');
     expect(component.receiptBlobUrl).toBe('blob:test');
@@ -122,8 +117,7 @@ describe('MyInvoiceDetailComponent', () => {
   });
 
   it('should set rawReceiptBlobUrl and receiptBlobUrl for PDF blobs', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
     component.ngOnInit();
     expect(component.rawReceiptBlobUrl).toBe('blob:test');
     expect(component.receiptBlobUrl).toBe('blob:test');
@@ -131,24 +125,21 @@ describe('MyInvoiceDetailComponent', () => {
   });
 
   it('should render img tag in DOM when receipt is an image', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'image/jpeg' })));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('img.receipt-image')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).toBeNull();
   });
 
   it('should render iframe in DOM when receipt is a PDF', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob([''], { type: 'application/pdf' })));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe.receipt-frame')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('img.receipt-image')).toBeNull();
   });
 
   it('should set rawReceiptBlobUrl but null receiptBlobUrl for non-displayable blob types', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(
+    serviceMock.downloadReceipt.mockReturnValue(
       of(new Blob([''], { type: 'application/octet-stream' })),
     );
     component.ngOnInit();
@@ -157,8 +148,7 @@ describe('MyInvoiceDetailComponent', () => {
   });
 
   it('should show error when receipt download fails', () => {
-    serviceMock.getMyInvoiceById.mockReturnValue(of(mockInvoice));
-    serviceMock.downloadMyReceipt.mockReturnValue(throwError(() => new Error('Network error')));
+    serviceMock.downloadReceipt.mockReturnValue(throwError(() => new Error('Network error')));
     component.ngOnInit();
     expect(notificationMock.showError).toHaveBeenCalledWith(
       'Could not load receipt: Network error',

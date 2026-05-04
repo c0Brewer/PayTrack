@@ -6,10 +6,7 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
 import {
-  CostCentreDto,
-  GetMyInvoicesOptions,
-  PayoutType,
-  PayoutTypeLabels,
+  GetPaymentRequestsByUserOptions,
   TeamDto,
   TransactionStatus,
   TransactionStatusLabels,
@@ -23,10 +20,14 @@ import {
   styleUrl: './invoice-filter-component.scss',
 })
 export class InvoiceFilterComponent implements OnInit {
+  @Input() limitSelection: number[] = [];
+  @Input() limit: number = 10;
+
   @Input() showCostCentreFilter: boolean = false;
   @Input() showUserFilter: boolean = false;
 
-  @Output() updateFilter = new EventEmitter<GetMyInvoicesOptions>();
+  @Output() updateFilter = new EventEmitter<GetPaymentRequestsByUserOptions>();
+  @Output() limitChange = new EventEmitter<number>();
 
   teams: TeamDto[] = [];
   costCentres: CostCentreDto[] = [];
@@ -36,6 +37,8 @@ export class InvoiceFilterComponent implements OnInit {
   filterStatus: TransactionStatus | undefined = undefined;
   filterMinCreatedAt: string = '';
   filterMaxCreatedAt: string = '';
+  filterMinPaidAt: string = '';
+  filterMaxPaidAt: string = '';
   filterMinAmount: string = '';
   filterMaxAmount: string = '';
   filterPurpose: string = '';
@@ -50,6 +53,8 @@ export class InvoiceFilterComponent implements OnInit {
   private readonly filterMaxAmountSubject = new Subject<string>();
   private readonly filterMinDateSubject = new Subject<string>();
   private readonly filterMaxDateSubject = new Subject<string>();
+  private readonly filterMinPaidAtSubject = new Subject<string>();
+  private readonly filterMaxPaidAtSubject = new Subject<string>();
   private readonly filterStatusSubject = new Subject<TransactionStatus | undefined>();
   private readonly filterTeamSubject = new Subject<number | undefined>();
   private readonly filterPayoutTypeSubject = new Subject<PayoutType | undefined>();
@@ -75,6 +80,11 @@ export class InvoiceFilterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.filterMinCreatedAt = new Date(0).toISOString().split('T')[0];
+    this.filterMaxCreatedAt = new Date().toISOString().split('T')[0];
+    this.filterMinPaidAt = new Date(0).toISOString().split('T')[0];
+    this.filterMaxPaidAt = new Date().toISOString().split('T')[0];
+
     this.teamService.getTeams({ Limit: 1000 }).subscribe({
       next: (data) => {
         this.teams = data.items ?? [];
@@ -140,6 +150,16 @@ export class InvoiceFilterComponent implements OnInit {
       this.emitFilter();
     });
 
+    this.filterMinPaidAtSubject.pipe(debounceTime(400)).subscribe((value) => {
+      this.filterMinPaidAt = value;
+      this.emitFilter();
+    });
+
+    this.filterMaxPaidAtSubject.pipe(debounceTime(400)).subscribe((value) => {
+      this.filterMaxPaidAt = value;
+      this.emitFilter();
+    });
+
     this.filterStatusSubject.pipe(debounceTime(100)).subscribe((value) => {
       this.filterStatus = value;
       this.emitFilter();
@@ -160,19 +180,21 @@ export class InvoiceFilterComponent implements OnInit {
     this.updateFilter.emit(this.getFilterOptions());
   }
 
-  getFilterOptions(): GetMyInvoicesOptions {
+  getFilterOptions(): GetPaymentRequestsByUserOptions {
     return {
       InvoiceNumber: this.filterInvoiceNumber || undefined,
       Status: this.filterStatus,
       MinCreatedAt: this.filterMinCreatedAt || undefined,
       MaxCreatedAt: this.filterMaxCreatedAt || undefined,
+      MinPaidAt: this.filterMinPaidAt || undefined,
+      MaxPaidAt: this.filterMaxPaidAt || undefined,
       MinAmount: this.filterMinAmount ? Number(this.filterMinAmount) : undefined,
       MaxAmount: this.filterMaxAmount ? Number(this.filterMaxAmount) : undefined,
       PurposeOfPayment: this.filterPurpose || undefined,
       TeamId: this.filterTeamId,
       PayoutType: this.filterPayoutType,
-      CostCentreId: this.filterCostCentreId,
-      UserId: this.filterUserId,
+      Limit: undefined,
+      Offset: undefined,
     };
   }
 
@@ -200,6 +222,14 @@ export class InvoiceFilterComponent implements OnInit {
     this.filterMaxDateSubject.next((event.target as HTMLInputElement).value);
   }
 
+  onMinPaidAtChange(event: Event): void {
+    this.filterMinPaidAtSubject.next((event.target as HTMLInputElement).value);
+  }
+
+  onMaxPaidAtChange(event: Event): void {
+    this.filterMaxPaidAtSubject.next((event.target as HTMLInputElement).value);
+  }
+
   onStatusChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filterStatusSubject.next(value !== '' ? Number(value) : undefined);
@@ -215,13 +245,7 @@ export class InvoiceFilterComponent implements OnInit {
     this.filterPayoutTypeSubject.next(value !== '' ? Number(value) : undefined);
   }
 
-  onCostCentreChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.filterCostCentreSubject.next(value !== '' ? Number(value) : undefined);
-  }
-
-  onUserChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.filterUserSubject.next(value !== '' ? Number(value) : undefined);
+  onLimitChange(): void {
+    this.limitChange.emit(this.limit);
   }
 }

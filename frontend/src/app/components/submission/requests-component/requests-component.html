@@ -2,6 +2,7 @@
   <h2>Requests</h2>
 
   <app-invoice-filter-component
+    [limitSelection]="limitSelection"
     [showCostCentreFilter]="true"
     [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
