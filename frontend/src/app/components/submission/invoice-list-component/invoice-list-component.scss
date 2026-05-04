@@ -1,40 +1,66 @@
+@use 'variables' as v;
+
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: v.$font-s;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  overflow: hidden;
 
-  th,
-  td {
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+  thead {
+    background: v.$background-dark;
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
   }
 
-  th {
-    font-weight: 600;
-    background-color: #f5f5f5;
+  tbody {
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
   }
 
-  tbody tr:hover {
-    background-color: #fafafa;
-  }
+  /* ---------- ACTIONS ---------- */
 
   .actions-col {
-    text-align: center;
-    width: 80px;
+    width: 1%;
+    white-space: nowrap;
   }
 
   .view-btn {
-    padding: 0.25rem 0.75rem;
-    border: none;
-    border-radius: 4px;
-    background-color: #1976d2;
-    color: #fff;
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+    border-radius: v.$size-xs;
     cursor: pointer;
-    font-size: 0.8rem;
+    transition:
+      transform 0.1s ease,
+      box-shadow 0.1s ease;
 
     &:hover {
-      background-color: #1565c0;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px v.$shadow-color;
     }
   }
 }

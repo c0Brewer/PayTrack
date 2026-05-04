@@ -1,7 +1,8 @@
 <div class="my-invoices">
-  <h2>Meine Rechnungen</h2>
+  <h2>My Invoices</h2>
 
   <app-invoice-filter-component
+    [limitSelection]="limitSelection"
     [showCostCentreFilter]="false"
     (updateFilter)="updateFilterOptions($event)"
   ></app-invoice-filter-component>

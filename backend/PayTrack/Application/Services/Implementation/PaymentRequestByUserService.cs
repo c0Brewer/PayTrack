@@ -184,6 +184,38 @@ namespace PayTrack.Application.Services.Implementation
             return (content, contentType);
         }
 
+        /// <inheritdoc/>
+        public bool ValidateQuery(GetPaymentRequestByUserQuery query, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => query.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                  && query.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateAccessToInvoice(PaymentRequestByUser invoice, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => invoice.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                && invoice.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
         private static string GetContentTypeFromPath(string filePath)
         {
             return Path.GetExtension(filePath).ToLowerInvariant() switch

@@ -622,6 +622,8 @@ export interface paths {
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;
@@ -928,6 +930,8 @@ export interface paths {
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;

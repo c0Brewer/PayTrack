@@ -1,9 +1,16 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
+import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { GetMyInvoicesOptions, PaymentRequestByUserDto } from '../../../types/exporter';
+import {
+  GetPaymentRequestsByUserOptions,
+  PaymentRequestByUserDto,
+  Role,
+  UserDto,
+} from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { InvoiceFilterComponent } from '../invoice-filter-component/invoice-filter-component';
 import { InvoiceListComponent } from '../invoice-list-component/invoice-list-component';
@@ -17,6 +24,7 @@ import { InvoiceListComponent } from '../invoice-list-component/invoice-list-com
 export class MyInvoicesComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
+    private readonly authService: AuthService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -24,29 +32,44 @@ export class MyInvoicesComponent implements OnInit {
 
   invoices: PaymentRequestByUserDto[] = [];
 
-  limit: number = 10;
+  limitSelection: number[] = [10, 25, 50];
+
+  limit: number = this.limitSelection[0];
   page: number = 0;
   totalCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
-  filterOptions: GetMyInvoicesOptions = {
+  filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
   };
 
+  private currentUser: UserDto | null = null;
+
   ngOnInit(): void {
-    this.loadInvoices();
+    this.authService
+      .getCurrentUser()
+      .pipe(take(1))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this.loadInvoices();
+      });
   }
 
   loadInvoices(): void {
-    const query: GetMyInvoicesOptions = {
+    const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
+      UserId: this.currentUser?.role === Role.REGULAR_USER ? this.currentUser.id : undefined,
+      TeamId:
+        this.currentUser?.role === Role.TEAM_LEAD
+          ? (this.currentUser.team?.id ?? undefined)
+          : undefined,
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
     };
 
-    this.paymentRequestService.getMyInvoices(query).subscribe({
+    this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
       next: (data) => {
         if (data?.items) {
           this.invoices = data.items;
@@ -64,7 +87,7 @@ export class MyInvoicesComponent implements OnInit {
     });
   }
 
-  updateFilterOptions(options: GetMyInvoicesOptions): void {
+  updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadInvoices();

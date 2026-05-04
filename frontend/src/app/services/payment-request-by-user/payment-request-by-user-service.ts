@@ -4,8 +4,6 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreatePaymentRequestByUserDto,
-  GetMyInvoiceByIdOptions,
-  GetMyInvoicesOptions,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
   PaginatedPaymentRequestByUserDto,
@@ -118,59 +116,9 @@ export class PaymentRequestByUserService {
     return from(promise);
   }
 
-  // public getReceiptForPaymentRequestByUser(id: number): Observable<ReceiptFileResponse> {
-  //   const promise = client
-  //     .GET('/api/v1/transaction/user/{id}/receipt', {
-  //       params: {
-  //         path: {
-  //           id: id,
-  //         },
-  //       },
-  //     })
-  //     .then(({ data, error }) => {
-  //       if (error) throw new Error(error.detail ?? 'Unexpected Error');
-  //       return data;
-  //     });
-  //
-  //   return from(promise);
-  // }
-
-  public getMyInvoices(
-    queryOptions: GetMyInvoicesOptions,
-  ): Observable<PaginatedPaymentRequestByUserDto> {
-    const promise = client
-      .GET('/api/v1/my-invoices', {
-        params: {
-          query: queryOptions,
-        },
-      })
-      .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data;
-      });
-
-    return from(promise);
-  }
-
-  public getMyInvoiceById(
-    id: number,
-    queryOptions: GetMyInvoiceByIdOptions,
-  ): Observable<PaymentRequestByUserDto> {
-    const promise = client
-      .GET('/api/v1/my-invoices/{id}', {
-        params: { path: { id }, query: queryOptions },
-      })
-      .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
-        return data;
-      });
-
-    return from(promise);
-  }
-
-  public downloadMyReceipt(id: number): Observable<Blob> {
+  public downloadReceipt(id: number): Observable<Blob> {
     // TODO: Inject url
-    const promise = fetch(`http://localhost:5154/api/v1/my-invoices/${id}/receipt`, {
+    const promise = fetch(`http://localhost:5154/api/v1/transaction/user/${id}/receipt`, {
       headers: {
         Authorization: `Bearer ${this.authService.getToken()}`,
       },

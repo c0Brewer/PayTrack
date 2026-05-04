@@ -219,6 +219,16 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.CreatedAt <= query.MaxCreatedAt.Value);
             }
 
+            if (query?.MinPaidAt.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.PaidAt >= query.MinPaidAt.Value);
+            }
+
+            if (query?.MaxPaidAt.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.PaidAt <= query.MaxPaidAt.Value);
+            }
+
             return dbQuery;
         }
 

@@ -31,9 +31,6 @@ export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
-export type GetMyInvoicesOptions = paths['/api/v1/my-invoices']['get']['parameters']['query'];
-export type GetMyInvoiceByIdOptions =
-  paths['/api/v1/my-invoices/{id}']['get']['parameters']['query'];
 
 export enum PayoutType {
   User = 0,
@@ -41,8 +38,8 @@ export enum PayoutType {
 }
 
 export const PayoutTypeLabels: Record<PayoutType, string> = {
-  [PayoutType.User]: 'User',
-  [PayoutType.External]: 'External',
+  [PayoutType.User]: 'Pay to User',
+  [PayoutType.External]: 'Pay to Supplier',
 };
 
 // Roles
@@ -66,6 +63,14 @@ export const TransactionStatusLabels: Record<TransactionStatus, string> = {
   [TransactionStatus.Approved]: 'Approved',
   [TransactionStatus.Paid]: 'Paid',
   [TransactionStatus.Declined]: 'Declined',
+};
+
+export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'status-submitted',
+  [TransactionStatus.ChangesRequested]: 'status-changes-requested',
+  [TransactionStatus.Approved]: 'status-approved',
+  [TransactionStatus.Paid]: 'status-paid',
+  [TransactionStatus.Declined]: 'status-declined',
 };
 
 // Authentication

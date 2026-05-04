@@ -17,7 +17,11 @@
           </tr>
           <tr>
             <th>Status</th>
-            <td>{{ getStatusLabel(invoice.status) }}</td>
+            <td>
+              <span [class]="'status ' + getStatusClass(invoice.status)">
+                {{ getStatusLabel(invoice.status) }}
+              </span>
+            </td>
           </tr>
           <tr>
             <th>Amount</th>
@@ -80,8 +84,16 @@
           <tbody>
             @for (entry of invoice.statusHistory ?? []; track entry.changedAt) {
               <tr>
-                <td>{{ getStatusLabel(entry.fromStatus) }}</td>
-                <td>{{ getStatusLabel(entry.toStatus) }}</td>
+                <td>
+                  <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                    {{ getStatusLabel(entry.fromStatus) }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                    {{ getStatusLabel(entry.toStatus) }}
+                  </span>
+                </td>
                 <td>{{ entry.changedAt | date: 'medium' }}</td>
                 <td>{{ entry.comment }}</td>
               </tr>

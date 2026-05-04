@@ -33,7 +33,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
       const id = Number(params.get('id'));
 
       this.service
-        .getMyInvoiceById(id, {
+        .getPaymentRequestsByUserById(id, {
           IncludeTeam: true,
           IncludeBankAccount: true,
           IncludeStatusHistory: true,
@@ -50,7 +50,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
           },
         });
 
-      this.service.downloadMyReceipt(id).subscribe({
+      this.service.downloadReceipt(id).subscribe({
         next: (blob) => {
           if (this.rawReceiptBlobUrl) URL.revokeObjectURL(this.rawReceiptBlobUrl);
           this.rawReceiptBlobUrl = URL.createObjectURL(blob);

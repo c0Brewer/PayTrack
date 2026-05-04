@@ -74,5 +74,21 @@ namespace PayTrack.Application.Services.Model
         /// <param name="bankAccountId">The new bank account id that the PaymentRequestByUser should be assigned.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
+
+        /// <summary>
+        /// Validates that the supplied query parameters are permissible for the current user's role.
+        /// </summary>
+        /// <param name="query">The query submitted by the client.</param>
+        /// <param name="currentUser">The currently authenticated user.</param>
+        /// <returns><c>true</c> if the query is valid for the user's role; <c>false</c> otherwise.</returns>
+        bool ValidateQuery(GetPaymentRequestByUserQuery query, User currentUser);
+
+        /// <summary>
+        /// Validates that the current user is allowed to access the given invoice.
+        /// </summary>
+        /// <param name="invoice">The invoice to check.</param>
+        /// <param name="currentUser">The currently authenticated user.</param>
+        /// <returns><c>true</c> if the user has access; <c>false</c> otherwise.</returns>
+        bool ValidateAccessToInvoice(PaymentRequestByUser invoice, User currentUser);
     }
 }

@@ -2,7 +2,8 @@
   <thead>
     <tr>
       <th>Invoice Number</th>
-      <th>Date</th>
+      <th>Submitted</th>
+      <th>Paid At</th>
       <th>Amount</th>
       <th>Purpose</th>
       <th>Team</th>
@@ -23,11 +24,16 @@
       <tr>
         <td>{{ invoice.invoiceNumber }}</td>
         <td>{{ invoice.createdAt | date: 'dd.MM.yyyy' }}</td>
+        <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'dd.MM.yyyy') : '—' }}</td>
         <td>{{ invoice.amount }}</td>
         <td>{{ invoice.purposeOfPayment }}</td>
         <td>{{ invoice.team?.name ?? '—' }}</td>
         <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
-        <td>{{ getTransactionStatusLabel(invoice.status) }}</td>
+        <td>
+          <span [class]="'status ' + getStatusClass(invoice.status)">
+            {{ getTransactionStatusLabel(invoice.status) }}
+          </span>
+        </td>
         @if (showCostCentreColumn) {
           <td>{{ invoice.costCentre?.name ?? '—' }}</td>
         }
@@ -40,7 +46,7 @@
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="6 + (showCostCentreColumn ? 1 : 0) + (showUserNameColumn ? 1 : 0) + 1">
+        <td [attr.colspan]="8 + (showCostCentreColumn ? 1 : 0) + (showUserNameColumn ? 1 : 0)">
           No invoices found.
         </td>
       </tr>
