@@ -555,7 +555,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task DeleteAsync_ShouldThrowException_WhenDeleteIsBlocked()
+        public async Task DeleteAsync_ShouldDeactivateTeam_WhenDeleteIsBlocked()
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeleteAsync_Blocked");
@@ -587,10 +587,16 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
 
             // Act
-            var action = async () => await repo.DeleteAsync(team.Id);
+            var result = await repo.DeleteAsync(team.Id);
 
             // Assert
-            await action.Should().ThrowAsync<InvalidStateException>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(team.Id);
+            result.IsActive.Should().BeFalse();
+
+            var storedTeam = await context.Teams.FindAsync(team.Id);
+            storedTeam.Should().NotBeNull();
+            storedTeam!.IsActive.Should().BeFalse();
         }
 
         [Fact]
@@ -608,7 +614,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.DeleteAsync(team.Id);
 
             // Assert
-            result.Id.Should().Be(team.Id);
+            result.Should().BeNull();
             (await context.Teams.FindAsync(team.Id)).Should().BeNull();
         }
 

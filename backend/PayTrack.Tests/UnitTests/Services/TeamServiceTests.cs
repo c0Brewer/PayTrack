@@ -186,11 +186,25 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task DeleteTeamAsync_ShouldForwardArgumentsToRepo()
+        public async Task DeleteTeamAsync_ShouldReturnNull_WhenRepoPerformsHardDelete()
         {
             // Arrange
-            var expectedTeam = new Team { Id = 4, Name = "Delete Me" };
+            repoMock.Setup(r => r.DeleteAsync(4))
+                .ReturnsAsync((Team?)null);
 
+            // Act
+            var result = await service.DeleteTeamAsync(4);
+
+            // Assert
+            result.Should().BeNull();
+            repoMock.Verify(r => r.DeleteAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteTeamAsync_ShouldReturnDeactivatedTeam_WhenRepoPerformsSoftDelete()
+        {
+            // Arrange
+            var expectedTeam = new Team { Id = 4, Name = "Delete Me", IsActive = false };
             repoMock.Setup(r => r.DeleteAsync(4))
                 .ReturnsAsync(expectedTeam);
 
@@ -199,6 +213,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             // Assert
             result.Should().BeSameAs(expectedTeam);
+            result!.IsActive.Should().BeFalse();
             repoMock.Verify(r => r.DeleteAsync(4), Times.Once);
         }
 

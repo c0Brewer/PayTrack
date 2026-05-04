@@ -365,14 +365,32 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
-        public async Task DeleteTeam_ReturnsOkWithDeletedTeam()
+        public async Task DeleteTeam_ReturnsNoContent_WhenNoLinkedRecordsExist()
         {
             // Arrange
-            var deletedTeam = new Team { Id = 1, Name = "Deleted Team" };
+            _factory.TeamServiceMock
+                .Setup(s => s.DeleteTeamAsync(1))
+                .ReturnsAsync((Team?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.DeleteAsync("api/v1/team/1");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task DeleteTeam_ReturnsOkWithDeactivatedTeam_WhenLinkedRecordsExist()
+        {
+            // Arrange
+            var deactivatedTeam = new Team { Id = 1, Name = "Deactivated Team", IsActive = false };
 
             _factory.TeamServiceMock
                 .Setup(s => s.DeleteTeamAsync(1))
-                .ReturnsAsync(deletedTeam);
+                .ReturnsAsync(deactivatedTeam);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -385,7 +403,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result!.Id.Should().Be(1);
-            result.Name.Should().Be("Deleted Team");
+            result.Name.Should().Be("Deactivated Team");
+            result.IsActive.Should().BeFalse();
         }
 
         [Fact]
@@ -441,7 +460,27 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
-        public async Task GetTeams_ReturnsForbidden_WhenUserIsNotAdmin()
+        public async Task GetTeams_ReturnsOk_WhenUserIsAuthenticated()
+        {
+            // Arrange
+            using var factory = new TeamRegularUserApiFactory();
+            factory.TeamServiceMock
+                .Setup(s => s.GetTeamsAsync(It.IsAny<GetTeamQuery>()))
+                .ReturnsAsync(([], 0));
+
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            factory.TeamServiceMock.Verify(s => s.GetTeamsAsync(It.IsAny<GetTeamQuery>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpact_ReturnsForbidden_WhenUserIsNotAdmin()
         {
             // Arrange
             using var factory = new TeamRegularUserApiFactory();
@@ -449,7 +488,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
-            var response = await client.GetAsync("api/v1/team");
+            var response = await client.GetAsync("api/v1/team/1/delete-impact");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
