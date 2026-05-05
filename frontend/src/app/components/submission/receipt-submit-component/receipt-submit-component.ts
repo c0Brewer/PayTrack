@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -57,6 +57,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
+    private readonly changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -255,6 +256,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
             this.pendingSubmissionFile = this.selectedFile;
             this.isDuplicateModalOpen = true;
             this.isSubmitting = false;
+            this.changeDetectorRef.detectChanges();
             return;
           }
 
@@ -263,6 +265,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         error: (err: Error) => {
           this.notificationService.showError(err.message ?? 'Duplicate check failed.');
           this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
@@ -309,11 +312,13 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.pendingSubmissionPayload = null;
           this.pendingSubmissionFile = null;
           this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
           this.router.navigate(['/']);
         },
         error: (err: Error) => {
           this.notificationService.showError(err.message ?? 'Submission failed.');
           this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
