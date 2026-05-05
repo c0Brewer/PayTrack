@@ -45,7 +45,8 @@ namespace PayTrack.Api.Mapper
                 team.Description,
                 team.DisplayColor,
                 members,
-                budgets);
+                budgets,
+                team.IsActive);
         }
 
         /// <summary>

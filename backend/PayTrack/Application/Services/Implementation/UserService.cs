@@ -51,5 +51,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             return await this.repo.UpdateAsync(id, name, isActive, teamId, role);
         }
+
+        /// <inheritdoc/>
+        public async Task<User> UpdateBankInformationSkippedAsync(int userId, bool bankInformationSkipped)
+        {
+            return await this.repo.UpdateBankInformationSkippedAsync(userId, bankInformationSkipped);
+        }
     }
 }

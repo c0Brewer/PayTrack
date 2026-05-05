@@ -41,12 +41,23 @@ export class BankAccountEditorComponent implements OnChanges {
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.nonNullable.group({
-      accountHolder: [
+      accountHolder: ['', [Validators.required, Validators.maxLength(255)]],
+      iban: [
         '',
-        [Validators.required, Validators.minLength(3), Validators.maxLength(255)],
+        [
+          Validators.required,
+          Validators.maxLength(34),
+          Validators.pattern(/^[A-Za-z]{2}[A-Za-z0-9 ]{13,32}$/),
+        ],
       ],
-      iban: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(34)]],
-      bic: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
+      bic: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(11),
+          Validators.pattern(/^[A-Za-z]{4}[A-Za-z]{2}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?$/),
+        ],
+      ],
     });
 
     this.form.valueChanges.subscribe(() => {

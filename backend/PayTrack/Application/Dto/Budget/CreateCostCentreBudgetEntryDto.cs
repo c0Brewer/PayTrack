@@ -1,4 +1,4 @@
-// <copyright file="CreateBudgetEntryDto.cs" company="PayTrack">
+// <copyright file="CreateCostCentreBudgetEntryDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -9,7 +9,7 @@ namespace PayTrack.Application.Dto.Budget
     /// <summary>
     /// Dto for a budget entry supplied during cost center creation.
     /// </summary>
-    public sealed record class CreateBudgetEntryDto(
+    public sealed record class CreateCostCentreBudgetEntryDto(
         [property: Required]
         int TeamId,
 

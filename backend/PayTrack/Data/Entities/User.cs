@@ -64,6 +64,11 @@ namespace PayTrack.Data.Entities
         public bool IsActive { get; set; } = true;
 
         /// <summary>
+        /// Indicates if the user skipped entering bank information.
+        /// </summary>
+        public bool BankInformationSkipped { get; set; }
+
+        /// <summary>
         /// Timestamp the user was created at.
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

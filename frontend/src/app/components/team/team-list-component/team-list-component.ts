@@ -1,19 +1,23 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
-import { TeamDto } from '../../../types/exporter';
+import { CostCentreDto, TeamDto } from '../../../types/exporter';
 
 type TeamBudget = NonNullable<TeamDto['budgets']>[number];
 
 @Component({
   selector: 'app-team-list-component',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './team-list-component.html',
   styleUrl: './team-list-component.scss',
 })
 export class TeamListComponent {
   @Input() teams: TeamDto[] = [];
+  @Input() costCentres: CostCentreDto[] = [];
 
   @Output() openEditTeam = new EventEmitter<TeamDto>();
+
+  private readonly expandedBudgetTeamIds = new Set<number>();
 
   onOpenEditTeam(team: TeamDto): void {
     this.openEditTeam.emit(team);
@@ -31,17 +35,50 @@ export class TeamListComponent {
     return team.members?.length ?? 0;
   }
 
-  getCurrentBudget(team: TeamDto): TeamBudget | null {
-    const currentDate = toDateKey(new Date());
-    if (currentDate == null) {
-      return null;
-    }
-
-    return team.budgets?.find((budget) => isDateWithinBudgetPeriod(budget, currentDate)) ?? null;
+  getCurrentBudgets(team: TeamDto): TeamBudget[] {
+    const currentTime = new Date();
+    return team.budgets?.filter((budget) => isDateWithinBudgetPeriod(budget, currentTime)) ?? [];
   }
 
-  getBudgetTargetAmount(team: TeamDto): number | null {
-    return this.getCurrentBudget(team)?.targetAmount ?? null;
+  getVisibleCurrentBudgets(team: TeamDto): TeamBudget[] {
+    const currentBudgets = this.getCurrentBudgets(team);
+    return this.isBudgetListExpanded(team) ? currentBudgets : currentBudgets.slice(0, 3);
+  }
+
+  getHiddenCurrentBudgetCount(team: TeamDto): number {
+    return Math.max(this.getCurrentBudgets(team).length - 3, 0);
+  }
+
+  getBudgetDisplayValue(budget: TeamBudget): string {
+    return `${this.getCostCentreName(budget.costCentreId)}: ${this.formatBudgetAmount(budget.targetAmount)} €`;
+  }
+
+  formatBudgetAmount(amount: number): string {
+    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+  }
+
+  hasHiddenCurrentBudgets(team: TeamDto): boolean {
+    return this.getHiddenCurrentBudgetCount(team) > 0;
+  }
+
+  isBudgetListExpanded(team: TeamDto): boolean {
+    return this.expandedBudgetTeamIds.has(team.id);
+  }
+
+  toggleBudgetList(team: TeamDto): void {
+    if (this.isBudgetListExpanded(team)) {
+      this.expandedBudgetTeamIds.delete(team.id);
+      return;
+    }
+
+    this.expandedBudgetTeamIds.add(team.id);
+  }
+
+  private getCostCentreName(costCentreId: number): string {
+    return (
+      this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
+      `Cost centre #${costCentreId}`
+    );
   }
 
   getTeamNameTextColor(team: TeamDto): string {
@@ -55,7 +92,7 @@ export class TeamListComponent {
   }
 
   getVisibleColumnCount(): number {
-    return 5;
+    return 6;
   }
 }
 
@@ -71,25 +108,19 @@ function hexToRgb(color: string): { red: number; green: number; blue: number } |
   };
 }
 
-function isDateWithinBudgetPeriod(budget: TeamBudget, currentDate: string): boolean {
-  const periodStart = toDateKey(budget.periodStart);
-  const periodEnd = toDateKey(budget.periodEnd);
+function isDateWithinBudgetPeriod(budget: TeamBudget, currentTime: Date): boolean {
+  const periodStart = toTimestamp(budget.periodStart);
+  const periodEnd = toTimestamp(budget.periodEnd);
 
   if (periodStart == null || periodEnd == null) {
     return false;
   }
 
-  return currentDate >= periodStart && currentDate <= periodEnd;
+  const currentTimestamp = currentTime.getTime();
+  return currentTimestamp >= periodStart && currentTimestamp <= periodEnd;
 }
 
-function toDateKey(value: Date | string): string | null {
-  if (value instanceof Date) {
-    const year = value.getFullYear();
-    const month = `${value.getMonth() + 1}`.padStart(2, '0');
-    const day = `${value.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  const dateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
-  return dateMatch?.[0] ?? null;
+function toTimestamp(value: Date | string): number | null {
+  const timestamp = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
 }

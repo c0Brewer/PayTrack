@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { BankInformationComponent } from './components/bank-information/bank-information-component/bank-information-component';
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
@@ -9,6 +10,7 @@ import { LoginComponent } from './components/login/login-component/login-compone
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
+import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -54,6 +56,16 @@ export const routes: Routes = [
     path: 'team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamManagementComponent,
+  },
+  {
+    path: 'team/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamDetailComponent,
+  },
+  {
+    path: 'initial-setup',
+    canActivate: [authGuard],
+    component: BankInformationComponent,
   },
   {
     path: 'cost-centre',

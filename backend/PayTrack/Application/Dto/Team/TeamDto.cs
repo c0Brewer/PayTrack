@@ -22,10 +22,13 @@ namespace PayTrack.Application.Dto.Team
         [property: MinLength(3)]
         string? Description,
 
-        [property: MinLength(3)]
+        [property: MaxLength(7)]
+        [property: RegularExpression("^#[0-9A-Fa-f]{6}$")]
         string? DisplayColor,
 
         List<UserDto> Members,
 
-        List<BudgetDto> Budgets);
+        List<BudgetDto> Budgets,
+
+        bool IsActive);
 }

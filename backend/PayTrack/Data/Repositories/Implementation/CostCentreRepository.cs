@@ -73,7 +73,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateBudgetEntryDto>? budgetEntries = null)
+        public async Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto>? budgetEntries = null)
         {
             this.context.CostCentres.Add(costCentre);
             if (budgetEntries is not null)
@@ -93,7 +93,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
+        public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertCostCentreBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
         {
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)

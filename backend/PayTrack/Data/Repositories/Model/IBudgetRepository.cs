@@ -45,7 +45,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="costCentre">The Cost Centre to associate the Budget entries with.</param>
         /// <param name="entries">The list of Budget entries to stage.</param>
         /// <returns>A completed task when all entries have been staged.</returns>
-        Task AddRangeAsync(CostCentre costCentre, IList<CreateBudgetEntryDto> entries);
+        Task AddRangeAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto> entries);
 
         /// <summary>
         /// Updates an existing Budget.

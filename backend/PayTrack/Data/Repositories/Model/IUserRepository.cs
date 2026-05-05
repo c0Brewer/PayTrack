@@ -56,5 +56,13 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="role">Role to (optionally) set.</param>
         /// <returns>Instance of created User object.</returns>
         Task<User> UpdateAsync(int id, string? name, bool? isActive = null, int? teamId = null, Role? role = null);
+
+        /// <summary>
+        /// Updates the bank information onboarding state.
+        /// </summary>
+        /// <param name="userId">Id of User to update.</param>
+        /// <param name="bankInformationSkipped">State to persist.</param>
+        /// <returns>Updated user including bank accounts.</returns>
+        Task<User> UpdateBankInformationSkippedAsync(int userId, bool bankInformationSkipped);
     }
 }
