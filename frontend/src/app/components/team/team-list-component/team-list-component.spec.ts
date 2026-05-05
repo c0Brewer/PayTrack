@@ -216,7 +216,7 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should always render the member count, status, and team budget columns', () => {
+  it('should always render the member count and status columns', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
@@ -227,7 +227,6 @@ describe('TeamListComponent', () => {
 
     expect(headers).toContain('Member Count');
     expect(headers).toContain('Status');
-    expect(headers).toContain('Team Budgets');
   });
 
   it('should render status badges for active and inactive teams', () => {
@@ -242,7 +241,7 @@ describe('TeamListComponent', () => {
     expect(badges).toEqual(['Active', 'Inactive']);
   });
 
-  it('should render the member count and first three current team budgets in each row', () => {
+  it('should render the member count in each row', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.componentRef.setInput('costCentres', mockCostCentres);
     fixture.detectChanges();
@@ -260,39 +259,11 @@ describe('TeamListComponent', () => {
       ) as NodeListOf<HTMLTableCellElement>,
       (cell) => cell.textContent?.trim(),
     );
-    const firstBudgetCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child .budget-cell',
-    ) as HTMLTableCellElement;
 
-    expect(columns.length).toBe(6);
+    expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
     expect(firstRowCells).toContain('Active');
     expect(secondRowCells).toContain('Inactive');
-    expect(firstBudgetCell.textContent).toContain('Vehicle: 5.000 €');
-    expect(firstBudgetCell.textContent).toContain('Operations: 6.000 €');
-    expect(firstBudgetCell.textContent).toContain('Software: 7.000 €');
-    expect(firstBudgetCell.textContent).toContain('Show all (4)');
-    expect(firstBudgetCell.textContent).not.toContain('Travel: 8.000 €');
-    expect(secondRowCells).toContain('No budget set');
-  });
-
-  it('should show all active budgets after clicking the budget toggle', () => {
-    fixture.componentRef.setInput('teams', mockTeams);
-    fixture.componentRef.setInput('costCentres', mockCostCentres);
-    fixture.detectChanges();
-
-    const toggleButton = fixture.nativeElement.querySelector(
-      '.budget-toggle-btn',
-    ) as HTMLButtonElement;
-    toggleButton.click();
-    fixture.detectChanges();
-
-    const firstBudgetCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child .budget-cell',
-    ) as HTMLTableCellElement;
-
-    expect(firstBudgetCell.textContent).toContain('Travel: 8.000 €');
-    expect(firstBudgetCell.textContent).toContain('Show less');
   });
 
   it('should render the empty-state row when no teams are available', () => {
