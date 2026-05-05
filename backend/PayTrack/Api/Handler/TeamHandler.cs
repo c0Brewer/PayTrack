@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
@@ -61,18 +60,6 @@ namespace PayTrack.Api.Handler
             [FromBody] CreateTeamRequestDto teamDto,
             ITeamService teamService)
         {
-            // validates the attributes defined in CreateTeamRequestDto for the incoming request body teamDto 
-            var validationResults = new List<ValidationResult>();
-            if (!Validator.TryValidateObject(teamDto, new ValidationContext(teamDto), validationResults, true))
-            {
-                return TypedResults.BadRequest(new ProblemDetails
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation failed",
-                    Detail = string.Join(" ", validationResults.Select(result => result.ErrorMessage)),
-                });
-            }
-
             var createdTeam = await teamService.CreateTeamAsync(
                 teamDto.Name,
                 teamDto.Description,
@@ -96,17 +83,6 @@ namespace PayTrack.Api.Handler
             [FromBody] UpdateTeamRequestDto updateTeamRequestDto,
             ITeamService teamService)
         {
-            var validationResults = new List<ValidationResult>();
-            if (!Validator.TryValidateObject(updateTeamRequestDto, new ValidationContext(updateTeamRequestDto), validationResults, true))
-            {
-                return TypedResults.BadRequest(new ProblemDetails
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation failed",
-                    Detail = string.Join(" ", validationResults.Select(result => result.ErrorMessage)),
-                });
-            }
-
             var updatedTeam = await teamService.UpdateTeamAsync(
                 id,
                 updateTeamRequestDto.Name,
@@ -114,6 +90,7 @@ namespace PayTrack.Api.Handler
                 updateTeamRequestDto.DisplayColor,
                 updateTeamRequestDto.BudgetsToUpsert,
                 updateTeamRequestDto.BudgetIdsToDelete);
+
             var updatedTeamDto = TeamMapper.ToDto(updatedTeam);
             return TypedResults.Ok(updatedTeamDto);
         }

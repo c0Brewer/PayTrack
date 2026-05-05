@@ -2,8 +2,7 @@
   <colgroup>
     <col style="width: 18%" />
     <col style="width: 22%" />
-    <col style="width: 13%" />
-    <col style="width: 10%" />
+    <col style="width: 23%" />
     <col style="width: 30%" />
     <col style="width: 7%" />
   </colgroup>
@@ -14,7 +13,6 @@
       <th>Description</th>
       <th>Member Count</th>
       <th>Status</th>
-      <th>Team Budgets</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -40,28 +38,6 @@
             {{ team.isActive ? 'Active' : 'Inactive' }}
           </span>
         </td>
-        <td class="budget-cell">
-          @if (getCurrentBudgets(team).length > 0) {
-            <div class="budget-list">
-              @for (budget of getVisibleCurrentBudgets(team); track budget.id) {
-                <span class="budget-amount">{{ getBudgetDisplayValue(budget) }}</span>
-              }
-            </div>
-
-            @if (hasHiddenCurrentBudgets(team)) {
-              <button class="budget-toggle-btn" type="button" (click)="toggleBudgetList(team)">
-                {{
-                  isBudgetListExpanded(team)
-                    ? 'Show less'
-                    : `Show all (${getCurrentBudgets(team).length})`
-                }}
-              </button>
-            }
-          } @else {
-            No budget set
-          }
-        </td>
-
         <td class="actions-col">
           <button class="edit-btn" (click)="onOpenEditTeam(team)">Edit</button>
         </td>
