@@ -63,6 +63,16 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByUser> AddAsync(PaymentRequestByUser transaction, IFormFile receipt);
 
         /// <summary>
+        /// Gets potential duplicate PaymentRequestByUser entries based on exact duplicate criteria.
+        /// </summary>
+        /// <param name="userId">Current user id.</param>
+        /// <param name="teamId">Team id.</param>
+        /// <param name="amount">Amount.</param>
+        /// <param name="invoiceNumber">Invoice number.</param>
+        /// <returns>List of potential duplicates.</returns>
+        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount, string invoiceNumber);
+
+        /// <summary>
         /// Updates a PaymentRequestByUser using the given input.
         /// </summary>
         /// <param name="transaction">Transaction object to update.</param>

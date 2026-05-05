@@ -61,6 +61,20 @@ namespace PayTrack.Application.Services.Model
             int? bankAccountId);
 
         /// <summary>
+        /// Checks possible duplicates of a PaymentRequestByUser with exact matching criteria.
+        /// </summary>
+        /// <param name="userId">Current user id for matching.</param>
+        /// <param name="teamId">Team id for matching.</param>
+        /// <param name="amount">Amount for matching.</param>
+        /// <param name="invoiceNumber">Invoice number for matching.</param>
+        /// <returns>A sorted list of duplicate matches, descending by score.</returns>
+        Task<List<DuplicatePaymentRequestByUserMatchDto>> GetDuplicatePaymentRequestsByUserAsync(
+            int userId,
+            int teamId,
+            decimal amount,
+            string invoiceNumber);
+
+        /// <summary>
         /// Update a PaymentRequestByUser using the given input.
         /// </summary>
         /// <param name="id">The id of the PaymentRequestByUser to update.</param>

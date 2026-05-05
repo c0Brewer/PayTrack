@@ -87,6 +87,31 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Checks possible duplicates for a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="getDuplicatePaymentRequestsByUserDto">Data for duplicate check.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<List<DuplicatePaymentRequestByUserDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetDuplicatePaymentRequestsByUserAsync(
+            [AsParameters] GetDuplicatePaymentRequestsByUserDto getDuplicatePaymentRequestsByUserDto,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+
+            var duplicatePaymentRequests = await paymentRequestByUserService.GetDuplicatePaymentRequestsByUserAsync(
+                    user.Id,
+                    getDuplicatePaymentRequestsByUserDto.TeamId,
+                    getDuplicatePaymentRequestsByUserDto.Amount,
+                    getDuplicatePaymentRequestsByUserDto.InvoiceNumber);
+
+            var duplicatePaymentRequestsDto = PaymentRequestByUserMapper.DuplicateListToDto(duplicatePaymentRequests);
+
+            return TypedResults.Ok(duplicatePaymentRequestsDto);
+        }
+
+        /// <summary>
         /// Updates a PaymentRequestByUser.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to update.</param>

@@ -9,6 +9,7 @@ import { NotificationService } from '../../../services/notification/notification
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
 import {
+  DuplicatePaymentRequestByUserDto,
   TeamDto,
   CreatePaymentRequestByUserDto,
   PayoutType,
@@ -234,11 +235,34 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       },
     };
 
-    //call getduplicate -> wenn leer, normal submitten und sonst anzeigen welche duplicate -> möglichkeit auf trotzdem absenden
-    //so wie payload ins backend schicken (ohne receipt)
-
     this.paymentRequestByUserService
-      .createPaymentRequestByUser(payload, this.selectedFile) // <- we pass the actual File here
+      .getDuplicatePaymentRequestsByUser({
+        TeamId: payload.transaction.teamId,
+        Amount: payload.transaction.amount,
+        InvoiceNumber: payload.invoiceNumber,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (duplicates) => {
+          const shouldSubmit = this.confirmSubmitWithDuplicates(duplicates);
+
+          if (!shouldSubmit) {
+            this.isSubmitting = false;
+            return;
+          }
+
+          this.submitPaymentRequest(payload, this.selectedFile!);
+        },
+        error: (err: Error) => {
+          this.notificationService.showError(err.message ?? 'Duplicate check failed.');
+          this.isSubmitting = false;
+        },
+      });
+  }
+
+  private submitPaymentRequest(payload: CreatePaymentRequestByUserDto, file: File): void {
+    this.paymentRequestByUserService
+      .createPaymentRequestByUser(payload, file)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -254,6 +278,22 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.isSubmitting = false;
         },
       });
+  }
+
+  private confirmSubmitWithDuplicates(duplicates: DuplicatePaymentRequestByUserDto[]): boolean {
+    if (duplicates.length === 0) {
+      return true;
+    }
+
+    const duplicateSummary = duplicates
+      .map((duplicate, index) =>
+        `${index + 1}. Invoice ${duplicate.paymentRequestByUser.invoiceNumber}, Amount ${duplicate.paymentRequestByUser.amount}`,
+      )
+      .join('\n');
+
+    return confirm(
+      `Potential duplicates found:\n${duplicateSummary}\n\nDo you want to submit anyway?`,
+    );
   }
 
   toPayoutType(value: unknown): PayoutType | null {

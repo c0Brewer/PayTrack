@@ -13,6 +13,9 @@ namespace PayTrack.Application.Services.Implementation
     /// <inheritdoc/>
     public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
     {
+        private const int DuplicateMatchThreshold = 1;
+        private const int MaxDuplicateResults = 10;
+
         /// <summary>
         /// Repository for PaymentRequestByUsers.
         /// </summary>
@@ -99,6 +102,55 @@ namespace PayTrack.Application.Services.Implementation
             };
 
             return await this.repo.AddAsync(paymentRequest, receipt);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DuplicatePaymentRequestByUserMatchDto>> GetDuplicatePaymentRequestsByUserAsync(
+            int userId,
+            int teamId,
+            decimal amount,
+            string invoiceNumber)
+        {
+            var normalizedInvoiceNumber = invoiceNumber.Trim();
+
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount, normalizedInvoiceNumber);
+
+            return duplicateCandidates
+                .Select(paymentRequestByUser =>
+                {
+                    bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
+                    bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
+                    bool isInvoiceNumberMatch = string.Equals(paymentRequestByUser.InvoiceNumber, normalizedInvoiceNumber, StringComparison.Ordinal);
+
+                    int score = 0;
+
+                    if (isAmountAndUserMatch)
+                    {
+                        score++;
+                    }
+
+                    if (isAmountAndTeamMatch)
+                    {
+                        score++;
+                    }
+
+                    if (isInvoiceNumberMatch)
+                    {
+                        score++;
+                    }
+
+                    return new DuplicatePaymentRequestByUserMatchDto(
+                        paymentRequestByUser,
+                        score,
+                        isAmountAndUserMatch,
+                        isAmountAndTeamMatch,
+                        isInvoiceNumberMatch);
+                })
+                .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
+                .OrderByDescending(duplicateMatch => duplicateMatch.Score)
+                .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
+                .Take(MaxDuplicateResults)
+                .ToList();
         }
 
         /// <inheritdoc/>
