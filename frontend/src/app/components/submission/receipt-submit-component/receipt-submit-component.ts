@@ -16,11 +16,12 @@ import {
   BankAccount,
 } from '../../../types/exporter';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, ModalComponent],
   templateUrl: './receipt-submit-component.html',
   styleUrl: './receipt-submit-component.scss',
 })
@@ -31,6 +32,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   selectedFile: File | null = null;
   selectedFileName = '';
+  duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
+  isDuplicateModalOpen = false;
+  pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
+  pendingSubmissionFile: File | null = null;
 
   readonly PayoutType = PayoutType;
 
@@ -244,9 +249,11 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (duplicates) => {
-          const shouldSubmit = this.confirmSubmitWithDuplicates(duplicates);
-
-          if (!shouldSubmit) {
+          if (duplicates.length > 0) {
+            this.duplicateCandidates = duplicates;
+            this.pendingSubmissionPayload = payload;
+            this.pendingSubmissionFile = this.selectedFile;
+            this.isDuplicateModalOpen = true;
             this.isSubmitting = false;
             return;
           }
@@ -260,6 +267,33 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       });
   }
 
+  onDuplicateModalCancel(): void {
+    this.isDuplicateModalOpen = false;
+    this.duplicateCandidates = [];
+    this.pendingSubmissionPayload = null;
+    this.pendingSubmissionFile = null;
+  }
+
+  onDuplicateModalSubmitRegardless(): void {
+    if (!this.pendingSubmissionPayload || !this.pendingSubmissionFile) {
+      this.notificationService.showError('Submission data was lost. Please submit again.');
+      this.onDuplicateModalCancel();
+      this.isSubmitting = false;
+      return;
+    }
+
+    const payload = this.pendingSubmissionPayload;
+    const file = this.pendingSubmissionFile;
+
+    this.isDuplicateModalOpen = false;
+    this.duplicateCandidates = [];
+    this.pendingSubmissionPayload = null;
+    this.pendingSubmissionFile = null;
+    this.isSubmitting = true;
+
+    this.submitPaymentRequest(payload, file);
+  }
+
   private submitPaymentRequest(payload: CreatePaymentRequestByUserDto, file: File): void {
     this.paymentRequestByUserService
       .createPaymentRequestByUser(payload, file)
@@ -270,6 +304,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.form.reset();
           this.selectedFile = null;
           this.selectedFileName = '';
+          this.duplicateCandidates = [];
+          this.isDuplicateModalOpen = false;
+          this.pendingSubmissionPayload = null;
+          this.pendingSubmissionFile = null;
           this.isSubmitting = false;
           this.router.navigate(['/']);
         },
@@ -278,22 +316,6 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.isSubmitting = false;
         },
       });
-  }
-
-  private confirmSubmitWithDuplicates(duplicates: DuplicatePaymentRequestByUserDto[]): boolean {
-    if (duplicates.length === 0) {
-      return true;
-    }
-
-    const duplicateSummary = duplicates
-      .map((duplicate, index) =>
-        `${index + 1}. Invoice ${duplicate.paymentRequestByUser.invoiceNumber}, Amount ${duplicate.paymentRequestByUser.amount}`,
-      )
-      .join('\n');
-
-    return confirm(
-      `Potential duplicates found:\n${duplicateSummary}\n\nDo you want to submit anyway?`,
-    );
   }
 
   toPayoutType(value: unknown): PayoutType | null {
