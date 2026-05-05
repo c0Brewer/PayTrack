@@ -1,0 +1,155 @@
+<app-modal-component
+  [title]="isCreating ? 'Create Team' : 'Edit Team'"
+  [info]="
+    isCreating ? 'Add a new team and choose its display color' : 'Update Team Information and Color'
+  "
+  (closeEvent)="onClose()"
+>
+  @if (!isCreating && team.id < 0) {
+    <span>Team not found.</span>
+  } @else {
+    @if (!isCreating) {
+      <div class="modal-top-actions">
+        <button type="button" class="delete-btn" (click)="onDelete()">Delete Team</button>
+      </div>
+    }
+
+    <label>
+      Name
+      <input
+        [(ngModel)]="team.name"
+        [class.input-error]="hasFieldError('name')"
+        (blur)="onFieldBlur('name')"
+      />
+      @if (hasFieldError('name')) {
+        <span class="field-error">{{ getFieldError('name') }}</span>
+      }
+    </label>
+
+    <label>
+      Description
+      <input
+        [(ngModel)]="team.description"
+        [class.input-error]="hasFieldError('description')"
+        (blur)="onFieldBlur('description')"
+      />
+      @if (hasFieldError('description')) {
+        <span class="field-error">{{ getFieldError('description') }}</span>
+      }
+    </label>
+
+    <label>
+      Color
+      <div class="color-picker">
+        <input
+          type="color"
+          [ngModel]="selectedColor"
+          (ngModelChange)="setDisplayColor($event)"
+          aria-label="Choose team color"
+        />
+        <span class="color-value">{{ selectedColor }}</span>
+      </div>
+    </label>
+
+    <div class="team-preview">
+      <span class="team-preview__label">Preview</span>
+      <span class="team-preview__badge" [style.background]="selectedColor">
+        {{ team.name || 'Team name' }}
+      </span>
+    </div>
+
+    <div class="budgets-section">
+      <h4>Budgets</h4>
+
+      <div class="add-budget-form">
+        <label>
+          Cost Centre
+          <select [(ngModel)]="newBudgetDraft.costCentreId">
+            <option [ngValue]="0" disabled>Select cost centre</option>
+            @for (costCentre of costCentres; track costCentre.id) {
+              <option [ngValue]="costCentre.id" [disabled]="costCentre.isActive === false">
+                {{ getCostCentreOptionLabel(costCentre) }}
+              </option>
+            }
+          </select>
+        </label>
+        <label>
+          Amount
+          <input type="number" [(ngModel)]="newBudgetDraft.targetAmount" placeholder="0.00" />
+        </label>
+        <label>
+          Period Start
+          <input type="date" [(ngModel)]="newBudgetDraft.periodStart" />
+        </label>
+        <label>
+          Period End
+          <input type="date" [(ngModel)]="newBudgetDraft.periodEnd" />
+        </label>
+        <button type="button" class="btn-add-budget" (click)="addNewBudget()">+ Add Budget</button>
+      </div>
+
+      @if (workingBudgets.length > 0) {
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th>Cost Centre</th>
+              <th>Amount</th>
+              <th>Period Start</th>
+              <th>Period End</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (budget of workingBudgets; track budget.originalId) {
+              <tr [class.deleted]="budget.markedForDeletion">
+                <td>{{ getCostCentreName(budget.costCentreId) }}</td>
+                <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
+                <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
+                <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
+                <td>
+                  <button type="button" class="btn-icon" (click)="toggleBudgetDeletion(budget)">
+                    {{ budget.markedForDeletion ? 'Restore' : 'Remove' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      @if (newBudgets.length > 0) {
+        <table class="budget-table new-budgets">
+          <thead>
+            <tr>
+              <th>Cost Centre</th>
+              <th>Amount</th>
+              <th>Period Start</th>
+              <th>Period End</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (budget of newBudgets; track $index) {
+              <tr>
+                <td>{{ getCostCentreName(budget.costCentreId) }}</td>
+                <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
+                <td>{{ budget.periodStart }}</td>
+                <td>{{ budget.periodEnd }}</td>
+                <td>
+                  <button type="button" class="btn-icon" (click)="removeNewBudget($index)">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="modal-actions">
+      <button (click)="onClose()">Cancel</button>
+      <button (click)="onSave()">{{ isCreating ? 'Create' : 'Save' }}</button>
+    </div>
+  }
+</app-modal-component>

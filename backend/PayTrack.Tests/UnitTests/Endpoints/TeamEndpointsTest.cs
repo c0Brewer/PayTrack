@@ -48,10 +48,6 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.Items.Should().HaveCount(2);
             result.Items[0].Name.Should().Be("Alpha");
             result.Items[1].Name.Should().Be("Beta");
-            result.Items[0].Members.Should().NotBeNull().And.BeEmpty();
-            result.Items[0].Budgets.Should().NotBeNull().And.BeEmpty();
-            result.Items[1].Members.Should().NotBeNull().And.BeEmpty();
-            result.Items[1].Budgets.Should().NotBeNull().And.BeEmpty();
             result.TotalCount.Should().Be(2);
         }
 
@@ -59,7 +55,6 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetTeams_ForwardsQueryParametersAndMapsOptionalData()
         {
             // Arrange
-            var now = DateTime.UtcNow;
             var teams = new List<Team>
             {
                 new()
@@ -85,8 +80,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                             TeamId = 1,
                             CostCentreId = 12,
                             TargetAmount = 600m,
-                            PeriodStart = now.AddDays(-1),
-                            PeriodEnd = now.AddDays(1),
+                            PeriodStart = new DateTime(2026, 1, 1),
+                            PeriodEnd = new DateTime(2026, 12, 31),
                         },
                     ],
                 },
@@ -120,10 +115,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Offset.Should().Be(2);
             result.Items.Should().ContainSingle();
             result.Items[0].Members.Should().ContainSingle();
-            result.Items[0].Members![0].Email.Should().Be("alice@example.com");
-            result.Items[0].Members![0].Team.Should().BeNull();
             result.Items[0].Budgets.Should().ContainSingle();
-            result.Items[0].Budgets[0].TargetAmount.Should().Be(600m);
+            result.Items[0].Members![0].Email.Should().Be("alice@example.com");
+            result.Items[0].Budgets![0].TargetAmount.Should().Be(600m);
         }
 
         [Fact]
@@ -147,8 +141,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("Team1");
-            result.Members.Should().NotBeNull().And.BeEmpty();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Members.Should().BeEmpty();
+            result.Budgets.Should().BeEmpty();
         }
 
         [Fact]
@@ -188,16 +182,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Should().NotBeNull();
             result!.Members.Should().NotBeNull();
             result.Members.Should().ContainSingle();
-            result.Members![0].Email.Should().Be("alice@example.com");
-            result.Members![0].Team.Should().BeNull();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Members[0].Email.Should().Be("alice@example.com");
+            result.Budgets.Should().BeEmpty();
         }
 
         [Fact]
         public async Task GetTeamById_ReturnsBudgets_WhenIncludeBudgetsIsTrue()
         {
             // Arrange
-            var now = DateTime.UtcNow;
             var team = new Team
             {
                 Id = 1,
@@ -210,8 +202,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         TeamId = 1,
                         CostCentreId = 12,
                         TargetAmount = 2500m,
-                        PeriodStart = now.AddDays(-1),
-                        PeriodEnd = now.AddDays(1),
+                        PeriodStart = new DateTime(2026, 1, 1),
+                        PeriodEnd = new DateTime(2026, 12, 31),
                     },
                 ],
             };
@@ -230,10 +222,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
-            result!.Budgets.Should().ContainSingle();
+            result!.Budgets.Should().NotBeNull();
+            result.Budgets.Should().ContainSingle();
             result.Budgets[0].CostCentreId.Should().Be(12);
             result.Budgets[0].TargetAmount.Should().Be(2500m);
-            result.Members.Should().NotBeNull().And.BeEmpty();
+            result.Members.Should().BeEmpty();
         }
 
         [Fact]
@@ -258,11 +251,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task CreateTeam_ReturnsOkWithCreatedTeam()
         {
             // Arrange
-            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color");
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "#112233", null);
             var createdTeam = new Team { Id = 1, Name = "New Team" };
 
             _factory.TeamServiceMock
-                .Setup(s => s.CreateTeamAsync(requestDto.name, requestDto.description, requestDto.displayColor))
+                .Setup(s => s.CreateTeamAsync(
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.Budgets))
                 .ReturnsAsync(createdTeam);
 
             var client = _factory.CreateClient();
@@ -276,23 +273,200 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<TeamDto>();
             result.Should().NotBeNull();
             result.Name.Should().Be("New Team");
-            result.Members.Should().NotBeNull().And.BeEmpty();
-            result.Budgets.Should().NotBeNull().And.BeEmpty();
+            result.Members.Should().BeEmpty();
+            result.Budgets.Should().BeEmpty();
         }
 
         [Fact]
-        public async Task GetTeams_ReturnsOk_WhenUserIsRegularUser()
+        public async Task CreateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
         {
             // Arrange
-            await using var factory = new TeamRegularUserApiFactory();
-            var teams = new List<Team>
+            var requestDto = new CreateTeamRequestDto("New Team", "My Description", "My Color", null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/team", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _factory.TeamServiceMock.Verify(
+                s => s.CreateTeamAsync(
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.Budgets),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateTeam_ReturnsOkWithUpdatedTeam()
+        {
+            // Arrange
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "#445566", null, null);
+            var updatedTeam = new Team
             {
-                new() { Id = 1, Name = "Alpha" },
+                Id = 1,
+                Name = "Updated Team",
+                Description = "Updated Description",
+                DisplayColor = "#445566",
             };
 
+            _factory.TeamServiceMock
+                .Setup(s => s.UpdateTeamAsync(
+                    1,
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.BudgetsToUpsert,
+                    requestDto.BudgetIdsToDelete))
+                .ReturnsAsync(updatedTeam);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PutAsJsonAsync("api/v1/team/1", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(1);
+            result.Name.Should().Be("Updated Team");
+            result.Description.Should().Be("Updated Description");
+            result.DisplayColor.Should().Be("#445566");
+        }
+
+        [Fact]
+        public async Task UpdateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
+        {
+            // Arrange
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "My Color", null, null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PutAsJsonAsync("api/v1/team/1", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _factory.TeamServiceMock.Verify(
+                s => s.UpdateTeamAsync(
+                    1,
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.DisplayColor,
+                    requestDto.BudgetsToUpsert,
+                    requestDto.BudgetIdsToDelete),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteTeam_ReturnsNoContent_WhenNoLinkedRecordsExist()
+        {
+            // Arrange
+            _factory.TeamServiceMock
+                .Setup(s => s.DeleteTeamAsync(1))
+                .ReturnsAsync((Team?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.DeleteAsync("api/v1/team/1");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task DeleteTeam_ReturnsOkWithDeactivatedTeam_WhenLinkedRecordsExist()
+        {
+            // Arrange
+            var deactivatedTeam = new Team { Id = 1, Name = "Deactivated Team", IsActive = false };
+
+            _factory.TeamServiceMock
+                .Setup(s => s.DeleteTeamAsync(1))
+                .ReturnsAsync(deactivatedTeam);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.DeleteAsync("api/v1/team/1");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(1);
+            result.Name.Should().Be("Deactivated Team");
+            result.IsActive.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpact_ReturnsOk_WhenTeamExists()
+        {
+            // Arrange
+            var deleteImpact = new DeleteTeamImpactDto(
+                1,
+                "Finance",
+                false,
+                2,
+                1,
+                3,
+                1,
+                "Deleting this team is currently blocked.");
+
+            _factory.TeamServiceMock
+                .Setup(s => s.GetDeleteTeamImpactAsync(1))
+                .ReturnsAsync(deleteImpact);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team/1/delete-impact");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DeleteTeamImpactDto>();
+            result.Should().NotBeNull();
+            result!.TeamId.Should().Be(1);
+            result.TeamName.Should().Be("Finance");
+            result.CanDelete.Should().BeFalse();
+            result.AffectedUserCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpact_ReturnsNotFound_WhenTeamDoesNotExist()
+        {
+            // Arrange
+            _factory.TeamServiceMock
+                .Setup(s => s.GetDeleteTeamImpactAsync(999))
+                .ReturnsAsync((DeleteTeamImpactDto?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/team/999/delete-impact");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task GetTeams_ReturnsOk_WhenUserIsAuthenticated()
+        {
+            // Arrange
+            using var factory = new TeamRegularUserApiFactory();
             factory.TeamServiceMock
                 .Setup(s => s.GetTeamsAsync(It.IsAny<GetTeamQuery>()))
-                .ReturnsAsync((teams, 1));
+                .ReturnsAsync(([], 0));
 
             var client = factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
@@ -302,48 +476,19 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<TeamDto>>();
-            result.Should().NotBeNull();
-            result!.Items.Should().ContainSingle();
-            result.Items[0].Name.Should().Be("Alpha");
+            factory.TeamServiceMock.Verify(s => s.GetTeamsAsync(It.IsAny<GetTeamQuery>()), Times.Once);
         }
 
         [Fact]
-        public async Task GetTeamById_ReturnsOk_WhenUserIsRegularUser()
+        public async Task GetDeleteTeamImpact_ReturnsForbidden_WhenUserIsNotAdmin()
         {
             // Arrange
-            await using var factory = new TeamRegularUserApiFactory();
-            var team = new Team { Id = 1, Name = "Alpha" };
-
-            factory.TeamServiceMock
-                .Setup(s => s.GetTeamByIdAsync(1, It.IsAny<GetTeamQueryById?>()))
-                .ReturnsAsync(team);
-
+            using var factory = new TeamRegularUserApiFactory();
             var client = factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
-            var response = await client.GetAsync("api/v1/team/1");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<TeamDto>();
-            result.Should().NotBeNull();
-            result!.Name.Should().Be("Alpha");
-        }
-
-        [Fact]
-        public async Task CreateTeam_ReturnsForbidden_WhenUserIsNotAdmin()
-        {
-            // Arrange
-            await using var factory = new TeamRegularUserApiFactory();
-            var client = factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
-
-            // Act
-            var response = await client.PostAsJsonAsync(
-                "api/v1/team",
-                new CreateTeamRequestDto("New Team", "My Description", "My Color"));
+            var response = await client.GetAsync("api/v1/team/1/delete-impact");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);

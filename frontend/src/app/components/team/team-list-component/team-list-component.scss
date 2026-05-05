@@ -54,11 +54,72 @@
     border-radius: 999px;
     font-weight: v.$font-semibold;
     line-height: 1.2;
+    text-decoration: none;
     box-shadow: inset 0 0 0 1px rgba(v.$text-color, 0.08);
+  }
+
+  .team-name-badge:hover {
+    box-shadow:
+      inset 0 0 0 1px rgba(v.$text-color, 0.14),
+      0 2px 6px v.$shadow-color;
   }
 
   .description {
     color: v.$text-light;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: v.$size-xxs v.$size-s;
+    border-radius: v.$size-xs;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+
+    &.active {
+      background: v.$success-color;
+      color: v.$background-light;
+    }
+
+    &:not(.active) {
+      background: v.$accent-color;
+      color: v.$background-light;
+    }
+  }
+
+  .budget-cell {
+    color: v.$text-color;
+  }
+
+  .budget-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-xxs;
+  }
+
+  .budget-amount {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 v.$size-xs;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    background: v.$gray-100;
+    font-weight: v.$font-medium;
+    white-space: nowrap;
+  }
+
+  .budget-toggle-btn {
+    margin-top: v.$size-xxs;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: v.$primary-color;
+    font-size: v.$font-xs;
+    font-weight: v.$font-medium;
+  }
+
+  .budget-toggle-btn:hover {
+    text-decoration: underline;
   }
 
   .edit-btn {

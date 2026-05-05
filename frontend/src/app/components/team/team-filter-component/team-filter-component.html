@@ -2,20 +2,6 @@
   <input type="text" placeholder="Name..." (input)="onNameFilterChange($event)" />
   <input type="text" placeholder="Description..." (input)="onDescriptionFilterChange($event)" />
 
-  <input
-    type="number"
-    min="0"
-    placeholder="Min budget..."
-    (input)="onMinBudgetFilterChange($event)"
-  />
-
-  <input
-    type="number"
-    min="0"
-    placeholder="Max budget..."
-    (input)="onMaxBudgetFilterChange($event)"
-  />
-
   <select [(ngModel)]="limit" (change)="onLimitChange()">
     @for (l of limitSelection; track l) {
       <option [value]="l">{{ l }} per page</option>

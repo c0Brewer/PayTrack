@@ -33,7 +33,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="costCentre">CostCentre entity.</param>
         /// <param name="budgetEntries">Optional budget entries to create alongside.</param>
         /// <returns>The created CostCentre.</returns>
-        Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateBudgetEntryDto>? budgetEntries);
+        Task<CostCentre> AddAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto>? budgetEntries);
 
         /// <summary>
         /// Updates an existing cost center. Only non-null fields are applied.
@@ -50,7 +50,7 @@ namespace PayTrack.Data.Repositories.Model
             string? name,
             string? description,
             string? displayColor,
-            IList<UpsertBudgetEntryDto>? budgetsToUpsert,
+            IList<UpsertCostCentreBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete);
 
         /// <summary>

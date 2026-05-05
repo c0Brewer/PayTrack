@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.Budget;
 
 namespace PayTrack.Application.Dto.CostCentre
 {
@@ -19,7 +20,7 @@ namespace PayTrack.Application.Dto.CostCentre
         [property: MinLength(3)]
         string? DisplayColor,
 
-        IList<UpsertBudgetEntryDto>? BudgetsToUpsert,
+        IList<UpsertCostCentreBudgetEntryDto>? BudgetsToUpsert,
 
         IList<int>? BudgetIdsToDelete);
 }

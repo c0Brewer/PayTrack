@@ -1,28 +1,51 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectorRef } from '@angular/core';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { TeamDto, GetTeamOptions } from '../../../types/exporter';
+import {
+  CostCentreDto,
+  CreateTeamBudgetEntryDto,
+  CreateTeamRequestDto,
+  DeleteTeamImpactDto,
+  TeamDto,
+  GetTeamOptions,
+  UpdateTeamDto,
+} from '../../../types/exporter';
+import { TeamSaveEvent } from '../../../types/misc-types';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
+import { TeamDeleteImpactModalComponent } from '../team-delete-impact-modal-component/team-delete-impact-modal-component';
+import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
 
 @Component({
   selector: 'app-team-management-component',
-  imports: [CommonModule, PaginationComponent, TeamFilterComponent, TeamListComponent],
+  imports: [
+    CommonModule,
+    PaginationComponent,
+    TeamFilterComponent,
+    TeamListComponent,
+    TeamEditModalComponent,
+    TeamDeleteImpactModalComponent,
+  ],
   templateUrl: './team-management-component.html',
   styleUrl: './team-management-component.scss',
 })
 export class TeamManagementComponent {
   constructor(
+    private readonly costCentreService: CostCentreService,
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   teams: TeamDto[] = [];
+  costCentres: CostCentreDto[] = [];
   editingTeam: TeamDto | null = null;
+  deletingTeam: TeamDto | null = null;
+  deleteImpact: DeleteTeamImpactDto | null = null;
 
   limitSelection: number[] = [10, 25, 50];
 
@@ -35,8 +58,6 @@ export class TeamManagementComponent {
   filterOptions: NonNullable<GetTeamOptions> = {
     Name: undefined,
     Description: undefined,
-    MinBudget: undefined,
-    MaxBudget: undefined,
     IncludeMembers: true,
     IncludeBudgets: true,
     Limit: this.limit,
@@ -44,15 +65,31 @@ export class TeamManagementComponent {
   };
 
   ngOnInit(): void {
+    this.loadCostCentres();
     this.loadTeams();
+  }
+
+  loadCostCentres(): void {
+    this.costCentreService
+      .getCostCentres({
+        Limit: 1000,
+        Offset: 0,
+      })
+      .subscribe({
+        next: (data) => {
+          this.costCentres = data?.items ?? [];
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load cost centres: ' + err.message);
+        },
+      });
   }
 
   loadTeams(): void {
     const queryOptions: NonNullable<GetTeamOptions> = {
       Name: this.filterOptions?.Name ?? undefined,
       Description: this.filterOptions?.Description ?? undefined,
-      MinBudget: this.filterOptions?.MinBudget ?? undefined,
-      MaxBudget: this.filterOptions?.MaxBudget ?? undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: this.limit,
@@ -83,8 +120,6 @@ export class TeamManagementComponent {
     if (this.filterOptions && options) {
       this.filterOptions.Name = options.Name;
       this.filterOptions.Description = options.Description;
-      this.filterOptions.MinBudget = options.MinBudget;
-      this.filterOptions.MaxBudget = options.MaxBudget;
       this.page = 0;
       this.loadTeams();
     }
@@ -113,7 +148,127 @@ export class TeamManagementComponent {
     }
   }
 
+  openCreate(): void {
+    this.editingTeam = {
+      id: -1,
+      name: '',
+      description: '',
+      displayColor: this.getDefaultDisplayColor(),
+      isActive: true,
+      members: [],
+      budgets: [],
+    };
+  }
+
   openEditTeam(team: TeamDto): void {
-    this.editingTeam = { ...team };
+    this.editingTeam = structuredClone(team);
+  }
+
+  closeEdit(): void {
+    this.editingTeam = null;
+  }
+
+  openDeleteTeam(team: TeamDto): void {
+    this.teamService.getDeleteImpact(team.id).subscribe({
+      next: (impact) => {
+        this.deletingTeam = team;
+        this.deleteImpact = impact;
+        this.closeEdit();
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load delete impact: ' + err.message);
+      },
+    });
+  }
+
+  closeDelete(): void {
+    this.deletingTeam = null;
+    this.deleteImpact = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.deletingTeam) return;
+
+    this.teamService.deleteTeam(this.deletingTeam.id).subscribe({
+      next: (result) => {
+        if (result) {
+          this.notificationService.showSuccess(`Team "${this.deletingTeam!.name}" deactivated`);
+        } else {
+          this.notificationService.showSuccess(
+            `Team "${this.deletingTeam!.name}" deleted successfully`,
+          );
+        }
+        this.closeDelete();
+        this.loadTeams();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not delete team: ' + err.message);
+      },
+    });
+  }
+
+  saveTeam(event: TeamSaveEvent): void {
+    const { team, budgetsToUpsert, budgetIdsToDelete } = event;
+
+    if (team.id === -1) {
+      const createRequest: CreateTeamRequestDto = {
+        name: team.name,
+        description: team.description,
+        displayColor: team.displayColor,
+        budgets:
+          budgetsToUpsert.length > 0
+            ? budgetsToUpsert.map(
+                ({
+                  costCentreId,
+                  targetAmount,
+                  periodStart,
+                  periodEnd,
+                }): CreateTeamBudgetEntryDto => ({
+                  costCentreId,
+                  targetAmount,
+                  periodStart,
+                  periodEnd,
+                }),
+              )
+            : undefined,
+      };
+
+      this.teamService.createTeam(createRequest).subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Successfully created team ' + team.name);
+          this.loadTeams();
+          this.closeEdit();
+        },
+        error: (error: Error) => {
+          this.notificationService.showError('Could not create Team: ' + error);
+        },
+      });
+
+      return;
+    }
+
+    const updateRequest: UpdateTeamDto = {
+      name: team.name,
+      description: team.description,
+      displayColor: team.displayColor,
+      budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+      budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
+    };
+
+    this.teamService.updateTeam(team.id, updateRequest).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Successfully updated team ' + team.name);
+        this.loadTeams();
+        this.closeEdit();
+      },
+      error: (error: Error) => {
+        this.notificationService.showError('Could not update Team: ' + error);
+      },
+    });
+  }
+
+  private getDefaultDisplayColor(): string {
+    return '#2563eb';
   }
 }
