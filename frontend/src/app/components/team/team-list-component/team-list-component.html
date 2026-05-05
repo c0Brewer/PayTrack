@@ -1,18 +1,10 @@
 <table class="team-table">
-  <colgroup>
-    <col style="width: 20%" />
-    <col />
-    <col style="width: 15%" />
-    <col style="width: 15%" />
-    <col style="width: 10%" />
-  </colgroup>
-
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Member Count</th>
-      <th>Team Budget</th>
+      <th class="name-col">Name</th>
+      <th class="description-col">Description</th>
+      <th class="members-col">Member Count</th>
+      <th class="budget-col">Team Budget</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -20,7 +12,7 @@
   <tbody>
     @for (team of teams; track team.id) {
       <tr>
-        <td class="name">
+        <td class="name name-col" data-label="Name">
           <span
             class="team-name-badge"
             [style.background]="getDisplayColor(team)"
@@ -30,9 +22,11 @@
           </span>
         </td>
 
-        <td class="description">{{ getDescription(team) }}</td>
-        <td>{{ getMembersCount(team) }}</td>
-        <td>
+        <td class="description description-col" data-label="Description">
+          {{ getDescription(team) }}
+        </td>
+        <td class="members-col" data-label="Member Count">{{ getMembersCount(team) }}</td>
+        <td class="budget-col" data-label="Team Budget">
           {{
             getBudgetTargetAmount(team) !== null
               ? `${getBudgetTargetAmount(team)} €`
@@ -40,8 +34,8 @@
           }}
         </td>
 
-        <td class="actions-col">
-          <button class="edit-btn" (click)="onOpenEditTeam(team)">Edit</button>
+        <td class="actions-col" data-label="Actions">
+          <button class="btn btn-primary" (click)="onOpenEditTeam(team)">Edit</button>
         </td>
       </tr>
     } @empty {
