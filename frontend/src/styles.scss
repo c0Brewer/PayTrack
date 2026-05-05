@@ -2,23 +2,20 @@
 
 /* You can add global styles to this file, and also import other style files */
 /* Jakob */
-.background-tur-black{
+.background-tur-black {
   background-color: v.$TUR-primary-black;
 }
 
-.main-page-container{
+.main-page-container {
   background-color: v.$TUR-secondary-background;
   margin: 4rem;
 }
 
 @media (max-width: 767.98px) {
-  .main-page-container{
+  .main-page-container {
     margin: 1.5rem;
   }
 }
-
-
-
 
 body {
   --font-sans:
@@ -39,17 +36,30 @@ body {
     box-sizing: border-box;
   }
 
-  // Default button styling
-  button {
-    font-size: v.$font-s;
-    padding: v.$size-xs v.$size-m;
-    border: none;
-    border-radius: v.$size-xs;
-    cursor: pointer;
-    transition:
-      background 0.2s,
-      transform 0.1s,
-      box-shadow 0.2s;
+  .btn-primary {
+    --bs-btn-active-bg: #{v.$TUR-primary-orange};
+    --bs-btn-active-border-color: #{v.$TUR-primary-orange};
+    --bs-btn-bg: #{v.$TUR-primary-orange};
+    --bs-btn-border-color: #{v.$TUR-primary-orange};
+    --bs-btn-disabled-bg: #{v.$TUR-primary-orange};
+    --bs-btn-disabled-border-color: #{v.$TUR-primary-orange};
+    --bs-btn-focus-shadow-rgb: 244, 127, 31;
+    --bs-btn-hover-bg: #f3852d;
+    --bs-btn-hover-border-color: #f3852d;
 
+    background: v.$TUR-primary-orange;
+    border-color: v.$TUR-primary-orange;
+    border-radius: 0.5rem;
+    color: white;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus,
+  .btn-primary:active,
+  .btn-primary.active,
+  .btn-primary:focus-visible {
+    background: #f3852d;
+    border-color: #f3852d;
+    color: white;
   }
 }
