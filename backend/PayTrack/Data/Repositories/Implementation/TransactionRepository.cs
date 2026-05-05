@@ -211,22 +211,26 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.MinCreatedAt.HasValue == true)
             {
-                dbQuery = dbQuery.Where(t => t.CreatedAt >= query.MinCreatedAt.Value);
+                var minCreatedAt = DateTime.SpecifyKind(query.MinCreatedAt.Value, DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.CreatedAt >= minCreatedAt);
             }
 
             if (query?.MaxCreatedAt.HasValue == true)
             {
-                dbQuery = dbQuery.Where(t => t.CreatedAt <= query.MaxCreatedAt.Value);
+                var maxCreatedAt = DateTime.SpecifyKind(query.MaxCreatedAt.Value.Date.AddDays(1), DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.CreatedAt < maxCreatedAt);
             }
 
             if (query?.MinPaidAt.HasValue == true)
             {
-                dbQuery = dbQuery.Where(t => t.PaidAt >= query.MinPaidAt.Value);
+                var minPaidAt = DateTime.SpecifyKind(query.MinPaidAt.Value, DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.PaidAt >= minPaidAt);
             }
 
             if (query?.MaxPaidAt.HasValue == true)
             {
-                dbQuery = dbQuery.Where(t => t.PaidAt <= query.MaxPaidAt.Value);
+                var maxPaidAt = DateTime.SpecifyKind(query.MaxPaidAt.Value.Date.AddDays(1), DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.PaidAt < maxPaidAt);
             }
 
             return dbQuery;
