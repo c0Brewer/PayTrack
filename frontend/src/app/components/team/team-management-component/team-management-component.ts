@@ -4,16 +4,16 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { TeamDto, GetTeamOptions } from '../../../types/exporter';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
-import { BoxComponent } from '../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-team-management-component',
   imports: [
     CommonModule,
-    BoxComponent,
+    StatBoxComponent,
     PaginationComponent,
     TeamFilterComponent,
     TeamListComponent,
@@ -118,6 +118,15 @@ export class TeamManagementComponent {
       this.page--;
       this.loadTeams();
     }
+  }
+
+  get total(): number {
+    return this.teams.reduce(
+      (sum, team) =>
+        sum +
+        (team.budgets?.reduce((budgetSum, budget) => budgetSum + budget.targetAmount, 0) ?? 0),
+      0,
+    );
   }
 
   openEditTeam(team: TeamDto): void {

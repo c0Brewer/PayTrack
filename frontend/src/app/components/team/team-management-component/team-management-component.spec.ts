@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { TeamDto } from '../../../types/exporter';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
 
@@ -232,6 +233,15 @@ describe('TeamManagementComponent', () => {
     ).componentInstance;
 
     expect(listComponent.teams).toEqual(mockTeams);
+  });
+
+  it('should pass the total team count into the total teams stat box', () => {
+    fixture.detectChanges();
+
+    const statBox = fixture.debugElement.query(By.directive(StatBoxComponent)).componentInstance;
+
+    expect(statBox.header()).toBe('Total Teams');
+    expect(statBox.content()).toBe(2);
   });
 
   it('should keep members and budgets included when filters change', () => {

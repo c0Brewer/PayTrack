@@ -1,0 +1,11 @@
+@use 'variables' as v;
+
+.team-management {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
+}
+
+.team-management h2 {
+  margin: 0;
+}

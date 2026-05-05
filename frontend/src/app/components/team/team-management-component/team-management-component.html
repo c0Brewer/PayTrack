@@ -1,23 +1,43 @@
-<div class="main-page-container">
-  <div class="d-flex ">
-  <h2 class="align-self-start">Team Management</h2>
-  </div>
-  <div class="row gy-3">
-    <app-box-component size="small" class="col-md-3 col-sm-12" title="Gesamt Benutzer">
-
-    </app-box-component>
-    <app-box-component size="small" class="col-md-3 col-sm-12" title="Aktiv">
-
-    </app-box-component>
-    <app-box-component size="small" class="col-md-3 col-sm-12" title="Inaktiv">
-
-    </app-box-component>
-    <app-box-component size="small" class="col-md-3 col-sm-12" title="Admins">
-
-    </app-box-component>
+<div class="main-page-container team-management">
+  <div class="d-flex mb-1">
+    <h2 class="align-self-start">Team Management</h2>
   </div>
 
-  <!--
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component
+      header="Total Teams"
+      [content]="totalCount"
+      icon="group"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Free Data slot"
+      [content]="10"
+      icon="group"
+      iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Total Budget"
+      [content]="'€1000'"
+      icon="trending_up"
+      iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Teams With Budget"
+      [content]="10"
+      icon="trending_up"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+  </div>
+
   <app-team-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
@@ -37,7 +57,7 @@
     [maxPage]="getTotalPages()"
     (next)="nextPage()"
     (prev)="previousPage()"
-  ></app-pagination-component>-->
+  ></app-pagination-component>
 
-  <!-- TODO: EDIT POPUP -->
+  <!-- TODO: EDIT Missing, use modal-->
 </div>
