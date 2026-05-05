@@ -35,7 +35,10 @@
         </td>
 
         <td class="actions-col" data-label="Actions">
-          <button class="btn btn-primary" (click)="onOpenEditTeam(team)">Edit</button>
+          <button type="button" class="btn btn-secondary" (click)="onOpenEditTeam(team)">
+            <span class="material-symbols-outlined">edit</span>
+            Edit
+          </button>
         </td>
       </tr>
     } @empty {
