@@ -194,8 +194,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const errors = control.errors!;
     if (errors['required']) return 'This field is required.';
     if (errors['min']) return `Minimum value is ${errors['min'].min}.`;
-    if (errors['maxLength'])
-      return `Maximum length is ${errors['maxLength'].requiredLength} characters.`;
+    if (errors['maxlength'])
+      return `Maximum length is ${errors['maxlength'].requiredLength} characters.`;
     if (errors['invalidType']) return 'Only PDF, JPG, or PNG files are allowed.';
     if (errors['tooLarge']) return 'File must be smaller than 20 MB.';
     return 'Invalid value.';
