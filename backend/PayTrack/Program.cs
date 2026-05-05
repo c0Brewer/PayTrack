@@ -114,6 +114,7 @@ app.UseCors("frontend");
 
 var apiV1 = app
     .MapGroup("/api/v1")
+    .AddEndpointFilter<AutoValidationFilter>()
     .WithTags("API V1");
 
 apiV1.MapTeamEndpoints();
