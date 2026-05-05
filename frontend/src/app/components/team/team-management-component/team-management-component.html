@@ -16,6 +16,11 @@
     <app-team-filter-component [limitSelection]="limitSelection" [limit]="limit"
       (updateFilter)="updateFilterOptions($event)" (limitChange)="onLimitChange($event)"></app-team-filter-component>
 
+    <button type="button" class="btn btn-secondary" (click)="openCreate()">
+      <span class="material-symbols-outlined">create</span>
+      Create
+    </button>
+
     <app-team-list-component [teams]="teams" [costCentres]="costCentres"
       (openEditTeam)="openEditTeam($event)"></app-team-list-component>
 

@@ -246,7 +246,6 @@ describe('TeamListComponent', () => {
     fixture.componentRef.setInput('costCentres', mockCostCentres);
     fixture.detectChanges();
 
-    const columns = fixture.nativeElement.querySelectorAll('colgroup col');
     const firstRowCells = Array.from(
       fixture.nativeElement.querySelectorAll(
         'tbody tr:first-child td',
