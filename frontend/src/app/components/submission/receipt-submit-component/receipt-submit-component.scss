@@ -2,19 +2,9 @@
 
 
 #invoice-page{
-  background-color: v.$TUR-secondary-background;
-  margin: 4rem;
   p:first-of-type {
     color: v.$TUR-primary-grey;
     font-size: 1.2rem;
-  }
-}
-
-
-
-@media (max-width: 767.98px) {
-  #invoice-page{
-    margin: 1.5rem;
   }
 }
 
@@ -55,6 +45,11 @@
     padding: 0 1rem;
     border-radius: 0.2rem;
     font-size: 1rem;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
   }
 
   textarea {

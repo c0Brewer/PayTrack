@@ -1,6 +1,6 @@
-.team-management {
-  padding: 25px;
+@use 'variables' as v;
 
+.team-management {
   .header {
     display: flex;
     align-items: center;
@@ -12,3 +12,4 @@
     }
   }
 }
+

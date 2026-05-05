@@ -27,14 +27,15 @@
       border-bottom: 1px solid v.$border-color;
       vertical-align: middle;
       word-break: break-word;
-
-      &:last-child {
-        border-bottom: none;
-      }
     }
 
     tr {
       transition: background 0.15s ease;
+      margin-bottom: 1rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:hover {
@@ -64,10 +65,6 @@
       0 2px 6px v.$shadow-color;
   }
 
-  .description {
-    color: v.$text-light;
-  }
-
   .status-badge {
     display: inline-block;
     padding: v.$size-xxs v.$size-s;
@@ -86,56 +83,112 @@
     }
   }
 
-  .budget-cell {
-    color: v.$text-color;
+  .description {
+    color: v.$text-light;
   }
 
-  .budget-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: v.$size-xxs;
+  .name-col {
+    width: 20%;
   }
 
-  .budget-amount {
-    display: inline-flex;
-    align-items: center;
-    min-height: 1.75rem;
-    padding: 0 v.$size-xs;
-    border: 1px solid v.$border-color;
-    border-radius: v.$size-xs;
-    background: v.$gray-100;
-    font-weight: v.$font-medium;
-    white-space: nowrap;
+  .description-col {
+    width: 40%;
   }
 
-  .budget-toggle-btn {
-    margin-top: v.$size-xxs;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: v.$primary-color;
-    font-size: v.$font-xs;
-    font-weight: v.$font-medium;
-  }
-
-  .budget-toggle-btn:hover {
-    text-decoration: underline;
-  }
-
-  .edit-btn {
-    padding: v.$size-xxs v.$size-s;
-    border: 1px solid v.$border-color;
-    background: v.$background-light;
-    font-size: v.$font-xs;
-  }
-
-  .edit-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px v.$shadow-color;
+  .members-col,
+  .budget-col {
+    width: 15%;
   }
 
   .actions-col {
-    width: 1%;
+    text-align: left;
+    width: 10%;
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .team-table {
+    background: transparent;
+    border-collapse: separate;
+    border-spacing: 0 v.$size-s;
+    table-layout: auto;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    tbody {
+      tr {
+        background: v.$background-light;
+        border: 1px solid v.$TUR-border-color;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px v.$shadow-color;
+        overflow: hidden;
+      }
+
+      td {
+        align-items: flex-start;
+        border-bottom: 1px solid v.$border-color;
+        display: grid;
+        gap: v.$size-s;
+        grid-template-columns: minmax(7.5rem, 38%) minmax(0, 1fr);
+        padding: v.$size-xs v.$size-s;
+        text-align: right;
+        word-break: break-word;
+
+        &::before {
+          color: v.$text-muted;
+          content: attr(data-label);
+          font-weight: v.$font-semibold;
+          text-align: left;
+        }
+
+        &:last-child {
+          border-bottom: 0;
+        }
+      }
+
+      tr:hover {
+        background: v.$background-light;
+      }
+    }
+
+    .name {
+      align-items: center;
+    }
+
+    .description {
+      color: v.$text-color;
+    }
+
+    .name-col,
+    .description-col,
+    .members-col,
+    .budget-col,
+    .actions-col {
+      text-align: right;
+      white-space: normal;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .team-table {
+    tbody {
+      td {
+        grid-template-columns: 1fr;
+        gap: v.$size-xxs;
+        text-align: left;
+      }
+    }
   }
 }

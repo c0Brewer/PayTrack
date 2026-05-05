@@ -14,6 +14,7 @@ import {
   UpdateTeamDto,
 } from '../../../types/exporter';
 import { TeamSaveEvent } from '../../../types/misc-types';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { TeamDeleteImpactModalComponent } from '../team-delete-impact-modal-component/team-delete-impact-modal-component';
 import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
@@ -24,6 +25,10 @@ import { TeamListComponent } from '../team-list-component/team-list-component';
   selector: 'app-team-management-component',
   imports: [
     CommonModule,
+    StatBoxComponent,
+    PaginationComponent,
+    TeamFilterComponent,
+    TeamListComponent,
     PaginationComponent,
     TeamFilterComponent,
     TeamListComponent,
@@ -52,6 +57,7 @@ export class TeamManagementComponent {
   limit: number = this.limitSelection[0];
   page: number = 0;
   totalCount: number = 0;
+  totalTeamCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
@@ -67,6 +73,26 @@ export class TeamManagementComponent {
   ngOnInit(): void {
     this.loadCostCentres();
     this.loadTeams();
+    this.loadTeamStats();
+  }
+
+  loadTeamStats(): void {
+    this.teamService
+      .getTeams({
+        IncludeMembers: false,
+        IncludeBudgets: false,
+        Limit: 1,
+        Offset: 0,
+      })
+      .subscribe({
+        next: (data) => {
+          this.totalTeamCount = data.totalCount ?? 0;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.notificationService.showError(err);
+        },
+      });
   }
 
   loadCostCentres(): void {
@@ -146,6 +172,15 @@ export class TeamManagementComponent {
       this.page--;
       this.loadTeams();
     }
+  }
+
+  get total(): number {
+    return this.teams.reduce(
+      (sum, team) =>
+        sum +
+        (team.budgets?.reduce((budgetSum, budget) => budgetSum + budget.targetAmount, 0) ?? 0),
+      0,
+    );
   }
 
   openCreate(): void {

@@ -1,3 +1,39 @@
+@use 'variables' as v;
+
 .user-management {
-  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
+}
+
+.user-management h2 {
+  margin: 0;
+}
+
+select,
+input:not([type='checkbox']) {
+  background-color: v.$TUR-secondary-background;
+  border: 1px solid white;
+  height: 2.5rem;
+}
+
+select:focus,
+input:not([type='checkbox']):focus {
+  border-color: v.$TUR-primary-orange;
+  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  outline: none;
+}
+
+select {
+  cursor: pointer;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: v.$TUR-primary-orange;
+  border-color: v.$TUR-primary-orange;
+}
+
+.form-switch .form-check-input:focus {
+  border-color: v.$TUR-primary-orange;
+  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
 }

@@ -9,6 +9,7 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { CostCentreDtoPaginatedResponse, TeamDto } from '../../../types/exporter';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
 import { TeamListComponent } from '../team-list-component/team-list-component';
@@ -513,6 +514,15 @@ describe('TeamManagementComponent', () => {
     expect(listComponent.teams).toEqual(mockTeams);
   });
 
+  it('should pass the total team count into the total teams stat box', () => {
+    fixture.detectChanges();
+
+    const statBox = fixture.debugElement.query(By.directive(StatBoxComponent)).componentInstance;
+
+    expect(statBox.header()).toBe('Total Teams');
+    expect(statBox.content()).toBe(2);
+  });
+
   it('should keep members and budgets included when filters change', () => {
     fixture.detectChanges();
 
@@ -555,7 +565,23 @@ describe('TeamManagementComponent', () => {
         IncludeBudgets: true,
       }),
     );
-    expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(2);
+    expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(3);
+  });
+
+  it('should keep the total teams stat unchanged when filters change', () => {
+    fixture.detectChanges();
+    teamServiceMock.getTeams.mockReturnValueOnce(
+      of({ items: [mockTeams[0]], totalCount: 1, hasNext: false, hasPrevious: false }),
+    );
+
+    component.updateFilterOptions({ Name: 'Platform' });
+    fixture.detectChanges();
+
+    const statBox = fixture.debugElement.query(By.directive(StatBoxComponent)).componentInstance;
+
+    expect(component.totalCount).toBe(1);
+    expect(component.totalTeamCount).toBe(2);
+    expect(statBox.content()).toBe(2);
   });
 
   it('should route edit modal delete requests through the delete impact flow', () => {

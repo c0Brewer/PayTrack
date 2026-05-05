@@ -1,0 +1,34 @@
+<div class="main-page-container">
+  <h1 class="mb-3">Settings</h1>
+  @let user = authService.currentUser$ | async;
+
+  <div class="settings-tabs" aria-label="Settings sections">
+    @for (tab of tabs; track tab.id) {
+      <a
+        class="settings-tabs__item gap-2"
+        [class.settings-tabs__item--active]="isActiveTab(tab.id)"
+        [routerLink]="['/settings']"
+        [fragment]="tab.id"
+      >
+        <span
+          class="material-symbols-outlined">{{ tab.icon }}</span>
+        <span>{{ tab.label }}</span>
+      </a>
+    }
+  </div>
+
+  @switch (activeTab()) {
+    @case ('bank-accounts') {
+      <app-bank-accounts-settings-page [user]="user" />
+    }
+    @case ('security') {
+      <app-security-settings-page [user]="user" />
+    }
+    @case ('notifications') {
+      <app-notifications-settings-page [user]="user" />
+    }
+    @default {
+      <app-profile-settings-page [user]="user" />
+    }
+  }
+</div>

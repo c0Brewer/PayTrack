@@ -246,7 +246,6 @@ describe('TeamListComponent', () => {
     fixture.componentRef.setInput('costCentres', mockCostCentres);
     fixture.detectChanges();
 
-    const columns = fixture.nativeElement.querySelectorAll('colgroup col');
     const firstRowCells = Array.from(
       fixture.nativeElement.querySelectorAll(
         'tbody tr:first-child td',
@@ -260,7 +259,6 @@ describe('TeamListComponent', () => {
       (cell) => cell.textContent?.trim(),
     );
 
-    expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
     expect(firstRowCells).toContain('Active');
     expect(secondRowCells).toContain('Inactive');
