@@ -2,43 +2,48 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { NotificationService } from '../../../services/notification/notification-service';
+import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
-import { UserDto, GetUserOptions, UpdateUserDto } from '../../../types/exporter';
-import { PaginationComponent } from '../../general/pagination-component/pagination-component';
-import { UserEditModalComponent } from '../user-edit-modal-component/user-edit-modal-component';
+import { UserDto, GetUserOptions, UpdateUserDto, Role, TeamDto } from '../../../types/exporter';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 import { UserFilterComponent } from '../user-filter-component/user-filter-component';
 import { UserListComponent } from '../user-list-component/user-list-component';
 
 @Component({
   selector: 'app-user-management-component',
-  imports: [
-    FormsModule,
-    UserEditModalComponent,
-    PaginationComponent,
-    UserListComponent,
-    UserFilterComponent,
-  ],
+  imports: [FormsModule, StatBoxComponent, UserListComponent, UserFilterComponent, ModalComponent],
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.scss',
 })
 export class UserManagementComponent implements OnInit {
   constructor(
     private readonly userService: UserService,
+    private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   user: UserDto[] = [];
+  teams: TeamDto[] = [];
 
   limitSelection: number[] = [10, 25, 50];
 
   limit: number = this.limitSelection[0];
   page: number = 0;
   totalCount: number = 0;
+  totalUserCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
   editingUser: UserDto | null = null;
+  activeStatusPendingIds = new Set<number>();
+
+  roleOptions = [
+    { value: Role.REGULAR_USER, text: 'Regular User' },
+    { value: Role.TEAM_LEAD, text: 'Team Lead' },
+    { value: Role.ADMIN, text: 'Admin' },
+  ];
 
   filterOptions: GetUserOptions = {
     Name: undefined,
@@ -52,6 +57,38 @@ export class UserManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUser();
+    this.loadUserStats();
+    this.loadTeams();
+  }
+
+  loadUserStats(): void {
+    this.userService
+      .getUser({
+        IncludeTeam: false,
+        Limit: 1,
+        Offset: 0,
+      })
+      .subscribe({
+        next: (data) => {
+          this.totalUserCount = data.totalCount ?? 0;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.notificationService.showError(err);
+        },
+      });
+  }
+
+  loadTeams(): void {
+    this.teamService.getTeams({}).subscribe({
+      next: (data) => {
+        this.teams = data.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
   }
 
   loadUser(): void {
@@ -120,28 +157,41 @@ export class UserManagementComponent implements OnInit {
   }
 
   toggleActive(user: UserDto): void {
+    if (this.activeStatusPendingIds.has(user.id)) {
+      return;
+    }
+
+    const nextIsActive = !user.isActive;
     const updateRequest: UpdateUserDto = {
-      isActive: !user.isActive,
+      isActive: nextIsActive,
     };
+
+    this.setActiveStatusPending(user.id, true);
 
     this.userService.updateUser(user.id, updateRequest).subscribe({
       next: () => {
         this.notificationService.showSuccess(
           'Successfully changed active status of user ' + user.name,
         );
-        this.loadUser();
-        this.closeEdit();
+        this.user = this.user.map((currentUser) =>
+          currentUser.id === user.id ? { ...currentUser, isActive: nextIsActive } : currentUser,
+        );
+        this.setActiveStatusPending(user.id, false);
+        this.cdr.markForCheck();
       },
       error: (error: Error) => {
-        this.notificationService.showError('Could not update User: ' + error);
+        this.setActiveStatusPending(user.id, false);
+        this.notificationService.showError('Could not update User: ' + error.message);
+        this.cdr.markForCheck();
       },
     });
-
-    user.isActive = !user.isActive;
   }
 
   openEditUser(user: UserDto): void {
-    this.editingUser = { ...user };
+    this.editingUser = {
+      ...user,
+      team: user.team ? { ...user.team } : { id: -1, name: 'No Team' },
+    };
   }
 
   closeEdit(): void {
@@ -171,5 +221,17 @@ export class UserManagementComponent implements OnInit {
         this.notificationService.showError('Could not update User: ' + error);
       },
     });
+  }
+
+  private setActiveStatusPending(userId: number, isPending: boolean): void {
+    const nextPendingIds = new Set(this.activeStatusPendingIds);
+
+    if (isPending) {
+      nextPendingIds.add(userId);
+    } else {
+      nextPendingIds.delete(userId);
+    }
+
+    this.activeStatusPendingIds = nextPendingIds;
   }
 }
