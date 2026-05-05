@@ -287,6 +287,22 @@ describe('TeamManagementComponent', () => {
         IncludeBudgets: true,
       }),
     );
-    expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(2);
+    expect(teamServiceMock.getTeams).toHaveBeenCalledTimes(3);
+  });
+
+  it('should keep the total teams stat unchanged when filters change', () => {
+    fixture.detectChanges();
+    teamServiceMock.getTeams.mockReturnValueOnce(
+      of({ items: [mockTeams[0]], totalCount: 1, hasNext: false, hasPrevious: false }),
+    );
+
+    component.updateFilterOptions({ Name: 'Platform' });
+    fixture.detectChanges();
+
+    const statBox = fixture.debugElement.query(By.directive(StatBoxComponent)).componentInstance;
+
+    expect(component.totalCount).toBe(1);
+    expect(component.totalTeamCount).toBe(2);
+    expect(statBox.content()).toBe(2);
   });
 });

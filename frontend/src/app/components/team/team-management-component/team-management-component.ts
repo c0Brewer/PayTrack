@@ -36,6 +36,7 @@ export class TeamManagementComponent {
   limit: number = this.limitSelection[0];
   page: number = 0;
   totalCount: number = 0;
+  totalTeamCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
@@ -52,6 +53,26 @@ export class TeamManagementComponent {
 
   ngOnInit(): void {
     this.loadTeams();
+    this.loadTeamStats();
+  }
+
+  loadTeamStats(): void {
+    this.teamService
+      .getTeams({
+        IncludeMembers: false,
+        IncludeBudgets: false,
+        Limit: 1,
+        Offset: 0,
+      })
+      .subscribe({
+        next: (data) => {
+          this.totalTeamCount = data.totalCount ?? 0;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.notificationService.showError(err);
+        },
+      });
   }
 
   loadTeams(): void {
