@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import createClient from 'openapi-fetch';
 
 import { environment } from '../environments/environment';
+
 import type { paths } from './types/api-types.ts';
 
 const PUBLIC_ROUTES: (keyof paths)[] = ['/api/v1/auth/google'];
