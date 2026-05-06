@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar-component/navbar-component';
 import { NotificationComponent } from './components/general/notification-component/notification-component';
 
@@ -11,4 +11,10 @@ import { NotificationComponent } from './components/general/notification-compone
 })
 export class App {
   protected readonly title = signal('PayTrack');
+
+  constructor(private readonly router: Router) {}
+
+  protected showNavbar(): boolean {
+    return !this.router.url.startsWith('/login') && !this.router.url.startsWith('/initial-setup');
+  }
 }

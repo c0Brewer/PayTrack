@@ -56,8 +56,8 @@ export class AuthService {
     });
   }
 
-  public handleGoogleCallback(idToken: string): Observable<GoogleAuthResponseDto> {
-    const callbackDto: GoogleAuthCallbackDto = { idToken };
+  public handleGoogleCallback(code: string): Observable<GoogleAuthResponseDto> {
+    const callbackDto: GoogleAuthCallbackDto = { code };
     const promise = client
       .POST('/api/v1/auth/google', { params: {}, body: callbackDto })
       .then(({ data, error }) => {
@@ -97,10 +97,27 @@ export class AuthService {
     return this.hasValidToken();
   }
 
-  public storeToken(token: string): void {
+  public async storeToken(token: string): Promise<UserDto> {
     localStorage.setItem('jwt', token);
     this.loggedInSubject.next(true);
-    this.fetchAndStoreUser();
+    return await this.fetchAndStoreUser();
+  }
+
+  public needsBankInformation(user: UserDto | null): boolean {
+    return !!user && !user.hasBankInformation && !user.bankInformationSkipped;
+  }
+
+  public async skipBankInformation(): Promise<UserDto> {
+    const { data, error } = await client.POST('/api/v1/bankaccount/onboarding/skip', {
+      params: {},
+    });
+
+    if (error) {
+      throw new Error(error.detail ?? 'Unexpected Error');
+    }
+
+    this.currentUserSubject.next(data);
+    return data;
   }
 
   private isTokenExpired(token: string): boolean {
@@ -115,5 +132,13 @@ export class AuthService {
   private hasValidToken(): boolean {
     const token = localStorage.getItem('jwt');
     return token != null && !this.isTokenExpired(token);
+  }
+
+  public getToken(): string | null {
+    if (this.hasValidToken()) {
+      return localStorage.getItem('jwt');
+    }
+
+    return null;
   }
 }

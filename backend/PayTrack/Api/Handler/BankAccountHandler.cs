@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
 using PayTrack.Application.Dto.BankAccount;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 
@@ -61,6 +62,39 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Creates a new bank account for the onboarding flow of the currently signed in user.
+        /// </summary>
+        /// <param name="createDto">Request for bank account creation.</param>
+        /// <param name="authService">Service for resolving the currently signed in user.</param>
+        /// <param name="bankAccountService">Service for writing bank accounts.</param>
+        /// <param name="userService">Service for loading the updated user state.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<UserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateBankAccountOnboardingAsync(
+            [FromBody] CreateBankAccountRequestDto createDto,
+            IAuthService authService,
+            IBankAccountService bankAccountService,
+            IUserService userService)
+        {
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+
+            await bankAccountService.CreateBankAccountOnboardingAsync(
+                user.Id,
+                createDto.AccountHolder,
+                createDto.Iban,
+                createDto.Bic);
+
+            var updatedUser = await userService.GetUserByIdAsync(
+                user.Id,
+                new GetUserQueryById
+                {
+                    IncludeBankAccounts = true,
+                    IncludeTeam = true,
+                }) ?? throw new NotFoundException("Current User not found");
+
+            return TypedResults.Ok(UserMapper.ToDto(updatedUser));
+        }
+
+        /// <summary>
         /// Updates a bank account of the currently signed in user.
         /// </summary>
         /// <param name="id">Id of the bank account to update.</param>
@@ -105,6 +139,22 @@ namespace PayTrack.Api.Handler
             await bankAccountService.DeleteBankAccountAsync(user.Id, id);
 
             return TypedResults.NoContent();
+        }
+
+        /// <summary>
+        /// Marks the current user's bank information onboarding as skipped.
+        /// </summary>
+        /// <param name="authService">Service for resolving the currently signed in user.</param>
+        /// <param name="userService">Service for updating the onboarding state.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<UserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> SkipCurrentUserBankInformationAsync(
+            IAuthService authService,
+            IUserService userService)
+        {
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+            var updatedUser = await userService.UpdateBankInformationSkippedAsync(user.Id, true);
+
+            return TypedResults.Ok(UserMapper.ToDto(updatedUser));
         }
     }
 }

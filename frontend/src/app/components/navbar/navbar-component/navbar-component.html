@@ -1,17 +1,88 @@
 @let loggedIn = loggedIn$ | async;
 @let user = currentUser$ | async;
+@let isMobileMenuOpen = mobileMenuOpen();
 
 @if (loggedIn) {
-  <nav class="navbar-container">
-    <div class="user-info">
-      <span>User: <strong>{{ user?.name }}</strong></span>
+  <nav class="sidebar">
+    <div class="sidebar__header">
+      <div class="sidebar__brand">
+        <span class="sidebar__logo"
+        ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
+        /></span>
+        <span class="sidebar__title">PayTrack</span>
+      </div>
+
+      <button
+        type="button"
+        class="navbar-toggler sidebar__toggle d-md-none"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        aria-label="Toggle navigation"
+        (click)="toggleMobileMenu()"
+      >
+        <span class="material-symbols-outlined">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
+      </button>
     </div>
 
-    <div class="nav-actions">
-      <a routerLink="/bankaccount" class="nav-link">BankAccount</a>
-      <a routerLink="/user" class="nav-link">User</a>
-      <a routerLink="/team" class="nav-link">Team</a>
-      <button (click)="logout()" class="logout-btn">Logout</button>
+    <div class="sidebar__menu" [class.sidebar__menu--open]="isMobileMenuOpen">
+      <div class="sidebar__links">
+        <a
+          routerLink="/"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        ><span class="material-symbols-outlined">home</span>
+          Home
+        </a>
+        <a
+          routerLink="/requests"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        ><span class="material-symbols-outlined">description</span>
+          My Invoices
+        </a>
+        <a
+          routerLink="/submit"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        ><span class="material-symbols-outlined">upload_file</span>
+          Submit An Invoice
+        </a>
+      </div>
+
+      @if (user?.role === role.ADMIN) {
+        <div class="sidebar__admin">
+
+          <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            User Management</a
+          >
+          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
+            ><span class="material-symbols-outlined">groups</span> Team Management</a
+          >
+
+          <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            Cost Centre Mangement</a
+          >
+        </div>
+      }
+
+      <div class="lower-nav">
+        <a
+          class="sidebar__settings"
+          routerLink="/settings"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        >
+          <span class="material-symbols-outlined">settings</span> Settings
+        </a>
+        <button class="sidebar__logout" (click)="logout()">
+          <span class="material-symbols-outlined">logout</span> Sign Out
+        </button>
+      </div>
     </div>
   </nav>
 }

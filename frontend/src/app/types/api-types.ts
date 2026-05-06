@@ -172,6 +172,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bankaccount/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBankAccountRequestDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bankaccount/onboarding/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bankaccount/{id}": {
         parameters: {
             query?: never;
@@ -245,6 +337,261 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cost-centre": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    Name?: string;
+                    Description?: string;
+                    MinBudget?: number;
+                    MaxBudget?: number;
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDtoPaginatedResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateCostCentreRequestDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cost-centre/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateCostCentreRequestDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CostCentreDto"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cost-centre/{id}/delete-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeleteCostCentrePreviewDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -376,6 +723,362 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTeamRequestDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamDto"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team/{id}/delete-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeleteTeamImpactDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
+                    IncludeBankAccount?: boolean;
+                    UserId?: number;
+                    MinAmount?: number;
+                    MaxAmount?: number;
+                    PurposeOfPayment?: string;
+                    PaymentReference?: string;
+                    Status?: components["schemas"]["TransactionStatus"];
+                    CostCentreId?: number;
+                    TeamId?: number;
+                    PaymentDirection?: components["schemas"]["PaymentDirection"];
+                    MinCreatedAt?: string;
+                    MaxCreatedAt?: string;
+                    Limit?: number;
+                    Offset?: number;
+                    IncludeCostCentre?: boolean;
+                    IncludeTeam?: boolean;
+                    IncludeStatusHistory?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDtoPaginatedResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": components["schemas"]["CreatePaymentRequestByUserDto"];
+                    "application/x-www-form-urlencoded": components["schemas"]["CreatePaymentRequestByUserDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    IncludeBankAccount?: boolean;
+                    IncludeCostCentre?: boolean;
+                    IncludeUser?: boolean;
+                    IncludeTeam?: boolean;
+                    IncludeStatusHistory?: boolean;
+                };
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdatePaymentRequestByUserDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Bad Request */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -553,6 +1256,8 @@ export interface components {
             /** Format: int32 */
             id: number;
             /** Format: int32 */
+            teamId: number;
+            /** Format: int32 */
             costCentreId: number;
             /** Format: double */
             targetAmount: number;
@@ -561,22 +1266,156 @@ export interface components {
             /** Format: date-time */
             periodEnd: string;
         };
+        CostCentreDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            description?: string | null;
+            displayColor?: string | null;
+            budgets?: components["schemas"]["BudgetDto"][] | null;
+            isActive?: boolean;
+        };
+        CostCentreDtoPaginatedResponse: {
+            items: components["schemas"]["CostCentreDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
+        };
         CreateBankAccountRequestDto: {
             accountHolder: string;
             iban: string;
             bic: string;
         };
+        CreateCostCentreBudgetEntryDto: {
+            /** Format: int32 */
+            teamId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
+        CreateCostCentreRequestDto: {
+            name: string;
+            description?: string | null;
+            displayColor?: string | null;
+            budgets?: components["schemas"]["CreateCostCentreBudgetEntryDto"][] | null;
+        };
+        CreatePaymentRequestByUserDto: {
+            transaction: components["schemas"]["CreateTransactionDto"];
+            invoiceNumber: string;
+            comment?: string | null;
+            /** Format: binary */
+            receipt: string;
+            payoutType: components["schemas"]["PayoutType"];
+            /** Format: int32 */
+            bankAccountId: number;
+        };
+        CreateTeamBudgetEntryDto: {
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
         CreateTeamRequestDto: {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+            budgets?: components["schemas"]["CreateTeamBudgetEntryDto"][] | null;
+        };
+        CreateTransactionDto: {
+            /** Format: int32 */
+            teamId: number;
+            /** Format: double */
+            amount: number;
+            purposeOfPayment: string;
+            /** Format: date-time */
+            paidAt: string;
+        };
+        DeleteCostCentrePreviewDto: {
+            costCentreName: string;
+            /** Format: int32 */
+            budgetCount: number;
+            /** Format: int32 */
+            transactionCount: number;
+            /** Format: int32 */
+            affectedUserCount: number;
+            affectedTeamNames: string[];
+        };
+        DeleteTeamImpactDto: {
+            /** Format: int32 */
+            teamId?: number;
+            teamName?: string | null;
+            canDelete?: boolean;
+            /** Format: int32 */
+            affectedUserCount?: number;
+            /** Format: int32 */
+            blockingBudgetCount?: number;
+            /** Format: int32 */
+            blockingTransactionCount?: number;
+            /** Format: int32 */
+            invoiceCount?: number;
+            warningMessage?: string | null;
         };
         GoogleAuthCallbackDto: {
-            idToken: string;
+            code: string;
         };
         GoogleAuthResponseDto: {
             jwtToken: string;
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        PaymentDirection: 0 | 1;
+        PaymentRequestByUserDto: {
+            /** Format: int32 */
+            id: number;
+            user: components["schemas"]["UserDto"];
+            /** Format: double */
+            amount: number;
+            purposeOfPayment: string;
+            paymentReference: string;
+            status: components["schemas"]["TransactionStatus"];
+            costCentre: components["schemas"]["CostCentreDto"];
+            team: components["schemas"]["TeamDto"];
+            paymentDirection: components["schemas"]["PaymentDirection"];
+            statusHistory: components["schemas"]["TransactionStatusHistoryDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            paidAt: string;
+            invoiceNumber: string;
+            comment: string;
+            payoutType: components["schemas"]["PayoutType"];
+            bankAccount: components["schemas"]["BankAccountDto"];
+        };
+        PaymentRequestByUserDtoPaginatedResponse: {
+            items: components["schemas"]["PaymentRequestByUserDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
+        };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        PayoutType: 0 | 1;
         ProblemDetails: {
             type?: string | null;
             title?: string | null;
@@ -600,6 +1439,7 @@ export interface components {
             displayColor?: string | null;
             members?: components["schemas"]["UserDto"][] | null;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+            isActive?: boolean;
         };
         TeamDtoPaginatedResponse: {
             items: components["schemas"]["TeamDto"][] | null;
@@ -612,10 +1452,55 @@ export interface components {
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        TransactionStatus: 0 | 1 | 2 | 3 | 4;
+        TransactionStatusHistoryDto: {
+            /** Format: int32 */
+            changedById: number;
+            comment: string;
+            fromStatus: components["schemas"]["TransactionStatus"];
+            toStatus: components["schemas"]["TransactionStatus"];
+            /** Format: date-time */
+            changedAt: string;
+        };
         UpdateBankAccountRequestDto: {
             accountHolder?: string | null;
             iban?: string | null;
             bic?: string | null;
+        };
+        UpdateCostCentreRequestDto: {
+            name?: string | null;
+            description?: string | null;
+            displayColor?: string | null;
+            budgetsToUpsert?: components["schemas"]["UpsertCostCentreBudgetEntryDto"][] | null;
+            budgetIdsToDelete?: number[] | null;
+        };
+        UpdatePaymentRequestByUserDto: {
+            transaction: components["schemas"]["UpdateTransactionDto"];
+            invoiceNumber?: string | null;
+            comment?: string | null;
+            payoutType?: components["schemas"]["PayoutType"];
+            /** Format: int32 */
+            bankAccountId?: number | null;
+        };
+        UpdateTeamRequestDto: {
+            name?: string | null;
+            description?: string | null;
+            displayColor?: string | null;
+            budgetsToUpsert?: components["schemas"]["UpsertTeamBudgetEntryDto"][] | null;
+            budgetIdsToDelete?: number[] | null;
+        };
+        UpdateTransactionDto: {
+            /** Format: int32 */
+            teamId?: number | null;
+            /** Format: double */
+            amount?: number | null;
+            purposeOfPayment?: string | null;
+            /** Format: date-time */
+            paidAt?: string | null;
         };
         UpdateUserDto: {
             name?: string | null;
@@ -624,6 +1509,30 @@ export interface components {
             /** Format: int32 */
             teamId?: number | null;
         };
+        UpsertCostCentreBudgetEntryDto: {
+            /** Format: int32 */
+            id?: number | null;
+            /** Format: int32 */
+            teamId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
+        UpsertTeamBudgetEntryDto: {
+            /** Format: int32 */
+            id?: number | null;
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
         UserDto: {
             /** Format: int32 */
             id: number;
@@ -631,8 +1540,11 @@ export interface components {
             email: string;
             profilePictureUrl: string;
             role: components["schemas"]["Role"];
-            team: components["schemas"]["TeamDto"];
             isActive: boolean;
+            team: components["schemas"]["TeamDto"];
+            bankInformationSkipped: boolean;
+            hasBankInformation: boolean;
+            bankAccounts?: components["schemas"]["BankAccountDto"][] | null;
         };
         UserDtoPaginatedResponse: {
             items: components["schemas"]["UserDto"][] | null;

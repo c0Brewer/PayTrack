@@ -13,9 +13,9 @@ namespace PayTrack.Api.Mapper
     public static class BankAccountMapper
     {
         /// <summary>
-        /// Turns a BankAccount object into a BankAccountDto.
+        /// Turns BankAccount object into a BankAccountDto.
         /// </summary>
-        /// <param name="bankAccount">Bank account to map.</param>
+        /// <param name="bankAccount">BankAccount to map.</param>
         /// <returns>BankAccountDto instance.</returns>
         public static BankAccountDto ToDto(BankAccount bankAccount)
         {

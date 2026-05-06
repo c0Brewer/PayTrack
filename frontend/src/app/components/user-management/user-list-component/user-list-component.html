@@ -1,20 +1,10 @@
 <table class="user-table">
-  <colgroup>
-    <col style="width: 20%" />
-    <col style="width: 25%" />
-    <col style="width: 15%" />
-    <col style="width: 20%" />
-    <col style="width: 10%" />
-    <col style="width: 10%" />
-  </colgroup>
-
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Role</th>
-      <th>Team</th>
-      <th>Status</th>
+      <th class="user-col">User</th>
+      <th class="role-col">Role</th>
+      <th class="team-col">Team</th>
+      <th class="status-col">Status</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -22,11 +12,14 @@
   <tbody>
     @for (u of user; track u.id) {
       <tr>
-        <td class="name">{{ u.name }}</td>
+        <td class="user-col" data-label="User">
+          <div class="user-summary">
+            <span class="name">{{ u.name }}</span>
+            <span class="email">{{ u.email }}</span>
+          </div>
+        </td>
 
-        <td class="email">{{ u.email }}</td>
-
-        <td>
+        <td class="role-col" data-label="Role">
           @if (u.role == regular_user) {
             <span class="regular_user role">{{ roleToText(u.role) }}</span>
           } @else if (u.role == team_lead) {
@@ -36,31 +29,37 @@
           }
         </td>
 
-        <td>
+        <td class="team-col" data-label="Team">
           @if (u.team != null && u.team.name) {
             <div class="team">
-              <span class="team-color" [style.background]="u.team.displayColor">{{
-                u.team.name
-              }}</span>
+              <span class="team-color" [style.background]="u.team.displayColor"></span>
+              <span>{{ u.team.name }}</span>
             </div>
           } @else {
             <span class="no-team">No Team</span>
           }
         </td>
 
-        <td>
+        <td class="status-col" data-label="Status">
           <button
+            type="button"
             class="status-btn"
             [class.active]="u.isActive"
+            [class.inactive]="!u.isActive"
+            [disabled]="isActiveStatusPending(u)"
             (click)="onToggleActive(u)"
             [title]="u.isActive ? 'Click to deactivate user' : 'Click to activate user'"
           >
+            <span class="status-dot" aria-hidden="true"></span>
             {{ u.isActive ? 'Active' : 'Inactive' }}
           </button>
         </td>
 
-        <td class="actions-col">
-          <button class="edit-btn" (click)="onOpenEditUser(u)">Edit</button>
+        <td class="actions-col" data-label="Actions">
+          <button type="button" class="btn btn-secondary" (click)="onOpenEditUser(u)">
+            <span class="material-symbols-outlined">edit</span>
+            Edit
+          </button>
         </td>
       </tr>
     }

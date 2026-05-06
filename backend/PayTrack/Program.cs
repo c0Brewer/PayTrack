@@ -19,6 +19,7 @@ using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 var shutdownRequested = false;
+LoadGoogleConfigFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
 
@@ -38,11 +39,17 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
+builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IFileRepository, FileRepository>();
+builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
+builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
@@ -54,6 +61,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
+builder.Services.AddHttpClient();
 
 var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -106,6 +114,14 @@ if (migrationsRunConfig && !isTestEnv)
     await db.Database.MigrateAsync();
 }
 
+var seedDataConfig = builder.Configuration.GetValue<bool>("SeedData:Auto");
+if (seedDataConfig && !isTestEnv)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -154,11 +170,54 @@ app.MapGet("/health/ready", async (IServiceProvider services) =>
 
 var apiV1 = app
     .MapGroup("/api/v1")
+    .AddEndpointFilter<AutoValidationFilter>()
     .WithTags("API V1");
 
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
+apiV1.MapTransactionEndpoints();
+apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
 
 await app.RunAsync();
+
+static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
+{
+    var dotEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
+
+    if (!File.Exists(dotEnvPath))
+    {
+        return;
+    }
+
+    var values = new Dictionary<string, string?>();
+
+    foreach (var rawLine in File.ReadLines(dotEnvPath))
+    {
+        var line = rawLine.Trim();
+
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#') || !line.Contains('='))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+
+        if (key == "GOOGLE_CLIENT_ID")
+        {
+            values["Authentication:Google:ClientId"] = value;
+        }
+        else if (key == "GOOGLE_CLIENT_SECRET")
+        {
+            values["Authentication:Google:ClientSecret"] = value;
+        }
+    }
+
+    if (values.Count > 0)
+    {
+        builder.Configuration.AddInMemoryCollection(values);
+    }
+}

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
@@ -29,7 +30,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var team = new Team { Name = "Test Team" };
 
             // Act
-            var result = await repo.AddAsync(team);
+            var result = await repo.AddAsync(team, null);
 
             // Assert
             result.Should().NotBeNull();
@@ -38,6 +39,22 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var dbTeam = await context.Teams.FindAsync(result.Id);
             dbTeam.Should().NotBeNull();
             dbTeam.Name.Should().Be("Test Team");
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrowInvalidStateException_WhenTeamNameAlreadyExists()
+        {
+            await using var context = GetInMemoryDbContext("AddTeamDuplicateName");
+            context.Teams.Add(new Team { Name = "Finance" });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            var act = async () => await repo.AddAsync(new Team { Name = "Finance" }, null);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("A team with the name 'Finance' already exists.");
         }
 
         [Fact]
@@ -385,6 +402,222 @@ namespace PayTrack.Tests.UnitTests.Repositories
             withIncludes.Budgets.Should().ContainSingle();
         }
 
+        [Fact]
+        public async Task UpdateAsync_ShouldUpdateSpecifiedFields()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateAsync");
+            var team = new Team { Name = "Before", Description = "Old", DisplayColor = "#000000" };
+            context.Teams.Add(team);
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var result = await repo.UpdateAsync(team.Id, "After", "New", "#ffffff", null, null);
+
+            // Assert
+            result.Name.Should().Be("After");
+            result.Description.Should().Be("New");
+            result.DisplayColor.Should().Be("#ffffff");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldDeleteAndUpdateBudgetEntries()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateAsync_BudgetEntries");
+            var team = new Team { Name = "Budget Team" };
+            var oldCostCentre = new CostCentre { Name = "Old Cost Centre" };
+            var newCostCentre = new CostCentre { Name = "New Cost Centre" };
+
+            context.Teams.Add(team);
+            context.CostCentres.AddRange(oldCostCentre, newCostCentre);
+            await context.SaveChangesAsync();
+
+            var budgetToUpdate = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = oldCostCentre.Id,
+                TargetAmount = 100m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 1, 31),
+            };
+            var budgetToDelete = new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = oldCostCentre.Id,
+                TargetAmount = 200m,
+                PeriodStart = new DateTime(2026, 2, 1),
+                PeriodEnd = new DateTime(2026, 2, 28),
+            };
+
+            context.Budgets.AddRange(budgetToUpdate, budgetToDelete);
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+            var newStart = new DateTime(2026, 3, 1);
+            var newEnd = new DateTime(2026, 3, 31);
+
+            // Act
+            var result = await repo.UpdateAsync(
+                team.Id,
+                null,
+                null,
+                null,
+                [
+                    new UpsertTeamBudgetEntryDto(
+                        budgetToUpdate.Id,
+                        newCostCentre.Id,
+                        999m,
+                        newStart,
+                        newEnd),
+                ],
+                [budgetToDelete.Id]);
+
+            // Assert
+            result.Budgets.Should().ContainSingle();
+            var remainingBudget = result.Budgets.Single();
+            remainingBudget.Id.Should().Be(budgetToUpdate.Id);
+            remainingBudget.CostCentreId.Should().Be(newCostCentre.Id);
+            remainingBudget.TargetAmount.Should().Be(999m);
+            remainingBudget.PeriodStart.Should().Be(DateTime.SpecifyKind(newStart, DateTimeKind.Utc));
+            remainingBudget.PeriodEnd.Should().Be(DateTime.SpecifyKind(newEnd, DateTimeKind.Utc));
+            (await context.Budgets.FindAsync(budgetToDelete.Id)).Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetDeleteTeamImpactAsync_ShouldReturnCountsForRelatedData()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetDeleteTeamImpactAsync");
+            var team = new Team { Name = "Finance" };
+            var requester = new User
+            {
+                Name = "Alice",
+                Email = "alice@example.com",
+                Role = Role.Admin,
+                IsActive = true,
+            };
+            var member = new User
+            {
+                Name = "Bob",
+                Email = "bob@example.com",
+                Role = Role.RegularUser,
+                IsActive = true,
+            };
+            var costCentre = new CostCentre { Name = "Operations" };
+
+            context.Teams.Add(team);
+            context.User.AddRange(requester, member);
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            member.TeamId = team.Id;
+            await context.SaveChangesAsync();
+
+            context.Budgets.Add(new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 500m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            });
+
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser
+            {
+                UserId = requester.Id,
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                Amount = 75m,
+                PaymentDirection = PaymentDirection.Out,
+                PayoutType = PayoutType.User,
+                InvoiceNumber = "INV-1",
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var result = await repo.GetDeleteTeamImpactAsync(team.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.TeamId.Should().Be(team.Id);
+            result.TeamName.Should().Be("Finance");
+            result.CanDelete.Should().BeFalse();
+            result.AffectedUserCount.Should().Be(1);
+            result.BlockingBudgetCount.Should().Be(1);
+            result.BlockingTransactionCount.Should().Be(1);
+            result.InvoiceCount.Should().Be(1);
+            result.WarningMessage.Should().Contain("blocked");
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldDeactivateTeam_WhenDeleteIsBlocked()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteAsync_Blocked");
+            var team = new Team { Name = "Finance" };
+            var requester = new User
+            {
+                Name = "Alice",
+                Email = "alice@example.com",
+                Role = Role.Admin,
+                IsActive = true,
+            };
+            var costCentre = new CostCentre { Name = "Operations" };
+
+            context.Teams.Add(team);
+            context.User.Add(requester);
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            context.Budgets.Add(new Budget
+            {
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 100m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var result = await repo.DeleteAsync(team.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(team.Id);
+            result.IsActive.Should().BeFalse();
+
+            var storedTeam = await context.Teams.FindAsync(team.Id);
+            storedTeam.Should().NotBeNull();
+            storedTeam!.IsActive.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldRemoveTeam_WhenNoBlockingRelationsExist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteAsync_Success");
+            var team = new Team { Name = "Finance" };
+            context.Teams.Add(team);
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var result = await repo.DeleteAsync(team.Id);
+
+            // Assert
+            result.Should().BeNull();
+            (await context.Teams.FindAsync(team.Id)).Should().BeNull();
+        }
+
 
         [Fact]
         public async Task AddAsync_ShouldThrowException_WhenSaveChangesFails()
@@ -398,11 +631,30 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act
             var exception = await Assert.ThrowsAsync<InternalErrorException>(
-                async () => await repo.AddAsync(team)
+                async () => await repo.AddAsync(team, null)
             );
 
             // Assert
-            Assert.Contains("teams", exception.Message);
+            exception.Message.Should().Contain("Team");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldThrowInvalidStateException_WhenAnotherTeamAlreadyUsesTheName()
+        {
+            await using var context = GetInMemoryDbContext("UpdateTeamDuplicateName");
+            context.Teams.AddRange(
+                new Team { Name = "Finance" },
+                new Team { Name = "Platform" });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+            var teamToRename = await context.Teams.SingleAsync(t => t.Name == "Platform");
+
+            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("A team with the name 'Finance' already exists.");
         }
     }
 }

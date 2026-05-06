@@ -1,10 +1,13 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../services/notification/notification-service';
+import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
 import { UserDto, Role } from '../../../types/exporter';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 
 import { UserManagementComponent } from './user-management-component';
 
@@ -14,6 +17,9 @@ describe('UserManagementComponent', () => {
   let userServiceMock: {
     getUser: ReturnType<typeof vi.fn>;
     updateUser: ReturnType<typeof vi.fn>;
+  };
+  let teamServiceMock: {
+    getTeams: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -32,6 +38,9 @@ describe('UserManagementComponent', () => {
       isActive: true,
       profilePictureUrl: '',
       team: { id: 1, name: 'Team A', description: '', displayColor: '' },
+      bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     },
     {
       id: 2,
@@ -41,6 +50,9 @@ describe('UserManagementComponent', () => {
       isActive: false,
       profilePictureUrl: '',
       team: { id: 2, name: 'Team B', description: '', displayColor: '' },
+      bankAccounts: [],
+      bankInformationSkipped: true,
+      hasBankInformation: true,
     },
   ];
 
@@ -52,6 +64,10 @@ describe('UserManagementComponent', () => {
           of({ items: mockUsers, totalCount: 2, hasNext: false, hasPrevious: false }),
         ),
       updateUser: vi.fn().mockReturnValue(of({})),
+    };
+
+    teamServiceMock = {
+      getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
     };
 
     notificationServiceMock = {
@@ -67,6 +83,7 @@ describe('UserManagementComponent', () => {
       imports: [UserManagementComponent],
       providers: [
         { provide: UserService, useValue: userServiceMock },
+        { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
       ],
@@ -86,12 +103,13 @@ describe('UserManagementComponent', () => {
     expect(userServiceMock.getUser).toHaveBeenCalled();
     expect(component.user.length).toBe(2);
     expect(component.totalCount).toBe(2);
+    expect(component.totalUserCount).toBe(2);
   });
 
   it('updateFilterOptions should update filter and reload users', () => {
     component.updateFilterOptions({ Name: 'Alice' });
     expect(component.page).toBe(0);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(2); // initial load + updateFilter
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3); // initial list + stats + updateFilter
     expect(component.filterOptions?.Name).toBe('Alice');
   });
 
@@ -99,14 +117,14 @@ describe('UserManagementComponent', () => {
     component.onLimitChange(25);
     expect(component.limit).toBe(25);
     expect(component.page).toBe(0);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(2); // initial load + limit change
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3); // initial list + stats + limit change
   });
 
   it('nextPage should increment page and load users', () => {
     component.page = 0;
     component.nextPage();
     expect(component.page).toBe(1);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(2);
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3);
   });
 
   it('previousPage should decrement page only if page > 0', () => {
@@ -163,5 +181,21 @@ describe('UserManagementComponent', () => {
 
     component.totalCount = 0;
     expect(component.getTotalPages()).toBe(1);
+  });
+
+  it('should keep the total user stat unchanged when filters change', () => {
+    fixture.detectChanges();
+    userServiceMock.getUser.mockReturnValueOnce(
+      of({ items: [mockUsers[0]], totalCount: 1, hasNext: false, hasPrevious: false }),
+    );
+
+    component.updateFilterOptions({ Name: 'Alice' });
+    fixture.detectChanges();
+
+    const statBox = fixture.debugElement.query(By.directive(StatBoxComponent)).componentInstance;
+
+    expect(component.totalCount).toBe(1);
+    expect(component.totalUserCount).toBe(2);
+    expect(statBox.content()).toBe(2);
   });
 });

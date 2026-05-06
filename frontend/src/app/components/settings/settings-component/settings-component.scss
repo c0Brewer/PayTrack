@@ -1,0 +1,25 @@
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.settings-tabs__item {
+  background: white;
+  border: 1px solid #dfe3ea;
+  border-radius: 0.5rem;
+  color: #374151;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  text-decoration: none;
+}
+
+.settings-tabs__item:hover,
+.settings-tabs__item--active {
+  background: rgb(235 106 0);
+  border-color: rgb(235 106 0);
+  color: white;
+}

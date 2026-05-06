@@ -1,0 +1,55 @@
+@use 'variables' as v;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.box {
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-s;
+  height: 100%;
+  padding: v.$size-m;
+}
+
+.box__header {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+}
+
+.box__title {
+  font-size: v.$font-l;
+  font-weight: v.$font-semibold;
+  margin: 0;
+}
+
+.box__subtitle {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+  margin: 0;
+}
+
+.box__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.box--small {
+  min-height: 10rem;
+}
+
+.box--medium {
+  min-height: 20rem;
+}
+
+.box--large {
+  min-height: 10rem;
+}

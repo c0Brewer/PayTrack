@@ -1,0 +1,28 @@
+.app-shell {
+  --app-sidebar-width: clamp(260px, 24vw, 400px);
+
+  display: grid;
+  grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app-shell__sidebar {
+  min-width: 0;
+}
+
+.app-shell__content {
+  min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+  .app-shell {
+    --app-sidebar-width: 100%;
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .app-shell__sidebar {
+    width: 100%;
+  }
+}

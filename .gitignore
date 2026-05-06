@@ -1,4 +1,8 @@
 .env
+.dotnet-home/
+.vs/
+.idea
+/backend/PayTrack/uploads
 /.idea/
 .dotnet-home/
 .vs/

@@ -3,6 +3,7 @@ import { from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import {
+  GetUserByIdOptions,
   GetUserOptions,
   UpdateUserDto,
   UserDto,
@@ -17,6 +18,24 @@ export class UserService {
     const promise = client
       .GET('/api/v1/user', {
         params: {
+          query: queryOptions,
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public getUserById(id: number, queryOptions: GetUserByIdOptions): Observable<UserDto> {
+    const promise = client
+      .GET('/api/v1/user/{id}', {
+        params: {
+          path: {
+            id: id,
+          },
           query: queryOptions,
         },
       })

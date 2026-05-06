@@ -2,8 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Data.Entities;
-
 namespace PayTrack.Application.Dto.Team
 {
     /// <summary>

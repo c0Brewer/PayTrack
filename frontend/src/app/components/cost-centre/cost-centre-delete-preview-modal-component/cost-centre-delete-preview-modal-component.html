@@ -1,0 +1,35 @@
+<app-modal-component title="Delete Cost Centre" (closeEvent)="onClose()">
+  <p>
+    You are about to delete <strong>{{ preview.costCentreName }}</strong>.
+  </p>
+
+  @if (hasLinkedRecords) {
+    <div class="warning">
+      <p>This cost centre has linked records and will be deactivated instead of deleted:</p>
+      <ul>
+        @if (preview.budgetCount > 0) {
+          <li>{{ preview.budgetCount }} budget(s)</li>
+        }
+        @if (preview.transactionCount > 0) {
+          <li>{{ preview.transactionCount }} transaction(s)</li>
+        }
+        @if (preview.affectedUserCount > 0) {
+          <li>{{ preview.affectedUserCount }} affected user(s)</li>
+        }
+        @if (preview.affectedTeamNames.length > 0) {
+          <li>Affected teams: {{ preview.affectedTeamNames.join(', ') }}</li>
+        }
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <button (click)="onClose()">Cancel</button>
+      <button class="delete-confirm-btn" (click)="onConfirmDelete()">Deactivate</button>
+    </div>
+  } @else {
+    <p>Are you sure? This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button (click)="onClose()">Cancel</button>
+      <button class="delete-confirm-btn" (click)="onConfirmDelete()">Delete</button>
+    </div>
+  }
+</app-modal-component>

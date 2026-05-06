@@ -105,6 +105,9 @@ namespace PayTrack.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -134,6 +137,9 @@ namespace PayTrack.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -158,7 +164,7 @@ namespace PayTrack.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CostCentreId")
+                    b.Property<int?>("CostCentreId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -259,6 +265,9 @@ namespace PayTrack.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("BankInformationSkipped")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -332,6 +341,7 @@ namespace PayTrack.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<string>("InvoiceNumber")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -384,8 +394,7 @@ namespace PayTrack.Migrations
                     b.HasOne("PayTrack.Data.Entities.CostCentre", "CostCentre")
                         .WithMany("Transactions")
                         .HasForeignKey("CostCentreId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
                         .WithMany("Transactions")

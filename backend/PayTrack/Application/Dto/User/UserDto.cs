@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.BankAccount;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Data.Entities;
 
@@ -31,8 +32,16 @@ namespace PayTrack.Application.Dto.User
         Role Role,
 
         [property: Required]
+        bool IsActive,
+
+        [property: Required]
         TeamDto? Team,
 
         [property: Required]
-        bool IsActive);
+        bool BankInformationSkipped,
+
+        [property: Required]
+        bool HasBankInformation,
+
+        IReadOnlyCollection<BankAccountDto> BankAccounts);
 }

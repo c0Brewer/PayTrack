@@ -1,18 +1,16 @@
-<div class="pagination">
+<div class="pagination d-flex align-items-center justify-content-center gap-3 mt-3">
   <button
-    class="left"
+    class="btn btn-primary left"
     (click)="onPrev()"
     [style.visibility]="hasPrev ? 'visible' : 'hidden'"
   >
     Previous
   </button>
 
-  <span class="center">
-    Page {{ currentPage + 1 }} / {{ maxPage }}
-  </span>
+  <span class="center"> Page {{ currentPage + 1 }} / {{ maxPage }} </span>
 
   <button
-    class="right"
+    class="btn btn-primary right"
     (click)="onNext()"
     [style.visibility]="hasNext ? 'visible' : 'hidden'"
   >

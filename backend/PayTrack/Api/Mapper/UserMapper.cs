@@ -26,15 +26,21 @@ namespace PayTrack.Api.Mapper
                 teamDto = TeamMapper.ToDto(user.Team);
             }
 
-            // TODO: Map BankAccount once the Mapper has been created.
+            var bankAccounts = user.BankAccounts
+                .Select(BankAccountMapper.ToDto)
+                .ToList();
+
             return new UserDto(
                 user.Id,
                 user.Name,
                 user.Email,
                 user.ProfilePictureUrl,
                 user.Role,
+                user.IsActive,
                 teamDto,
-                user.IsActive);
+                user.BankInformationSkipped,
+                bankAccounts.Count > 0,
+                bankAccounts);
         }
 
         /// <summary>

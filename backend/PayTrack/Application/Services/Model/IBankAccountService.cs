@@ -29,6 +29,16 @@ namespace PayTrack.Application.Services.Model
         Task<BankAccount> CreateBankAccountAsync(int userId, string accountHolder, string iban, string bic);
 
         /// <summary>
+        /// Creates a bank account for the onboarding flow and clears the skip state.
+        /// </summary>
+        /// <param name="userId">Id of the user.</param>
+        /// <param name="accountHolder">Account holder name.</param>
+        /// <param name="iban">IBAN value.</param>
+        /// <param name="bic">BIC value.</param>
+        /// <returns>Created bank account.</returns>
+        Task<BankAccount> CreateBankAccountOnboardingAsync(int userId, string accountHolder, string iban, string bic);
+
+        /// <summary>
         /// Updates a bank account for the user.
         /// </summary>
         /// <param name="userId">Id of the user.</param>
