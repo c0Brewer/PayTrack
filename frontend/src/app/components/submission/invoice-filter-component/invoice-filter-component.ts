@@ -196,6 +196,8 @@ export class InvoiceFilterComponent implements OnInit {
       PurposeOfPayment: this.filterPurpose || undefined,
       TeamId: this.filterTeamId,
       PayoutType: this.filterPayoutType,
+      CostCentreId: this.filterCostCentreId,
+      UserId: this.filterUserId,
       Limit: undefined,
       Offset: undefined,
     };
