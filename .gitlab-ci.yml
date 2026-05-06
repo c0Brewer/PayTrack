@@ -6,6 +6,7 @@ stages:
   - package
   - deploy
 
+# Shared pipeline variables
 variables:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "true"
@@ -18,6 +19,7 @@ variables:
 default:
   interruptible: true
 
+# Frontend dependency installation
 frontend_install:
   stage: install
   image: node:20
@@ -32,6 +34,7 @@ frontend_install:
       - frontend/node_modules
     expire_in: 1h
 
+# Backend restore
 backend_restore:
   stage: install
   image: mcr.microsoft.com/dotnet/sdk:10.0
@@ -47,6 +50,7 @@ backend_restore:
       - backend
     expire_in: 1h
 
+# Frontend validation
 frontend_lint:
   stage: lint
   image: node:20
@@ -60,6 +64,7 @@ frontend_lint:
     - npm ci
     - npx eslint . --max-warnings=0
 
+# Frontend production build
 frontend_build:
   stage: build
   image: node:20
@@ -77,6 +82,7 @@ frontend_build:
       - frontend/dist
     expire_in: 1h
 
+# Backend formatting validation
 backend_format:
   stage: lint
   image: mcr.microsoft.com/dotnet/sdk:10.0
@@ -89,6 +95,7 @@ backend_format:
     - cd backend
     - dotnet format PayTrack.slnx --verify-no-changes
 
+# Backend release build
 backend_build:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:10.0
@@ -106,6 +113,7 @@ backend_build:
       - backend/obj
     expire_in: 1h
 
+# Backend tests with coverage threshold
 backend_test:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:10.0
@@ -118,6 +126,7 @@ backend_test:
     - cd backend
     - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=90 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
 
+# Frontend tests with coverage report
 frontend_test:
   stage: test
   image: mcr.microsoft.com/playwright:v1.58.2-noble
@@ -136,6 +145,7 @@ frontend_test:
     paths:
       - frontend/coverage
 
+# Shared Kaniko setup for container image builds
 .kaniko:
   stage: package
   image:
@@ -147,17 +157,20 @@ frontend_test:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
+# Build and push backend image to the GitLab registry
 package_backend:
   extends: .kaniko
   script:
     - /kaniko/executor --context "$CI_PROJECT_DIR/backend" --dockerfile "$CI_PROJECT_DIR/backend/Dockerfile" --destination "$BACKEND_IMAGE:$CI_PIPELINE_ID" --destination "$BACKEND_IMAGE:latest"
 
+# Build and push frontend image to the GitLab registry
 package_frontend:
   extends: .kaniko
   script:
     - test -n "$GOOGLE_CLIENT_ID"
     - /kaniko/executor --context "$CI_PROJECT_DIR/frontend" --dockerfile "$CI_PROJECT_DIR/frontend/Dockerfile" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" --destination "$FRONTEND_IMAGE:$CI_PIPELINE_ID" --destination "$FRONTEND_IMAGE:latest"
 
+# Deploy the current pipeline images into the Kubernetes namespace
 deploy_production:
   stage: deploy
   image: bitnami/kubectl:latest
