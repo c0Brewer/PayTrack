@@ -1,3 +1,5 @@
+//AI helped with the test cases
+
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
@@ -200,10 +202,12 @@ describe('PaymentRequestByUserService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(firstValueFrom(service.getDuplicatePaymentRequestsByUser({} as any))).rejects.toThrow(
-      'duplicate check failed',
-    );
+    await expect(
+      firstValueFrom(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        service.getDuplicatePaymentRequestsByUser({} as any),
+      ),
+    ).rejects.toThrow('duplicate check failed');
   });
 
   it('should throw error when duplicate check response has no data', async () => {
@@ -213,10 +217,12 @@ describe('PaymentRequestByUserService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(firstValueFrom(service.getDuplicatePaymentRequestsByUser({} as any))).rejects.toThrow(
-      'Unexpected Error',
-    );
+    await expect(
+      firstValueFrom(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        service.getDuplicatePaymentRequestsByUser({} as any),
+      ),
+    ).rejects.toThrow('Unexpected Error');
   });
 
   // -----------------------

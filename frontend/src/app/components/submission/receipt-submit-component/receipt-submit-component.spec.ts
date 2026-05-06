@@ -38,7 +38,7 @@ describe('ReceiptSubmitComponent', () => {
     navigate: vi.fn(),
   };
 
-  const setValidFormValues = () => {
+  const setValidFormValues = (): void => {
     component.form.setValue({
       invoiceNumber: 'INV-1',
       comment: '',
