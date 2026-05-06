@@ -164,6 +164,62 @@ describe('PaymentRequestByUserService', () => {
   });
 
   // -----------------------
+  // DUPLICATE CHECK
+  // -----------------------
+  it('should fetch duplicate payment requests', async () => {
+    const apiResponse = [
+      {
+        paymentRequestByUser: { id: 1, amount: 100, invoiceNumber: 'INV-1' },
+        score: 3,
+        isAmountAndUserMatch: true,
+        isAmountAndTeamMatch: true,
+        isInvoiceNumberMatch: true,
+      },
+    ];
+
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: apiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query = { TeamId: 1, Amount: 100, InvoiceNumber: 'INV-1' } as any;
+    const result = await firstValueFrom(service.getDuplicatePaymentRequestsByUser(query));
+
+    expect(client.GET).toHaveBeenCalledWith('/api/v1/transaction/user/duplicate', {
+      params: { query },
+    });
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should throw error on duplicate check failure', async () => {
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: null,
+      error: { detail: 'duplicate check failed' },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(firstValueFrom(service.getDuplicatePaymentRequestsByUser({} as any))).rejects.toThrow(
+      'duplicate check failed',
+    );
+  });
+
+  it('should throw error when duplicate check response has no data', async () => {
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: null,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(firstValueFrom(service.getDuplicatePaymentRequestsByUser({} as any))).rejects.toThrow(
+      'Unexpected Error',
+    );
+  });
+
+  // -----------------------
   // UPDATE
   // -----------------------
   it('should update payment request', async () => {

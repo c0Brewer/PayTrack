@@ -1,8 +1,11 @@
+//AI helped with the test cases
+
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { BankAccountService } from '../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
@@ -15,10 +18,15 @@ describe('ReceiptSubmitComponent', () => {
 
   const paymentServiceMock = {
     createPaymentRequestByUser: vi.fn(),
+    getDuplicatePaymentRequestsByUser: vi.fn(),
   };
 
   const teamServiceMock = {
     getTeams: vi.fn(),
+  };
+
+  const bankAccountServiceMock = {
+    getBankAccounts: vi.fn(),
   };
 
   const notificationMock = {
@@ -30,12 +38,39 @@ describe('ReceiptSubmitComponent', () => {
     navigate: vi.fn(),
   };
 
+  const setValidFormValues = () => {
+    component.form.setValue({
+      invoiceNumber: 'INV-1',
+      comment: '',
+      payoutType: PayoutType.User,
+      bankAccountId: 1,
+      teamId: 1,
+      amount: 100,
+      purposeOfPayment: 'test',
+      paidAt: '2025-01-01',
+      receipt: 'ok.pdf',
+    });
+  };
+
   beforeEach(async () => {
+    paymentServiceMock.createPaymentRequestByUser.mockReset();
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReset();
+    teamServiceMock.getTeams.mockReset();
+    bankAccountServiceMock.getBankAccounts.mockReset();
+    notificationMock.showSuccess.mockReset();
+    notificationMock.showError.mockReset();
+    routerMock.navigate.mockReset();
+
+    teamServiceMock.getTeams.mockReturnValue(of({ items: [] }));
+    bankAccountServiceMock.getBankAccounts.mockReturnValue(of([]));
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
+        { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
       ],
@@ -53,8 +88,6 @@ describe('ReceiptSubmitComponent', () => {
   });
 
   it('should initialize form on ngOnInit', () => {
-    teamServiceMock.getTeams.mockReturnValue(of([]));
-
     component.ngOnInit();
 
     expect(component.form).toBeDefined();
@@ -136,25 +169,105 @@ describe('ReceiptSubmitComponent', () => {
   });
 
   // -------------------------
+  // DUPLICATE CHECK
+  // -------------------------
+  it('should open duplicate modal and not submit directly when duplicates exist', () => {
+    component.ngOnInit();
+    const file = new File(['ok'], 'ok.pdf');
+    setValidFormValues();
+    component.selectedFile = file;
+
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
+      of([
+        {
+          paymentRequestByUser: { id: 7, amount: 100, invoiceNumber: 'INV-1' },
+          score: 3,
+          isAmountAndUserMatch: true,
+          isAmountAndTeamMatch: true,
+          isInvoiceNumberMatch: true,
+        },
+      ]),
+    );
+    paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledOnce();
+    expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
+    expect(component.isDuplicateModalOpen).toBe(true);
+    expect(component.pendingSubmissionPayload).not.toBeNull();
+    expect(component.pendingSubmissionFile).toBe(file);
+    expect(component.duplicateCandidates).toHaveLength(1);
+    expect(component.isSubmitting).toBe(false);
+  });
+
+  it('should submit when user confirms duplicate modal', () => {
+    component.ngOnInit();
+    const file = new File(['ok'], 'ok.pdf');
+    const payload = {
+      invoiceNumber: 'INV-1',
+      comment: '',
+      payoutType: PayoutType.User,
+      bankAccountId: 1,
+      receipt: '',
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'test',
+        paidAt: '2025-01-01T00:00:00.000Z',
+      },
+    };
+
+    component.pendingSubmissionPayload = payload;
+    component.pendingSubmissionFile = file;
+    component.isDuplicateModalOpen = true;
+    component.duplicateCandidates = [
+      {
+        paymentRequestByUser: { id: 7, amount: 100, invoiceNumber: 'INV-1' },
+        score: 3,
+        isAmountAndUserMatch: true,
+        isAmountAndTeamMatch: true,
+        isInvoiceNumberMatch: true,
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ] as any;
+
+    paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onDuplicateModalSubmitRegardless();
+
+    expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(payload, file);
+    expect(component.isDuplicateModalOpen).toBe(false);
+    expect(component.pendingSubmissionPayload).toBeNull();
+    expect(component.pendingSubmissionFile).toBeNull();
+  });
+
+  it('should handle duplicate check error', () => {
+    component.ngOnInit();
+
+    const file = new File(['ok'], 'ok.pdf');
+    setValidFormValues();
+    component.selectedFile = file;
+
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
+      throwError(() => new Error('Duplicate check failed')),
+    );
+
+    component.onSubmit();
+
+    expect(notificationMock.showError).toHaveBeenCalledWith('Duplicate check failed');
+    expect(component.isSubmitting).toBe(false);
+    expect(component.isDuplicateModalOpen).toBe(false);
+  });
+
+  // -------------------------
   // SUBMIT SUCCESS
   // -------------------------
   it('should submit successfully', () => {
     component.ngOnInit();
 
     const file = new File(['ok'], 'ok.pdf');
-
-    component.form.setValue({
-      invoiceNumber: 'INV-1',
-      comment: '',
-      payoutType: PayoutType.User,
-      bankAccountId: 1,
-      teamId: 1,
-      amount: 100,
-      purposeOfPayment: 'test',
-      paidAt: '2025-01-01',
-      receipt: 'ok.pdf',
-    });
-
+    setValidFormValues();
     component.selectedFile = file;
 
     paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
@@ -173,19 +286,7 @@ describe('ReceiptSubmitComponent', () => {
     component.ngOnInit();
 
     const file = new File(['ok'], 'ok.pdf');
-
-    component.form.setValue({
-      invoiceNumber: 'INV-1',
-      comment: '',
-      payoutType: PayoutType.User,
-      bankAccountId: 1,
-      teamId: 1,
-      amount: 100,
-      purposeOfPayment: 'test',
-      paidAt: '2025-01-01',
-      receipt: 'ok.pdf',
-    });
-
+    setValidFormValues();
     component.selectedFile = file;
 
     paymentServiceMock.createPaymentRequestByUser.mockReturnValue(
