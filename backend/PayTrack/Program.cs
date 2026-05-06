@@ -131,6 +131,8 @@ apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
+apiV1.MapBudgetEndpoints();
+apiV1.MapSeasonEndpoints();
 
 await app.RunAsync();
 
