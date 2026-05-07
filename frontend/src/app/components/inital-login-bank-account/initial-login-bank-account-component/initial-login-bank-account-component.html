@@ -38,9 +38,6 @@
           placeholder="AT61 1904 3002 3457 3201"
           (input)="onIbanInput($event)"
         />
-        <span onclick="navigator.clipboard.writeText('AT611904300234573201')">
-        AT611904300234573201
-      </span>
         @if (form.controls.iban.touched && form.controls.iban.invalid) {
           <small class="hint-error">Use 15-34 characters.</small>
         }
