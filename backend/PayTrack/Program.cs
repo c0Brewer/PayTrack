@@ -4,10 +4,12 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PayTrack.Api.Endpoints;
 using PayTrack.Api.Middleware;
+using PayTrack.Application.Dto.Health;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
@@ -53,6 +55,13 @@ builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<HealthState>();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 builder.Services.AddHttpClient();
 
 var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InternalErrorException("Could not load JWT Secret");
@@ -79,10 +88,21 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
+        // WithOrigins("*") does not mean "allow all origins" in ASP.NET Core.
+        // The development config uses "*", so we translate that case explicitly.
+        if (corsOrigin == "*")
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            return;
+        }
+
         policy
-        .WithOrigins(corsOrigin)
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+            .WithOrigins(corsOrigin)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -112,13 +132,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("frontend");
+app.MapHealthEndpoints();
 
 var apiV1 = app
     .MapGroup("/api/v1")
