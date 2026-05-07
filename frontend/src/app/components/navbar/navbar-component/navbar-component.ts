@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../../services/auth/auth-service';
@@ -16,10 +17,15 @@ export class NavbarComponent {
   currentUser$;
   protected readonly role = Role;
   protected readonly mobileMenuOpen = signal(false);
+  public hasNoBankAccounts = false;
 
   constructor(private readonly authService: AuthService) {
     this.loggedIn$ = this.authService.loggedIn$;
     this.currentUser$ = this.authService.currentUser$;
+
+    this.currentUser$.pipe(takeUntilDestroyed()).subscribe((user) => {
+      this.hasNoBankAccounts = !!user && (user.bankAccounts?.length ?? 0) === 0;
+    });
   }
 
   toggleMobileMenu(): void {

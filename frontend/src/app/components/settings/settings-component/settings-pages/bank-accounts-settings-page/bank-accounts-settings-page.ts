@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, input } from '@angular/core';
 
+import { AuthService } from '../../../../../services/auth/auth-service';
 import {
   BankAccountDto,
   BankAccountService,
@@ -31,6 +32,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
 
   constructor(
     private readonly bankAccountService: BankAccountService,
+    private readonly authService: AuthService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -101,6 +103,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
       next: () => {
         this.closeDeleteModal();
         this.loadBankAccounts();
+        this.refreshCurrentUser();
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -115,6 +118,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
       next: () => {
         this.closeModal();
         this.loadBankAccounts();
+        this.refreshCurrentUser();
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -140,6 +144,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
       next: () => {
         this.closeModal();
         this.loadBankAccounts();
+        this.refreshCurrentUser();
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -164,5 +169,12 @@ export class BankAccountsSettingsPageComponent implements OnInit {
   private handleModalError(error: unknown, fallbackMessage: string): void {
     this.modalErrorMessage = error instanceof Error ? error.message : fallbackMessage;
     console.error(fallbackMessage, error);
+  }
+
+  private refreshCurrentUser(): void {
+    this.authService.refreshUser().catch((error: unknown) => {
+      this.handleError(error, 'Failed to refresh current user');
+      this.cdr.detectChanges();
+    });
   }
 }

@@ -7,7 +7,7 @@
     <div class="sidebar__header">
       <div class="sidebar__brand">
         <span class="sidebar__logo"
-        ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
+          ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
         /></span>
         <span class="sidebar__title">PayTrack</span>
       </div>
@@ -30,7 +30,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">home</span>
+          ><span class="material-symbols-outlined">home</span>
           Home
         </a>
         <a
@@ -38,7 +38,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">description</span>
+          ><span class="material-symbols-outlined">description</span>
           My Invoices
         </a>
         <a
@@ -46,14 +46,13 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">upload_file</span>
+          ><span class="material-symbols-outlined">upload_file</span>
           Submit An Invoice
         </a>
       </div>
 
       @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-
           <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
             User Management</a
@@ -78,6 +77,14 @@
           (click)="closeMobileMenu()"
         >
           <span class="material-symbols-outlined">settings</span> Settings
+          @if (hasNoBankAccounts) {
+            <div class="warning-badge-wrapper" title="You have no Bank Account set">
+              <div class="warning-badge">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="warning-badge-ring"></div>
+            </div>
+          }
         </a>
         <button class="sidebar__logout" (click)="logout()">
           <span class="material-symbols-outlined">logout</span> Sign Out
