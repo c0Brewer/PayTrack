@@ -43,12 +43,41 @@ export enum PayoutType {
   External = 1,
 }
 
+export const PayoutTypeLabels: Record<PayoutType, string> = {
+  [PayoutType.User]: 'Pay to User',
+  [PayoutType.External]: 'Pay to Supplier',
+};
+
 // Roles
 export enum Role {
   REGULAR_USER = 0,
   TEAM_LEAD = 1,
   ADMIN = 2,
 }
+// TransactionStatus
+export enum TransactionStatus {
+  Submitted = 0,
+  ChangesRequested = 1,
+  Approved = 2,
+  Paid = 3,
+  Declined = 4,
+}
+
+export const TransactionStatusLabels: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'Submitted',
+  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.Approved]: 'Approved',
+  [TransactionStatus.Paid]: 'Paid',
+  [TransactionStatus.Declined]: 'Declined',
+};
+
+export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'status-submitted',
+  [TransactionStatus.ChangesRequested]: 'status-changes-requested',
+  [TransactionStatus.Approved]: 'status-approved',
+  [TransactionStatus.Paid]: 'status-paid',
+  [TransactionStatus.Declined]: 'status-declined',
+};
 
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];

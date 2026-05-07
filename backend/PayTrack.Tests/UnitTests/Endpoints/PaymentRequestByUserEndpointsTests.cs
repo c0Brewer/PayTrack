@@ -30,12 +30,17 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetPaymentRequests_ReturnsOk()
         {
             // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
             var list = new List<PaymentRequestByUser>
             {
                 new() { Id = 1, Amount = 100, InvoiceNumber = "123" },
                 new() { Id = 2, Amount = 200, InvoiceNumber = "456" }
             };
 
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.ValidateQuery(It.IsAny<GetPaymentRequestByUserQuery>(), It.IsAny<User>()))
+                .Returns(true);
             _factory.ServiceMock
                 .Setup(s => s.GetAllAsync(It.IsAny<GetPaymentRequestByUserQuery>()))
                 .ReturnsAsync((list, list.Count));
@@ -63,11 +68,16 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetById_ReturnsOk_WhenExists()
         {
             // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
             var entity = new PaymentRequestByUser { Id = 1, Amount = 100, InvoiceNumber = "123" };
 
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
             _factory.ServiceMock
-                .Setup(s => s.GetPaymentRequestByUserByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .Setup(s => s.GetPaymentRequestByUserByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById?>()))
                 .ReturnsAsync(entity);
+            _factory.ServiceMock
+                .Setup(s => s.ValidateAccessToInvoice(It.IsAny<PaymentRequestByUser>(), It.IsAny<User>()))
+                .Returns(true);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -227,11 +237,20 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetReceipt_ReturnsFile()
         {
             // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
+            var invoice = new PaymentRequestByUser { Id = 1, InvoiceNumber = "123" };
             var fileBytes = new byte[] { 1, 2, 3 };
 
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.GetPaymentRequestByUserByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById?>()))
+                .ReturnsAsync(invoice);
+            _factory.ServiceMock
+                .Setup(s => s.ValidateAccessToInvoice(It.IsAny<PaymentRequestByUser>(), It.IsAny<User>()))
+                .Returns(true);
             _factory.ServiceMock
                 .Setup(s => s.GetReceiptForPaymentRequestByUserByIdAsync(1))
-                .ReturnsAsync(fileBytes);
+                .ReturnsAsync((fileBytes, "application/pdf"));
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");

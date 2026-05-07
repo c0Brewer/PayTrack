@@ -597,6 +597,171 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/my-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
+                    IncludeBankAccount?: boolean;
+                    UserId?: number;
+                    MinAmount?: number;
+                    MaxAmount?: number;
+                    PurposeOfPayment?: string;
+                    PaymentReference?: string;
+                    Status?: components["schemas"]["TransactionStatus"];
+                    CostCentreId?: number;
+                    TeamId?: number;
+                    PaymentDirection?: components["schemas"]["PaymentDirection"];
+                    MinCreatedAt?: string;
+                    MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
+                    Limit?: number;
+                    Offset?: number;
+                    IncludeCostCentre?: boolean;
+                    IncludeTeam?: boolean;
+                    IncludeStatusHistory?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDtoPaginatedResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/my-invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    IncludeBankAccount?: boolean;
+                    IncludeCostCentre?: boolean;
+                    IncludeUser?: boolean;
+                    IncludeTeam?: boolean;
+                    IncludeStatusHistory?: boolean;
+                };
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/my-invoices/{id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/team": {
         parameters: {
             query?: never;
@@ -891,6 +1056,8 @@ export interface paths {
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;
@@ -1381,24 +1548,24 @@ export interface components {
         PaymentRequestByUserDto: {
             /** Format: int32 */
             id: number;
-            user: components["schemas"]["UserDto"];
+            user?: components["schemas"]["UserDto"];
             /** Format: double */
             amount: number;
-            purposeOfPayment: string;
-            paymentReference: string;
+            purposeOfPayment?: string | null;
+            paymentReference?: string | null;
             status: components["schemas"]["TransactionStatus"];
-            costCentre: components["schemas"]["CostCentreDto"];
-            team: components["schemas"]["TeamDto"];
-            paymentDirection: components["schemas"]["PaymentDirection"];
-            statusHistory: components["schemas"]["TransactionStatusHistoryDto"][];
+            costCentre?: components["schemas"]["CostCentreDto"];
+            team?: components["schemas"]["TeamDto"];
+            paymentDirection?: components["schemas"]["PaymentDirection"];
+            statusHistory?: components["schemas"]["TransactionStatusHistoryDto"][] | null;
             /** Format: date-time */
-            createdAt: string;
+            createdAt?: string | null;
             /** Format: date-time */
-            paidAt: string;
+            paidAt?: string | null;
             invoiceNumber: string;
-            comment: string;
+            comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
-            bankAccount: components["schemas"]["BankAccountDto"];
+            bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;

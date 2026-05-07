@@ -116,20 +116,20 @@ export class PaymentRequestByUserService {
     return from(promise);
   }
 
-  // public getReceiptForPaymentRequestByUser(id: number): Observable<ReceiptFileResponse> {
-  //   const promise = client
-  //     .GET('/api/v1/transaction/user/{id}/receipt', {
-  //       params: {
-  //         path: {
-  //           id: id,
-  //         },
-  //       },
-  //     })
-  //     .then(({ data, error }) => {
-  //       if (error) throw new Error(error.detail ?? 'Unexpected Error');
-  //       return data;
-  //     });
-  //
-  //   return from(promise);
-  // }
+  public downloadReceipt(id: number): Observable<Blob> {
+    // TODO: Inject url
+    const promise = fetch(`http://localhost:5154/api/v1/transaction/user/${id}/receipt`, {
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.blob();
+    });
+
+    return from(promise);
+  }
 }
