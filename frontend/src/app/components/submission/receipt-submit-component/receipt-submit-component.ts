@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -58,6 +58,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -245,27 +246,30 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .getDuplicatePaymentRequestsByUser({
         TeamId: payload.transaction.teamId,
         Amount: payload.transaction.amount,
-        InvoiceNumber: payload.invoiceNumber,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (duplicates) => {
-          if (duplicates.length > 0) {
-            this.duplicateCandidates = duplicates;
-            this.pendingSubmissionPayload = payload;
-            this.pendingSubmissionFile = this.selectedFile;
-            this.isDuplicateModalOpen = true;
-            this.isSubmitting = false;
-            this.changeDetectorRef.detectChanges();
-            return;
-          }
+          this.ngZone.run(() => {
+            if (duplicates.length > 0) {
+              this.duplicateCandidates = duplicates;
+              this.pendingSubmissionPayload = payload;
+              this.pendingSubmissionFile = this.selectedFile;
+              this.isDuplicateModalOpen = true;
+              this.isSubmitting = false;
+              this.changeDetectorRef.detectChanges();
+              return;
+            }
 
-          this.submitPaymentRequest(payload, this.selectedFile!);
+            this.submitPaymentRequest(payload, this.selectedFile!);
+          });
         },
         error: (err: Error) => {
-          this.notificationService.showError(err.message ?? 'Duplicate check failed.');
-          this.isSubmitting = false;
-          this.changeDetectorRef.detectChanges();
+          this.ngZone.run(() => {
+            this.notificationService.showError(err.message ?? 'Duplicate check failed.');
+            this.isSubmitting = false;
+            this.changeDetectorRef.detectChanges();
+          });
         },
       });
   }
@@ -327,6 +331,32 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {
+    return (
+      (
+        duplicate.paymentRequestByUser.user as
+          | {
+              name?: string | null;
+            }
+          | null
+          | undefined
+      )?.name ?? 'Unknown user'
+    );
+  }
+
+  getDuplicateTeamName(duplicate: DuplicatePaymentRequestByUserDto): string {
+    return (
+      (
+        duplicate.paymentRequestByUser.team as
+          | {
+              name?: string | null;
+            }
+          | null
+          | undefined
+      )?.name ?? 'Unknown team'
+    );
   }
 
   protected readonly event = event;

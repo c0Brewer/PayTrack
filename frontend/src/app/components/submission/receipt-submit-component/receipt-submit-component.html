@@ -197,18 +197,20 @@
     (closeEvent)="onDuplicateModalCancel()"
   >
     <p class="duplicate-modal__subtitle">
-      We found existing submissions with matching invoice number and/or amount.
+      We found existing submissions with matching amount.
     </p>
 
     <ul class="duplicate-list">
       @for (duplicate of duplicateCandidates; track duplicate.paymentRequestByUser.id) {
         <li class="duplicate-list__item">
           <div class="duplicate-list__main">
-            <span class="duplicate-list__invoice">{{ duplicate.paymentRequestByUser.invoiceNumber }}</span>
             <span class="duplicate-list__amount">€{{ duplicate.paymentRequestByUser.amount }}</span>
           </div>
+          <div class="duplicate-list__details">
+            <span>User: {{ getDuplicateUserName(duplicate) }}</span>
+            <span>Team: {{ getDuplicateTeamName(duplicate) }}</span>
+          </div>
           <div class="duplicate-list__meta">
-            <span [class.duplicate-list__match]="duplicate.isInvoiceNumberMatch">Invoice</span>
             <span [class.duplicate-list__match]="duplicate.isAmountAndUserMatch">Amount + User</span>
             <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Team</span>
           </div>

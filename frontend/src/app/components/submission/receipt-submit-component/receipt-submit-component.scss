@@ -322,14 +322,21 @@
   gap: v.$size-m;
 }
 
-.duplicate-list__invoice {
+.duplicate-list__amount {
   font-weight: v.$font-medium;
   color: v.$text-color;
 }
 
-.duplicate-list__amount {
-  font-weight: v.$font-medium;
-  color: v.$text-color;
+.duplicate-list__details {
+  margin-top: v.$size-xs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-m;
+
+  span {
+    font-size: v.$font-s;
+    color: v.$TUR-primary-grey;
+  }
 }
 
 .duplicate-list__meta {

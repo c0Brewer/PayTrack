@@ -171,11 +171,16 @@ describe('PaymentRequestByUserService', () => {
   it('should fetch duplicate payment requests', async () => {
     const apiResponse = [
       {
-        paymentRequestByUser: { id: 1, amount: 100, invoiceNumber: 'INV-1' },
-        score: 3,
+        paymentRequestByUser: {
+          id: 1,
+          amount: 100,
+          invoiceNumber: 'INV-1',
+          user: { id: 10, name: 'Alex' },
+          team: { id: 20, name: 'Core Team' },
+        },
+        score: 2,
         isAmountAndUserMatch: true,
         isAmountAndTeamMatch: true,
-        isInvoiceNumberMatch: true,
       },
     ];
 
@@ -186,7 +191,7 @@ describe('PaymentRequestByUserService', () => {
     } as any);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = { TeamId: 1, Amount: 100, InvoiceNumber: 'INV-1' } as any;
+    const query = { TeamId: 1, Amount: 100 } as any;
     const result = await firstValueFrom(service.getDuplicatePaymentRequestsByUser(query));
 
     expect(client.GET).toHaveBeenCalledWith('/api/v1/transaction/user/duplicate', {

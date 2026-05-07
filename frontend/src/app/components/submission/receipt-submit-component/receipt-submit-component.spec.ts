@@ -180,11 +180,16 @@ describe('ReceiptSubmitComponent', () => {
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
       of([
         {
-          paymentRequestByUser: { id: 7, amount: 100, invoiceNumber: 'INV-1' },
-          score: 3,
+          paymentRequestByUser: {
+            id: 7,
+            amount: 100,
+            invoiceNumber: 'INV-1',
+            user: { id: 11, name: 'Alex' },
+            team: { id: 21, name: 'Core Team' },
+          },
+          score: 2,
           isAmountAndUserMatch: true,
           isAmountAndTeamMatch: true,
-          isInvoiceNumberMatch: true,
         },
       ]),
     );
@@ -223,11 +228,16 @@ describe('ReceiptSubmitComponent', () => {
     component.isDuplicateModalOpen = true;
     component.duplicateCandidates = [
       {
-        paymentRequestByUser: { id: 7, amount: 100, invoiceNumber: 'INV-1' },
-        score: 3,
+        paymentRequestByUser: {
+          id: 7,
+          amount: 100,
+          invoiceNumber: 'INV-1',
+          user: { id: 11, name: 'Alex' },
+          team: { id: 21, name: 'Core Team' },
+        },
+        score: 2,
         isAmountAndUserMatch: true,
         isAmountAndTeamMatch: true,
-        isInvoiceNumberMatch: true,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;

@@ -982,7 +982,6 @@ export interface paths {
                 query: {
                     TeamId: number;
                     Amount: number;
-                    InvoiceNumber: string;
                 };
                 header?: never;
                 path?: never;
@@ -1269,7 +1268,6 @@ export interface components {
             score: number;
             isAmountAndUserMatch: boolean;
             isAmountAndTeamMatch: boolean;
-            isInvoiceNumberMatch: boolean;
         };
         GoogleAuthCallbackDto: {
             code: string;
