@@ -2,7 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Health;
 using PayTrack.Data;
 
 namespace PayTrack.Api.Endpoints
