@@ -169,7 +169,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.CostCentreId.HasValue == true)
             {
-                dbQuery = dbQuery.Where(t => t.CostCentreId == query.CostCentreId.Value);
+                dbQuery = dbQuery.Where(t => t.Budget != null && t.Budget.CostCentreId == query.CostCentreId.Value);
             }
 
             if (query?.TeamId.HasValue == true)
@@ -210,7 +210,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeCostCentre.HasValue == true)
             {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
+                dbQuery = dbQuery.Include(t => t.Budget)
+                    .ThenInclude(b => b!.CostCentre);
             }
 
             if (query?.IncludeTeam.HasValue == true)

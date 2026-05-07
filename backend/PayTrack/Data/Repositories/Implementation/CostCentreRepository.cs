@@ -176,7 +176,8 @@ namespace PayTrack.Data.Repositories.Implementation
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)
                     .ThenInclude(b => b.Team)
-                .Include(c => c.Transactions)
+                .Include(c => c.Budgets)
+                    .ThenInclude(b => b.Transactions)
                 .FirstOrDefaultAsync(c => c.Id == id)
                 ?? throw new NotFoundException($"CostCentre with id {id} could not be found.");
 
@@ -185,7 +186,11 @@ namespace PayTrack.Data.Repositories.Implementation
                 .Distinct()
                 .ToList();
 
-            var affectedUserCount = costCentre.Transactions
+            var transactions = costCentre.Budgets
+                .SelectMany(b => b.Transactions)
+                .ToList();
+
+            var affectedUserCount = transactions
                 .Select(t => t.UserId)
                 .Distinct()
                 .Count();
@@ -193,7 +198,7 @@ namespace PayTrack.Data.Repositories.Implementation
             return new DeleteCostCentrePreviewDto(
                 costCentre.Name,
                 costCentre.Budgets.Count,
-                costCentre.Transactions.Count,
+                transactions.Count,
                 affectedUserCount,
                 affectedTeamNames);
         }
@@ -203,11 +208,11 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             var costCentre = await this.context.CostCentres
                 .Include(c => c.Budgets)
-                .Include(c => c.Transactions)
+                    .ThenInclude(b => b.Transactions)
                 .FirstOrDefaultAsync(c => c.Id == id)
                 ?? throw new NotFoundException($"CostCentre with id {id} could not be found.");
 
-            if (costCentre.Budgets.Count > 0 || costCentre.Transactions.Count > 0)
+            if (costCentre.Budgets.Count > 0 || costCentre.Budgets.Any(b => b.Transactions.Count > 0))
             {
                 costCentre.IsActive = false;
                 await this.context.SaveChangesAsync();

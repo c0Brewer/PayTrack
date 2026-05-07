@@ -83,7 +83,7 @@ namespace PayTrack.Application.Services.Implementation
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
                 Status = TransactionStatus.Submitted,
-                CostCentreId = null, // Cost centre will be set later by the finance team
+                BudgetId = null, // Budget will be set later by the finance team
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.Out, // Payment direction is out for payment requests by user
 
