@@ -18,7 +18,6 @@ using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
-var shutdownRequested = false;
 LoadGoogleConfigFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
@@ -55,6 +54,7 @@ builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<HealthState>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -87,6 +87,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
+        // WithOrigins("*") does not mean "allow all origins" in ASP.NET Core.
+        // The development config uses "*", so we translate that case explicitly.
         if (corsOrigin == "*")
         {
             policy
@@ -141,32 +143,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("frontend");
-
-app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
-app.MapGet("/health/prepareShutdown", () =>
-{
-    shutdownRequested = true;
-    return Results.Ok(new { status = "draining" });
-});
-app.MapGet("/health/ready", async (IServiceProvider services) =>
-{
-    if (shutdownRequested)
-    {
-        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
-    }
-
-    if (isTestEnv)
-    {
-        return Results.Ok(new { status = "ready" });
-    }
-
-    await using var scope = services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var canConnect = await db.Database.CanConnectAsync();
-    return canConnect
-        ? Results.Ok(new { status = "ready" })
-        : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
-});
+app.MapHealthEndpoints();
 
 var apiV1 = app
     .MapGroup("/api/v1")
