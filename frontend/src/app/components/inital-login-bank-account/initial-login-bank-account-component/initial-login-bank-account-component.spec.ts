@@ -110,6 +110,16 @@ describe('InitialLoginBankAccountComponent', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['']);
   });
 
+  it('should visually group IBAN input in blocks of four characters', () => {
+    const input = document.createElement('input');
+    input.value = 'at611904300234573201';
+
+    component['onIbanInput']({ target: input } as unknown as Event);
+
+    expect(input.value).toBe('AT61 1904 3002 3457 3201');
+    expect(component['form'].controls.iban.value).toBe('AT61 1904 3002 3457 3201');
+  });
+
   it('should not save invalid form data', async () => {
     component['form'].setValue({
       accountHolder: '',

@@ -31,7 +31,13 @@
 
       <label class="d-flex flex-column gap-1">
         <span>IBAN</span>
-        <input formControlName="iban" autocomplete="off" placeholder="AT611904300234573201" />
+        <input
+          formControlName="iban"
+          autocomplete="off"
+          maxlength="42"
+          placeholder="AT61 1904 3002 3457 3201"
+          (input)="onIbanInput($event)"
+        />
         <span onclick="navigator.clipboard.writeText('AT611904300234573201')">
         AT611904300234573201
       </span>

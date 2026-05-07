@@ -149,6 +149,13 @@ export class BankAccountsSettingsPageComponent implements OnInit {
     });
   }
 
+  public formatIbanForDisplay(iban: string | null | undefined): string {
+    return (iban ?? '')
+      .replaceAll(' ', '')
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
+  }
+
   private handleError(error: unknown, fallbackMessage: string): void {
     this.errorMessage = error instanceof Error ? error.message : fallbackMessage;
     console.error(fallbackMessage, error);

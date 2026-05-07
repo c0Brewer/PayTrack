@@ -22,7 +22,7 @@ export class InitialLoginBankAccountComponent implements OnInit {
       '',
       [
         Validators.required,
-        Validators.maxLength(34),
+        Validators.maxLength(42),
         Validators.pattern(/^[A-Za-z]{2}[A-Za-z0-9 ]{13,32}$/),
       ],
     ],
@@ -79,6 +79,14 @@ export class InitialLoginBankAccountComponent implements OnInit {
     }
   }
 
+  protected onIbanInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formattedIban = this.formatIban(input.value);
+
+    input.value = formattedIban;
+    this.form.controls.iban.setValue(formattedIban, { emitEvent: false });
+  }
+
   protected async skip(): Promise<void> {
     this.isSaving = true;
 
@@ -94,5 +102,14 @@ export class InitialLoginBankAccountComponent implements OnInit {
 
   private getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
+  }
+
+  private formatIban(value: string): string {
+    return value
+      .replaceAll(' ', '')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
   }
 }

@@ -46,7 +46,7 @@ export class BankAccountEditorComponent implements OnChanges {
         '',
         [
           Validators.required,
-          Validators.maxLength(34),
+          Validators.maxLength(42),
           Validators.pattern(/^[A-Za-z]{2}[A-Za-z0-9 ]{13,32}$/),
         ],
       ],
@@ -73,7 +73,7 @@ export class BankAccountEditorComponent implements OnChanges {
     if (this.initialValue) {
       this.form.setValue({
         accountHolder: this.initialValue.accountHolder ?? '',
-        iban: this.initialValue.iban ?? '',
+        iban: this.formatIban(this.initialValue.iban ?? ''),
         bic: this.initialValue.bic ?? '',
       });
       return;
@@ -88,6 +88,7 @@ export class BankAccountEditorComponent implements OnChanges {
 
   public onSubmit(): void {
     if (this.form.invalid) {
+      this.validationMessage = 'Please enter valid values.';
       this.form.markAllAsTouched();
       return;
     }
@@ -97,5 +98,22 @@ export class BankAccountEditorComponent implements OnChanges {
       iban: this.form.controls.iban.value.replace(/\s+/g, '').toUpperCase(),
       bic: this.form.controls.bic.value.replace(/\s+/g, '').toUpperCase(),
     });
+  }
+
+  public onIbanInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formattedIban = this.formatIban(input.value);
+
+    input.value = formattedIban;
+    this.form.controls.iban.setValue(formattedIban, { emitEvent: false });
+  }
+
+  private formatIban(value: string): string {
+    return value
+      .replaceAll(' ', '')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
   }
 }
