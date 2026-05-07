@@ -1,5 +1,5 @@
-ARG SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:10.0
-ARG RUNTIME_IMAGE=mcr.microsoft.com/dotnet/aspnet:10.0
+ARG SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:10.0-alpine
+ARG RUNTIME_IMAGE=mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 
 FROM ${SDK_IMAGE} AS build
 WORKDIR /src
