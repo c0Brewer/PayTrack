@@ -1,30 +1,22 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { take } from 'rxjs';
 
-import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import {
-  GetPaymentRequestsByUserOptions,
-  PaymentRequestByUserDto,
-  Role,
-  UserDto,
-} from '../../../types/exporter';
+import { GetPaymentRequestsByUserOptions, PaymentRequestByUserDto } from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { InvoiceFilterComponent } from '../invoice-filter-component/invoice-filter-component';
 import { InvoiceListComponent } from '../invoice-list-component/invoice-list-component';
 
 @Component({
-  selector: 'app-my-invoices-component',
+  selector: 'app-requests-component',
   imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent],
-  templateUrl: './my-invoices-component.html',
-  styleUrl: './my-invoices-component.scss',
+  templateUrl: './requests-component.html',
+  styleUrl: './requests-component.scss',
 })
-export class MyInvoicesComponent implements OnInit {
+export class RequestsComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
-    private readonly authService: AuthService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -42,25 +34,18 @@ export class MyInvoicesComponent implements OnInit {
 
   filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
+    IncludeCostCentre: true,
   };
 
-  private currentUser: UserDto | null = null;
-
   ngOnInit(): void {
-    this.authService
-      .getCurrentUser()
-      .pipe(take(1))
-      .subscribe((user) => {
-        this.currentUser = user;
-        this.loadInvoices();
-      });
+    this.loadInvoices();
   }
 
   loadInvoices(): void {
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.role === Role.REGULAR_USER ? this.currentUser.id : undefined,
       IncludeTeam: true,
+      IncludeCostCentre: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
     };
@@ -90,7 +75,7 @@ export class MyInvoicesComponent implements OnInit {
   }
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
-    this.router.navigate(['/my-invoices', invoice.id]);
+    this.router.navigate(['/requests', invoice.id]);
   }
 
   getTotalPages(): number {

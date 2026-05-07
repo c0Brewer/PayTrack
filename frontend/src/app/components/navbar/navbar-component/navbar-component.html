@@ -7,7 +7,7 @@
     <div class="sidebar__header">
       <div class="sidebar__brand">
         <span class="sidebar__logo"
-        ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
+          ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
         /></span>
         <span class="sidebar__title">PayTrack</span>
       </div>
@@ -30,7 +30,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">home</span>
+          ><span class="material-symbols-outlined">home</span>
           Home
         </a>
         <a
@@ -38,7 +38,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">description</span>
+          ><span class="material-symbols-outlined">description</span>
           My Invoices
         </a>
         <a
@@ -46,14 +46,20 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-        ><span class="material-symbols-outlined">upload_file</span>
+          ><span class="material-symbols-outlined">upload_file</span>
           Submit An Invoice
         </a>
       </div>
 
       @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-
+          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">description</span>
+            View Requests
+            @if (submittedCount() > 0) {
+              <span class="nav-badge">{{ submittedCount() }}</span>
+            }
+          </a>
           <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
             User Management</a
@@ -64,7 +70,7 @@
 
           <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
-            Cost Centre Mangement</a
+            Cost Centre Management</a
           >
         </div>
       }

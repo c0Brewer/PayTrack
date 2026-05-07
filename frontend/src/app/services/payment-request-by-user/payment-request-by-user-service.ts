@@ -117,18 +117,15 @@ export class PaymentRequestByUserService {
   }
 
   public downloadReceipt(id: number): Observable<Blob> {
-    // TODO: Inject url
-    const promise = fetch(`http://localhost:5154/api/v1/transaction/user/${id}/receipt`, {
-      headers: {
-        Authorization: `Bearer ${this.authService.getToken()}`,
-      },
-    }).then(async (res) => {
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ?? 'Unexpected Error');
-      }
-      return res.blob();
-    });
+    const promise = client
+      .GET('/api/v1/transaction/user/{id}/receipt', {
+        params: { path: { id } },
+        parseAs: 'blob',
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error('Unexpected Error');
+        return data as Blob;
+      });
 
     return from(promise);
   }

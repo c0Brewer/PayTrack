@@ -74,7 +74,21 @@
   </div>
 
   @if (showCostCentreFilter) {
-    <!-- Cost centre filter implemented in issue 15 -->
+    <select (change)="onCostCentreChange($event)">
+      <option value="">All cost centres</option>
+      @for (cc of costCentres; track cc.id) {
+        <option [value]="cc.id">{{ cc.name }}</option>
+      }
+    </select>
+  }
+
+  @if (showUserFilter) {
+    <select (change)="onUserChange($event)">
+      <option value="">All users</option>
+      @for (user of users; track user.id) {
+        <option [value]="user.id">{{ user.name }}</option>
+      }
+    </select>
   }
 
   <select [(ngModel)]="limit" (change)="onLimitChange()">

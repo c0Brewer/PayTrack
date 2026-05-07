@@ -2,14 +2,18 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { TeamService } from '../../../services/team/team-service';
+import { UserService } from '../../../services/user/user-service';
 import {
   GetPaymentRequestsByUserOptions,
   TeamDto,
   TransactionStatus,
-  PayoutType,
   TransactionStatusLabels,
+  CostCentreDto,
+  PayoutType,
   PayoutTypeLabels,
+  UserDto,
 } from '../../../types/exporter';
 
 @Component({
@@ -23,11 +27,14 @@ export class InvoiceFilterComponent implements OnInit {
   @Input() limit: number = 10;
 
   @Input() showCostCentreFilter: boolean = false;
+  @Input() showUserFilter: boolean = false;
 
   @Output() updateFilter = new EventEmitter<GetPaymentRequestsByUserOptions>();
   @Output() limitChange = new EventEmitter<number>();
 
   teams: TeamDto[] = [];
+  costCentres: CostCentreDto[] = [];
+  users: UserDto[] = [];
 
   filterInvoiceNumber: string = '';
   filterStatus: TransactionStatus | undefined = undefined;
@@ -40,6 +47,8 @@ export class InvoiceFilterComponent implements OnInit {
   filterPurpose: string = '';
   filterTeamId: number | undefined = undefined;
   filterPayoutType: PayoutType | undefined = undefined;
+  filterCostCentreId: number | undefined = undefined;
+  filterUserId: number | undefined = undefined;
 
   private readonly filterInvoiceNumberSubject = new Subject<string>();
   private readonly filterPurposeSubject = new Subject<string>();
@@ -52,6 +61,8 @@ export class InvoiceFilterComponent implements OnInit {
   private readonly filterStatusSubject = new Subject<TransactionStatus | undefined>();
   private readonly filterTeamSubject = new Subject<number | undefined>();
   private readonly filterPayoutTypeSubject = new Subject<PayoutType | undefined>();
+  private readonly filterCostCentreSubject = new Subject<number | undefined>();
+  private readonly filterUserSubject = new Subject<number | undefined>();
 
   TransactionStatus = TransactionStatus;
   TransactionStatusLabels = TransactionStatusLabels;
@@ -65,7 +76,11 @@ export class InvoiceFilterComponent implements OnInit {
     (v) => typeof v === 'number',
   ) as PayoutType[];
 
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly costCentreService: CostCentreService,
+    private readonly userService: UserService,
+  ) {}
 
   ngOnInit(): void {
     this.filterMinCreatedAt = new Date(0).toISOString().split('T')[0];
@@ -78,6 +93,34 @@ export class InvoiceFilterComponent implements OnInit {
         this.teams = data.items ?? [];
       },
       error: () => {},
+    });
+
+    if (this.showCostCentreFilter) {
+      this.costCentreService.getCostCentres({ Limit: 1000 }).subscribe({
+        next: (data) => {
+          this.costCentres = data.items ?? [];
+        },
+        error: () => {},
+      });
+    }
+
+    if (this.showUserFilter) {
+      this.userService.getUser({ Limit: 1000 }).subscribe({
+        next: (data) => {
+          this.users = data.items ?? [];
+        },
+        error: () => {},
+      });
+    }
+
+    this.filterCostCentreSubject.pipe(debounceTime(100)).subscribe((value) => {
+      this.filterCostCentreId = value;
+      this.emitFilter();
+    });
+
+    this.filterUserSubject.pipe(debounceTime(100)).subscribe((value) => {
+      this.filterUserId = value;
+      this.emitFilter();
     });
 
     this.filterInvoiceNumberSubject.pipe(debounceTime(400)).subscribe((value) => {
@@ -153,6 +196,8 @@ export class InvoiceFilterComponent implements OnInit {
       PurposeOfPayment: this.filterPurpose || undefined,
       TeamId: this.filterTeamId,
       PayoutType: this.filterPayoutType,
+      CostCentreId: this.filterCostCentreId,
+      UserId: this.filterUserId,
       Limit: undefined,
       Offset: undefined,
     };
@@ -203,6 +248,16 @@ export class InvoiceFilterComponent implements OnInit {
   onPayoutTypeChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filterPayoutTypeSubject.next(value !== '' ? Number(value) : undefined);
+  }
+
+  onCostCentreChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filterCostCentreSubject.next(value !== '' ? Number(value) : undefined);
+  }
+
+  onUserChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filterUserSubject.next(value !== '' ? Number(value) : undefined);
   }
 
   onLimitChange(): void {
