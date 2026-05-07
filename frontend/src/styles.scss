@@ -99,3 +99,10 @@ body {
 .btn-secondary.show {
   background-color: lightgray;
 }
+
+/* For Hints on invalid forms*/
+.hint-error {
+  color: v.$accent-dark;
+  font-size: v.$font-xxs;
+  font-weight: v.$font-semibold;
+}

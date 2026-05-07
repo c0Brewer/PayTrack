@@ -24,21 +24,26 @@
       <label class="d-flex flex-column gap-1">
         <span>Account holder</span>
         <input formControlName="accountHolder" autocomplete="name" />
+        @if (form.controls.accountHolder.touched && form.controls.accountHolder.invalid) {
+          <small class="hint-error">Use 3-255 characters.</small>
+        }
       </label>
 
       <label class="d-flex flex-column gap-1">
         <span>IBAN</span>
         <input formControlName="iban" autocomplete="off" placeholder="AT611904300234573201" />
+        @if (form.controls.iban.touched && form.controls.iban.invalid) {
+          <small class="hint-error">Use 15-34 characters.</small>
+        }
       </label>
 
       <label class="d-flex flex-column gap-1">
         <span>BIC</span>
         <input formControlName="bic" autocomplete="off" placeholder="BKAUATWW" />
+        @if (form.controls.bic.touched && form.controls.bic.invalid) {
+          <small class="hint-error">Use 8-11 characters.</small>
+        }
       </label>
-
-      @if (form.invalid && form.touched) {
-        <p class="form-error">Please enter a valid account holder, IBAN and BIC.</p>
-      }
 
       <div
         class="bank-info-actions d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-3"

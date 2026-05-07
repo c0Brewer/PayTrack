@@ -89,8 +89,6 @@ export class BankAccountEditorComponent implements OnChanges {
   public onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.validationMessage =
-        'Please enter valid values (Account Holder 3-255, IBAN 15-34, BIC 8-11).';
       return;
     }
 

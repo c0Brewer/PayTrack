@@ -9,7 +9,7 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <label>
       Account Holder
-      <input type="text" formControlName="accountHolder" maxlength="255" />
+      <input type="text" formControlName="accountHolder" maxlength="255" autocomplete="off"/>
       @if (form.controls.accountHolder.touched && form.controls.accountHolder.invalid) {
         <small class="hint-error">Use 3-255 characters.</small>
       }
@@ -17,7 +17,7 @@
 
     <label>
       IBAN
-      <input type="text" formControlName="iban" maxlength="34" />
+      <input type="text" formControlName="iban" maxlength="34"  autocomplete="off" placeholder="AT611904300234573201" />
       @if (form.controls.iban.touched && form.controls.iban.invalid) {
         <small class="hint-error">Use 15-34 characters.</small>
       }
@@ -25,7 +25,7 @@
 
     <label>
       BIC
-      <input type="text" formControlName="bic" maxlength="11" />
+      <input type="text" formControlName="bic" autocomplete="off"  maxlength="11" placeholder="BKAUATWW" />
       @if (form.controls.bic.touched && form.controls.bic.invalid) {
         <small class="hint-error">Use 8-11 characters.</small>
       }
