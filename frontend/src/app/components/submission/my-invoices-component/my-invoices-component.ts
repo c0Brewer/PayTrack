@@ -60,10 +60,6 @@ export class MyInvoicesComponent implements OnInit {
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
       UserId: this.currentUser?.role === Role.REGULAR_USER ? this.currentUser.id : undefined,
-      TeamId:
-        this.currentUser?.role === Role.TEAM_LEAD
-          ? (this.currentUser.team?.id ?? undefined)
-          : undefined,
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
