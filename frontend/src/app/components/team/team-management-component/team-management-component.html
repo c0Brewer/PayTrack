@@ -1,26 +1,40 @@
-<div class="team-management">
-  <h2>Team Management</h2>
+<div class="main-page-container team-management">
+  <div class="d-flex mb-1">
+    <h2 class="align-self-start">Team Management</h2>
+  </div>
 
-  <app-team-filter-component
-    [limitSelection]="limitSelection"
-    [limit]="limit"
-    (updateFilter)="updateFilterOptions($event)"
-    (limitChange)="onLimitChange($event)"
-  ></app-team-filter-component>
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component header="Total Teams" [content]="totalTeamCount" icon="group" size="small"
+      class="col-12 col-sm-6 col-xl-3" />
+    <app-stat-box-component header="Free Data slot" [content]="10" icon="group" iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF" size="small" class="col-12 col-sm-6 col-xl-3" />
+    <app-stat-box-component header="Total Budget" [content]="'€1000'" icon="trending_up" iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5" size="small" class="col-12 col-sm-6 col-xl-3" />
+    <app-stat-box-component header="Teams With Budget" [content]="10" icon="trending_up" size="small"
+      class="col-12 col-sm-6 col-xl-3" />
 
-  <app-team-list-component
-    [teams]="teams"
-    (openEditTeam)="openEditTeam($event)"
-  ></app-team-list-component>
+    <app-team-filter-component [limitSelection]="limitSelection" [limit]="limit"
+      (updateFilter)="updateFilterOptions($event)" (limitChange)="onLimitChange($event)"></app-team-filter-component>
 
-  <app-pagination-component
-    [hasNext]="hasNext"
-    [hasPrev]="hasPrev"
-    [currentPage]="page"
-    [maxPage]="getTotalPages()"
-    (next)="nextPage()"
-    (prev)="previousPage()"
-  ></app-pagination-component>
+    <button type="button" class="btn btn-secondary" (click)="openCreate()">
+      <span class="material-symbols-outlined">create</span>
+      Create
+    </button>
 
-  <!-- TODO: EDIT POPUP -->
+    <app-team-list-component [teams]="teams" [costCentres]="costCentres"
+      (openEditTeam)="openEditTeam($event)"></app-team-list-component>
+
+    <app-pagination-component [hasNext]="hasNext" [hasPrev]="hasPrev" [currentPage]="page" [maxPage]="getTotalPages()"
+      (next)="nextPage()" (prev)="previousPage()"></app-pagination-component>
+
+    @if (editingTeam) {
+    <app-team-edit-modal-component [team]="editingTeam" [costCentres]="costCentres" (saveEvent)="saveTeam($event)"
+      (deleteEvent)="openDeleteTeam($event)" (closeEvent)="closeEdit()"></app-team-edit-modal-component>
+    }
+
+    @if (deletingTeam && deleteImpact) {
+    <app-team-delete-impact-modal-component [impact]="deleteImpact" [isTeamActive]="deletingTeam.isActive !== false"
+      (confirmDelete)="confirmDelete()" (closeEvent)="closeDelete()"></app-team-delete-impact-modal-component>
+    }
+  </div>
 </div>

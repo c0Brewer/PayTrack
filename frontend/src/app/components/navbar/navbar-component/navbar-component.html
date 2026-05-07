@@ -7,7 +7,7 @@
     <div class="sidebar__header">
       <div class="sidebar__brand">
         <span class="sidebar__logo"
-          ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
+        ><img src="logos/TUR/TUWRxBMW_Logo_white_blue.png" width="80%"
         /></span>
         <span class="sidebar__title">PayTrack</span>
       </div>
@@ -30,7 +30,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-          ><span class="material-symbols-outlined">home</span>
+        ><span class="material-symbols-outlined">home</span>
           Home
         </a>
         <a
@@ -38,7 +38,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-          ><span class="material-symbols-outlined">description</span>
+        ><span class="material-symbols-outlined">description</span>
           My Invoices
         </a>
         <a
@@ -46,35 +46,33 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-          ><span class="material-symbols-outlined">upload_file</span>
+        ><span class="material-symbols-outlined">upload_file</span>
           Submit An Invoice
         </a>
       </div>
 
-      @if (user?.role === role.ADMIN || user?.role === role.TEAM_LEAD) {
+      @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
-            ><span class="material-symbols-outlined">groups</span> Teams</a
+
+          <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            User Management</a
           >
-          @if (user?.role === role.ADMIN) {
-            <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
-              <span class="material-symbols-outlined">manage_accounts</span>
-              User Management</a
-            >
-          }
-          @if (user?.role === role.ADMIN) {
-            <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
-              <span class="material-symbols-outlined">manage_accounts</span>
-              Cost Centre Mangement</a
-            >
-          }
+          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
+            ><span class="material-symbols-outlined">groups</span> Team Management</a
+          >
+
+          <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            Cost Centre Mangement</a
+          >
         </div>
       }
 
       <div class="lower-nav">
         <a
           class="sidebar__settings"
-          routerLink="/bankaccount"
+          routerLink="/settings"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"

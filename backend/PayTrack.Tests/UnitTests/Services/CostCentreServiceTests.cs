@@ -95,7 +95,7 @@ namespace PayTrack.Tests.UnitTests.Services
             const string description = "Engine and drivetrain costs";
             const string color = "#FF0000";
             repoMock.Setup(r => r.AddAsync(It.IsAny<CostCentre>(), null))
-                    .ReturnsAsync((CostCentre c, IList<CreateBudgetEntryDto>? _) => c);
+                    .ReturnsAsync((CostCentre c, IList<CreateCostCentreBudgetEntryDto>? _) => c);
 
             // Act
             var result = await service.CreateAsync(name, description, color, null);
@@ -112,12 +112,12 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task CreateAsync_WithBudgets_ShouldPassBudgetEntriesToRepo()
         {
             // Arrange
-            var budgets = new List<CreateBudgetEntryDto>
+            var budgets = new List<CreateCostCentreBudgetEntryDto>
             {
                 new(TeamId: 1, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             repoMock.Setup(r => r.AddAsync(It.IsAny<CostCentre>(), budgets))
-                    .ReturnsAsync((CostCentre c, IList<CreateBudgetEntryDto>? _) => c);
+                    .ReturnsAsync((CostCentre c, IList<CreateCostCentreBudgetEntryDto>? _) => c);
 
             // Act
             var result = await service.CreateAsync("Aero", null, null, budgets);
@@ -195,7 +195,7 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task UpdateAsync_WithOverlappingBudgetIds_ShouldThrowInvalidStateException()
         {
             // Arrange
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: 5, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
@@ -206,14 +206,14 @@ namespace PayTrack.Tests.UnitTests.Services
                 async () => await service.UpdateAsync(1, null, null, null, budgetsToUpsert, budgetIdsToDelete));
 
             exception.Message.Should().Contain("BudgetsToUpsert");
-            repoMock.Verify(r => r.UpdateAsync(It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<IList<UpsertBudgetEntryDto>?>(), It.IsAny<IList<int>?>()), Times.Never);
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<IList<UpsertCostCentreBudgetEntryDto>?>(), It.IsAny<IList<int>?>()), Times.Never);
         }
 
         [Fact]
         public async Task UpdateAsync_WithBothListsPopulated_ShouldPassBothToRepo()
         {
             // Arrange
-            var budgetsToUpsert = new List<UpsertBudgetEntryDto>
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
                 new(Id: null, TeamId: 2, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };

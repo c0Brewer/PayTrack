@@ -897,6 +897,132 @@ export interface paths {
                 };
             };
         };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTeamRequestDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamDto"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team/{id}/delete-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeleteTeamImpactDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
         delete?: never;
@@ -1332,7 +1458,7 @@ export interface components {
             iban: string;
             bic: string;
         };
-        CreateBudgetEntryDto: {
+        CreateCostCentreBudgetEntryDto: {
             /** Format: int32 */
             teamId: number;
             /** Format: double */
@@ -1346,7 +1472,7 @@ export interface components {
             name: string;
             description?: string | null;
             displayColor?: string | null;
-            budgets?: components["schemas"]["CreateBudgetEntryDto"][] | null;
+            budgets?: components["schemas"]["CreateCostCentreBudgetEntryDto"][] | null;
         };
         CreatePaymentRequestByUserDto: {
             transaction: components["schemas"]["CreateTransactionDto"];
@@ -1358,10 +1484,21 @@ export interface components {
             /** Format: int32 */
             bankAccountId: number;
         };
+        CreateTeamBudgetEntryDto: {
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
         CreateTeamRequestDto: {
             name: string;
             description?: string | null;
             displayColor?: string | null;
+            budgets?: components["schemas"]["CreateTeamBudgetEntryDto"][] | null;
         };
         CreateTransactionDto: {
             /** Format: int32 */
@@ -1381,6 +1518,21 @@ export interface components {
             /** Format: int32 */
             affectedUserCount: number;
             affectedTeamNames: string[];
+        };
+        DeleteTeamImpactDto: {
+            /** Format: int32 */
+            teamId?: number;
+            teamName?: string | null;
+            canDelete?: boolean;
+            /** Format: int32 */
+            affectedUserCount?: number;
+            /** Format: int32 */
+            blockingBudgetCount?: number;
+            /** Format: int32 */
+            blockingTransactionCount?: number;
+            /** Format: int32 */
+            invoiceCount?: number;
+            warningMessage?: string | null;
         };
         GoogleAuthCallbackDto: {
             code: string;
@@ -1454,6 +1606,7 @@ export interface components {
             displayColor?: string | null;
             members?: components["schemas"]["UserDto"][] | null;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+            isActive?: boolean;
         };
         TeamDtoPaginatedResponse: {
             items: components["schemas"]["TeamDto"][] | null;
@@ -1489,7 +1642,7 @@ export interface components {
             name?: string | null;
             description?: string | null;
             displayColor?: string | null;
-            budgetsToUpsert?: components["schemas"]["UpsertBudgetEntryDto"][] | null;
+            budgetsToUpsert?: components["schemas"]["UpsertCostCentreBudgetEntryDto"][] | null;
             budgetIdsToDelete?: number[] | null;
         };
         UpdatePaymentRequestByUserDto: {
@@ -1499,6 +1652,13 @@ export interface components {
             payoutType?: components["schemas"]["PayoutType"];
             /** Format: int32 */
             bankAccountId?: number | null;
+        };
+        UpdateTeamRequestDto: {
+            name?: string | null;
+            description?: string | null;
+            displayColor?: string | null;
+            budgetsToUpsert?: components["schemas"]["UpsertTeamBudgetEntryDto"][] | null;
+            budgetIdsToDelete?: number[] | null;
         };
         UpdateTransactionDto: {
             /** Format: int32 */
@@ -1516,11 +1676,23 @@ export interface components {
             /** Format: int32 */
             teamId?: number | null;
         };
-        UpsertBudgetEntryDto: {
+        UpsertCostCentreBudgetEntryDto: {
             /** Format: int32 */
             id?: number | null;
             /** Format: int32 */
             teamId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+        };
+        UpsertTeamBudgetEntryDto: {
+            /** Format: int32 */
+            id?: number | null;
+            /** Format: int32 */
+            costCentreId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */

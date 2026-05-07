@@ -21,5 +21,5 @@ namespace PayTrack.Application.Dto.CostCentre
         [property: MinLength(3)]
         string? DisplayColor,
 
-        IList<CreateBudgetEntryDto>? Budgets);
+        IList<CreateCostCentreBudgetEntryDto>? Budgets);
 }

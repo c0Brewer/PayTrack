@@ -1,68 +1,115 @@
 @use 'variables' as v;
 
 .modal-overlay {
+  align-items: center;
+  backdrop-filter: blur(4px);
+  background: rgba(v.$TUR-primary-black, 0.48);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  padding: v.$size-m;
   position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(1px);
+  z-index: 1100;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .modal {
-    background: v.$background-color;
+  .app-modal {
+    background: v.$background-light;
+    border: 1px solid rgba(v.$TUR-border-color, 0.9);
+    border-radius: 0.9rem;
+    box-shadow: 0 1.5rem 4rem rgba(v.$TUR-primary-black, 0.24);
     display: flex;
-    max-width: 80%;
-    width: 50%;
-    max-height: 80vh;
     flex-direction: column;
-    border-radius: 0.5rem;
+    max-height: min(86vh, 48rem);
+    max-width: 36rem;
     overflow-x: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-
-    // Animate in when visible
-    &.visible {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    position: relative;
+    width: min(100%, 36rem);
 
     .modal-header {
-      background-color: v.$border-color;
+      align-items: center;
+      background: v.$background-light;
+      border-bottom: 1px solid v.$TUR-border-color;
       display: flex;
+      gap: v.$size-s;
+      justify-content: space-between;
+      padding: v.$size-m v.$size-m v.$size-s;
+    }
+
+    .modal-title-group {
+      align-items: center;
+      display: flex;
+      gap: v.$size-xs;
+      min-width: 0;
+    }
+
+    .modal-icon {
+      align-items: center;
+      background: v.$TUR-secondary-orange;
+      border-radius: 50%;
+      color: v.$TUR-primary-orange;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 1.25rem;
+      height: 2.5rem;
       justify-content: center;
-      padding: v.$size-s v.$size-m;
-      border-bottom: 1px solid v.$border-color;
+      line-height: 1;
+      width: 2.5rem;
+    }
 
-      .title {
-        padding-top: v.$size-xxxs;
-        color: v.$text-color;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: v.$font-m;
-        font-weight: v.$font-medium;
+    .title {
+      color: v.$text-color;
+      display: block;
+      font-size: v.$font-l;
+      font-weight: v.$font-bold;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .close {
+      align-items: center;
+      background: v.$background-color;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      color: v.$text-muted;
+      cursor: pointer;
+      display: inline-flex;
+      flex: 0 0 auto;
+      height: 2.25rem;
+      justify-content: center;
+      padding: 0;
+      width: 2.25rem;
+
+      &:hover {
+        background: v.$TUR-secondary-orange;
+        color: v.$TUR-primary-orange;
       }
+    }
 
-      .close {
-        cursor: pointer;
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-
-        &:hover {
-          color: v.$info-dark;
-        }
-      }
+    .close .material-symbols-outlined {
+      font-size: 1.25rem;
+      line-height: 1;
     }
 
     .content {
-      overflow-y: scroll;
       overflow-x: hidden;
-      padding: v.$size-l;
+      overflow-y: auto;
+      padding: v.$size-m;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .modal-overlay {
+    align-items: center;
+    padding: v.$size-s;
+
+    .app-modal {
+      max-height: 92vh;
+      width: 100%;
     }
   }
 }

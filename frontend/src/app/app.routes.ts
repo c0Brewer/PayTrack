@@ -9,8 +9,10 @@ import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
 import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
+import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
+import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
 import { authGuard } from './guards/auth-guard/auth-guard';
@@ -68,6 +70,11 @@ export const routes: Routes = [
     component: TeamManagementComponent,
   },
   {
+    path: 'team/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamDetailComponent,
+  },
+  {
     path: 'initial-setup',
     canActivate: [authGuard],
     component: BankInformationComponent,
@@ -76,6 +83,11 @@ export const routes: Routes = [
     path: 'cost-centre',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: CostCentreManagementComponent,
+  },
+  {
+    path: 'settings',
+    canActivate: [authGuard],
+    component: SettingsComponent,
   },
   {
     path: 'cost-centre/:id',

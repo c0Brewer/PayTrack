@@ -97,6 +97,14 @@ if (migrationsRunConfig && !isTestEnv)
     await db.Database.MigrateAsync();
 }
 
+var seedDataConfig = builder.Configuration.GetValue<bool>("SeedData:Auto");
+if (seedDataConfig && !isTestEnv)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -114,6 +122,7 @@ app.UseCors("frontend");
 
 var apiV1 = app
     .MapGroup("/api/v1")
+    .AddEndpointFilter<AutoValidationFilter>()
     .WithTags("API V1");
 
 apiV1.MapTeamEndpoints();
