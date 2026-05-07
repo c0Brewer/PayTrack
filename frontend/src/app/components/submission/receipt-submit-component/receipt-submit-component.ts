@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -51,6 +51,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +105,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           if (teams.items != null) {
             this.teams = teams.items;
           }
+
+          this.cdr.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -116,6 +119,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (bankAccounts) => {
           this.bankAccounts = bankAccounts;
+
+          this.cdr.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
