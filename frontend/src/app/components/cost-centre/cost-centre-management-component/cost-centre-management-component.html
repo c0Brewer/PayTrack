@@ -1,47 +1,85 @@
-<div class="cost-centre-management">
-  <div class="header">
-    <h2>Cost Centre Management</h2>
-    <button class="create-btn" (click)="openCreate()">Create New</button>
+<div class="main-page-container cost-centre-management">
+  <div
+    class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 w-100 mb-4"
+  >
+    <h2 class="m-0">Cost Centre Management</h2>
+    <button class="btn btn-primary align-self-start align-self-sm-auto" (click)="openCreate()">
+      Create New
+    </button>
   </div>
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component
+      header="Total Teams"
+      [content]="10"
+      icon="group"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Free Data slot"
+      [content]="10"
+      icon="group"
+      iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Total Budget"
+      [content]="'€1000'"
+      icon="trending_up"
+      iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Teams With Budget"
+      [content]="10"
+      icon="trending_up"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
 
-  <!-- FILTER + LIMIT -->
-  <app-cost-centre-filter-component
-    [limitSelection]="limitSelection"
-    [limit]="limit"
-    (updateFilter)="updateFilterOptions($event)"
-    (limitChange)="onLimitChange($event)"
-  ></app-cost-centre-filter-component>
+    <!-- FILTER + LIMIT -->
+    <app-cost-centre-filter-component
+      [limitSelection]="limitSelection"
+      [limit]="limit"
+      (updateFilter)="updateFilterOptions($event)"
+      (limitChange)="onLimitChange($event)"
+    ></app-cost-centre-filter-component>
 
-  <!-- COST CENTRE TABLE -->
-  <app-cost-centre-list-component
-    [costCentres]="costCentres"
-    (openEdit)="openEdit($event)"
-    (openDelete)="openDelete($event)"
-  ></app-cost-centre-list-component>
+    <!-- COST CENTRE TABLE -->
+    <app-cost-centre-list-component
+      [costCentres]="costCentres"
+      (openEdit)="openEdit($event)"
+      (openDelete)="openDelete($event)"
+    ></app-cost-centre-list-component>
 
-  <!-- PAGINATION -->
-  <app-pagination-component
-    [hasNext]="hasNext"
-    [hasPrev]="hasPrev"
-    [currentPage]="page"
-    [maxPage]="getTotalPages()"
-    (next)="nextPage()"
-    (prev)="previousPage()"
-  ></app-pagination-component>
+    <!-- PAGINATION -->
+    <app-pagination-component
+      [hasNext]="hasNext"
+      [hasPrev]="hasPrev"
+      [currentPage]="page"
+      [maxPage]="getTotalPages()"
+      (next)="nextPage()"
+      (prev)="previousPage()"
+    ></app-pagination-component>
 
-  @if (editingCostCentre) {
-    <app-cost-centre-edit-modal-component
-      [costCentre]="editingCostCentre"
-      (saveEvent)="save($event)"
-      (closeEvent)="closeEdit()"
-    ></app-cost-centre-edit-modal-component>
-  }
+    @if (editingCostCentre) {
+      <app-cost-centre-edit-modal-component
+        [costCentre]="editingCostCentre"
+        (saveEvent)="save($event)"
+        (closeEvent)="closeEdit()"
+      ></app-cost-centre-edit-modal-component>
+    }
 
-  @if (deletingCostCentre && deletePreview) {
-    <app-cost-centre-delete-preview-modal-component
-      [preview]="deletePreview"
-      (confirmDelete)="confirmDelete()"
-      (closeEvent)="closeDelete()"
-    ></app-cost-centre-delete-preview-modal-component>
-  }
+    @if (deletingCostCentre && deletePreview) {
+      <app-cost-centre-delete-preview-modal-component
+        [preview]="deletePreview"
+        (confirmDelete)="confirmDelete()"
+        (closeEvent)="closeDelete()"
+      ></app-cost-centre-delete-preview-modal-component>
+    }
+  </div>
 </div>

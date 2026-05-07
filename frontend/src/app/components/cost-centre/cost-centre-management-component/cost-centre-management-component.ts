@@ -15,6 +15,7 @@ import { CostCentreDeletePreviewModalComponent } from '../cost-centre-delete-pre
 import { CostCentreEditModalComponent } from '../cost-centre-edit-modal-component/cost-centre-edit-modal-component';
 import { CostCentreFilterComponent } from '../cost-centre-filter-component/cost-centre-filter-component';
 import { CostCentreListComponent } from '../cost-centre-list-component/cost-centre-list-component';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-cost-centre-management-component',
@@ -24,6 +25,7 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
     CostCentreDeletePreviewModalComponent,
     CostCentreFilterComponent,
     PaginationComponent,
+    StatBoxComponent,
   ],
   templateUrl: './cost-centre-management-component.html',
   styleUrl: './cost-centre-management-component.scss',
