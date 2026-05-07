@@ -42,4 +42,8 @@ export class CostCentreDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/cost-centre']);
   }
+
+  formatBudgetAmount(amount: number): string {
+    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+  }
 }

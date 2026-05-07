@@ -51,39 +51,34 @@
         </a>
       </div>
 
-      @if (user?.role === role.ADMIN || user?.role === role.TEAM_LEAD) {
+      @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
-            ><span class="material-symbols-outlined">groups</span> Teams</a
+          <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            User Management</a
           >
-          @if (user?.role === role.ADMIN) {
-            <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
-              <span class="material-symbols-outlined">manage_accounts</span>
-              User Management</a
-            >
-          }
-          @if (user?.role === role.ADMIN) {
-            <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
-              <span class="material-symbols-outlined">manage_accounts</span>
-              Cost Centre Mangement</a
-            >
-          }
-          @if (user?.role === role.ADMIN) {
-            <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
-              <span class="material-symbols-outlined">description</span>
-              View Requests
-              @if (submittedCount() > 0) {
-                <span class="nav-badge">{{ submittedCount() }}</span>
-              }
-            </a>
-          }
+          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
+            ><span class="material-symbols-outlined">groups</span> Team Management</a
+          >
+
+          <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            Cost Centre Management</a
+          >
+          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">description</span>
+            View Requests
+            @if (submittedCount() > 0) {
+              <span class="nav-badge">{{ submittedCount() }}</span>
+            }
+          </a>
         </div>
       }
 
       <div class="lower-nav">
         <a
           class="sidebar__settings"
-          routerLink="/bankaccount"
+          routerLink="/settings"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"

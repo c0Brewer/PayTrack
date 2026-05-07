@@ -106,7 +106,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public Task AddRangeAsync(CostCentre costCentre, IList<CreateBudgetEntryDto> entries)
+        public Task AddRangeAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto> entries)
         {
             foreach (var entry in entries)
             {

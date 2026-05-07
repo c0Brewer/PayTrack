@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -51,6 +51,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +105,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           if (teams.items != null) {
             this.teams = teams.items;
           }
+
+          this.cdr.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -116,6 +119,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (bankAccounts) => {
           this.bankAccounts = bankAccounts;
+
+          this.cdr.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -158,7 +163,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   onManageBankAccountClick(event: Event): void {
     event.preventDefault();
 
-    alert('Coming Soon!');
+    this.router.navigate(['/settings'], { fragment: 'bank-accounts' });
   }
 
   private setReceiptFile(file: File): void {
@@ -194,8 +199,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const errors = control.errors!;
     if (errors['required']) return 'This field is required.';
     if (errors['min']) return `Minimum value is ${errors['min'].min}.`;
-    if (errors['maxLength'])
-      return `Maximum length is ${errors['maxLength'].requiredLength} characters.`;
+    if (errors['maxlength'])
+      return `Maximum length is ${errors['maxlength'].requiredLength} characters.`;
     if (errors['invalidType']) return 'Only PDF, JPG, or PNG files are allowed.';
     if (errors['tooLarge']) return 'File must be smaller than 20 MB.';
     return 'Invalid value.';
