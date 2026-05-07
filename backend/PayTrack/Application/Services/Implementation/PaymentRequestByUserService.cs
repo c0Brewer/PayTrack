@@ -108,15 +108,12 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount,
-            string invoiceNumber)
+            decimal amount)
         {
-            var normalizedInvoiceNumber = invoiceNumber.Trim();
-
-            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount, normalizedInvoiceNumber);
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount, normalizedInvoiceNumber))
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
@@ -209,12 +206,10 @@ namespace PayTrack.Application.Services.Implementation
             PaymentRequestByUser paymentRequestByUser,
             int userId,
             int teamId,
-            decimal amount,
-            string normalizedInvoiceNumber)
+            decimal amount)
         {
             bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
             bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
-            bool isInvoiceNumberMatch = string.Equals(paymentRequestByUser.InvoiceNumber, normalizedInvoiceNumber, StringComparison.Ordinal);
 
             int score = 0;
 
@@ -228,17 +223,11 @@ namespace PayTrack.Application.Services.Implementation
                 score++;
             }
 
-            if (isInvoiceNumberMatch)
-            {
-                score++;
-            }
-
             return new DuplicatePaymentRequestByUserMatch(
                 paymentRequestByUser,
                 score,
                 isAmountAndUserMatch,
-                isAmountAndTeamMatch,
-                isInvoiceNumberMatch);
+                isAmountAndTeamMatch);
         }
     }
 }

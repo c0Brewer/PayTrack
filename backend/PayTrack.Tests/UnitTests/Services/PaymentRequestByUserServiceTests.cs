@@ -172,7 +172,7 @@ namespace PayTrack.Tests.UnitTests.Services
         // DUPLICATE CHECK
         // ----------------------------
         [Fact]
-        public async Task GetDuplicatePaymentRequestsByUserAsync_ShouldTrimInvoiceAndSortByScoreAndCreatedAt()
+        public async Task GetDuplicatePaymentRequestsByUserAsync_ShouldSortByScoreAndCreatedAt()
         {
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
@@ -220,7 +220,7 @@ namespace PayTrack.Tests.UnitTests.Services
             };
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, "INV-100"))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -229,14 +229,13 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, "  INV-100  ");
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
 
             result.Should().HaveCount(3);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(3);
+            result[0].Score.Should().Be(2);
             result[0].IsAmountAndUserMatch.Should().BeTrue();
             result[0].IsAmountAndTeamMatch.Should().BeTrue();
-            result[0].IsInvoiceNumberMatch.Should().BeTrue();
 
             result[1].PaymentRequestByUser.Id.Should().Be(3);
             result[1].Score.Should().Be(1);
@@ -247,7 +246,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result[2].IsAmountAndTeamMatch.Should().BeTrue();
 
             repoMock.Verify(
-                r => r.GetPotentialDuplicatesAsync(42, 99, 100, "INV-100"),
+                r => r.GetPotentialDuplicatesAsync(42, 99, 100),
                 Times.Once);
         }
 
@@ -263,8 +262,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Select(i => new PaymentRequestByUser
                 {
                     Id = i,
-                    UserId = i,
-                    TeamId = i,
+                    UserId = 42,
+                    TeamId = 99,
                     Amount = 100,
                     InvoiceNumber = "INV-100",
                     CreatedAt = DateTime.UtcNow.AddMinutes(-i),
@@ -272,7 +271,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ToList();
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, "INV-100"))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -281,7 +280,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, "INV-100");
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
 
             result.Should().HaveCount(10);
             result.Should().OnlyContain(match => match.Score >= 1);

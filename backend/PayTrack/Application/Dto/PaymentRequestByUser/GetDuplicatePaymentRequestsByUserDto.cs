@@ -23,12 +23,5 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [Required]
         [Range(0.01, double.MaxValue)]
         required public decimal Amount { get; init; }
-
-        /// <summary>
-        /// Invoice number to compare against.
-        /// </summary>
-        [Required]
-        [MinLength(3)]
-        required public string InvoiceNumber { get; init; }
     }
 }

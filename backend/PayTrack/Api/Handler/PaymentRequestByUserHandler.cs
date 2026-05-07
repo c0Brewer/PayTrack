@@ -103,8 +103,7 @@ namespace PayTrack.Api.Handler
             var duplicatePaymentRequests = await paymentRequestByUserService.GetDuplicatePaymentRequestsByUserAsync(
                     user.Id,
                     getDuplicatePaymentRequestsByUserDto.TeamId,
-                    getDuplicatePaymentRequestsByUserDto.Amount,
-                    getDuplicatePaymentRequestsByUserDto.InvoiceNumber);
+                    getDuplicatePaymentRequestsByUserDto.Amount);
 
             var duplicatePaymentRequestsDto = PaymentRequestByUserMapper.DuplicateListToDto(duplicatePaymentRequests);
 

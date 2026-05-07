@@ -20,8 +20,5 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         bool IsAmountAndUserMatch,
 
         [property: Required]
-        bool IsAmountAndTeamMatch,
-
-        [property: Required]
-        bool IsInvoiceNumberMatch);
+        bool IsAmountAndTeamMatch);
 }

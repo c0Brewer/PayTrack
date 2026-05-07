@@ -95,8 +95,7 @@ namespace PayTrack.Api.Mapper
                 ToDto(duplicatePaymentRequestByUser.PaymentRequestByUser),
                 duplicatePaymentRequestByUser.Score,
                 duplicatePaymentRequestByUser.IsAmountAndUserMatch,
-                duplicatePaymentRequestByUser.IsAmountAndTeamMatch,
-                duplicatePaymentRequestByUser.IsInvoiceNumberMatch);
+                duplicatePaymentRequestByUser.IsAmountAndTeamMatch);
         }
 
         /// <summary>

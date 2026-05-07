@@ -197,8 +197,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
                         Team = new Team { Id = 99, Name = "Team A" }
                     },
-                    3,
-                    true,
+                    2,
                     true,
                     true),
             };
@@ -208,14 +207,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
-                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, "INV-100"))
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100))
                 .ReturnsAsync(matches);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
-            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100&InvoiceNumber=INV-100");
+            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -224,10 +223,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto.Should().NotBeNull();
             dto.Should().HaveCount(1);
             dto![0].PaymentRequestByUser.Id.Should().Be(1);
-            dto[0].Score.Should().Be(3);
+            dto[0].Score.Should().Be(2);
 
             _factory.ServiceMock.Verify(
-                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, "INV-100"),
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100),
                 Times.Once);
         }
 
