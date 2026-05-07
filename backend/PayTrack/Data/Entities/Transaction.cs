@@ -57,15 +57,15 @@ namespace PayTrack.Data.Entities
         public TransactionStatus Status { get; set; } = TransactionStatus.Submitted;
 
         /// <summary>
-        /// Foreign Key on CostCentre.
+        /// Foreign Key on Budget.
         /// </summary>
-        public int? CostCentreId { get; set; }
+        public int? BudgetId { get; set; }
 
         /// <summary>
-        /// CostCentre Reference.
+        /// Budget Reference.
         /// </summary>
-        [ForeignKey(nameof(CostCentreId))]
-        public CostCentre CostCentre { get; set; } = null!;
+        [ForeignKey(nameof(BudgetId))]
+        public Budget? Budget { get; set; }
 
         /// <summary>
         /// Foreign Key on Team.
