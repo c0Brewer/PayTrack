@@ -105,7 +105,7 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<List<DuplicatePaymentRequestByUserMatchDto>> GetDuplicatePaymentRequestsByUserAsync(
+        public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
             decimal amount,
@@ -116,36 +116,7 @@ namespace PayTrack.Application.Services.Implementation
             var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount, normalizedInvoiceNumber);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser =>
-                {
-                    bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
-                    bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
-                    bool isInvoiceNumberMatch = string.Equals(paymentRequestByUser.InvoiceNumber, normalizedInvoiceNumber, StringComparison.Ordinal);
-
-                    int score = 0;
-
-                    if (isAmountAndUserMatch)
-                    {
-                        score++;
-                    }
-
-                    if (isAmountAndTeamMatch)
-                    {
-                        score++;
-                    }
-
-                    if (isInvoiceNumberMatch)
-                    {
-                        score++;
-                    }
-
-                    return new DuplicatePaymentRequestByUserMatchDto(
-                        paymentRequestByUser,
-                        score,
-                        isAmountAndUserMatch,
-                        isAmountAndTeamMatch,
-                        isInvoiceNumberMatch);
-                })
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount, normalizedInvoiceNumber))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
@@ -232,6 +203,42 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+        }
+
+        private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
+            PaymentRequestByUser paymentRequestByUser,
+            int userId,
+            int teamId,
+            decimal amount,
+            string normalizedInvoiceNumber)
+        {
+            bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
+            bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
+            bool isInvoiceNumberMatch = string.Equals(paymentRequestByUser.InvoiceNumber, normalizedInvoiceNumber, StringComparison.Ordinal);
+
+            int score = 0;
+
+            if (isAmountAndUserMatch)
+            {
+                score++;
+            }
+
+            if (isAmountAndTeamMatch)
+            {
+                score++;
+            }
+
+            if (isInvoiceNumberMatch)
+            {
+                score++;
+            }
+
+            return new DuplicatePaymentRequestByUserMatch(
+                paymentRequestByUser,
+                score,
+                isAmountAndUserMatch,
+                isAmountAndTeamMatch,
+                isInvoiceNumberMatch);
         }
     }
 }

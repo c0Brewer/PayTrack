@@ -68,7 +68,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="amount">Amount for matching.</param>
         /// <param name="invoiceNumber">Invoice number for matching.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
-        Task<List<DuplicatePaymentRequestByUserMatchDto>> GetDuplicatePaymentRequestsByUserAsync(
+        Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
             decimal amount,

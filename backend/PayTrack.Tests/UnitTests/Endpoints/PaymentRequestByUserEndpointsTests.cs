@@ -186,7 +186,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             var user = new User { Id = 123 };
-            var matches = new List<DuplicatePaymentRequestByUserMatchDto>
+            var matches = new List<DuplicatePaymentRequestByUserMatch>
             {
                 new(
                     new PaymentRequestByUser
