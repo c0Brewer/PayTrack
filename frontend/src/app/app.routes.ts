@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 
-import { BankInformationComponent } from './components/bank-information/bank-information-component/bank-information-component';
 import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
+import { InitialLoginBankAccountComponent } from './components/inital-login-bank-account/initial-login-bank-account-component/initial-login-bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
@@ -65,7 +65,7 @@ export const routes: Routes = [
   {
     path: 'initial-setup',
     canActivate: [authGuard],
-    component: BankInformationComponent,
+    component: InitialLoginBankAccountComponent,
   },
   {
     path: 'cost-centre',

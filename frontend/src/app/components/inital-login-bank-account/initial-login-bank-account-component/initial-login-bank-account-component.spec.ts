@@ -8,11 +8,11 @@ import { BankAccountService } from '../../../services/bank-account/bank-account-
 import { NotificationService } from '../../../services/notification/notification-service';
 import { Role, UserDto } from '../../../types/exporter';
 
-import { BankInformationComponent } from './bank-information-component';
+import { InitialLoginBankAccountComponent } from './initial-login-bank-account-component';
 
-describe('BankInformationComponent', () => {
-  let component: BankInformationComponent;
-  let fixture: ComponentFixture<BankInformationComponent>;
+describe('InitialLoginBankAccountComponent', () => {
+  let component: InitialLoginBankAccountComponent;
+  let fixture: ComponentFixture<InitialLoginBankAccountComponent>;
 
   const userNeedingBankInfo: UserDto = {
     id: 1,
@@ -72,7 +72,7 @@ describe('BankInformationComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [BankInformationComponent],
+      imports: [InitialLoginBankAccountComponent],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
@@ -81,7 +81,7 @@ describe('BankInformationComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BankInformationComponent);
+    fixture = TestBed.createComponent(InitialLoginBankAccountComponent);
     component = fixture.componentInstance;
   });
 

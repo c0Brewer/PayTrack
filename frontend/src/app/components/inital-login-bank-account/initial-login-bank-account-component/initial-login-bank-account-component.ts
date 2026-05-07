@@ -8,12 +8,12 @@ import { BankAccountService } from '../../../services/bank-account/bank-account-
 import { NotificationService } from '../../../services/notification/notification-service';
 
 @Component({
-  selector: 'app-bank-information-component',
+  selector: 'app-initial-login-bank-account',
   imports: [ReactiveFormsModule],
-  templateUrl: './bank-information-component.html',
-  styleUrl: './bank-information-component.scss',
+  templateUrl: './initial-login-bank-account-component.html',
+  styleUrl: './initial-login-bank-account-component.scss',
 })
-export class BankInformationComponent implements OnInit {
+export class InitialLoginBankAccountComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
 
   protected readonly form = this.formBuilder.nonNullable.group({

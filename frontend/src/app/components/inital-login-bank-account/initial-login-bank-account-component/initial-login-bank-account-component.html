@@ -1,0 +1,60 @@
+<main class="bank-info-page d-flex align-items-center justify-content-center">
+  <section class="bank-info-panel">
+    <div class="text-center">
+      <h1 class="mb-4">Welcome to PayTrack</h1>
+    </div>
+    <div class="bank-info-title-row d-flex align-items-start align-items-sm-center gap-3">
+      <div
+        class="bank-info-icon d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle"
+        aria-hidden="true"
+      >
+        <span class="material-symbols-outlined">credit_card</span>
+      </div>
+      <div class="bank-info-header">
+        <p>First login</p>
+        <h1>Bank information</h1>
+      </div>
+    </div>
+
+    <span class="bank-info-intro"
+      >Enter your payout account now, or skip this step and add it later.</span
+    >
+
+    <form class="d-flex flex-column gap-3" [formGroup]="form" (ngSubmit)="save()">
+      <label class="d-flex flex-column gap-1">
+        <span>Account holder</span>
+        <input formControlName="accountHolder" autocomplete="name" />
+      </label>
+
+      <label class="d-flex flex-column gap-1">
+        <span>IBAN</span>
+        <input formControlName="iban" autocomplete="off" placeholder="AT611904300234573201" />
+      </label>
+
+      <label class="d-flex flex-column gap-1">
+        <span>BIC</span>
+        <input formControlName="bic" autocomplete="off" placeholder="BKAUATWW" />
+      </label>
+
+      @if (form.invalid && form.touched) {
+        <p class="form-error">Please enter a valid account holder, IBAN and BIC.</p>
+      }
+
+      <div
+        class="bank-info-actions d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-3"
+      >
+        <button type="button" class="btn btn-secondary" (click)="skip()" [disabled]="isSaving">
+          Skip
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving">Save</button>
+      </div>
+    </form>
+  </section>
+
+  <!--Background Kreise-->
+  <div class="background-decorations">
+    <div class="bg-circle-top-right"></div>
+    <div class="bg-circle-bottom-left"></div>
+    <div class="bg-gradient-blur"></div>
+  </div>
+</main>
