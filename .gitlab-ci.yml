@@ -177,17 +177,15 @@ frontend_test:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-# Shared BuildKit setup for container image builds
-.buildkit:
+# Shared Kaniko setup for frontend image builds
+.frontend_kaniko:
   stage: package
   image:
-    name: moby/buildkit:rootless
+    name: ghcr.io/kaniko-build/dist/chainguard-dev-kaniko/executor:v1.25.14-debug
     entrypoint: [""]
-  variables:
-    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   before_script:
-    - mkdir -p ~/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(printf \"%s:%s\" \"$CI_REGISTRY_USER\" \"$CI_REGISTRY_PASSWORD\" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
@@ -207,11 +205,10 @@ package_backend:
 
 # Build and push frontend image to the GitLab registry
 package_frontend:
-  extends: .buildkit
+  extends: .frontend_kaniko
   script:
     - test -n "$GOOGLE_CLIENT_ID"
-    - cd frontend
-    - buildctl-daemonless.sh build --frontend dockerfile.v0 --local context=. --local dockerfile=. --opt build-arg:GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --opt build-arg:API_BASE_URL="" --output "type=image,name=$FRONTEND_IMAGE:$CI_PIPELINE_ID,$FRONTEND_IMAGE:latest,push=true"
+    - /kaniko/executor --context "$CI_PROJECT_DIR/frontend" --dockerfile "$CI_PROJECT_DIR/frontend/Dockerfile" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" --destination "$FRONTEND_IMAGE:$CI_PIPELINE_ID" --destination "$FRONTEND_IMAGE:latest"
 
 # Deploy the current pipeline images into the Kubernetes namespace
 deploy_production:
