@@ -160,6 +160,18 @@ frontend_test:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
+# Shared Buildah setup for container image builds
+.buildah:
+  stage: package
+  image: quay.io/buildah/stable:v1.39
+  variables:
+    BUILDAH_FORMAT: docker
+    STORAGE_DRIVER: vfs
+  before_script:
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
 # Build and push backend image to the GitLab registry
 package_backend:
   stage: package
@@ -176,10 +188,13 @@ package_backend:
 
 # Build and push frontend image to the GitLab registry
 package_frontend:
-  extends: .kaniko
+  extends: .buildah
   script:
     - test -n "$GOOGLE_CLIENT_ID"
-    - /kaniko/executor --context "$CI_PROJECT_DIR/frontend" --dockerfile "$CI_PROJECT_DIR/frontend/Dockerfile" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" --destination "$FRONTEND_IMAGE:$CI_PIPELINE_ID" --destination "$FRONTEND_IMAGE:latest"
+    - cd frontend
+    - buildah bud --storage-driver="$STORAGE_DRIVER" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" -t "$FRONTEND_IMAGE:$CI_PIPELINE_ID" -t "$FRONTEND_IMAGE:latest" .
+    - buildah push "$FRONTEND_IMAGE:$CI_PIPELINE_ID"
+    - buildah push "$FRONTEND_IMAGE:latest"
 
 # Deploy the current pipeline images into the Kubernetes namespace
 deploy_production:
