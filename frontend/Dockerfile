@@ -1,5 +1,5 @@
-ARG NODE_BUILD_IMAGE=cgr.dev/chainguard/node:20-dev
-ARG NODE_RUNTIME_IMAGE=cgr.dev/chainguard/node:20
+ARG NODE_BUILD_IMAGE=cgr.dev/chainguard/node:latest-dev
+ARG NODE_RUNTIME_IMAGE=cgr.dev/chainguard/node:latest
 
 FROM ${NODE_BUILD_IMAGE} AS build
 WORKDIR /app
