@@ -29,7 +29,9 @@ frontend_install:
   image: node:20
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -44,7 +46,9 @@ backend_restore:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   script:
     - cd backend
     - dotnet restore ./PayTrack/PayTrack.csproj
@@ -62,7 +66,9 @@ frontend_lint:
     - frontend_install
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -76,7 +82,9 @@ frontend_build:
     - frontend_install
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -92,7 +100,9 @@ backend_format:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_restore
   script:
@@ -105,7 +115,9 @@ backend_build:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_restore
   script:
@@ -123,7 +135,9 @@ backend_test:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_build
   script:
@@ -138,7 +152,9 @@ frontend_test:
     - frontend_install
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
