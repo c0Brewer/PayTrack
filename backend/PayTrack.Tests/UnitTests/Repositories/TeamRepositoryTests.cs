@@ -468,7 +468,10 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 [
                     new UpsertTeamBudgetEntryDto(
                         budgetToUpdate.Id,
+                        "Updated budget",
+                        null,
                         newCostCentre.Id,
+                        1,
                         999m,
                         newStart,
                         newEnd),

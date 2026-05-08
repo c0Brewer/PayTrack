@@ -342,6 +342,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/budget/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cost-centre": {
         parameters: {
             query?: never;
@@ -592,6 +711,106 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/season": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/season/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1255,16 +1474,21 @@ export interface components {
         BudgetDto: {
             /** Format: int32 */
             id: number;
+            name: string;
+            description?: string | null;
             /** Format: int32 */
             teamId: number;
             /** Format: int32 */
             costCentreId: number;
+            /** Format: int32 */
+            seasonId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            transactionIds: number[];
         };
         CostCentreDto: {
             /** Format: int32 */
@@ -1292,8 +1516,12 @@ export interface components {
             bic: string;
         };
         CreateCostCentreBudgetEntryDto: {
+            name: string;
+            description?: string | null;
             /** Format: int32 */
             teamId: number;
+            /** Format: int32 */
+            seasonId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */
@@ -1318,8 +1546,12 @@ export interface components {
             bankAccountId: number;
         };
         CreateTeamBudgetEntryDto: {
+            name: string;
+            description?: string | null;
             /** Format: int32 */
             costCentreId: number;
+            /** Format: int32 */
+            seasonId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */
@@ -1341,6 +1573,8 @@ export interface components {
             purposeOfPayment: string;
             /** Format: date-time */
             paidAt: string;
+            /** Format: int32 */
+            budgetId?: number | null;
         };
         DeleteCostCentrePreviewDto: {
             costCentreName: string;
@@ -1387,6 +1621,7 @@ export interface components {
             purposeOfPayment: string;
             paymentReference: string;
             status: components["schemas"]["TransactionStatus"];
+            budget: components["schemas"]["BudgetDto"];
             costCentre: components["schemas"]["CostCentreDto"];
             team: components["schemas"]["TeamDto"];
             paymentDirection: components["schemas"]["PaymentDirection"];
@@ -1501,6 +1736,8 @@ export interface components {
             purposeOfPayment?: string | null;
             /** Format: date-time */
             paidAt?: string | null;
+            /** Format: int32 */
+            budgetId?: number | null;
         };
         UpdateUserDto: {
             name?: string | null;
@@ -1512,8 +1749,12 @@ export interface components {
         UpsertCostCentreBudgetEntryDto: {
             /** Format: int32 */
             id?: number | null;
+            name: string;
+            description?: string | null;
             /** Format: int32 */
             teamId: number;
+            /** Format: int32 */
+            seasonId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */
@@ -1524,8 +1765,12 @@ export interface components {
         UpsertTeamBudgetEntryDto: {
             /** Format: int32 */
             id?: number | null;
+            name: string;
+            description?: string | null;
             /** Format: int32 */
             costCentreId: number;
+            /** Format: int32 */
+            seasonId: number;
             /** Format: double */
             targetAmount: number;
             /** Format: date-time */

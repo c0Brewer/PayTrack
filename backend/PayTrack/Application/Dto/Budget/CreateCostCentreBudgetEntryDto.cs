@@ -30,18 +30,5 @@ namespace PayTrack.Application.Dto.Budget
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd)
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CreateCostCentreBudgetEntryDto"/> class.
-        /// </summary>
-        /// <param name="TeamId">Team id.</param>
-        /// <param name="TargetAmount">Target amount.</param>
-        /// <param name="PeriodStart">Period start.</param>
-        /// <param name="PeriodEnd">Period end.</param>
-        public CreateCostCentreBudgetEntryDto(int TeamId, decimal TargetAmount, DateTime PeriodStart, DateTime PeriodEnd)
-            : this("Budget", null, TeamId, 0, TargetAmount, PeriodStart, PeriodEnd)
-        {
-        }
-    }
+        DateTime PeriodEnd);
 }

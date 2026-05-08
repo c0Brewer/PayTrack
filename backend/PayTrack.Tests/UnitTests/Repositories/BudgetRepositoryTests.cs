@@ -78,8 +78,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new BudgetRepository(context);
             var entries = new List<CreateCostCentreBudgetEntryDto>
             {
-                new(TeamId: team.Id, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 6, 30)),
-                new(TeamId: team.Id, TargetAmount: 2000m, PeriodStart: new DateTime(2026, 7, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Name: "Q1 budget", Description: null, TeamId: team.Id, SeasonId: 1, TargetAmount: 1000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 6, 30)),
+                new(Name: "Q2 budget", Description: null, TeamId: team.Id, SeasonId: 1, TargetAmount: 2000m, PeriodStart: new DateTime(2026, 7, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
 
             // Act

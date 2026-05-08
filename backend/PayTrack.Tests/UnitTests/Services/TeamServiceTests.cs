@@ -163,7 +163,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgetsToUpsert = new List<UpsertTeamBudgetEntryDto>
             {
-                new(5, 10, 100m, new DateTime(2026, 1, 1), new DateTime(2026, 1, 31)),
+                new(5, "Q1 budget", null, 10, 1, 100m, new DateTime(2026, 1, 1), new DateTime(2026, 1, 31)),
             };
             var budgetIdsToDelete = new List<int> { 5 };
 

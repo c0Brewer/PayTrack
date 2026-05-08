@@ -114,7 +114,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgets = new List<CreateCostCentreBudgetEntryDto>
             {
-                new(TeamId: 1, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Name: "Team budget", Description: null, TeamId: 1, SeasonId: 1, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             repoMock.Setup(r => r.AddAsync(It.IsAny<CostCentre>(), budgets))
                     .ReturnsAsync((CostCentre c, IList<CreateCostCentreBudgetEntryDto>? _) => c);
@@ -197,7 +197,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
-                new(Id: 5, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Id: 5, Name: "Team budget", Description: null, TeamId: 1, SeasonId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             var budgetIdsToDelete = new List<int> { 5 };
 
@@ -215,7 +215,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
-                new(Id: null, TeamId: 2, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Id: null, Name: "Team budget", Description: null, TeamId: 2, SeasonId: 1, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             var budgetIdsToDelete = new List<int> { 10 };
             var updated = new CostCentre { Id = 1, Name = "Aero" };
