@@ -69,11 +69,21 @@ namespace PayTrack.Data.Repositories.Implementation
             return filePath;
         }
 
+        /// <summary>
+        /// Escapes special characters in a value used inside a Google Drive API query string.
+        /// </summary>
+        /// <param name="value">The raw query value.</param>
+        /// <returns>The escaped query value.</returns>
         private static string EscapeDriveQueryValue(string value)
         {
             return value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Resolves the MIME content type for a file name based on its extension.
+        /// </summary>
+        /// <param name="fileName">The file name whose extension should be evaluated.</param>
+        /// <returns>The matching MIME type, or <c>application/octet-stream</c> when the extension is unknown.</returns>
         private static string GetContentType(string fileName)
         {
             return Path.GetExtension(fileName).ToLowerInvariant() switch
@@ -85,6 +95,12 @@ namespace PayTrack.Data.Repositories.Implementation
             };
         }
 
+        /// <summary>
+        /// Uploads a locally stored invoice file to the configured Google Drive archive folder.
+        /// </summary>
+        /// <param name="localFilePath">The path of the locally stored file.</param>
+        /// <param name="fileName">The file name to use in Google Drive.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous upload operation.</returns>
         private async Task UploadToGoogleDriveAsync(string localFilePath, string fileName)
         {
             if (string.IsNullOrWhiteSpace(this.googleDriveRootFolderId))
@@ -125,6 +141,10 @@ namespace PayTrack.Data.Repositories.Implementation
             }
         }
 
+        /// <summary>
+        /// Creates an authenticated Google Drive service using the configured service account key file.
+        /// </summary>
+        /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
         private DriveService CreateDriveService()
         {
             var credential = CredentialFactory
@@ -139,6 +159,13 @@ namespace PayTrack.Data.Repositories.Implementation
             });
         }
 
+        /// <summary>
+        /// Finds an existing child folder in Google Drive or creates it when it does not exist.
+        /// </summary>
+        /// <param name="driveService">The authenticated Google Drive service.</param>
+        /// <param name="folderName">The child folder name.</param>
+        /// <param name="parentFolderId">The Google Drive ID of the parent folder.</param>
+        /// <returns>The Google Drive ID of the existing or newly created folder.</returns>
         private async Task<string> GetOrCreateFolderAsync(DriveService driveService, string folderName, string parentFolderId)
         {
             var listRequest = driveService.Files.List();
