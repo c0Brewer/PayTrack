@@ -23,6 +23,11 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             IQueryable<Budget> dbQuery = this.context.Budgets;
 
+            if (!string.IsNullOrWhiteSpace(query?.Name))
+            {
+                dbQuery = dbQuery.Where(b => EF.Functions.Like(b.Name, $"%{query.Name}%"));
+            }
+
             // Filter by TeamId
             if (query?.TeamId.HasValue == true)
             {
@@ -33,6 +38,11 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.CostCentreId.HasValue == true)
             {
                 dbQuery = dbQuery.Where(b => b.CostCentreId == query.CostCentreId.Value);
+            }
+
+            if (query?.SeasonId.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(b => b.SeasonId == query.SeasonId.Value);
             }
 
             // Filter by TargetAmount
@@ -84,12 +94,15 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Budget> AddAsync(int teamId, int costCentreId, decimal targetAmount, DateTime periodStart, DateTime periodEnd)
+        public async Task<Budget> AddAsync(string name, string? description, int teamId, int costCentreId, int seasonId, decimal targetAmount, DateTime periodStart, DateTime periodEnd)
         {
             var budget = new Budget
             {
+                Name = name,
+                Description = description,
                 TeamId = teamId,
                 CostCentreId = costCentreId,
+                SeasonId = seasonId,
                 TargetAmount = targetAmount,
                 PeriodStart = periodStart,
                 PeriodEnd = periodEnd,
@@ -105,6 +118,20 @@ namespace PayTrack.Data.Repositories.Implementation
             return budget;
         }
 
+        /// <summary>
+        /// Adds a Budget using legacy inputs that do not include season metadata.
+        /// </summary>
+        /// <param name="teamId">The ID of the Team this Budget belongs to.</param>
+        /// <param name="costCentreId">The ID of the Cost Centre this Budget belongs to.</param>
+        /// <param name="targetAmount">The target amount for this Budget.</param>
+        /// <param name="periodStart">The start date of the Budget period.</param>
+        /// <param name="periodEnd">The end date of the Budget period.</param>
+        /// <returns>The newly created Budget.</returns>
+        public Task<Budget> AddAsync(int teamId, int costCentreId, decimal targetAmount, DateTime periodStart, DateTime periodEnd)
+        {
+            return this.AddAsync("Budget", null, teamId, costCentreId, 0, targetAmount, periodStart, periodEnd);
+        }
+
         /// <inheritdoc/>
         public Task AddRangeAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto> entries)
         {
@@ -112,8 +139,11 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 this.context.Budgets.Add(new Budget
                 {
+                    Name = entry.Name,
+                    Description = entry.Description,
                     CostCentre = costCentre,
                     TeamId = entry.TeamId,
+                    SeasonId = entry.SeasonId,
                     TargetAmount = entry.TargetAmount,
                     PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                     PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
@@ -124,10 +154,20 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Budget> UpdateAsync(int id, int? teamId = null, int? costCentreId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null)
+        public async Task<Budget> UpdateAsync(int id, string? name = null, string? description = null, int? teamId = null, int? costCentreId = null, int? seasonId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null)
         {
             var budget = await this.context.Budgets.FirstOrDefaultAsync(b => b.Id == id)
                 ?? throw new NotFoundException($"Budget with id {id} not found.");
+
+            if (name is not null)
+            {
+                budget.Name = name;
+            }
+
+            if (description is not null)
+            {
+                budget.Description = description;
+            }
 
             if (teamId.HasValue)
             {
@@ -137,6 +177,11 @@ namespace PayTrack.Data.Repositories.Implementation
             if (costCentreId.HasValue)
             {
                 budget.CostCentreId = costCentreId.Value;
+            }
+
+            if (seasonId.HasValue)
+            {
+                budget.SeasonId = seasonId.Value;
             }
 
             if (targetAmount.HasValue)

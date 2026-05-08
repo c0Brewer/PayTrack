@@ -34,8 +34,11 @@ namespace PayTrack.Data.Repositories.Implementation
                 {
                     this.context.Budgets.Add(new Budget
                     {
+                        Name = entry.Name,
+                        Description = entry.Description,
                         Team = team,
                         CostCentreId = entry.CostCentreId,
+                        SeasonId = entry.SeasonId,
                         TargetAmount = entry.TargetAmount,
                         PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                         PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
@@ -247,8 +250,11 @@ namespace PayTrack.Data.Repositories.Implementation
                     {
                         this.context.Budgets.Add(new Budget
                         {
+                            Name = entry.Name,
+                            Description = entry.Description,
                             Team = team,
                             CostCentreId = entry.CostCentreId,
+                            SeasonId = entry.SeasonId,
                             TargetAmount = entry.TargetAmount,
                             PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                             PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
@@ -258,7 +264,10 @@ namespace PayTrack.Data.Repositories.Implementation
                     {
                         var existing = team.Budgets.FirstOrDefault(b => b.Id == entry.Id)
                             ?? throw new NotFoundException($"Budget with id {entry.Id} not found on Team {id}.");
+                        existing.Name = entry.Name;
+                        existing.Description = entry.Description;
                         existing.CostCentreId = entry.CostCentreId;
+                        existing.SeasonId = entry.SeasonId;
                         existing.TargetAmount = entry.TargetAmount;
                         existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
                         existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);

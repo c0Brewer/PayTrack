@@ -42,6 +42,10 @@ namespace PayTrack.Api.Mapper
                 costCentre = CostCentreMapper.ToDto(paymentRequestByUser.Budget.CostCentre);
             }
 
+            var budget = paymentRequestByUser.Budget is not null
+                ? BudgetMapper.ToDto(paymentRequestByUser.Budget)
+                : null;
+
             TeamDto? team = null;
             if (paymentRequestByUser.Team != null)
             {
@@ -61,6 +65,7 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByUser.PurposeOfPayment,
                 paymentRequestByUser.PaymentReference,
                 paymentRequestByUser.Status,
+                budget,
                 costCentre,
                 team,
                 paymentRequestByUser.PaymentDirection,

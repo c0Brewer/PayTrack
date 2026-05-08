@@ -4,6 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.BankAccount;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.Transaction;
@@ -33,6 +34,9 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
 
         [property: Required]
         TransactionStatus Status,
+
+        [property: Required]
+        BudgetDto? Budget,
 
         [property: Required]
         CostCentreDto? CostCentre,
