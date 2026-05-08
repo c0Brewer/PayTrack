@@ -1,3 +1,5 @@
+/* global URL, process */
+
 import { createReadStream, existsSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import http from 'node:http';
@@ -55,5 +57,5 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Frontend listening on ${host}:${port}`);
+  process.stdout.write(`Frontend listening on ${host}:${port}\n`);
 });
