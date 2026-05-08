@@ -141,6 +141,16 @@ spec:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: JWT__Secret
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: GOOGLE_CLIENT_SECRET
           resources:
             requests:
               memory: "256Mi"

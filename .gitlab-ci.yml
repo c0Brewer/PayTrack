@@ -12,6 +12,9 @@ variables:
   DOTNET_NOLOGO: "true"
   NODE_ENV: "ci"
   GIT_STRATEGY: clone
+  K8S_NAMESPACE: "26ss-ase-pr-qse-08"
+  K8S_HOST: "26ss-ase-pr-qse-08.apps.student.inso-w.at"
+  GOOGLE_CLIENT_ID: "727777231080-l2rd54f5cm1jjaiscnke940co92u0tsf.apps.googleusercontent.com"
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
   FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
   POSTGRES_IMAGE: "postgres:16-alpine"
@@ -182,12 +185,7 @@ deploy_production:
   script:
     - test -n "$K8S_NAMESPACE"
     - test -n "$K8S_HOST"
-    - test -n "$JWT_SECRET"
-    - test -n "$POSTGRES_DB"
-    - test -n "$POSTGRES_USER"
-    - test -n "$POSTGRES_PASSWORD"
-    - export CONNECTION_STRING="Host=paytrack-postgres;Port=5432;Database=$POSTGRES_DB;Username=$POSTGRES_USER;Password=$POSTGRES_PASSWORD"
-    - kubectl create secret generic paytrack-secrets --namespace "$K8S_NAMESPACE" --from-literal=POSTGRES_DB="$POSTGRES_DB" --from-literal=POSTGRES_USER="$POSTGRES_USER" --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" --from-literal=JWT__Secret="$JWT_SECRET" --from-literal=ConnectionStrings__Default="$CONNECTION_STRING" --dry-run=client -o yaml | kubectl apply -f -
+    - kubectl get secret paytrack-secrets --namespace "$K8S_NAMESPACE"
     - sed -e "s|__NAMESPACE__|$K8S_NAMESPACE|g" -e "s|__HOST__|$K8S_HOST|g" -e "s|__BACKEND_IMAGE__|$BACKEND_IMAGE:$CI_PIPELINE_ID|g" -e "s|__FRONTEND_IMAGE__|$FRONTEND_IMAGE:$CI_PIPELINE_ID|g" -e "s|__POSTGRES_IMAGE__|$POSTGRES_IMAGE|g" k8s/deployment.yaml | kubectl apply -f -
     - kubectl rollout status deployment/paytrack-postgres --namespace "$K8S_NAMESPACE" --timeout=180s
     - kubectl rollout status deployment/paytrack-backend --namespace "$K8S_NAMESPACE" --timeout=180s
