@@ -1,7 +1,7 @@
-ARG NODE_IMAGE=node:20-alpine
-ARG NGINX_IMAGE=nginx:1.27-alpine
+ARG NODE_BUILD_IMAGE=cgr.dev/chainguard/node:20-dev
+ARG NODE_RUNTIME_IMAGE=cgr.dev/chainguard/node:20
 
-FROM ${NODE_IMAGE} AS build
+FROM ${NODE_BUILD_IMAGE} AS build
 WORKDIR /app
 
 COPY package*.json ./
@@ -15,10 +15,12 @@ ENV API_BASE_URL=${API_BASE_URL}
 ENV NODE_ENV=production
 RUN npm run build -- --configuration production
 
-FROM ${NGINX_IMAGE} AS runtime
-WORKDIR /usr/share/nginx/html
+FROM ${NODE_RUNTIME_IMAGE} AS runtime
+WORKDIR /app
 
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/pay-track/browser ./
+COPY --from=build /app/dist/pay-track/browser ./dist
+COPY server.mjs ./server.mjs
 
 EXPOSE 8080
+
+ENTRYPOINT ["node", "/app/server.mjs"]
