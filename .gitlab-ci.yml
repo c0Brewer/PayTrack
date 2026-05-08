@@ -161,15 +161,17 @@ frontend_test:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-# Shared Buildah setup for container image builds
-.buildah:
+# Shared BuildKit setup for container image builds
+.buildkit:
   stage: package
-  image: quay.io/buildah/stable:v1.39
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [""]
   variables:
-    BUILDAH_FORMAT: docker
-    STORAGE_DRIVER: vfs
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   before_script:
-    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
@@ -189,13 +191,11 @@ package_backend:
 
 # Build and push frontend image to the GitLab registry
 package_frontend:
-  extends: .buildah
+  extends: .buildkit
   script:
     - test -n "$GOOGLE_CLIENT_ID"
     - cd frontend
-    - buildah bud --storage-driver="$STORAGE_DRIVER" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" -t "$FRONTEND_IMAGE:$CI_PIPELINE_ID" -t "$FRONTEND_IMAGE:latest" .
-    - buildah push "$FRONTEND_IMAGE:$CI_PIPELINE_ID"
-    - buildah push "$FRONTEND_IMAGE:latest"
+    - buildctl-daemonless.sh build --frontend dockerfile.v0 --local context=. --local dockerfile=. --opt build-arg:GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --opt build-arg:API_BASE_URL="" --output "type=image,name=$FRONTEND_IMAGE:$CI_PIPELINE_ID,$FRONTEND_IMAGE:latest,push=true"
 
 # Deploy the current pipeline images into the Kubernetes namespace
 deploy_production:
