@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Repositories.Implementation;
 using Microsoft.AspNetCore.Http;
+using System.Reflection;
 
 namespace PayTrack.Tests.UnitTests.Repositories
 {
@@ -23,12 +24,19 @@ namespace PayTrack.Tests.UnitTests.Repositories
             return path;
         }
 
-        private static IConfiguration CreateConfig(string path)
+        private static IConfiguration CreateConfig(
+            string path,
+            bool googleDriveEnabled = false,
+            string? googleDriveRootFolderId = null,
+            string? googleDriveServiceAccountKeyPath = null)
         {
             return new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Data:FileUploadPath"] = path
+                    ["Data:FileUploadPath"] = path,
+                    ["GoogleDrive:Enabled"] = googleDriveEnabled.ToString(),
+                    ["GoogleDrive:RootFolderId"] = googleDriveRootFolderId,
+                    ["GoogleDrive:ServiceAccountKeyPath"] = googleDriveServiceAccountKeyPath
                 })
                 .Build();
         }
@@ -103,6 +111,106 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await act.Should()
                 .ThrowAsync<InvalidFileException>()
                 .WithMessage("No file uploaded");
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndRootFolderIdIsMissing()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveMissingRootFolder");
+            var config = CreateConfig(folder, googleDriveEnabled: true);
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            Func<Task> act = async () =>
+                await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InternalErrorException>()
+                .WithMessage("Google Drive root folder id is not configured.");
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyPathIsMissing()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveMissingKeyPath");
+            var config = CreateConfig(folder, googleDriveEnabled: true, googleDriveRootFolderId: "root-folder-id");
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            Func<Task> act = async () =>
+                await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InternalErrorException>()
+                .WithMessage("Google Drive service account key path is not configured.");
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyFileDoesNotExist()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveMissingKeyFile");
+            var missingKeyFilePath = Path.Combine(folder, "missing-service-account.json");
+            var config = CreateConfig(
+                folder,
+                googleDriveEnabled: true,
+                googleDriveRootFolderId: "root-folder-id",
+                googleDriveServiceAccountKeyPath: missingKeyFilePath);
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            Func<Task> act = async () =>
+                await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InternalErrorException>()
+                .WithMessage("Google Drive service account key file could not be found.");
+        }
+
+        [Fact]
+        public void EscapeDriveQueryValue_ShouldEscapeBackslashesAndSingleQuotes()
+        {
+            // Arrange
+            var method = typeof(FileRepository).GetMethod(
+                "EscapeDriveQueryValue",
+                BindingFlags.NonPublic | BindingFlags.Static);
+
+            // Act
+            var result = method?.Invoke(null, ["folder\\team's invoices"]);
+
+            // Assert
+            result.Should().Be("folder\\\\team\\'s invoices");
+        }
+
+        [Theory]
+        [InlineData("invoice.pdf", "application/pdf")]
+        [InlineData("invoice.png", "image/png")]
+        [InlineData("invoice.jpg", "image/jpeg")]
+        [InlineData("invoice.jpeg", "image/jpeg")]
+        [InlineData("invoice.txt", "application/octet-stream")]
+        public void GetContentType_ShouldReturnExpectedContentType(string fileName, string expectedContentType)
+        {
+            // Arrange
+            var method = typeof(FileRepository).GetMethod(
+                "GetContentType",
+                BindingFlags.NonPublic | BindingFlags.Static);
+
+            // Act
+            var result = method?.Invoke(null, [fileName]);
+
+            // Assert
+            result.Should().Be(expectedContentType);
         }
 
         // ----------------------------

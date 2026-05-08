@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
@@ -145,6 +146,7 @@ namespace PayTrack.Data.Repositories.Implementation
         /// Creates an authenticated Google Drive service using the configured service account key file.
         /// </summary>
         /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
+        [ExcludeFromCodeCoverage]
         private DriveService CreateDriveService()
         {
             var credential = CredentialFactory
@@ -166,6 +168,7 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <param name="folderName">The child folder name.</param>
         /// <param name="parentFolderId">The Google Drive ID of the parent folder.</param>
         /// <returns>The Google Drive ID of the existing or newly created folder.</returns>
+        [ExcludeFromCodeCoverage]
         private async Task<string> GetOrCreateFolderAsync(DriveService driveService, string folderName, string parentFolderId)
         {
             var listRequest = driveService.Files.List();
