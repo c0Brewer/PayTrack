@@ -184,7 +184,7 @@ package_backend:
     - cd backend
     - export DOTNET_CONTAINER_REGISTRY_UNAME="$CI_REGISTRY_USER"
     - export DOTNET_CONTAINER_REGISTRY_PWORD="$CI_REGISTRY_PASSWORD"
-    - dotnet publish ./PayTrack/PayTrack.csproj --configuration Release --no-restore /t:PublishContainer -p:ContainerRegistry=$CI_REGISTRY -p:ContainerRepository="$CI_PROJECT_PATH/backend" -p:ContainerImageTags="$CI_PIPELINE_ID;latest"
+    - dotnet publish ./PayTrack/PayTrack.csproj --configuration Release --no-restore /t:PublishContainer -p:ContainerRegistry=$CI_REGISTRY -p:ContainerRepository="$CI_PROJECT_PATH/backend" -p:ContainerImageTags="$CI_PIPELINE_ID%3Blatest"
 
 # Build and push frontend image to the GitLab registry
 package_frontend:
