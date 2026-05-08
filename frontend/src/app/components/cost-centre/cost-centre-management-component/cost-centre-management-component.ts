@@ -128,8 +128,11 @@ export class CostCentreManagementComponent implements OnInit {
         displayColor: costCentre.displayColor ?? undefined,
         budgets:
           budgetsToUpsert.length > 0
-            ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
+            ? budgetsToUpsert.map(({ name, description, teamId, seasonId, targetAmount, periodStart, periodEnd }) => ({
+                name,
+                description,
                 teamId,
+                seasonId,
                 targetAmount,
                 periodStart,
                 periodEnd,

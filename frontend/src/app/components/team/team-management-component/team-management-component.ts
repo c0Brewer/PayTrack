@@ -255,12 +255,18 @@ export class TeamManagementComponent {
           budgetsToUpsert.length > 0
             ? budgetsToUpsert.map(
                 ({
+                  name,
+                  description,
                   costCentreId,
+                  seasonId,
                   targetAmount,
                   periodStart,
                   periodEnd,
                 }): CreateTeamBudgetEntryDto => ({
+                  name,
+                  description,
                   costCentreId,
+                  seasonId,
                   targetAmount,
                   periodStart,
                   periodEnd,

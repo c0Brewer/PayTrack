@@ -63,6 +63,14 @@
 
       <div class="add-budget-form">
         <label>
+          Name
+          <input [(ngModel)]="newBudgetDraft.name" placeholder="Budget name" />
+        </label>
+        <label>
+          Season ID
+          <input type="number" [(ngModel)]="newBudgetDraft.seasonId" placeholder="Season ID" />
+        </label>
+        <label>
           Cost Centre
           <select [(ngModel)]="newBudgetDraft.costCentreId">
             <option [ngValue]="0" disabled>Select cost centre</option>
@@ -92,6 +100,8 @@
         <table class="budget-table">
           <thead>
             <tr>
+              <th>Name</th>
+              <th>Season ID</th>
               <th>Cost Centre</th>
               <th>Amount</th>
               <th>Period Start</th>
@@ -102,6 +112,8 @@
           <tbody>
             @for (budget of workingBudgets; track budget.originalId) {
               <tr [class.deleted]="budget.markedForDeletion">
+                <td>{{ budget.name }}</td>
+                <td>{{ budget.seasonId }}</td>
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
@@ -121,6 +133,8 @@
         <table class="budget-table new-budgets">
           <thead>
             <tr>
+              <th>Name</th>
+              <th>Season ID</th>
               <th>Cost Centre</th>
               <th>Amount</th>
               <th>Period Start</th>
@@ -131,6 +145,8 @@
           <tbody>
             @for (budget of newBudgets; track $index) {
               <tr>
+                <td>{{ budget.name }}</td>
+                <td>{{ budget.seasonId }}</td>
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart }}</td>

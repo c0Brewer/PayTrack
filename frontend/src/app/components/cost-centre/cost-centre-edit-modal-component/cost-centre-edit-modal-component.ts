@@ -8,6 +8,8 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
 
 interface WorkingBudget {
   originalId: number;
+  name: string;
+  seasonId: number;
   teamId: number;
   targetAmount: number;
   periodStart: string;
@@ -44,6 +46,8 @@ export class CostCentreEditModalComponent implements OnChanges {
       this.originalCostCentre = structuredClone(this.costCentre);
       this.workingBudgets = (this.costCentre.budgets ?? []).map((b: BudgetDto) => ({
         originalId: b.id,
+        name: b.name,
+        seasonId: b.seasonId,
         teamId: b.teamId,
         targetAmount: b.targetAmount,
         periodStart: b.periodStart,
@@ -77,6 +81,8 @@ export class CostCentreEditModalComponent implements OnChanges {
   addNewBudget(): void {
     if (
       !this.newBudgetDraft.teamId ||
+      !this.newBudgetDraft.name ||
+      !this.newBudgetDraft.seasonId ||
       !this.newBudgetDraft.periodStart ||
       !this.newBudgetDraft.periodEnd
     ) {
@@ -113,6 +119,15 @@ export class CostCentreEditModalComponent implements OnChanges {
   }
 
   private emptyDraft(): UpsertBudgetEntryDto {
-    return { id: null, teamId: 0, targetAmount: 0, periodStart: '', periodEnd: '' };
+    return {
+      id: null,
+      name: '',
+      description: null,
+      teamId: 0,
+      seasonId: 0,
+      targetAmount: 0,
+      periodStart: '',
+      periodEnd: '',
+    };
   }
 }
