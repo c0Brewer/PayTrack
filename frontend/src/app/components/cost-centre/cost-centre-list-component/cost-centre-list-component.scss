@@ -1,146 +1,88 @@
 @use 'variables' as v;
 
-.user-table {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: v.$font-s;
-  background: v.$background-light;
-  border-radius: v.$size-xs;
-  overflow: hidden;
-
-  thead {
-    background: v.$background-dark;
-
-    /* ---------- HEADER ---------- */
-
-    th {
-      text-align: left;
-      padding: v.$size-s;
-      font-weight: v.$font-semibold;
-      color: v.$text-light;
-      border-bottom: 1px solid v.$border-color;
-    }
+.cost-centre-table {
+  .name-col {
+    width: 16%;
   }
 
-  tbody {
-    /* ---------- ROWS ---------- */
-
-    td {
-      padding: v.$size-s;
-      border-bottom: 1px solid v.$border-color;
-      vertical-align: middle;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .role {
-      padding: v.$size-xxs;
-      font-size: v.$font-xs;
-      border-radius: v.$size-xs;
-      font-weight: v.$font-medium;
-    }
-
-    .regular_user {
-      background-color: v.$background-dark;
-      color: v.$gray-600;
-    }
-
-    .team_lead {
-      background-color: v.$gray-600;
-      color: v.$background-color;
-    }
-
-    .admin {
-      background-color: v.$purple-color;
-      color: v.$background-color;
-    }
-
-    tr {
-      transition: background 0.15s ease;
-    }
-
-    tr:hover {
-      background: v.$gray-100;
-    }
+  .description-col {
+    width: 34%;
   }
 
-  /* ---------- TEAM ---------- */
-
-  .team {
-    display: flex;
-    align-items: center;
-    gap: v.$size-xs;
+  .budget-col {
+    width: 20%;
   }
 
-  .team-color {
-    width: v.$size-xs;
-    height: v.$size-xs;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px v.$background-light;
+  .status-col {
+    width: 14%;
   }
-
-  .no-team {
-    color: v.$text-muted;
-    font-style: italic;
-  }
-
-  /* ---------- STATUS ---------- */
-
-  .status-badge {
-    display: inline-block;
-    padding: v.$size-xxs v.$size-s;
-    font-size: v.$font-xs;
-    font-weight: v.$font-medium;
-    border-radius: v.$size-xs;
-
-    &.active {
-      background: v.$success-color;
-      color: v.$background-light;
-    }
-
-    &:not(.active) {
-      background: v.$accent-color;
-      color: v.$background-light;
-    }
-  }
-
-  .status-btn {
-    padding: v.$size-xxs v.$size-s;
-    font-size: v.$font-xs;
-    font-weight: v.$font-medium;
-  }
-
-  .status-btn.active {
-    background: v.$success-color;
-    color: v.$background-light;
-  }
-
-  .status-btn:not(.active) {
-    background: v.$accent-color;
-    color: v.$background-light;
-  }
-
-  .status-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px v.$shadow-color;
-  }
-
-  /* ---------- EDIT BUTTON ---------- */
-
-  .edit-btn {
-    padding: v.$size-xxs v.$size-s;
-    border: 1px solid v.$border-color;
-    background: v.$background-light;
-    font-size: v.$font-xs;
-  }
-
-  /* ---------- ACTION COLUMN ---------- */
 
   .actions-col {
-    width: 1%;
-    white-space: nowrap;
+    width: 16%;
+  }
+
+  .name-col a {
+    align-items: center;
+    background: rgba(v.$TUR-primary-orange, 0.08);
+    border: 1px solid rgba(v.$TUR-primary-orange, 0.18);
+    border-radius: 999px;
+    color: v.$text-color;
+    display: inline-flex;
+    font-weight: v.$font-semibold;
+    gap: v.$size-xxs;
+    line-height: 1.2;
+    max-width: 100%;
+    padding: 0.4rem 0.75rem;
+    text-decoration: none;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .name-col a::before {
+    background: v.$TUR-primary-orange;
+    border-radius: 50%;
+    content: '';
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 0.5rem;
+    width: 0.5rem;
+  }
+
+  .name-col a:hover,
+  .name-col a:focus-visible {
+    background: rgba(v.$TUR-primary-orange, 0.14);
+    border-color: rgba(v.$TUR-primary-orange, 0.35);
+    box-shadow: 0 0 0 0.16rem rgba(v.$TUR-primary-orange, 0.1);
+    color: v.$TUR-primary-orange;
+    outline: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cost-centre-table {
+    .name-col,
+    .description-col,
+    .budget-col,
+    .status-col,
+    .actions-col {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .name-col a {
+      justify-self: end;
+      max-width: min(100%, 16rem);
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .cost-centre-table {
+    .name-col a {
+      justify-self: start;
+    }
   }
 }
