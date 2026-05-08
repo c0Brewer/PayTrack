@@ -14,11 +14,11 @@ import {
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { ModalComponent } from '../../general/modal-component/modal-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { CostCentreFilterComponent } from '../cost-centre-filter-component/cost-centre-filter-component';
 import { CostCentreListComponent } from '../cost-centre-list-component/cost-centre-list-component';
-import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 
 interface WorkingBudget {
   originalId: number;
