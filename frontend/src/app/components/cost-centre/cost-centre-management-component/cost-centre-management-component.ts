@@ -2,12 +2,16 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
   GetCostCentreOptions,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
+  GetTeamOptions,
+  TeamDto,
   UpdateCostCentreRequestDto,
+  UpsertBudgetEntryDto,
 } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
@@ -31,11 +35,13 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
 export class CostCentreManagementComponent implements OnInit {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   costCentres: CostCentreDto[] = [];
+  teams: TeamDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
   deletingCostCentre: CostCentreDto | null = null;
   deletePreview: DeleteCostCentrePreviewDto | null = null;
@@ -59,6 +65,26 @@ export class CostCentreManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadTeams();
+  }
+
+  loadTeams(): void {
+    const queryOptions: GetTeamOptions = {
+      IncludeMembers: false,
+      IncludeBudgets: false,
+      Limit: 1000,
+      Offset: 0,
+    };
+
+    this.teamService.getTeams(queryOptions).subscribe({
+      next: (data) => {
+        this.teams = data.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load teams: ' + err.message);
+      },
+    });
   }
 
   load(): void {
@@ -134,8 +160,8 @@ export class CostCentreManagementComponent implements OnInit {
                 teamId,
                 seasonId,
                 targetAmount,
-                periodStart,
-                periodEnd,
+                periodStart: this.toApiDateTime(periodStart),
+                periodEnd: this.toApiDateTime(periodEnd),
               }))
             : undefined,
       };
@@ -154,7 +180,10 @@ export class CostCentreManagementComponent implements OnInit {
         name: costCentre.name,
         description: costCentre.description ?? undefined,
         displayColor: costCentre.displayColor ?? undefined,
-        budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+        budgetsToUpsert:
+          budgetsToUpsert.length > 0
+            ? budgetsToUpsert.map((budget) => this.normalizeBudgetDates(budget))
+            : undefined,
         budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
       };
       this.costCentreService.updateCostCentre(costCentre.id, request).subscribe({
@@ -232,5 +261,21 @@ export class CostCentreManagementComponent implements OnInit {
       this.page--;
       this.load();
     }
+  }
+
+  private normalizeBudgetDates(budget: UpsertBudgetEntryDto): UpsertBudgetEntryDto {
+    return {
+      ...budget,
+      periodStart: this.toApiDateTime(budget.periodStart),
+      periodEnd: this.toApiDateTime(budget.periodEnd),
+    };
+  }
+
+  private toApiDateTime(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    return value;
   }
 }

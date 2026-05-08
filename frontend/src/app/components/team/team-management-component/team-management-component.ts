@@ -12,6 +12,7 @@ import {
   TeamDto,
   GetTeamOptions,
   UpdateTeamDto,
+  UpsertTeamBudgetEntryDto,
 } from '../../../types/exporter';
 import { TeamSaveEvent } from '../../../types/misc-types';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
@@ -268,8 +269,8 @@ export class TeamManagementComponent {
                   costCentreId,
                   seasonId,
                   targetAmount,
-                  periodStart,
-                  periodEnd,
+                  periodStart: this.toApiDateTime(periodStart),
+                  periodEnd: this.toApiDateTime(periodEnd),
                 }),
               )
             : undefined,
@@ -293,7 +294,10 @@ export class TeamManagementComponent {
       name: team.name,
       description: team.description,
       displayColor: team.displayColor,
-      budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+      budgetsToUpsert:
+        budgetsToUpsert.length > 0
+          ? budgetsToUpsert.map((budget) => this.normalizeBudgetDates(budget))
+          : undefined,
       budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
     };
 
@@ -311,5 +315,21 @@ export class TeamManagementComponent {
 
   private getDefaultDisplayColor(): string {
     return '#2563eb';
+  }
+
+  private normalizeBudgetDates(budget: UpsertTeamBudgetEntryDto): UpsertTeamBudgetEntryDto {
+    return {
+      ...budget,
+      periodStart: this.toApiDateTime(budget.periodStart),
+      periodEnd: this.toApiDateTime(budget.periodEnd),
+    };
+  }
+
+  private toApiDateTime(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    return value;
   }
 }

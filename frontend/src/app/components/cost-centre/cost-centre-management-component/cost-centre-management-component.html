@@ -32,6 +32,7 @@
   @if (editingCostCentre) {
     <app-cost-centre-edit-modal-component
       [costCentre]="editingCostCentre"
+      [teams]="teams"
       (saveEvent)="save($event)"
       (closeEvent)="closeEdit()"
     ></app-cost-centre-edit-modal-component>

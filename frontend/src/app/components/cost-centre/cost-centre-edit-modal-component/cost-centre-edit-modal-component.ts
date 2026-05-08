@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { BudgetDto, CostCentreDto, UpsertBudgetEntryDto } from '../../../types/exporter';
+import { BudgetDto, CostCentreDto, TeamDto, UpsertBudgetEntryDto } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
 import { ModalComponent } from '../../general/modal-component/modal-component';
 
@@ -32,6 +32,7 @@ export class CostCentreEditModalComponent implements OnChanges {
     budgets: [],
     isActive: true,
   };
+  @Input() teams: TeamDto[] = [];
 
   @Output() saveEvent = new EventEmitter<CostCentreSaveEvent>();
   @Output() closeEvent = new EventEmitter<void>();
@@ -83,6 +84,7 @@ export class CostCentreEditModalComponent implements OnChanges {
       !this.newBudgetDraft.teamId ||
       !this.newBudgetDraft.name ||
       !this.newBudgetDraft.seasonId ||
+      !this.isTeamActive(this.newBudgetDraft.teamId) ||
       !this.newBudgetDraft.periodStart ||
       !this.newBudgetDraft.periodEnd
     ) {
@@ -94,6 +96,14 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   removeNewBudget(index: number): void {
     this.newBudgets.splice(index, 1);
+  }
+
+  getTeamOptionLabel(team: TeamDto): string {
+    return team.isActive === false ? `${team.name} (inactive)` : team.name;
+  }
+
+  isTeamActive(teamId: number): boolean {
+    return this.teams.find((team) => team.id === teamId)?.isActive !== false;
   }
 
   onSave(): void {

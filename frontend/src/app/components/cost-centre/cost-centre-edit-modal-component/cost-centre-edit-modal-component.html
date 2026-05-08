@@ -89,8 +89,15 @@
         <input type="number" [(ngModel)]="newBudgetDraft.seasonId" placeholder="Season ID" />
       </label>
       <label>
-        Team ID
-        <input type="number" [(ngModel)]="newBudgetDraft.teamId" placeholder="Team ID" />
+        Team
+        <select [(ngModel)]="newBudgetDraft.teamId">
+          <option [ngValue]="0" disabled>Select team</option>
+          @for (team of teams; track team.id) {
+            <option [ngValue]="team.id" [disabled]="team.isActive === false">
+              {{ getTeamOptionLabel(team) }}
+            </option>
+          }
+        </select>
       </label>
       <label>
         Amount

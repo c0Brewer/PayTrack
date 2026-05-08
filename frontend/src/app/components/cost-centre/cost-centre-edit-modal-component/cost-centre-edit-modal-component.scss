@@ -8,7 +8,8 @@ label {
   color: v.$text-color;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: v.$size-xs v.$size-s;
   font-size: v.$font-s;
@@ -79,7 +80,7 @@ input {
 
 .add-budget-form {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
   gap: v.$size-s;
   align-items: flex-end;
   margin-top: v.$size-s;
@@ -97,6 +98,7 @@ input {
   font-size: v.$font-s;
   white-space: nowrap;
   align-self: flex-end;
+  min-height: 2.75rem;
 
   &:hover {
     background: v.$primary-light;
