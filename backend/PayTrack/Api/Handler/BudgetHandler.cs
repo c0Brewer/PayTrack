@@ -4,6 +4,11 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Budget;
+using PayTrack.Application.Dto.Pagination;
+using PayTrack.Application.Exceptions;
+using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
 {
@@ -15,52 +20,94 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns all budgets.
         /// </summary>
+        /// <param name="query">Query object including all filter and pagination options.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> GetBudgetsAsync()
+        public static async Task<Results<Ok<PaginatedResponse<BudgetDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetBudgetsAsync(
+            [AsParameters] GetBudgetQuery query,
+            IBudgetService service)
         {
-            return Task.FromResult<Results<Ok, ProblemHttpResult>>(
-                TypedResults.Problem(statusCode: StatusCodes.Status501NotImplemented, detail: "Budget endpoint not implemented yet."));
+            var (budgetList, totalCount) = await service.GetBudgetsAsync(query);
+            var budgetListDto = BudgetMapper.CollectionToDto(budgetList);
+            var paginatedResponse = new PaginatedResponse<BudgetDto>(budgetListDto, totalCount, query.Limit ?? -1, query.Offset ?? 0);
+            return TypedResults.Ok(paginatedResponse);
         }
 
         /// <summary>
         /// Returns a budget by ID.
         /// </summary>
         /// <param name="id">Id from route.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> GetBudgetByIdAsync([FromRoute] int id)
+        public static async Task<Results<Ok<BudgetDto>, NotFound<ProblemDetails>, ProblemHttpResult>> GetBudgetByIdAsync(
+            [FromRoute] int id,
+            IBudgetService service)
         {
-            return Task.FromResult<Results<Ok, ProblemHttpResult>>(
-                TypedResults.Problem(statusCode: StatusCodes.Status501NotImplemented, detail: "Budget endpoint not implemented yet."));
+            var budget = await service.GetBudgetByIdAsync(id) ?? throw new NotFoundException("Budget could not be found.");
+            return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }
 
         /// <summary>
         /// Creates a budget.
         /// </summary>
+        /// <param name="dto">Request body.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> CreateBudgetAsync()
+        public static async Task<Results<Ok<BudgetDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateBudgetAsync(
+            [FromBody] CreateBudgetRequestDto dto,
+            IBudgetService service)
         {
-            return Task.FromResult<Results<Ok, ProblemHttpResult>>(
-                TypedResults.Problem(statusCode: StatusCodes.Status501NotImplemented, detail: "Budget endpoint not implemented yet."));
+            var budget = await service.CreateBudgetAsync(
+                dto.Name,
+                dto.Description,
+                dto.TeamId,
+                dto.CostCentreId,
+                dto.SeasonId,
+                dto.TargetAmount,
+                dto.PeriodStart,
+                dto.PeriodEnd);
+
+            return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }
 
         /// <summary>
         /// Updates a budget.
         /// </summary>
+        /// <param name="id">Id from route.</param>
+        /// <param name="dto">Request body.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> UpdateBudgetAsync()
+        public static async Task<Results<Ok<BudgetDto>, NotFound<ProblemDetails>, BadRequest<ProblemDetails>, ProblemHttpResult>> UpdateBudgetAsync(
+            [FromRoute] int id,
+            [FromBody] UpdateBudgetRequestDto dto,
+            IBudgetService service)
         {
-            return Task.FromResult<Results<Ok, ProblemHttpResult>>(
-                TypedResults.Problem(statusCode: StatusCodes.Status501NotImplemented, detail: "Budget endpoint not implemented yet."));
+            var budget = await service.UpdateBudgetAsync(
+                id,
+                dto.Name,
+                dto.Description,
+                dto.TeamId,
+                dto.CostCentreId,
+                dto.SeasonId,
+                dto.TargetAmount,
+                dto.PeriodStart,
+                dto.PeriodEnd);
+
+            return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }
 
         /// <summary>
         /// Deletes a budget.
         /// </summary>
+        /// <param name="id">Id from route.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> DeleteBudgetAsync()
+        public static async Task<Results<NoContent, NotFound<ProblemDetails>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeleteBudgetAsync(
+            [FromRoute] int id,
+            IBudgetService service)
         {
-            return Task.FromResult<Results<Ok, ProblemHttpResult>>(
-                TypedResults.Problem(statusCode: StatusCodes.Status501NotImplemented, detail: "Budget endpoint not implemented yet."));
+            await service.DeleteBudgetAsync(id);
+            return TypedResults.NoContent();
         }
     }
 }

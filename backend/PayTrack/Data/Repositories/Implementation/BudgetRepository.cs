@@ -21,7 +21,8 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<(List<Budget> budget, int totalCount)> GetAllAsync(GetBudgetQuery? query = null)
         {
-            IQueryable<Budget> dbQuery = this.context.Budgets;
+            IQueryable<Budget> dbQuery = this.context.Budgets
+                .Include(b => b.Transactions);
 
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
@@ -63,10 +64,10 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(b => b.PeriodEnd <= query.PeriodEnd.Value);
             }
 
-            // Total count BEFORE pagination
             var totalCount = await dbQuery.CountAsync();
 
-            // Pagination
+            dbQuery = dbQuery.OrderByDescending(b => b.PeriodStart);
+
             if (query?.Offset.HasValue == true)
             {
                 dbQuery = dbQuery.Skip(query.Offset.Value);
@@ -77,10 +78,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Take(query.Limit.Value);
             }
 
-            // Ordering
-            var items = await dbQuery
-                .OrderByDescending(b => b.PeriodStart)
-                .ToListAsync();
+            var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
         }
@@ -88,7 +86,8 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<Budget?> GetByIdAsync(int id)
         {
-            IQueryable<Budget> dbQuery = this.context.Budgets.AsQueryable();
+            IQueryable<Budget> dbQuery = this.context.Budgets
+                .Include(b => b.Transactions);
 
             return await dbQuery.FirstOrDefaultAsync(b => b.Id == id);
         }
@@ -118,20 +117,6 @@ namespace PayTrack.Data.Repositories.Implementation
             return budget;
         }
 
-        /// <summary>
-        /// Adds a Budget using legacy inputs that do not include season metadata.
-        /// </summary>
-        /// <param name="teamId">The ID of the Team this Budget belongs to.</param>
-        /// <param name="costCentreId">The ID of the Cost Centre this Budget belongs to.</param>
-        /// <param name="targetAmount">The target amount for this Budget.</param>
-        /// <param name="periodStart">The start date of the Budget period.</param>
-        /// <param name="periodEnd">The end date of the Budget period.</param>
-        /// <returns>The newly created Budget.</returns>
-        public Task<Budget> AddAsync(int teamId, int costCentreId, decimal targetAmount, DateTime periodStart, DateTime periodEnd)
-        {
-            return this.AddAsync("Budget", null, teamId, costCentreId, 0, targetAmount, periodStart, periodEnd);
-        }
-
         /// <inheritdoc/>
         public Task AddRangeAsync(CostCentre costCentre, IList<CreateCostCentreBudgetEntryDto> entries)
         {
@@ -156,7 +141,9 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<Budget> UpdateAsync(int id, string? name = null, string? description = null, int? teamId = null, int? costCentreId = null, int? seasonId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null)
         {
-            var budget = await this.context.Budgets.FirstOrDefaultAsync(b => b.Id == id)
+            var budget = await this.context.Budgets
+                .Include(b => b.Transactions)
+                .FirstOrDefaultAsync(b => b.Id == id)
                 ?? throw new NotFoundException($"Budget with id {id} not found.");
 
             if (name is not null)
@@ -206,6 +193,28 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return budget;
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteAsync(int id)
+        {
+            var budget = await this.context.Budgets
+                .Include(b => b.Transactions)
+                .FirstOrDefaultAsync(b => b.Id == id)
+                ?? throw new NotFoundException($"Budget with id {id} not found.");
+
+            if (budget.Transactions.Count > 0)
+            {
+                throw new InvalidStateException("Budget cannot be deleted because it is assigned to transactions.");
+            }
+
+            this.context.Budgets.Remove(budget);
+
+            int res = await this.context.SaveChangesAsync();
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Deleting Budget failed. Deleted {res} rows.");
+            }
         }
     }
 }

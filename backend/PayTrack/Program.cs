@@ -40,6 +40,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();

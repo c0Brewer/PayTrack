@@ -351,7 +351,17 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    Name?: string;
+                    TeamId?: number;
+                    CostCentreId?: number;
+                    SeasonId?: number;
+                    TargetAmount?: number;
+                    PeriodStart?: string;
+                    PeriodEnd?: string;
+                    Limit?: number;
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -363,7 +373,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BudgetDtoPaginatedResponse"];
+                    };
                 };
             };
         };
@@ -375,14 +387,20 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateBudgetRequestDto"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BudgetDto"];
+                    };
                 };
             };
         };
@@ -415,7 +433,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BudgetDto"];
+                    };
                 };
             };
         };
@@ -423,17 +443,25 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: number;
+                };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateBudgetRequestDto"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BudgetDto"];
+                    };
                 };
             };
         };
@@ -442,13 +470,15 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: number;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -737,7 +767,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BudgetDto"];
+                    };
                 };
             };
         };
@@ -1490,6 +1522,17 @@ export interface components {
             periodEnd: string;
             transactionIds: number[];
         };
+        BudgetDtoPaginatedResponse: {
+            items: components["schemas"]["BudgetDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
+        };
         CostCentreDto: {
             /** Format: int32 */
             id: number;
@@ -1514,6 +1557,22 @@ export interface components {
             accountHolder: string;
             iban: string;
             bic: string;
+        };
+        CreateBudgetRequestDto: {
+            name: string;
+            description?: string | null;
+            /** Format: int32 */
+            teamId: number;
+            /** Format: int32 */
+            costCentreId: number;
+            /** Format: int32 */
+            seasonId: number;
+            /** Format: double */
+            targetAmount: number;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
         };
         CreateCostCentreBudgetEntryDto: {
             name: string;
@@ -1705,6 +1764,22 @@ export interface components {
             accountHolder?: string | null;
             iban?: string | null;
             bic?: string | null;
+        };
+        UpdateBudgetRequestDto: {
+            name?: string | null;
+            description?: string | null;
+            /** Format: int32 */
+            teamId?: number | null;
+            /** Format: int32 */
+            costCentreId?: number | null;
+            /** Format: int32 */
+            seasonId?: number | null;
+            /** Format: double */
+            targetAmount?: number | null;
+            /** Format: date-time */
+            periodStart?: string | null;
+            /** Format: date-time */
+            periodEnd?: string | null;
         };
         UpdateCostCentreRequestDto: {
             name?: string | null;

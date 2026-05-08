@@ -15,7 +15,6 @@ namespace PayTrack.Application.Dto.Season
         int Id,
 
         [property: Required]
-        [property: MinLength(3)]
         string Name,
 
         IList<BudgetDto>? Budgets);

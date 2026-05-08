@@ -11,6 +11,5 @@ namespace PayTrack.Application.Dto.Season
     /// </summary>
     public sealed record class CreateSeasonRequestDto(
         [property: Required]
-        [property: MinLength(3)]
         string Name);
 }

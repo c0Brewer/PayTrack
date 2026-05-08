@@ -56,6 +56,9 @@ export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto
 
 // Cost Centre
 export type BudgetDto = components['schemas']['BudgetDto'];
+export type BudgetDtoPaginatedResponse = components['schemas']['BudgetDtoPaginatedResponse'];
+export type CreateBudgetRequestDto = components['schemas']['CreateBudgetRequestDto'];
+export type UpdateBudgetRequestDto = components['schemas']['UpdateBudgetRequestDto'];
 export type CostCentreDto = components['schemas']['CostCentreDto'];
 export type CostCentreDtoPaginatedResponse =
   components['schemas']['CostCentreDtoPaginatedResponse'];
@@ -66,6 +69,7 @@ export type UpsertBudgetEntryDto = components['schemas']['UpsertCostCentreBudget
 export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentrePreviewDto'];
 
 // Cost Centre Paths
+export type GetBudgetOptions = paths['/api/v1/budget']['get']['parameters']['query'];
 export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];

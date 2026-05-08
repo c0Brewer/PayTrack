@@ -36,12 +36,14 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var periodEnd = new DateTime(2026, 12, 31);
 
             // Act
-            var result = await repo.AddAsync(team.Id, costCentre.Id, 1000m, periodStart, periodEnd);
+            var result = await repo.AddAsync("Q1 budget", null, team.Id, costCentre.Id, 1, 1000m, periodStart, periodEnd);
 
             // Assert
             result.Should().NotBeNull();
+            result.Name.Should().Be("Q1 budget");
             result.TeamId.Should().Be(team.Id);
             result.CostCentreId.Should().Be(costCentre.Id);
+            result.SeasonId.Should().Be(1);
             result.TargetAmount.Should().Be(1000m);
             result.PeriodStart.Should().Be(periodStart);
             result.PeriodEnd.Should().Be(periodEnd);
@@ -58,7 +60,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act
             var exception = await Assert.ThrowsAsync<InternalErrorException>(
-                async () => await repo.AddAsync(1, 1, 500m, new DateTime(2026, 1, 1), new DateTime(2026, 12, 31)));
+                async () => await repo.AddAsync("Q1 budget", null, 1, 1, 1, 500m, new DateTime(2026, 1, 1), new DateTime(2026, 12, 31)));
 
             // Assert
             exception.Message.Should().Contain("Budget");

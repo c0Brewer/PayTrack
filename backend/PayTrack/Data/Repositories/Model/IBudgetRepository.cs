@@ -64,5 +64,12 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="periodEnd">If provided, updates the end date of the Budget period.</param>
         /// <returns>The updated Budget.</returns>
         Task<Budget> UpdateAsync(int id, string? name = null, string? description = null, int? teamId = null, int? costCentreId = null, int? seasonId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null);
+
+        /// <summary>
+        /// Deletes a Budget by id.
+        /// </summary>
+        /// <param name="id">The ID of the Budget to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeleteAsync(int id);
     }
 }

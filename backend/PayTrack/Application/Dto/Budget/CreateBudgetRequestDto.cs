@@ -1,4 +1,4 @@
-// <copyright file="BudgetDto.cs" company="PayTrack">
+// <copyright file="CreateBudgetRequestDto.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
@@ -7,12 +7,9 @@ using System.ComponentModel.DataAnnotations;
 namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
-    /// Dto representing a Budget entry.
+    /// Dto containing necessary information for creating a budget.
     /// </summary>
-    public sealed record class BudgetDto(
-        [property: Required]
-        int Id,
-
+    public sealed record class CreateBudgetRequestDto(
         [property: Required]
         string Name,
 
@@ -28,14 +25,12 @@ namespace PayTrack.Application.Dto.Budget
         int SeasonId,
 
         [property: Required]
+        [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]
         decimal TargetAmount,
 
         [property: Required]
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd,
-
-        [property: Required]
-        IList<int> TransactionIds);
+        DateTime PeriodEnd);
 }
