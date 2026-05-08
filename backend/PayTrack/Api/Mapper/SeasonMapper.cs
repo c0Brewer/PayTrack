@@ -30,9 +30,9 @@ namespace PayTrack.Api.Mapper
         /// </summary>
         /// <param name="seasons">List of Season objects.</param>
         /// <returns>List of SeasonDto objects.</returns>
-        public static List<SeasonDto> ListToDto(ICollection<Season> seasons)
+        public static List<SeasonDto> ListToDto(List<Season> seasons)
         {
-            return [.. seasons.Select(ToDto)];
+            return seasons.ConvertAll(ToDto);
         }
     }
 }
