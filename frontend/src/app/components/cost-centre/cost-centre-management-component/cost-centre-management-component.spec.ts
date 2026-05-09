@@ -5,11 +5,15 @@ import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
+import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
   CostCentreDtoPaginatedResponse,
   DeleteCostCentrePreviewDto,
   GetCostCentreOptions,
+  SeasonDto,
+  TeamDtoPaginatedResponse,
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
@@ -44,6 +48,18 @@ const mockPreview: DeleteCostCentrePreviewDto = {
   affectedUserCount: 0,
   affectedTeamNames: [],
 };
+const mockSeasons: SeasonDto[] = [
+  { id: 1, name: '2025', budgets: [] },
+  { id: 2, name: '2026', budgets: [] },
+];
+const mockTeams: TeamDtoPaginatedResponse = {
+  items: [{ id: 1, name: 'Platform', description: null, displayColor: null, members: [] }],
+  totalCount: 1,
+  limit: 1000,
+  offset: 0,
+  hasNext: false,
+  hasPrevious: false,
+};
 
 describe('CostCentreManagementComponent', () => {
   let component: CostCentreManagementComponent;
@@ -54,6 +70,12 @@ describe('CostCentreManagementComponent', () => {
     updateCostCentre: ReturnType<typeof vi.fn>;
     getDeletePreview: ReturnType<typeof vi.fn>;
     deleteCostCentre: ReturnType<typeof vi.fn>;
+  };
+  let seasonServiceMock: {
+    getSeasons: ReturnType<typeof vi.fn>;
+  };
+  let teamServiceMock: {
+    getTeams: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -69,6 +91,12 @@ describe('CostCentreManagementComponent', () => {
       getDeletePreview: vi.fn().mockReturnValue(of(mockPreview)),
       deleteCostCentre: vi.fn().mockReturnValue(of(null)),
     };
+    seasonServiceMock = {
+      getSeasons: vi.fn().mockReturnValue(of(mockSeasons)),
+    };
+    teamServiceMock = {
+      getTeams: vi.fn().mockReturnValue(of(mockTeams)),
+    };
     notificationServiceMock = {
       showError: vi.fn(),
       showSuccess: vi.fn(),
@@ -80,6 +108,8 @@ describe('CostCentreManagementComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: SeasonService, useValue: seasonServiceMock },
+        { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
       ],
@@ -97,7 +127,10 @@ describe('CostCentreManagementComponent', () => {
   it('ngOnInit should load cost centres', () => {
     component.ngOnInit();
     expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(teamServiceMock.getTeams).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
     expect(component.costCentres).toEqual(mockCostCentres);
+    expect(component.seasons).toEqual(mockSeasons);
   });
 
   it('load should show error when API throws', () => {
@@ -106,6 +139,16 @@ describe('CostCentreManagementComponent', () => {
     );
     component.load();
     expect(notificationServiceMock.showError).toHaveBeenCalled();
+  });
+
+  it('loadSeasons should show error when API throws', () => {
+    seasonServiceMock.getSeasons.mockReturnValueOnce(throwError(() => new Error('Season failed')));
+
+    component.loadSeasons();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not load seasons: Season failed',
+    );
   });
 
   it('openCreate should set editingCostCentre with id -1', () => {
@@ -333,7 +376,10 @@ describe('CostCentreManagementComponent', () => {
   it('save create should include mapped budgets when budgetsToUpsert is not empty', () => {
     const budget: UpsertBudgetEntryDto = {
       id: undefined,
+      name: 'Team budget',
+      description: null,
       teamId: 5,
+      seasonId: 1,
       targetAmount: 1000,
       periodStart: '2024-01-01',
       periodEnd: '2024-12-31',
@@ -353,8 +399,16 @@ describe('CostCentreManagementComponent', () => {
     component.save(event);
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
       expect.objectContaining({
-        budgets: [
-          { teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' },
+      budgets: [
+          {
+            name: 'Team budget',
+            description: null,
+            teamId: 5,
+            seasonId: 1,
+            targetAmount: 1000,
+            periodStart: '2024-01-01T00:00:00.000Z',
+            periodEnd: '2024-12-31T00:00:00.000Z',
+          },
         ],
       }),
     );
@@ -363,7 +417,10 @@ describe('CostCentreManagementComponent', () => {
   it('save update should include budgetsToUpsert and budgetIdsToDelete when not empty', () => {
     const budget: UpsertBudgetEntryDto = {
       id: 10,
+      name: 'Updated budget',
+      description: null,
       teamId: 3,
+      seasonId: 1,
       targetAmount: 200,
       periodStart: '2024-01-01',
       periodEnd: '2024-06-30',
@@ -376,7 +433,16 @@ describe('CostCentreManagementComponent', () => {
     component.save(event);
     expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
       1,
-      expect.objectContaining({ budgetsToUpsert: [budget], budgetIdsToDelete: [99] }),
+      expect.objectContaining({
+        budgetsToUpsert: [
+          {
+            ...budget,
+            periodStart: '2024-01-01T00:00:00.000Z',
+            periodEnd: '2024-06-30T00:00:00.000Z',
+          },
+        ],
+        budgetIdsToDelete: [99],
+      }),
     );
   });
 });
