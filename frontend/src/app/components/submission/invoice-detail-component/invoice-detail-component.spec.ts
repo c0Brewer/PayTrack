@@ -149,6 +149,106 @@ describe('InvoiceDetailComponent', () => {
     expect(component.getPayoutTypeLabel(99 as PayoutType)).toBe('Unknown');
   });
 
+  it('should return correct status action availability', () => {
+    expect(component.canApprove(TransactionStatus.Submitted)).toBe(true);
+    expect(component.canApprove(TransactionStatus.Review)).toBe(true);
+    expect(component.canApprove(TransactionStatus.Approved)).toBe(false);
+    expect(component.canRequestChanges(TransactionStatus.Submitted)).toBe(true);
+    expect(component.canRequestChanges(TransactionStatus.Review)).toBe(true);
+    expect(component.canRequestChanges(TransactionStatus.Paid)).toBe(false);
+    expect(component.canDecline(TransactionStatus.Submitted)).toBe(true);
+    expect(component.canDecline(TransactionStatus.Paid)).toBe(false);
+    expect(component.canDecline(TransactionStatus.Declined)).toBe(false);
+  });
+
+  it('should emit approve with trimmed optional reason when cost centre is selected', () => {
+    const emitted = vi.fn();
+    component.approve.subscribe(emitted);
+    component.approvalCostCentreId = 12;
+    component.approvalReason = ' approved ';
+
+    component.onApprove();
+
+    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+  });
+
+  it('should not emit approve without cost centre', () => {
+    const emitted = vi.fn();
+    component.approve.subscribe(emitted);
+
+    component.onApprove();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should emit decline with trimmed reason', () => {
+    const emitted = vi.fn();
+    component.decline.subscribe(emitted);
+    component.declineReason = ' duplicate ';
+
+    component.onDecline();
+
+    expect(emitted).toHaveBeenCalledWith({ reason: 'duplicate' });
+  });
+
+  it('should not emit decline without reason', () => {
+    const emitted = vi.fn();
+    component.decline.subscribe(emitted);
+    component.declineReason = ' ';
+
+    component.onDecline();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should emit request changes with trimmed reason', () => {
+    const emitted = vi.fn();
+    component.requestChanges.subscribe(emitted);
+    component.changeRequestReason = ' upload clearer receipt ';
+
+    component.onRequestChanges();
+
+    expect(emitted).toHaveBeenCalledWith({ reason: 'upload clearer receipt' });
+  });
+
+  it('should not emit request changes without reason', () => {
+    const emitted = vi.fn();
+    component.requestChanges.subscribe(emitted);
+    component.changeRequestReason = ' ';
+
+    component.onRequestChanges();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should emit mark paid with trimmed values and ISO payment date', () => {
+    const emitted = vi.fn();
+    component.markPaid.subscribe(emitted);
+    component.paymentReference = ' REF-123 ';
+    component.paymentPurpose = ' Supplier payout ';
+    component.paymentDate = '2026-02-03';
+
+    component.onMarkPaid();
+
+    expect(emitted).toHaveBeenCalledWith({
+      paymentReference: 'REF-123',
+      purposeOfPayment: 'Supplier payout',
+      paymentDate: new Date('2026-02-03').toISOString(),
+    });
+  });
+
+  it('should not emit mark paid when required fields are missing', () => {
+    const emitted = vi.fn();
+    component.markPaid.subscribe(emitted);
+    component.paymentReference = 'REF-123';
+    component.paymentPurpose = '';
+    component.paymentDate = '2026-02-03';
+
+    component.onMarkPaid();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
   it('should show cost centre when showCostCentre is true and costCentre is set', () => {
     component.invoice = {
       ...mockInvoice,
@@ -193,6 +293,8 @@ describe('InvoiceDetailComponent', () => {
         {
           fromStatus: TransactionStatus.Submitted,
           toStatus: TransactionStatus.Approved,
+          changedById: 7,
+          changedBy: { name: 'Finance User' },
           changedAt: '2026-01-02T00:00:00Z',
           comment: 'Looks good',
         },
@@ -202,6 +304,7 @@ describe('InvoiceDetailComponent', () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Status History');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Looks good');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Finance User');
   });
 
   it('should not render status history table when history is empty', () => {
