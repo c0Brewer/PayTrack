@@ -164,6 +164,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Budgets.AddRange(
                 new Budget
                 {
+                    Name = "Past budget",
                     TeamId = teams[0].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -172,6 +173,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "Current budget",
                     TeamId = teams[1].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -180,6 +182,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "Future budget",
                     TeamId = teams[2].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -188,6 +191,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "High current budget",
                     TeamId = teams[3].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 1_000m,
@@ -259,6 +263,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Platform budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 2000m,
@@ -308,6 +313,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 900m,
@@ -367,6 +373,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 900m,
@@ -437,6 +444,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var budgetToUpdate = new Budget
             {
+                Name = "Budget to update",
                 TeamId = team.Id,
                 CostCentreId = oldCostCentre.Id,
                 TargetAmount = 100m,
@@ -445,6 +453,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             };
             var budgetToDelete = new Budget
             {
+                Name = "Budget to delete",
                 TeamId = team.Id,
                 CostCentreId = oldCostCentre.Id,
                 TargetAmount = 200m,
@@ -582,6 +591,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Blocking budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 100m,

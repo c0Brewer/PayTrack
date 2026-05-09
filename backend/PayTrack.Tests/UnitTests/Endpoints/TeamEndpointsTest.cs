@@ -77,6 +77,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         new Budget
                         {
                             Id = 8,
+                            Name = "Core budget",
                             TeamId = 1,
                             CostCentreId = 12,
                             TargetAmount = 600m,
@@ -199,6 +200,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new Budget
                     {
                         Id = 5,
+                        Name = "Team budget",
                         TeamId = 1,
                         CostCentreId = 12,
                         TargetAmount = 2500m,

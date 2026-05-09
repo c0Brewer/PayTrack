@@ -108,6 +108,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var budget = new Budget
             {
+                Name = "Existing budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 500m,
@@ -153,8 +154,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 6, 30) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "First budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 6, 30) },
+                new Budget { Name = "Second budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -180,8 +181,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = teamA.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
-                new Budget { TeamId = teamB.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Team A budget", TeamId = teamA.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
+                new Budget { Name = "Team B budget", TeamId = teamB.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -208,8 +209,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentreA.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Aero budget", TeamId = team.Id, CostCentreId = costCentreA.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
+                new Budget { Name = "Electronics budget", TeamId = team.Id, CostCentreId = costCentreB.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -235,8 +236,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 1000m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 6, 30) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 2000m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Low target budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 1000m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 6, 30) },
+                new Budget { Name = "High target budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 2000m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -262,8 +263,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Past budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) },
+                new Budget { Name = "Current budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -289,8 +290,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Past budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) },
+                new Budget { Name = "Current budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -316,10 +317,10 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 3, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 4, 1), PeriodEnd = new DateTime(2026, 6, 30) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 300m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 9, 30) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 400m, PeriodStart = new DateTime(2026, 10, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+                new Budget { Name = "Q1 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 3, 31) },
+                new Budget { Name = "Q2 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 4, 1), PeriodEnd = new DateTime(2026, 6, 30) },
+                new Budget { Name = "Q3 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 300m, PeriodStart = new DateTime(2026, 7, 1), PeriodEnd = new DateTime(2026, 9, 30) },
+                new Budget { Name = "Q4 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 400m, PeriodStart = new DateTime(2026, 10, 1), PeriodEnd = new DateTime(2026, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -346,9 +347,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             context.Budgets.AddRange(
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2024, 1, 1), PeriodEnd = new DateTime(2024, 12, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
-                new Budget { TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 300m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) });
+                new Budget { Name = "2024 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, PeriodStart = new DateTime(2024, 1, 1), PeriodEnd = new DateTime(2024, 12, 31) },
+                new Budget { Name = "2026 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 200m, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
+                new Budget { Name = "2025 budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 300m, PeriodStart = new DateTime(2025, 1, 1), PeriodEnd = new DateTime(2025, 12, 31) });
             await context.SaveChangesAsync();
 
             var repo = new BudgetRepository(context);
@@ -375,6 +376,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var budget = new Budget
             {
+                Name = "Existing budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 500m,
@@ -420,6 +422,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             failingContext.CostCentres.Add(costCentre);
             var budget = new Budget
             {
+                Name = "Existing budget",
                 TeamId = 1,
                 CostCentreId = 1,
                 TargetAmount = 500m,
