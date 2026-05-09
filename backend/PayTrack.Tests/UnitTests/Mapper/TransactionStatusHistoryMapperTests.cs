@@ -141,5 +141,30 @@ namespace PayTrack.Tests.UnitTests.Mapper
             result.Should().NotBeNull();
             result.Should().BeEmpty();
         }
+
+        [Fact]
+        public void MapperToDto_ReturnsNullChangedBy_WhenNavigationIsMissing()
+        {
+            // Arrange
+            var entity = new TransactionStatusHistory
+            {
+                ChangedById = 5,
+                ChangedBy = null!,
+                Comment = "legacy history",
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Declined,
+                ChangedAt = DateTime.UtcNow
+            };
+
+            // Act
+            var dto = TransactionStatusHistoryMapper.ToDto(entity);
+
+            // Assert
+            dto.ChangedById.Should().Be(5);
+            dto.ChangedBy.Should().BeNull();
+            dto.Comment.Should().Be("legacy history");
+            dto.FromStatus.Should().Be(TransactionStatus.Submitted);
+            dto.ToStatus.Should().Be(TransactionStatus.Declined);
+        }
     }
 }

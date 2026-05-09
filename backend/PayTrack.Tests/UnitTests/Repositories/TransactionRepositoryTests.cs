@@ -342,6 +342,47 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.BankAccount!.Iban.Should().Be("AT611904300234573201");
         }
 
+        [Fact]
+        public async Task GetByIdAsync_ShouldIncludeStatusHistoryChangedBy_WhenRequested()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdAsync_WithStatusHistoryChangedBy");
+
+            context.User.Add(new User
+            {
+                Id = 7,
+                Email = "finance@example.com",
+                Name = "Finance User",
+            });
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "INV-1",
+                CreatedAt = DateTime.UtcNow,
+                StatusHistory =
+                [
+                    new TransactionStatusHistory
+                    {
+                        ChangedById = 7,
+                        Comment = "approved",
+                        FromStatus = TransactionStatus.Submitted,
+                        ToStatus = TransactionStatus.Approved,
+                        ChangedAt = DateTime.UtcNow,
+                    },
+                ],
+            });
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var result = await repo.GetByIdAsync(1, new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true });
+
+            result.Should().NotBeNull();
+            result!.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().ChangedBy.Should().NotBeNull();
+            result.StatusHistory.Single().ChangedBy.Name.Should().Be("Finance User");
+        }
+
         // ----------------------------
         // UPDATE FAILURE
         // ----------------------------
