@@ -519,20 +519,23 @@ namespace PayTrack.Tests.UnitTests.Repositories
             member.TeamId = team.Id;
             await context.SaveChangesAsync();
 
-            context.Budgets.Add(new Budget
+            var budget = new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 500m,
                 PeriodStart = new DateTime(2026, 1, 1),
                 PeriodEnd = new DateTime(2026, 12, 31),
-            });
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
 
             context.PaymentRequestsByUser.Add(new PaymentRequestByUser
             {
                 UserId = requester.Id,
                 TeamId = team.Id,
-                CostCentreId = costCentre.Id,
+                BudgetId = budget.Id,
                 Amount = 75m,
                 PaymentDirection = PaymentDirection.Out,
                 PayoutType = PayoutType.User,

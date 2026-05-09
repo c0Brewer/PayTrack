@@ -10,12 +10,7 @@ namespace PayTrack.Application.Dto.Transaction
     public class GetTransactionQueryById
     {
         /// <summary>
-        /// Whether to include the cost centre in the query.
-        /// </summary>
-        public bool? IncludeCostCentre { get; init; }
-
-        /// <summary>
-        /// Whether to include the cost centre in the query.
+        /// Whether to include the user in the query.
         /// </summary>
         public bool? IncludeUser { get; init; }
 

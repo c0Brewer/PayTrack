@@ -381,10 +381,22 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await context.SaveChangesAsync();
 
             // 2 transactions from user1, 1 from user2 → 2 distinct users
+            var budget = new Budget
+            {
+                Name = "Powertrain budget",
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 1000m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
+
             context.PaymentManuals.AddRange(
-                new PaymentManual { UserId = user1.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 100m, PaymentDirection = PaymentDirection.Out },
-                new PaymentManual { UserId = user1.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 200m, PaymentDirection = PaymentDirection.Out },
-                new PaymentManual { UserId = user2.Id, TeamId = team.Id, CostCentreId = costCentre.Id, Amount = 300m, PaymentDirection = PaymentDirection.Out });
+                new PaymentManual { UserId = user1.Id, TeamId = team.Id, BudgetId = budget.Id, Amount = 100m, PaymentDirection = PaymentDirection.Out },
+                new PaymentManual { UserId = user1.Id, TeamId = team.Id, BudgetId = budget.Id, Amount = 200m, PaymentDirection = PaymentDirection.Out },
+                new PaymentManual { UserId = user2.Id, TeamId = team.Id, BudgetId = budget.Id, Amount = 300m, PaymentDirection = PaymentDirection.Out });
             await context.SaveChangesAsync();
 
             var repo = new CostCentreRepository(context, new BudgetRepository(context));
@@ -484,11 +496,23 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.CostCentres.Add(costCentre);
             await context.SaveChangesAsync();
 
+            var budget = new Budget
+            {
+                Name = "With transactions budget",
+                TeamId = team.Id,
+                CostCentreId = costCentre.Id,
+                TargetAmount = 500m,
+                PeriodStart = new DateTime(2026, 1, 1),
+                PeriodEnd = new DateTime(2026, 12, 31),
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
+
             context.PaymentManuals.Add(new PaymentManual
             {
                 UserId = user.Id,
                 TeamId = team.Id,
-                CostCentreId = costCentre.Id,
+                BudgetId = budget.Id,
                 Amount = 200m,
                 PaymentDirection = PaymentDirection.Out,
             });

@@ -3,7 +3,6 @@
 // </copyright>
 
 using PayTrack.Application.Dto.BankAccount;
-using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.Transaction;
@@ -36,12 +35,6 @@ namespace PayTrack.Api.Mapper
                 user = UserMapper.ToDto(paymentRequestByUser.User);
             }
 
-            CostCentreDto? costCentre = null;
-            if (paymentRequestByUser.Budget?.CostCentre != null)
-            {
-                costCentre = CostCentreMapper.ToDto(paymentRequestByUser.Budget.CostCentre);
-            }
-
             var budget = paymentRequestByUser.Budget is not null
                 ? BudgetMapper.ToDto(paymentRequestByUser.Budget)
                 : null;
@@ -66,7 +59,6 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByUser.PaymentReference,
                 paymentRequestByUser.Status,
                 budget,
-                costCentre,
                 team,
                 paymentRequestByUser.PaymentDirection,
                 statusHistory,

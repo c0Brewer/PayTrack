@@ -1137,14 +1137,12 @@ export interface paths {
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
                     Status?: components["schemas"]["TransactionStatus"];
-                    CostCentreId?: number;
                     TeamId?: number;
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
                     Limit?: number;
                     Offset?: number;
-                    IncludeCostCentre?: boolean;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                 };
@@ -1226,7 +1224,6 @@ export interface paths {
             parameters: {
                 query?: {
                     IncludeBankAccount?: boolean;
-                    IncludeCostCentre?: boolean;
                     IncludeUser?: boolean;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
@@ -1681,7 +1678,6 @@ export interface components {
             paymentReference: string;
             status: components["schemas"]["TransactionStatus"];
             budget: components["schemas"]["BudgetDto"];
-            costCentre: components["schemas"]["CostCentreDto"];
             team: components["schemas"]["TeamDto"];
             paymentDirection: components["schemas"]["PaymentDirection"];
             statusHistory: components["schemas"]["TransactionStatusHistoryDto"][];
