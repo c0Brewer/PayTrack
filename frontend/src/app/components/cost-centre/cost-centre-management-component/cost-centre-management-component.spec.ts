@@ -399,7 +399,7 @@ describe('CostCentreManagementComponent', () => {
     component.save(event);
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
       expect.objectContaining({
-      budgets: [
+        budgets: [
           {
             name: 'Team budget',
             description: null,

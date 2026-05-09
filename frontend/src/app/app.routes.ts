@@ -7,8 +7,8 @@ import { CostCentreManagementComponent } from './components/cost-centre/cost-cen
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { SeasonManagementComponent } from './components/season/season-management-component/season-management-component';
+import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';

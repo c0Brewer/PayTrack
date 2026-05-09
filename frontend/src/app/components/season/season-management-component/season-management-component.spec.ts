@@ -81,9 +81,7 @@ describe('SeasonManagementComponent', () => {
     component.createSeason();
 
     expect(seasonServiceMock.createSeason).toHaveBeenCalledWith({ name: '2027' });
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
-      'Season created successfully',
-    );
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Season created successfully');
     expect(component.newSeasonName).toBe('');
     expect(loadSpy).toHaveBeenCalledOnce();
   });

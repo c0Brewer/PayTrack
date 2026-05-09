@@ -171,15 +171,25 @@ export class CostCentreManagementComponent implements OnInit {
         displayColor: costCentre.displayColor ?? undefined,
         budgets:
           budgetsToUpsert.length > 0
-            ? budgetsToUpsert.map(({ name, description, teamId, seasonId, targetAmount, periodStart, periodEnd }) => ({
-                name,
-                description,
-                teamId,
-                seasonId,
-                targetAmount,
-                periodStart: this.toApiDateTime(periodStart),
-                periodEnd: this.toApiDateTime(periodEnd),
-              }))
+            ? budgetsToUpsert.map(
+                ({
+                  name,
+                  description,
+                  teamId,
+                  seasonId,
+                  targetAmount,
+                  periodStart,
+                  periodEnd,
+                }) => ({
+                  name,
+                  description,
+                  teamId,
+                  seasonId,
+                  targetAmount,
+                  periodStart: this.toApiDateTime(periodStart),
+                  periodEnd: this.toApiDateTime(periodEnd),
+                }),
+              )
             : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({
