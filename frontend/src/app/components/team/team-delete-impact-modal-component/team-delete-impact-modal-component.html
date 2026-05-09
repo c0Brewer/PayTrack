@@ -35,17 +35,19 @@
       @if (isReadOnlyImpact) {
         <button type="button" (click)="onClose()">Back</button>
       } @else {
-        <button type="button" (click)="onClose()">Cancel</button>
-        <button type="button" class="delete-confirm-btn" (click)="onConfirmDelete()">
+        <button type="button" class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1" (click)="onConfirmDelete()">
           Deactivate
         </button>
+        <button type="button" class="btn btn-primary"(click)="onClose()">Cancel</button>
       }
     </div>
   } @else {
     <p>Are you sure? This action cannot be undone.</p>
     <div class="modal-actions">
-      <button type="button" (click)="onClose()">Cancel</button>
-      <button type="button" class="delete-confirm-btn" (click)="onConfirmDelete()">Delete</button>
+      <button type="button" class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1" (click)="onConfirmDelete()">
+        <span class="material-symbols-outlined">delete</span>
+        Delete</button>
+      <button type="button" class="btn btn-primary" (click)="onClose()">Cancel</button>
     </div>
   }
 </app-modal-component>

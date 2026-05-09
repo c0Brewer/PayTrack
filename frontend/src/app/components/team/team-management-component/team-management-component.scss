@@ -1,15 +1,7 @@
 @use 'variables' as v;
 
 .team-management {
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-
-    h2 {
-      margin: 0;
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
 }
-
