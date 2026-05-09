@@ -43,6 +43,8 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
 
         DateTime? PaidAt,
 
+        DateTime? FinancePaidAt,
+
         [property: Required]
         [property: MinLength(3)]
         string InvoiceNumber,

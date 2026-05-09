@@ -133,6 +133,34 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Marks a PaymentRequestByUser as paid.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="markPaidDto">Payment completion data supplied by finance.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> MarkPaymentRequestByUserAsPaidAsync(
+            [FromRoute] int id,
+            [FromBody] MarkPaymentRequestByUserAsPaidDto markPaidDto,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.MarkPaymentRequestByUserAsPaidAsync(
+                id,
+                currentUser.Id,
+                markPaidDto.PaymentReference,
+                markPaidDto.PurposeOfPayment,
+                markPaidDto.PaymentDate);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
         /// Returns the receipt file for a PaymentRequestByUser, only if the current user has access to it.
         /// </summary>
         /// <param name="id">id.</param>

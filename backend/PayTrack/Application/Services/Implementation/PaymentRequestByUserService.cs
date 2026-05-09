@@ -170,6 +170,57 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> MarkPaymentRequestByUserAsPaidAsync(
+            int id,
+            int changedById,
+            string paymentReference,
+            string purposeOfPayment,
+            DateTime paymentDate)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new() { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (string.IsNullOrWhiteSpace(paymentReference))
+            {
+                throw new InvalidStateException("Payment reference is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(purposeOfPayment))
+            {
+                throw new InvalidStateException("Purpose of payment is required");
+            }
+
+            if (paymentDate.Date > DateTime.Today)
+            {
+                throw new InvalidStateException("Payment date cannot be in the future!");
+            }
+
+            if (!IsStatusTransitionAllowed(transaction.Status, TransactionStatus.Paid))
+            {
+                throw new InvalidStateException($"Cannot change invoice status from {transaction.Status} to {TransactionStatus.Paid}");
+            }
+
+            var previousStatus = transaction.Status;
+            var normalizedPaymentDate = DateTime.SpecifyKind(paymentDate, DateTimeKind.Utc);
+
+            transaction.PaymentReference = paymentReference.Trim();
+            transaction.PurposeOfPayment = purposeOfPayment.Trim();
+            transaction.FinancePaidAt = normalizedPaymentDate;
+            transaction.Status = TransactionStatus.Paid;
+            transaction.StatusHistory.Add(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = changedById,
+                FromStatus = previousStatus,
+                ToStatus = TransactionStatus.Paid,
+                ChangedAt = DateTime.UtcNow,
+                Comment = $"Payment reference: {transaction.PaymentReference}",
+            });
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
         public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
@@ -213,6 +264,30 @@ namespace PayTrack.Application.Services.Implementation
                 Role.Admin => true,
 
                 _ => false
+            };
+        }
+
+        private static bool IsStatusTransitionAllowed(TransactionStatus fromStatus, TransactionStatus toStatus)
+        {
+            if (fromStatus == toStatus)
+            {
+                return false;
+            }
+
+            if (toStatus == TransactionStatus.Declined)
+            {
+                return fromStatus != TransactionStatus.Paid;
+            }
+
+            return (fromStatus, toStatus) switch
+            {
+                (TransactionStatus.Submitted, TransactionStatus.Approved) => true,
+                (TransactionStatus.Submitted, TransactionStatus.ChangesRequested) => true,
+                (TransactionStatus.ChangesRequested, TransactionStatus.Review) => true,
+                (TransactionStatus.Review, TransactionStatus.ChangesRequested) => true,
+                (TransactionStatus.Review, TransactionStatus.Approved) => true,
+                (TransactionStatus.Approved, TransactionStatus.Paid) => true,
+                _ => false,
             };
         }
 

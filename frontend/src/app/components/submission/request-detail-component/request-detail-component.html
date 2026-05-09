@@ -6,6 +6,9 @@
   [isReceiptImage]="isReceiptImage"
   [hasReceipt]="!!rawReceiptBlobUrl"
   [loading]="loading"
+  [canMarkPaid]="true"
+  [markingPaid]="markingPaid"
   (downloadReceipt)="onDownloadReceipt()"
+  (markPaid)="onMarkPaid($event)"
   (back)="onBack()"
 />

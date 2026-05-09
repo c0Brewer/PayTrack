@@ -6,6 +6,7 @@ import {
   CreatePaymentRequestByUserDto,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
+  MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
@@ -107,6 +108,27 @@ export class PaymentRequestByUserService {
           },
         },
         body: updateRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public markPaymentRequestByUserAsPaid(
+    id: number,
+    markPaidRequest: MarkPaymentRequestByUserAsPaidDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/mark-paid', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: markPaidRequest,
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');

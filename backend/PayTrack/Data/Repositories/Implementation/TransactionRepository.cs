@@ -153,7 +153,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.PaymentRequestsByUser.Update(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} teams.");
             }

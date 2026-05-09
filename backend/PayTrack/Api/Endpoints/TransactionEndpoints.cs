@@ -36,6 +36,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
 
+            group.MapPost("/user/{id:int}/mark-paid", PaymentRequestByUserHandler.MarkPaymentRequestByUserAsPaidAsync)
+                .RequireRole(Role.Admin);
+
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
 
             // TODO: This should be implemented in another ticket. This will be about the requests created by the finance team.

@@ -32,6 +32,8 @@ export type PaginatedPaymentRequestByUserDto =
 export type PaymentRequestByUserDto = components['schemas']['PaymentRequestByUserDto'];
 export type CreatePaymentRequestByUserDto = components['schemas']['CreatePaymentRequestByUserDto'];
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
+export type MarkPaymentRequestByUserAsPaidDto =
+  components['schemas']['MarkPaymentRequestByUserAsPaidDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
@@ -61,6 +63,7 @@ export enum TransactionStatus {
   Approved = 2,
   Paid = 3,
   Declined = 4,
+  Review = 5,
 }
 
 export const TransactionStatusLabels: Record<TransactionStatus, string> = {
@@ -69,6 +72,7 @@ export const TransactionStatusLabels: Record<TransactionStatus, string> = {
   [TransactionStatus.Approved]: 'Approved',
   [TransactionStatus.Paid]: 'Paid',
   [TransactionStatus.Declined]: 'Declined',
+  [TransactionStatus.Review]: 'Review',
 };
 
 export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
@@ -77,6 +81,7 @@ export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
   [TransactionStatus.Approved]: 'status-approved',
   [TransactionStatus.Paid]: 'status-paid',
   [TransactionStatus.Declined]: 'status-declined',
+  [TransactionStatus.Review]: 'status-review',
 };
 
 // Authentication

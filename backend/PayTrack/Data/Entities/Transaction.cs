@@ -96,6 +96,11 @@ namespace PayTrack.Data.Entities
         public DateTime? PaidAt { get; set; }
 
         /// <summary>
+        /// Timestamp of when finance completed the reimbursement.
+        /// </summary>
+        public DateTime? FinancePaidAt { get; set; }
+
+        /// <summary>
         /// Reference for Status History.
         /// </summary>
         public ICollection<TransactionStatusHistory> StatusHistory { get; set; } = [];

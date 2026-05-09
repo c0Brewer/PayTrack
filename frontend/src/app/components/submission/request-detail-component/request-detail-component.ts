@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../types/exporter';
+import { MarkPaymentRequestByUserAsPaidDto, PaymentRequestByUserDto } from '../../../types/exporter';
 import { InvoiceDetailComponent } from '../invoice-detail-component/invoice-detail-component';
 
 @Component({
@@ -27,6 +27,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   receiptMimeType: string = '';
   isReceiptImage: boolean = false;
   loading: boolean = true;
+  markingPaid: boolean = false;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -84,6 +85,25 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  onMarkPaid(markPaidRequest: MarkPaymentRequestByUserAsPaidDto): void {
+    if (!this.invoice || this.markingPaid) return;
+
+    this.markingPaid = true;
+    this.service.markPaymentRequestByUserAsPaid(this.invoice.id, markPaidRequest).subscribe({
+      next: (invoice) => {
+        this.invoice = invoice;
+        this.markingPaid = false;
+        this.notificationService.showSuccess('Invoice marked as paid');
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.markingPaid = false;
+        this.notificationService.showError('Could not mark invoice as paid: ' + err.message);
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private getExtensionFromMimeType(mimeType: string): string {

@@ -76,6 +76,22 @@ namespace PayTrack.Application.Services.Model
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
 
         /// <summary>
+        /// Marks a PaymentRequestByUser as paid and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to mark as paid.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="paymentReference">Payment reference supplied by finance.</param>
+        /// <param name="purposeOfPayment">Payment purpose supplied by finance.</param>
+        /// <param name="paymentDate">Date when finance completed the payment.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> MarkPaymentRequestByUserAsPaidAsync(
+            int id,
+            int changedById,
+            string paymentReference,
+            string purposeOfPayment,
+            DateTime paymentDate);
+
+        /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.
         /// </summary>
         /// <param name="query">The query submitted by the client.</param>

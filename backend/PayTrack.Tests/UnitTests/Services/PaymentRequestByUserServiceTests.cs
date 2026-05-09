@@ -234,6 +234,91 @@ namespace PayTrack.Tests.UnitTests.Services
             result.PurposeOfPayment.Should().Be("new");
         }
 
+        [Fact]
+        public async Task MarkAsPaid_ShouldUpdatePaymentFieldsStatusAndHistory_WhenApproved()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var paymentDate = DateTime.Today;
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.Is<GetPaymentRequestByUserQueryById>(q => q.IncludeStatusHistory == true)))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                " REF-123 ",
+                " Reimbursement May ",
+                paymentDate);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+            result.PaymentReference.Should().Be("REF-123");
+            result.PurposeOfPayment.Should().Be("Reimbursement May");
+            result.FinancePaidAt.Should().Be(DateTime.SpecifyKind(paymentDate, DateTimeKind.Utc));
+            result.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().ChangedById.Should().Be(42);
+            result.StatusHistory.Single().FromStatus.Should().Be(TransactionStatus.Approved);
+            result.StatusHistory.Single().ToStatus.Should().Be(TransactionStatus.Paid);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldThrow_WhenInvoiceIsNotApproved()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Submitted,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            Func<Task> act = async () =>
+                await service.MarkPaymentRequestByUserAsPaidAsync(
+                    1,
+                    42,
+                    "REF-123",
+                    "Reimbursement May",
+                    DateTime.Today);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Cannot change invoice status from Submitted to Paid");
+        }
+
         // ----------------------------
         // GET RECEIPT
         // ----------------------------

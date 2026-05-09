@@ -51,6 +51,14 @@
             <th>Paid At</th>
             <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
           </tr>
+          <tr>
+            <th>Finance Paid At</th>
+            <td>{{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '-' }}</td>
+          </tr>
+          <tr>
+            <th>Payment Reference</th>
+            <td>{{ invoice.paymentReference || '-' }}</td>
+          </tr>
           @if (showUserName) {
             <tr>
               <th>User</th>
@@ -69,6 +77,51 @@
           </tr>
         </tbody>
       </table>
+
+      @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
+        <form class="payment-form" (ngSubmit)="onMarkPaid()">
+          <h3>Mark as Paid</h3>
+          <div class="payment-grid">
+            <label>
+              <span>Payment Reference</span>
+              <input
+                type="text"
+                name="paymentReference"
+                [(ngModel)]="paymentReference"
+                maxlength="255"
+                required
+              />
+            </label>
+            <label>
+              <span>Payment Date</span>
+              <input
+                type="date"
+                name="paymentDate"
+                [(ngModel)]="paymentDate"
+                [max]="maxPaymentDate"
+                required
+              />
+            </label>
+            <label class="payment-purpose">
+              <span>Purpose</span>
+              <textarea
+                name="paymentPurpose"
+                [(ngModel)]="paymentPurpose"
+                maxlength="500"
+                required
+              ></textarea>
+            </label>
+          </div>
+          <button
+            class="mark-paid-btn"
+            type="submit"
+            [disabled]="markingPaid || !paymentReference.trim() || !paymentPurpose.trim() || !paymentDate"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
+          </button>
+        </form>
+      }
 
       @if ((invoice.statusHistory?.length ?? 0) > 0) {
         <h3>Status History</h3>
