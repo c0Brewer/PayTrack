@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
 import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
@@ -9,6 +10,7 @@ import {
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
   GetTeamOptions,
+  SeasonDto,
   TeamDto,
   UpdateCostCentreRequestDto,
   UpsertBudgetEntryDto,
@@ -35,6 +37,7 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
 export class CostCentreManagementComponent implements OnInit {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly seasonService: SeasonService,
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
@@ -42,6 +45,7 @@ export class CostCentreManagementComponent implements OnInit {
 
   costCentres: CostCentreDto[] = [];
   teams: TeamDto[] = [];
+  seasons: SeasonDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
   deletingCostCentre: CostCentreDto | null = null;
   deletePreview: DeleteCostCentrePreviewDto | null = null;
@@ -66,6 +70,7 @@ export class CostCentreManagementComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.loadTeams();
+    this.loadSeasons();
   }
 
   loadTeams(): void {
@@ -83,6 +88,18 @@ export class CostCentreManagementComponent implements OnInit {
       },
       error: (err: Error) => {
         this.notificationService.showError('Could not load teams: ' + err.message);
+      },
+    });
+  }
+
+  loadSeasons(): void {
+    this.seasonService.getSeasons().subscribe({
+      next: (seasons) => {
+        this.seasons = seasons;
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load seasons: ' + err.message);
       },
     });
   }

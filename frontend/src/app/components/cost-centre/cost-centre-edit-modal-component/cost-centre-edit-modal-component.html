@@ -20,8 +20,8 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Season ID</th>
-            <th>Team ID</th>
+            <th>Season</th>
+            <th>Team</th>
             <th>Amount</th>
             <th>Period Start</th>
             <th>Period End</th>
@@ -32,8 +32,8 @@
           @for (budget of workingBudgets; track budget.originalId) {
             <tr [class.deleted]="budget.markedForDeletion">
               <td>{{ budget.name }}</td>
-              <td>{{ budget.seasonId }}</td>
-              <td>{{ budget.teamId }}</td>
+              <td>{{ getSeasonName(budget.seasonId) }}</td>
+              <td>{{ getTeamName(budget.teamId) }}</td>
               <td>{{ budget.targetAmount }}</td>
               <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
               <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
@@ -53,8 +53,8 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Season ID</th>
-            <th>Team ID</th>
+            <th>Season</th>
+            <th>Team</th>
             <th>Amount</th>
             <th>Period Start</th>
             <th>Period End</th>
@@ -65,8 +65,8 @@
           @for (budget of newBudgets; track $index) {
             <tr>
               <td>{{ budget.name }}</td>
-              <td>{{ budget.seasonId }}</td>
-              <td>{{ budget.teamId }}</td>
+              <td>{{ getSeasonName(budget.seasonId) }}</td>
+              <td>{{ getTeamName(budget.teamId) }}</td>
               <td>{{ budget.targetAmount }}</td>
               <td>{{ budget.periodStart }}</td>
               <td>{{ budget.periodEnd }}</td>
@@ -85,8 +85,13 @@
         <input [(ngModel)]="newBudgetDraft.name" placeholder="Budget name" />
       </label>
       <label>
-        Season ID
-        <input type="number" [(ngModel)]="newBudgetDraft.seasonId" placeholder="Season ID" />
+        Season
+        <select [(ngModel)]="newBudgetDraft.seasonId">
+          <option [ngValue]="0" disabled>Select season</option>
+          @for (season of seasons; track season.id) {
+            <option [ngValue]="season.id">{{ season.name }}</option>
+          }
+        </select>
       </label>
       <label>
         Team

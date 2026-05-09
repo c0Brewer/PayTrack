@@ -768,7 +768,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["BudgetDto"];
+                        "application/json": components["schemas"]["SeasonDto"][];
                     };
                 };
             };
@@ -781,14 +781,20 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateSeasonRequestDto"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["SeasonDto"];
+                    };
                 };
             };
         };
@@ -810,17 +816,25 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: number;
+                };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSeasonRequestDto"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["SeasonDto"];
+                    };
                 };
             };
         };
@@ -829,13 +843,15 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: number;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1601,6 +1617,9 @@ export interface components {
             /** Format: int32 */
             bankAccountId: number;
         };
+        CreateSeasonRequestDto: {
+            name: string;
+        };
         CreateTeamBudgetEntryDto: {
             name: string;
             description?: string | null;
@@ -1721,6 +1740,12 @@ export interface components {
          * @enum {integer}
          */
         Role: 0 | 1 | 2;
+        SeasonDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
         TeamDto: {
             /** Format: int32 */
             id: number;
@@ -1809,6 +1834,9 @@ export interface components {
             paidAt?: string | null;
             /** Format: int32 */
             budgetId?: number | null;
+        };
+        UpdateSeasonRequestDto: {
+            name?: string | null;
         };
         UpdateUserDto: {
             name?: string | null;

@@ -28,8 +28,9 @@
       (next)="nextPage()" (prev)="previousPage()"></app-pagination-component>
 
     @if (editingTeam) {
-    <app-team-edit-modal-component [team]="editingTeam" [costCentres]="costCentres" (saveEvent)="saveTeam($event)"
-      (deleteEvent)="openDeleteTeam($event)" (closeEvent)="closeEdit()"></app-team-edit-modal-component>
+    <app-team-edit-modal-component [team]="editingTeam" [costCentres]="costCentres" [seasons]="seasons"
+      (saveEvent)="saveTeam($event)" (deleteEvent)="openDeleteTeam($event)"
+      (closeEvent)="closeEdit()"></app-team-edit-modal-component>
     }
 
     @if (deletingTeam && deleteImpact) {

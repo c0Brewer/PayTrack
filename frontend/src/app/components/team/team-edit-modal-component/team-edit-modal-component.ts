@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import {
   BudgetDto,
   CostCentreDto,
+  SeasonDto,
   TeamDto,
   UpsertTeamBudgetEntryDto,
 } from '../../../types/exporter';
@@ -42,6 +43,7 @@ export class TeamEditModalComponent implements OnChanges {
     budgets: [],
   };
   @Input() costCentres: CostCentreDto[] = [];
+  @Input() seasons: SeasonDto[] = [];
 
   @Output() saveEvent = new EventEmitter<TeamSaveEvent>();
   @Output() deleteEvent = new EventEmitter<TeamDto>();
@@ -190,6 +192,10 @@ export class TeamEditModalComponent implements OnChanges {
       this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
       `Cost Centre #${costCentreId}`
     );
+  }
+
+  getSeasonName(seasonId: number): string {
+    return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
   }
 
   formatBudgetAmount(amount: number): string {

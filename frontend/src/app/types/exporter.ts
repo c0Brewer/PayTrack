@@ -71,6 +71,12 @@ export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentre
 // Cost Centre Paths
 export type GetBudgetOptions = paths['/api/v1/budget']['get']['parameters']['query'];
 export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
+
+// Season
+export type SeasonDto = components['schemas']['SeasonDto'];
+export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
+export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];

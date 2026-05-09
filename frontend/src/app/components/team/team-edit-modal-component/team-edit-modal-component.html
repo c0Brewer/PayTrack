@@ -67,8 +67,13 @@
           <input [(ngModel)]="newBudgetDraft.name" placeholder="Budget name" />
         </label>
         <label>
-          Season ID
-          <input type="number" [(ngModel)]="newBudgetDraft.seasonId" placeholder="Season ID" />
+          Season
+          <select [(ngModel)]="newBudgetDraft.seasonId">
+            <option [ngValue]="0" disabled>Select season</option>
+            @for (season of seasons; track season.id) {
+              <option [ngValue]="season.id">{{ season.name }}</option>
+            }
+          </select>
         </label>
         <label>
           Cost Centre
@@ -101,7 +106,7 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Season ID</th>
+              <th>Season</th>
               <th>Cost Centre</th>
               <th>Amount</th>
               <th>Period Start</th>
@@ -113,7 +118,7 @@
             @for (budget of workingBudgets; track budget.originalId) {
               <tr [class.deleted]="budget.markedForDeletion">
                 <td>{{ budget.name }}</td>
-                <td>{{ budget.seasonId }}</td>
+                <td>{{ getSeasonName(budget.seasonId) }}</td>
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
@@ -134,7 +139,7 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Season ID</th>
+              <th>Season</th>
               <th>Cost Centre</th>
               <th>Amount</th>
               <th>Period Start</th>
@@ -146,7 +151,7 @@
             @for (budget of newBudgets; track $index) {
               <tr>
                 <td>{{ budget.name }}</td>
-                <td>{{ budget.seasonId }}</td>
+                <td>{{ getSeasonName(budget.seasonId) }}</td>
                 <td>{{ getCostCentreName(budget.costCentreId) }}</td>
                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
                 <td>{{ budget.periodStart }}</td>

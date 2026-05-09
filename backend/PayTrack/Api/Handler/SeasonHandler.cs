@@ -3,6 +3,10 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Season;
+using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
 {
@@ -14,37 +18,57 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns all seasons.
         /// </summary>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> GetSeasonsAsync()
+        public static async Task<Results<Ok<List<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
+            ISeasonService service)
         {
-            throw new NotImplementedException();
+            var seasons = await service.GetAllAsync();
+            return TypedResults.Ok(SeasonMapper.ListToDto(seasons));
         }
 
         /// <summary>
         /// Creates a season.
         /// </summary>
+        /// <param name="dto">Request body.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> CreateSeasonAsync()
+        public static async Task<Results<Ok<SeasonDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> CreateSeasonAsync(
+            [FromBody] CreateSeasonRequestDto dto,
+            ISeasonService service)
         {
-            throw new NotImplementedException();
+            var season = await service.CreateAsync(dto.Name);
+            return TypedResults.Ok(SeasonMapper.ToDto(season));
         }
 
         /// <summary>
         /// Updates a season.
         /// </summary>
+        /// <param name="id">Id from route.</param>
+        /// <param name="dto">Request body.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> UpdateSeasonAsync()
+        public static async Task<Results<Ok<SeasonDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> UpdateSeasonAsync(
+            [FromRoute] int id,
+            [FromBody] UpdateSeasonRequestDto dto,
+            ISeasonService service)
         {
-            throw new NotImplementedException();
+            var season = await service.UpdateAsync(id, dto.Name);
+            return TypedResults.Ok(SeasonMapper.ToDto(season));
         }
 
         /// <summary>
         /// Deletes a season.
         /// </summary>
+        /// <param name="id">Id from route.</param>
+        /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<Results<Ok, ProblemHttpResult>> DeleteSeasonAsync()
+        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteSeasonAsync(
+            [FromRoute] int id,
+            ISeasonService service)
         {
-            throw new NotImplementedException();
+            await service.DeleteAsync(id);
+            return TypedResults.NoContent();
         }
     }
 }

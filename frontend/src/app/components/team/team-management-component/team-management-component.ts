@@ -3,6 +3,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
 import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
@@ -13,6 +14,7 @@ import {
   GetTeamOptions,
   UpdateTeamDto,
   UpsertTeamBudgetEntryDto,
+  SeasonDto,
 } from '../../../types/exporter';
 import { TeamSaveEvent } from '../../../types/misc-types';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
@@ -42,6 +44,7 @@ import { TeamListComponent } from '../team-list-component/team-list-component';
 export class TeamManagementComponent {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly seasonService: SeasonService,
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
@@ -49,6 +52,7 @@ export class TeamManagementComponent {
 
   teams: TeamDto[] = [];
   costCentres: CostCentreDto[] = [];
+  seasons: SeasonDto[] = [];
   editingTeam: TeamDto | null = null;
   deletingTeam: TeamDto | null = null;
   deleteImpact: DeleteTeamImpactDto | null = null;
@@ -73,6 +77,7 @@ export class TeamManagementComponent {
 
   ngOnInit(): void {
     this.loadCostCentres();
+    this.loadSeasons();
     this.loadTeams();
     this.loadTeamStats();
   }
@@ -111,6 +116,18 @@ export class TeamManagementComponent {
           this.notificationService.showError('Could not load cost centres: ' + err.message);
         },
       });
+  }
+
+  loadSeasons(): void {
+    this.seasonService.getSeasons().subscribe({
+      next: (seasons) => {
+        this.seasons = seasons;
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load seasons: ' + err.message);
+      },
+    });
   }
 
   loadTeams(): void {
