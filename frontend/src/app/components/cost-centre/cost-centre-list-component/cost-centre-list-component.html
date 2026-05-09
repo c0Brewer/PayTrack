@@ -44,13 +44,24 @@
 
         <td class="actions-col" data-label="Actions">
           <div class="action-buttons">
-            <button type="button" class="btn btn-secondary" (click)="onOpenEdit(c)">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Edit cost centre"
+              aria-label="Edit cost centre"
+              (click)="onOpenEdit(c)"
+            >
               <span class="material-symbols-outlined">edit</span>
-              Edit
             </button>
             <button
               type="button"
               class="btn btn-outline-danger d-inline-flex align-items-center gap-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Delete cost centre"
+              aria-label="Delete cost centre"
               (click)="onOpenDelete(c)"
             >
               <span class="material-symbols-outlined">delete</span>
@@ -58,6 +69,10 @@
             <button
               type="button"
               class="btn btn-outline-primary d-inline-flex align-items-center gap-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Open cost centre details"
+              aria-label="Open cost centre details"
               [routerLink]="[c.id]"
             >
               <span class="material-symbols-outlined">info</span>
