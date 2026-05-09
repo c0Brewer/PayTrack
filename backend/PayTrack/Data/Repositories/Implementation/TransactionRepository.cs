@@ -104,7 +104,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeStatusHistory == true)
             {
-                dbQuery = dbQuery.Include(t => t.StatusHistory);
+                dbQuery = dbQuery.Include(t => t.StatusHistory)
+                    .ThenInclude(h => h.ChangedBy);
             }
 
             if (query?.IncludeBankAccount == true)
@@ -261,7 +262,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeStatusHistory.HasValue == true)
             {
-                dbQuery = dbQuery.Include(t => t.StatusHistory);
+                dbQuery = dbQuery.Include(t => t.StatusHistory)
+                    .ThenInclude(h => h.ChangedBy);
             }
 
             dbQuery = dbQuery.Include(t => t.User);

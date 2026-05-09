@@ -1681,6 +1681,7 @@ export interface components {
         TransactionStatusHistoryDto: {
             /** Format: int32 */
             changedById: number;
+            changedBy?: components["schemas"]["UserDto"];
             comment: string;
             fromStatus: components["schemas"]["TransactionStatus"];
             toStatus: components["schemas"]["TransactionStatus"];

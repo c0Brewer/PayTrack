@@ -128,33 +128,20 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   }
 
   onApprove(approveRequest: ApprovePaymentRequestByUserDto): void {
-    this.runStatusAction(
-      'approve',
-      'Invoice approved',
-      'Could not approve invoice: ',
-      () => this.service.approvePaymentRequestByUser(this.invoice!.id, approveRequest),
+    this.runStatusAction('approve', 'Invoice approved', 'Could not approve invoice: ', () =>
+      this.service.approvePaymentRequestByUser(this.invoice!.id, approveRequest),
     );
   }
 
   onDecline(declineRequest: DeclinePaymentRequestByUserDto): void {
-    this.runStatusAction(
-      'decline',
-      'Invoice declined',
-      'Could not decline invoice: ',
-      () => this.service.declinePaymentRequestByUser(this.invoice!.id, declineRequest),
+    this.runStatusAction('decline', 'Invoice declined', 'Could not decline invoice: ', () =>
+      this.service.declinePaymentRequestByUser(this.invoice!.id, declineRequest),
     );
   }
 
   onRequestChanges(requestChangesRequest: RequestChangesPaymentRequestByUserDto): void {
-    this.runStatusAction(
-      'requestChanges',
-      'Changes requested',
-      'Could not request changes: ',
-      () =>
-        this.service.requestChangesForPaymentRequestByUser(
-          this.invoice!.id,
-          requestChangesRequest,
-        ),
+    this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
+      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, requestChangesRequest),
     );
   }
 

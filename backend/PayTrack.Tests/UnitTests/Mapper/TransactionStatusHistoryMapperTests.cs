@@ -22,6 +22,15 @@ namespace PayTrack.Tests.UnitTests.Mapper
             var entity = new TransactionStatusHistory
             {
                 ChangedById = changedById,
+                ChangedBy = new User
+                {
+                    Id = changedById,
+                    Name = "Finance User",
+                    Email = "finance@example.com",
+                    ProfilePictureUrl = "https://example.com/avatar.png",
+                    Role = Role.Admin,
+                    IsActive = true
+                },
                 Comment = comment,
                 FromStatus = TransactionStatus.Submitted,
                 ToStatus = TransactionStatus.Approved,
@@ -34,6 +43,8 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             dto.Should().NotBeNull();
             dto.ChangedById.Should().Be(changedById);
+            dto.ChangedBy.Should().NotBeNull();
+            dto.ChangedBy!.Name.Should().Be("Finance User");
             dto.Comment.Should().Be(comment);
             dto.FromStatus.Should().Be(fromStatus);
             dto.ToStatus.Should().Be(toStatus);
@@ -49,6 +60,15 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 new()
                 {
                     ChangedById = 1,
+                    ChangedBy = new User
+                    {
+                        Id = 1,
+                        Name = "User One",
+                        Email = "user1@example.com",
+                        ProfilePictureUrl = "https://example.com/1.png",
+                        Role = Role.Admin,
+                        IsActive = true
+                    },
                     Comment = "A",
                     FromStatus = TransactionStatus.Submitted,
                     ToStatus = TransactionStatus.Approved,
@@ -57,6 +77,15 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 new()
                 {
                     ChangedById = 2,
+                    ChangedBy = new User
+                    {
+                        Id = 2,
+                        Name = "User Two",
+                        Email = "user2@example.com",
+                        ProfilePictureUrl = "https://example.com/2.png",
+                        Role = Role.Admin,
+                        IsActive = true
+                    },
                     Comment = "B",
                     FromStatus = TransactionStatus.Submitted,
                     ToStatus = TransactionStatus.Approved,
@@ -65,6 +94,15 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 new()
                 {
                     ChangedById = 3,
+                    ChangedBy = new User
+                    {
+                        Id = 3,
+                        Name = "User Three",
+                        Email = "user3@example.com",
+                        ProfilePictureUrl = "https://example.com/3.png",
+                        Role = Role.Admin,
+                        IsActive = true
+                    },
                     Comment = "C",
                     FromStatus = TransactionStatus.Submitted,
                     ToStatus = TransactionStatus.Approved,
@@ -82,6 +120,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             for (int i = 0; i < list.Count; i++)
             {
                 result[i].ChangedById.Should().Be(list[i].ChangedById);
+                result[i].ChangedBy?.Name.Should().Be(list[i].ChangedBy.Name);
                 result[i].Comment.Should().Be(list[i].Comment);
                 result[i].FromStatus.Should().Be(list[i].FromStatus);
                 result[i].ToStatus.Should().Be(list[i].ToStatus);

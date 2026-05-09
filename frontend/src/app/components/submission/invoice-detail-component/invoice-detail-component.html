@@ -211,6 +211,7 @@
             <tr>
               <th>From</th>
               <th>To</th>
+              <th>Changed By</th>
               <th>Changed At</th>
               <th>Comment</th>
             </tr>
@@ -228,6 +229,7 @@
                     {{ getStatusLabel(entry.toStatus) }}
                   </span>
                 </td>
+                <td>{{ entry.changedBy?.name ?? ('User #' + entry.changedById) }}</td>
                 <td>{{ entry.changedAt | date: 'medium' }}</td>
                 <td>{{ entry.comment }}</td>
               </tr>
