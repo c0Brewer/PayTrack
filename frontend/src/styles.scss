@@ -91,6 +91,13 @@ body {
   justify-content: center;
   min-height: 2.4rem;
   padding: 0.5rem 0.85rem;
+
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
 }
 
 .btn-secondary:hover,
@@ -99,7 +106,19 @@ body {
 .btn-secondary.active,
 .btn-secondary:focus-visible,
 .btn-secondary.show {
-  background-color: lightgray;
+  background-color: rgb(235 106 0);
+  border-color: rgb(235 106 0);
+  color: white;
+  box-shadow: 0 0.35rem 0.9rem rgb(235 106 0 / 22%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+
+  box-shadow: 0 0.15rem 0.45rem rgb(235 106 0 / 18%);
+
+  transform: translateY(0);
+
 }
 
 /* Table Styling*/
