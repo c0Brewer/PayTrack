@@ -161,6 +161,85 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Approves a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="approveDto">Approval data supplied by finance.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> ApprovePaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromBody] ApprovePaymentRequestByUserDto approveDto,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.ApprovePaymentRequestByUserAsync(
+                id,
+                currentUser.Id,
+                approveDto.CostCentreId,
+                approveDto.Reason);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Declines a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="declineDto">Decline data supplied by finance.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> DeclinePaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromBody] DeclinePaymentRequestByUserDto declineDto,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.DeclinePaymentRequestByUserAsync(
+                id,
+                currentUser.Id,
+                declineDto.Reason);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Requests changes for a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="requestChangesDto">Change request data supplied by finance.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> RequestChangesPaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromBody] RequestChangesPaymentRequestByUserDto requestChangesDto,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.RequestChangesPaymentRequestByUserAsync(
+                id,
+                currentUser.Id,
+                requestChangesDto.Reason);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
         /// Returns the receipt file for a PaymentRequestByUser, only if the current user has access to it.
         /// </summary>
         /// <param name="id">id.</param>

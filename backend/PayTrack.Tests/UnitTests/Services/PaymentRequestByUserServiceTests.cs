@@ -319,6 +319,161 @@ namespace PayTrack.Tests.UnitTests.Services
                 .WithMessage("Cannot change invoice status from Submitted to Paid");
         }
 
+        [Fact]
+        public async Task Approve_ShouldAssignCostCentreStatusAndHistory_WhenSubmitted()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var costCentreMock = new Mock<ICostCentreService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Submitted,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            costCentreMock
+                .Setup(c => c.GetByIdAsync(7))
+                .ReturnsAsync(new CostCentre { Id = 7, Name = "Operations" });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object,
+                costCentreMock.Object);
+
+            var result = await service.ApprovePaymentRequestByUserAsync(1, 42, 7, " approved ");
+
+            result.Status.Should().Be(TransactionStatus.Approved);
+            result.CostCentreId.Should().Be(7);
+            result.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().ChangedById.Should().Be(42);
+            result.StatusHistory.Single().FromStatus.Should().Be(TransactionStatus.Submitted);
+            result.StatusHistory.Single().ToStatus.Should().Be(TransactionStatus.Approved);
+            result.StatusHistory.Single().Comment.Should().Be("approved");
+        }
+
+        [Fact]
+        public async Task RequestChanges_ShouldStoreReasonAndHistory_WhenSubmitted()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Submitted,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.RequestChangesPaymentRequestByUserAsync(1, 42, " upload clearer receipt ");
+
+            result.Status.Should().Be(TransactionStatus.ChangesRequested);
+            result.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().FromStatus.Should().Be(TransactionStatus.Submitted);
+            result.StatusHistory.Single().ToStatus.Should().Be(TransactionStatus.ChangesRequested);
+            result.StatusHistory.Single().Comment.Should().Be("upload clearer receipt");
+        }
+
+        [Fact]
+        public async Task Decline_ShouldStoreReasonAndHistory_WhenNotPaid()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.DeclinePaymentRequestByUserAsync(1, 42, " duplicate invoice ");
+
+            result.Status.Should().Be(TransactionStatus.Declined);
+            result.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().FromStatus.Should().Be(TransactionStatus.Approved);
+            result.StatusHistory.Single().ToStatus.Should().Be(TransactionStatus.Declined);
+            result.StatusHistory.Single().Comment.Should().Be("duplicate invoice");
+        }
+
+        [Fact]
+        public async Task Decline_ShouldThrow_WhenInvoiceIsPaid()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Paid,
+                StatusHistory = []
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            Func<Task> act = async () =>
+                await service.DeclinePaymentRequestByUserAsync(1, 42, "duplicate invoice");
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Cannot change invoice status from Paid to Declined");
+        }
+
         // ----------------------------
         // GET RECEIPT
         // ----------------------------

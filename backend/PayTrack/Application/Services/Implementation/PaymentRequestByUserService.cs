@@ -11,7 +11,12 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
+    public class PaymentRequestByUserService(
+        ITransactionRepository repo,
+        ITeamService _teamService,
+        IFileRepository _fileRepo,
+        IBankAccountService _bankAccountService,
+        ICostCentreService? _costCentreService = null) : IPaymentRequestByUserService
     {
         /// <summary>
         /// Repository for PaymentRequestByUsers.
@@ -20,6 +25,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IFileRepository fileRepo = _fileRepo;
         private readonly ITeamService teamService = _teamService;
         private readonly IBankAccountService bankAccountService = _bankAccountService;
+        private readonly ICostCentreService? costCentreService = _costCentreService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -195,27 +201,91 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException("Payment date cannot be in the future!");
             }
 
-            if (!IsStatusTransitionAllowed(transaction.Status, TransactionStatus.Paid))
-            {
-                throw new InvalidStateException($"Cannot change invoice status from {transaction.Status} to {TransactionStatus.Paid}");
-            }
-
-            var previousStatus = transaction.Status;
             var normalizedPaymentDate = DateTime.SpecifyKind(paymentDate, DateTimeKind.Utc);
 
             transaction.PaymentReference = paymentReference.Trim();
             transaction.PurposeOfPayment = purposeOfPayment.Trim();
             transaction.FinancePaidAt = normalizedPaymentDate;
-            transaction.Status = TransactionStatus.Paid;
-            transaction.StatusHistory.Add(new TransactionStatusHistory
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Paid,
+                changedById,
+                $"Payment reference: {transaction.PaymentReference}");
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            int costCentreId,
+            string? reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new() { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (costCentreId <= 0)
             {
-                TransactionId = transaction.Id,
-                ChangedById = changedById,
-                FromStatus = previousStatus,
-                ToStatus = TransactionStatus.Paid,
-                ChangedAt = DateTime.UtcNow,
-                Comment = $"Payment reference: {transaction.PaymentReference}",
-            });
+                throw new InvalidStateException("Cost centre is required");
+            }
+
+            if (this.costCentreService != null)
+            {
+                var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
+                    ?? throw new NotFoundException("Cost centre not found");
+
+                transaction.CostCentreId = costCentre.Id;
+            }
+            else
+            {
+                transaction.CostCentreId = costCentreId;
+            }
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Approved,
+                changedById,
+                NormalizeOptionalReason(reason));
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> DeclinePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new() { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Declined,
+                changedById,
+                normalizedReason);
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> RequestChangesPaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new() { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.ChangesRequested,
+                changedById,
+                normalizedReason);
 
             return await this.repo.UpdateAsync(transaction);
         }
@@ -289,6 +359,45 @@ namespace PayTrack.Application.Services.Implementation
                 (TransactionStatus.Approved, TransactionStatus.Paid) => true,
                 _ => false,
             };
+        }
+
+        private static void AddStatusHistory(
+            PaymentRequestByUser transaction,
+            TransactionStatus toStatus,
+            int changedById,
+            string? comment)
+        {
+            if (!IsStatusTransitionAllowed(transaction.Status, toStatus))
+            {
+                throw new InvalidStateException($"Cannot change invoice status from {transaction.Status} to {toStatus}");
+            }
+
+            var previousStatus = transaction.Status;
+            transaction.Status = toStatus;
+            transaction.StatusHistory.Add(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = changedById,
+                FromStatus = previousStatus,
+                ToStatus = toStatus,
+                ChangedAt = DateTime.UtcNow,
+                Comment = comment,
+            });
+        }
+
+        private static string NormalizeRequiredReason(string reason, string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                throw new InvalidStateException(errorMessage);
+            }
+
+            return reason.Trim();
+        }
+
+        private static string? NormalizeOptionalReason(string? reason)
+        {
+            return string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         }
 
         private static string GetContentTypeFromPath(string filePath)

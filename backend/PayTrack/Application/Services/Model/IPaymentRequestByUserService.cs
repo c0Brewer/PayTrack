@@ -92,6 +92,44 @@ namespace PayTrack.Application.Services.Model
             DateTime paymentDate);
 
         /// <summary>
+        /// Approves a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to approve.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="costCentreId">Cost centre assigned by finance.</param>
+        /// <param name="reason">Optional reason or comment.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            int costCentreId,
+            string? reason);
+
+        /// <summary>
+        /// Declines a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to decline.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="reason">Required decline reason.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> DeclinePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason);
+
+        /// <summary>
+        /// Requests changes for a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to request changes for.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="reason">Required reason describing the requested changes.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> RequestChangesPaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason);
+
+        /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.
         /// </summary>
         /// <param name="query">The query submitted by the client.</param>

@@ -3,12 +3,15 @@ import { from, Observable } from 'rxjs';
 
 import { client } from '../../client';
 import {
+  ApprovePaymentRequestByUserDto,
   CreatePaymentRequestByUserDto,
+  DeclinePaymentRequestByUserDto,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
   MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
@@ -129,6 +132,69 @@ export class PaymentRequestByUserService {
           },
         },
         body: markPaidRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public approvePaymentRequestByUser(
+    id: number,
+    approveRequest: ApprovePaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/approve', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: approveRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public declinePaymentRequestByUser(
+    id: number,
+    declineRequest: DeclinePaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/decline', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: declineRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public requestChangesForPaymentRequestByUser(
+    id: number,
+    requestChangesRequest: RequestChangesPaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/request-changes', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: requestChangesRequest,
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');

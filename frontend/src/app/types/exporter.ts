@@ -34,6 +34,12 @@ export type CreatePaymentRequestByUserDto = components['schemas']['CreatePayment
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
 export type MarkPaymentRequestByUserAsPaidDto =
   components['schemas']['MarkPaymentRequestByUserAsPaidDto'];
+export type ApprovePaymentRequestByUserDto =
+  components['schemas']['ApprovePaymentRequestByUserDto'];
+export type DeclinePaymentRequestByUserDto =
+  components['schemas']['DeclinePaymentRequestByUserDto'];
+export type RequestChangesPaymentRequestByUserDto =
+  components['schemas']['RequestChangesPaymentRequestByUserDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
