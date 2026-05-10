@@ -2,7 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-namespace PayTrack.Api.Endpoints
+namespace PayTrack.Application.Dto.Health
 {
     /// <summary>
     /// Shared state for readiness and graceful shutdown endpoints.
