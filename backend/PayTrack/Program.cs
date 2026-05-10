@@ -106,6 +106,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+var frontendIndexPath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "index.html");
+var hasFrontendBundle = File.Exists(frontendIndexPath);
 
 // Auto-apply migrations (According to Config)
 var migrationsRunConfig = builder.Configuration.GetValue<bool>("Migrations:Auto");
@@ -145,6 +147,12 @@ if (app.Environment.IsDevelopment())
 app.UseCors("frontend");
 app.MapHealthEndpoints();
 
+if (hasFrontendBundle)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
 var apiV1 = app
     .MapGroup("/api/v1")
     .AddEndpointFilter<AutoValidationFilter>()
@@ -156,6 +164,11 @@ apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
+
+if (hasFrontendBundle)
+{
+    app.MapFallbackToFile("index.html");
+}
 
 await app.RunAsync();
 

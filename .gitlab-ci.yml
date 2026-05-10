@@ -10,10 +10,13 @@ stages:
 variables:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "true"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   NODE_ENV: "ci"
   GIT_STRATEGY: clone
+  K8S_NAMESPACE: "26ss-ase-pr-qse-08"
+  K8S_HOST: "26ss-ase-pr-qse-08.apps.student.inso-w.at"
+  GOOGLE_CLIENT_ID: "727777231080-l2rd54f5cm1jjaiscnke940co92u0tsf.apps.googleusercontent.com"
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
-  FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
   POSTGRES_IMAGE: "postgres:16-alpine"
 
 default:
@@ -25,7 +28,9 @@ frontend_install:
   image: node:20
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -40,7 +45,9 @@ backend_restore:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   script:
     - cd backend
     - dotnet restore ./PayTrack/PayTrack.csproj
@@ -58,7 +65,9 @@ frontend_lint:
     - frontend_install
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -71,8 +80,11 @@ frontend_build:
   dependencies:
     - frontend_install
   rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -88,7 +100,9 @@ backend_format:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_restore
   script:
@@ -101,7 +115,9 @@ backend_build:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_restore
   script:
@@ -119,7 +135,9 @@ backend_test:
   image: mcr.microsoft.com/dotnet/sdk:10.0
   rules:
     - changes:
+        - .gitlab-ci.yml
         - backend/**/*
+        - k8s/**/*
   dependencies:
     - backend_build
   script:
@@ -134,7 +152,9 @@ frontend_test:
     - frontend_install
   rules:
     - changes:
+        - .gitlab-ci.yml
         - frontend/**/*
+        - k8s/**/*
   script:
     - cd frontend
     - npm ci
@@ -145,50 +165,37 @@ frontend_test:
     paths:
       - frontend/coverage
 
-# Shared Kaniko setup for container image builds
-.kaniko:
-  stage: package
-  image:
-    name: gcr.io/kaniko-project/executor:v1.23.2-debug
-    entrypoint: [""]
-  before_script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-  rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-
 # Build and push backend image to the GitLab registry
 package_backend:
-  extends: .kaniko
+  stage: package
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  dependencies:
+    - frontend_build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
-    - /kaniko/executor --context "$CI_PROJECT_DIR/backend" --dockerfile "$CI_PROJECT_DIR/backend/Dockerfile" --destination "$BACKEND_IMAGE:$CI_PIPELINE_ID" --destination "$BACKEND_IMAGE:latest"
+    - cd backend
+    - mkdir -p ./PayTrack/wwwroot
+    - rm -rf ./PayTrack/wwwroot/*
+    - cp -r ../frontend/dist/pay-track/browser/. ./PayTrack/wwwroot/
+    - export DOTNET_CONTAINER_REGISTRY_UNAME="$CI_REGISTRY_USER"
+    - export DOTNET_CONTAINER_REGISTRY_PWORD="$CI_REGISTRY_PASSWORD"
+    - dotnet restore ./PayTrack/PayTrack.csproj
+    - dotnet publish ./PayTrack/PayTrack.csproj --configuration Release --no-restore /t:PublishContainer -p:ContainerRegistry=$CI_REGISTRY -p:ContainerRepository="$CI_PROJECT_PATH/backend" -p:ContainerImageTag="$CI_PIPELINE_ID"
+    - dotnet publish ./PayTrack/PayTrack.csproj --configuration Release --no-restore /t:PublishContainer -p:ContainerRegistry=$CI_REGISTRY -p:ContainerRepository="$CI_PROJECT_PATH/backend" -p:ContainerImageTag="latest"
 
-# Build and push frontend image to the GitLab registry
-package_frontend:
-  extends: .kaniko
-  script:
-    - test -n "$GOOGLE_CLIENT_ID"
-    - /kaniko/executor --context "$CI_PROJECT_DIR/frontend" --dockerfile "$CI_PROJECT_DIR/frontend/Dockerfile" --build-arg GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" --build-arg API_BASE_URL="" --destination "$FRONTEND_IMAGE:$CI_PIPELINE_ID" --destination "$FRONTEND_IMAGE:latest"
-
-# Deploy the current pipeline images into the Kubernetes namespace
+# Deploy the current pipeline image into the Kubernetes namespace
 deploy_production:
   stage: deploy
   image: bitnami/kubectl:latest
   needs:
     - package_backend
-    - package_frontend
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
     - test -n "$K8S_NAMESPACE"
     - test -n "$K8S_HOST"
-    - test -n "$JWT_SECRET"
-    - test -n "$POSTGRES_DB"
-    - test -n "$POSTGRES_USER"
-    - test -n "$POSTGRES_PASSWORD"
-    - export CONNECTION_STRING="Host=paytrack-postgres;Port=5432;Database=$POSTGRES_DB;Username=$POSTGRES_USER;Password=$POSTGRES_PASSWORD"
-    - kubectl create secret generic paytrack-secrets --namespace "$K8S_NAMESPACE" --from-literal=POSTGRES_DB="$POSTGRES_DB" --from-literal=POSTGRES_USER="$POSTGRES_USER" --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" --from-literal=JWT__Secret="$JWT_SECRET" --from-literal=ConnectionStrings__Default="$CONNECTION_STRING" --dry-run=client -o yaml | kubectl apply -f -
-    - sed -e "s|__NAMESPACE__|$K8S_NAMESPACE|g" -e "s|__HOST__|$K8S_HOST|g" -e "s|__BACKEND_IMAGE__|$BACKEND_IMAGE:$CI_PIPELINE_ID|g" -e "s|__FRONTEND_IMAGE__|$FRONTEND_IMAGE:$CI_PIPELINE_ID|g" -e "s|__POSTGRES_IMAGE__|$POSTGRES_IMAGE|g" k8s/deployment.yaml | kubectl apply -f -
+    - kubectl get secret paytrack-secrets --namespace "$K8S_NAMESPACE"
+    - sed -e "s|__NAMESPACE__|$K8S_NAMESPACE|g" -e "s|__HOST__|$K8S_HOST|g" -e "s|__BACKEND_IMAGE__|$BACKEND_IMAGE:$CI_PIPELINE_ID|g" -e "s|__POSTGRES_IMAGE__|$POSTGRES_IMAGE|g" k8s/deployment.yaml | kubectl apply -f -
     - kubectl rollout status deployment/paytrack-postgres --namespace "$K8S_NAMESPACE" --timeout=180s
     - kubectl rollout status deployment/paytrack-backend --namespace "$K8S_NAMESPACE" --timeout=180s
-    - kubectl rollout status deployment/paytrack-frontend --namespace "$K8S_NAMESPACE" --timeout=180s
