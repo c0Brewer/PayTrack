@@ -27,27 +27,32 @@ spec:
       labels:
         app: paytrack-postgres
     spec:
+      securityContext:
+        fsGroup: 1001
       containers:
         - name: postgres
           image: __POSTGRES_IMAGE__
           ports:
             - containerPort: 5432
           env:
-            - name: POSTGRES_DB
+            - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: POSTGRES_DB
-            - name: POSTGRES_USER
+            - name: POSTGRESQL_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: POSTGRES_PASSWORD
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
           resources:
             requests:
               memory: "256Mi"
@@ -59,7 +64,7 @@ spec:
               ephemeral-storage: "300Mi"
           volumeMounts:
             - name: postgres-data
-              mountPath: /var/lib/postgresql/data
+              mountPath: /bitnami/postgresql
           readinessProbe:
             tcpSocket:
               port: 5432
