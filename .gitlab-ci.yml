@@ -17,7 +17,7 @@ variables:
   K8S_HOST: "26ss-ase-pr-qse-08.apps.student.inso-w.at"
   GOOGLE_CLIENT_ID: "727777231080-l2rd54f5cm1jjaiscnke940co92u0tsf.apps.googleusercontent.com"
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
-  POSTGRES_IMAGE: "bitnami/postgresql:17"
+  POSTGRES_IMAGE: "bitnami/postgresql:latest"
 
 default:
   interruptible: true
