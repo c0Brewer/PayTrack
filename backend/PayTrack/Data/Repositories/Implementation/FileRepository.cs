@@ -17,7 +17,7 @@ namespace PayTrack.Data.Repositories.Implementation
     public class FileRepository(IConfiguration _config) : IFileRepository
     {
         private readonly string fileUploadPath = _config["Data:FileUploadPath"] ?? throw new InternalErrorException("Could not load file upload path.");
-        private readonly bool googleDriveEnabled = _config.GetValue<bool>("GoogleDrive:Enabled");
+        private readonly bool googleDriveEnabled = _config.GetValue("GoogleDrive:Enabled", false);
         private readonly string googleDriveAuthenticationMode = _config["GoogleDrive:AuthenticationMode"] ?? "ServiceAccount";
         private readonly string? googleDriveRootFolderId = _config["GoogleDrive:RootFolderId"];
         private readonly string? googleDriveServiceAccountKeyPath = _config["GoogleDrive:ServiceAccountKeyPath"];

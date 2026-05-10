@@ -41,6 +41,16 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 .Build();
         }
 
+        private static IConfiguration CreateConfigWithoutGoogleDriveEnabled(string path)
+        {
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Data:FileUploadPath"] = path,
+                })
+                .Build();
+        }
+
         private static IFormFile CreateMockFile(byte[] data, string fileName = "test.pdf")
         {
             return new FormFile(
@@ -73,6 +83,23 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var content = await File.ReadAllBytesAsync(result);
             content.Should().Equal(1, 2, 3);
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldNotArchiveToGoogleDrive_WhenEnabledFlagIsMissing()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveDefaultDisabled");
+            var config = CreateConfigWithoutGoogleDriveEnabled(folder);
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3], "test.pdf");
+
+            // Act
+            var result = await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            File.Exists(result).Should().BeTrue();
         }
 
         [Fact]
