@@ -57,7 +57,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
+    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
   ) {}
 
@@ -113,7 +113,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
             this.teams = teams.items;
           }
 
-          this.cdr.markForCheck();
+          this.changeDetectorRef.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -127,7 +127,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         next: (bankAccounts) => {
           this.bankAccounts = bankAccounts;
 
-          this.cdr.markForCheck();
+          this.changeDetectorRef.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
