@@ -57,7 +57,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
-    private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly cdr: ChangeDetectorRef,
     private readonly ngZone: NgZone,
   ) {}
 
