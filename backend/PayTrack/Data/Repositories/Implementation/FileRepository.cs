@@ -7,6 +7,7 @@ using System.Globalization;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
+using Google.Apis.Util.Store;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Repositories.Model;
 
@@ -17,8 +18,11 @@ namespace PayTrack.Data.Repositories.Implementation
     {
         private readonly string fileUploadPath = _config["Data:FileUploadPath"] ?? throw new InternalErrorException("Could not load file upload path.");
         private readonly bool googleDriveEnabled = _config.GetValue<bool>("GoogleDrive:Enabled");
+        private readonly string googleDriveAuthenticationMode = _config["GoogleDrive:AuthenticationMode"] ?? "ServiceAccount";
         private readonly string? googleDriveRootFolderId = _config["GoogleDrive:RootFolderId"];
         private readonly string? googleDriveServiceAccountKeyPath = _config["GoogleDrive:ServiceAccountKeyPath"];
+        private readonly string? googleDriveOAuthClientSecretsPath = _config["GoogleDrive:OAuthClientSecretsPath"];
+        private readonly string googleDriveOAuthTokenStorePath = _config["GoogleDrive:OAuthTokenStorePath"] ?? "google-drive-token";
 
         /// <inheritdoc/>
         public async Task<byte[]> GetByPath(string filePath)
@@ -109,17 +113,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 throw new InternalErrorException("Google Drive root folder id is not configured.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.googleDriveServiceAccountKeyPath))
-            {
-                throw new InternalErrorException("Google Drive service account key path is not configured.");
-            }
-
-            if (!File.Exists(this.googleDriveServiceAccountKeyPath))
-            {
-                throw new InternalErrorException("Google Drive service account key file could not be found.");
-            }
-
-            using var driveService = this.CreateDriveService();
+            using var driveService = await this.CreateDriveServiceAsync();
             var now = DateTime.UtcNow;
             var yearFolderId = await this.GetOrCreateFolderAsync(driveService, now.Year.ToString(CultureInfo.InvariantCulture), this.googleDriveRootFolderId);
             var monthFolderId = await this.GetOrCreateFolderAsync(driveService, now.ToString("MMMM", CultureInfo.InvariantCulture), yearFolderId);
@@ -138,8 +132,24 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (result.Status != Google.Apis.Upload.UploadStatus.Completed)
             {
-                throw new InternalErrorException("Uploading invoice to Google Drive failed.");
+                var errorMessage = result.Exception?.Message ?? result.Status.ToString();
+                throw new InternalErrorException($"Uploading invoice to Google Drive failed: {errorMessage}");
             }
+        }
+
+        /// <summary>
+        /// Creates an authenticated Google Drive service using the configured authentication mode.
+        /// </summary>
+        /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
+        [ExcludeFromCodeCoverage]
+        private async Task<DriveService> CreateDriveServiceAsync()
+        {
+            return this.googleDriveAuthenticationMode.ToLowerInvariant() switch
+            {
+                "oauth" => await this.CreateOAuthDriveServiceAsync(),
+                "serviceaccount" => this.CreateServiceAccountDriveService(),
+                _ => throw new InternalErrorException("Google Drive authentication mode is not supported."),
+            };
         }
 
         /// <summary>
@@ -147,12 +157,55 @@ namespace PayTrack.Data.Repositories.Implementation
         /// </summary>
         /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
         [ExcludeFromCodeCoverage]
-        private DriveService CreateDriveService()
+        private DriveService CreateServiceAccountDriveService()
         {
+            if (string.IsNullOrWhiteSpace(this.googleDriveServiceAccountKeyPath))
+            {
+                throw new InternalErrorException("Google Drive service account key path is not configured.");
+            }
+
+            if (!File.Exists(this.googleDriveServiceAccountKeyPath))
+            {
+                throw new InternalErrorException("Google Drive service account key file could not be found.");
+            }
+
             var credential = CredentialFactory
                 .FromFile<ServiceAccountCredential>(this.googleDriveServiceAccountKeyPath)
                 .ToGoogleCredential()
-                .CreateScoped(DriveService.Scope.DriveFile);
+                .CreateScoped(DriveService.Scope.Drive);
+
+            return new DriveService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "PayTrack",
+            });
+        }
+
+        /// <summary>
+        /// Creates an authenticated Google Drive service using an OAuth user consent flow.
+        /// </summary>
+        /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
+        [ExcludeFromCodeCoverage]
+        private async Task<DriveService> CreateOAuthDriveServiceAsync()
+        {
+            if (string.IsNullOrWhiteSpace(this.googleDriveOAuthClientSecretsPath))
+            {
+                throw new InternalErrorException("Google Drive OAuth client secrets path is not configured.");
+            }
+
+            if (!File.Exists(this.googleDriveOAuthClientSecretsPath))
+            {
+                throw new InternalErrorException("Google Drive OAuth client secrets file could not be found.");
+            }
+
+            await using var stream = File.OpenRead(this.googleDriveOAuthClientSecretsPath);
+            var clientSecrets = GoogleClientSecrets.FromStream(stream).Secrets;
+            var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                clientSecrets,
+                [DriveService.Scope.Drive],
+                "paytrack-drive-archive",
+                CancellationToken.None,
+                new FileDataStore(this.googleDriveOAuthTokenStorePath, true));
 
             return new DriveService(new BaseClientService.Initializer
             {
