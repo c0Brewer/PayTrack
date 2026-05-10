@@ -18,15 +18,24 @@ namespace PayTrack.Api.Handler
     public static class PaymentRequestByUserHandler
     {
         /// <summary>
-        /// Returns all PaymentRequestByUsers.
+        /// Returns all PaymentRequestByUsers visible to the currently authenticated user.
         /// </summary>
         /// <param name="query">Query object including all query options.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
         /// <param name="paymentRequestByUserService">Dependency injected PaymentRequestByUser service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<PaginatedResponse<PaymentRequestByUserDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUsersAsync(
             [AsParameters] GetPaymentRequestByUserQuery query,
+            IAuthService authService,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            if (!paymentRequestByUserService.ValidateQuery(query, currentUser))
+            {
+                throw new ForbiddenException("You do not have permission to access these invoices.");
+            }
+
             var (paymentRequestByUserList, totalCount) = await paymentRequestByUserService.GetAllAsync(query);
 
             var paymentRequestByUserListDto = PaymentRequestByUserMapper.ListToDto(paymentRequestByUserList);
@@ -37,18 +46,27 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
-        /// Returns a PaymentRequestByUser by ID.
+        /// Returns a PaymentRequestByUser by ID, only if the current user has access to it.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="query">Query object including all query options.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
         /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUserByIdAsync(
             [FromRoute] int id,
             [AsParameters] GetPaymentRequestByUserQueryById query,
+            IAuthService authService,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
             var paymentRequestByUser = await paymentRequestByUserService.GetPaymentRequestByUserByIdAsync(id, query) ?? throw new NotFoundException("PaymentRequestByUser could not be found");
+
+            if (!paymentRequestByUserService.ValidateAccessToInvoice(paymentRequestByUser, currentUser))
+            {
+                throw new ForbiddenException("You do not have permission to access this invoice.");
+            }
 
             var paymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(paymentRequestByUser);
 
@@ -139,18 +157,29 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
-        /// Returns a PaymentRequestByUser by ID.
+        /// Returns the receipt file for a PaymentRequestByUser, only if the current user has access to it.
         /// </summary>
         /// <param name="id">id.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
         /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<FileContentHttpResult, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByUserByIdReceiptAsync(
             [FromRoute] int id,
+            IAuthService authService,
             IPaymentRequestByUserService paymentRequestByUserService)
         {
-            var file = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id) ?? throw new NotFoundException("Could not load file");
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
 
-            return TypedResults.File(file, "application/octet-stream");
+            var invoice = await paymentRequestByUserService.GetPaymentRequestByUserByIdAsync(id, null) ?? throw new NotFoundException("PaymentRequestByUser could not be found");
+
+            if (!paymentRequestByUserService.ValidateAccessToInvoice(invoice, currentUser))
+            {
+                throw new ForbiddenException("You do not have permission to access this invoice.");
+            }
+
+            var (file, contentType) = await paymentRequestByUserService.GetReceiptForPaymentRequestByUserByIdAsync(id);
+
+            return TypedResults.File(file, contentType);
         }
     }
 }

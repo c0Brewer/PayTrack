@@ -190,16 +190,61 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id)
+        public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
 
-            if (paymentRequest?.ReceiptUrl == null)
+            if (string.IsNullOrEmpty(paymentRequest?.ReceiptUrl))
             {
                 throw new InvalidStateException("Receipt URL is null although it should not be.");
             }
 
-            return await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var content = await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var contentType = GetContentTypeFromPath(paymentRequest.ReceiptUrl);
+            return (content, contentType);
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateQuery(GetPaymentRequestByUserQuery query, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => query.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                  && query.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateAccessToInvoice(PaymentRequestByUser invoice, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => invoice.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                && invoice.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
+        private static string GetContentTypeFromPath(string filePath)
+        {
+            return Path.GetExtension(filePath).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".pdf" => "application/pdf",
+                _ => "application/octet-stream",
+            };
         }
 
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(

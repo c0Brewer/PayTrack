@@ -386,7 +386,163 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var result = await service.GetReceiptForPaymentRequestByUserByIdAsync(1);
 
-            result.Should().Equal(1, 2, 3);
+            result.content.Should().Equal(1, 2, 3);
+            result.contentType.Should().Be("application/pdf");
+        }
+
+        // ----------------------------
+        // VALIDATE QUERY
+        // ----------------------------
+        [Fact]
+        public void ValidateQuery_RegularUser_ReturnsTrue_WhenUserIdMatchesCurrent()
+        {
+            var service = BuildService();
+            var user = new User { Id = 5, Role = Role.RegularUser };
+            var query = new GetPaymentRequestByUserQuery { UserId = 5 };
+
+            service.ValidateQuery(query, user).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateQuery_RegularUser_ReturnsFalse_WhenUserIdDiffers()
+        {
+            var service = BuildService();
+            var user = new User { Id = 5, Role = Role.RegularUser };
+            var query = new GetPaymentRequestByUserQuery { UserId = 99 };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_RegularUser_ReturnsFalse_WhenUserIdIsNull()
+        {
+            var service = BuildService();
+            var user = new User { Id = 5, Role = Role.RegularUser };
+            var query = new GetPaymentRequestByUserQuery { UserId = null };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_TeamLead_ReturnsTrue_WhenTeamIdMatchesCurrent()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var query = new GetPaymentRequestByUserQuery { TeamId = 10 };
+
+            service.ValidateQuery(query, user).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateQuery_TeamLead_ReturnsFalse_WhenTeamIdDiffers()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var query = new GetPaymentRequestByUserQuery { TeamId = 99 };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_TeamLead_ReturnsFalse_WhenTeamIdIsNull()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var query = new GetPaymentRequestByUserQuery { TeamId = null };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_TeamLead_ReturnsFalse_WhenUserHasNoTeam()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = null };
+            var query = new GetPaymentRequestByUserQuery { TeamId = 10 };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_Admin_ReturnsTrue_Always()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.Admin };
+            var query = new GetPaymentRequestByUserQuery { UserId = 99, TeamId = 99 };
+
+            service.ValidateQuery(query, user).Should().BeTrue();
+        }
+
+        // ----------------------------
+        // VALIDATE ACCESS TO INVOICE
+        // ----------------------------
+        [Fact]
+        public void ValidateAccessToInvoice_RegularUser_ReturnsTrue_WhenOwner()
+        {
+            var service = BuildService();
+            var user = new User { Id = 5, Role = Role.RegularUser };
+            var invoice = new PaymentRequestByUser { UserId = 5, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateAccessToInvoice_RegularUser_ReturnsFalse_WhenNotOwner()
+        {
+            var service = BuildService();
+            var user = new User { Id = 5, Role = Role.RegularUser };
+            var invoice = new PaymentRequestByUser { UserId = 99, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateAccessToInvoice_TeamLead_ReturnsTrue_WhenSameTeam()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var invoice = new PaymentRequestByUser { TeamId = 10, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateAccessToInvoice_TeamLead_ReturnsFalse_WhenDifferentTeam()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var invoice = new PaymentRequestByUser { TeamId = 99, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateAccessToInvoice_TeamLead_ReturnsFalse_WhenUserHasNoTeam()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = null };
+            var invoice = new PaymentRequestByUser { TeamId = 10, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateAccessToInvoice_Admin_ReturnsTrue_Always()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.Admin };
+            var invoice = new PaymentRequestByUser { UserId = 99, TeamId = 99, InvoiceNumber = "1" };
+
+            service.ValidateAccessToInvoice(invoice, user).Should().BeTrue();
+        }
+
+        private static PaymentRequestByUserService BuildService()
+        {
+            return new PaymentRequestByUserService(
+                new Mock<ITransactionRepository>().Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object);
         }
 
         [Fact]

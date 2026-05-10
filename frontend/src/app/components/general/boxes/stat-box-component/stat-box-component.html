@@ -1,0 +1,17 @@
+<section class="stat-box" [class.stat-box--small]="size() === 'small'">
+  <div class="stat-box__content">
+    <p class="stat-box__header">{{ header() }}</p>
+    <strong class="stat-box__value">{{ content() }}</strong>
+  </div>
+
+  @if (icon()) {
+    <div
+      class="stat-box__icon"
+      [style.background-color]="iconBackgroundColor()"
+      [style.color]="iconColor()"
+      aria-hidden="true"
+    >
+      <span class="material-symbols-outlined">{{ icon() }}</span>
+    </div>
+  }
+</section>

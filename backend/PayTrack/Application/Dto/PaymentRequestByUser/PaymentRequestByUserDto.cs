@@ -19,50 +19,39 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [property: Required]
         int Id,
 
-        [property: Required]
         UserDto? User,
 
         [property: Required]
         decimal Amount,
 
-        [property: Required]
         string? PurposeOfPayment,
 
-        [property: Required]
         string? PaymentReference,
 
         [property: Required]
         TransactionStatus Status,
 
-        [property: Required]
         CostCentreDto? CostCentre,
 
-        [property: Required]
         TeamDto? Team,
 
-        [property: Required]
         PaymentDirection? PaymentDirection,
 
-        [property: Required]
         ICollection<TransactionStatusHistoryDto>? StatusHistory,
 
-        [property: Required]
         DateTime? CreatedAt,
 
-        [property: Required]
         DateTime? PaidAt,
 
         [property: Required]
         [property: MinLength(3)]
         string InvoiceNumber,
 
-        [property: Required]
         [property: MinLength(3)]
         string? Comment,
 
         [property: Required]
         PayoutType PayoutType,
 
-        [property: Required]
         BankAccountDto? BankAccount);
 }

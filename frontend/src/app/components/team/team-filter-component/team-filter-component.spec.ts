@@ -49,24 +49,6 @@ describe('TeamFilterComponent', () => {
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ Description: 'Core systems' }));
   });
 
-  it('should convert the minimum budget input into a number before emitting', () => {
-    const spy = vi.spyOn(component.updateFilter, 'emit');
-
-    component.onMinBudgetFilterChange({ target: { value: '250' } } as unknown as Event);
-    vi.advanceTimersByTime(100);
-
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ MinBudget: 250 }));
-  });
-
-  it('should convert the maximum budget input into a number before emitting', () => {
-    const spy = vi.spyOn(component.updateFilter, 'emit');
-
-    component.onMaxBudgetFilterChange({ target: { value: '900' } } as unknown as Event);
-    vi.advanceTimersByTime(100);
-
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ MaxBudget: 900 }));
-  });
-
   it('should emit the new limit when the page size changes', () => {
     const spy = vi.spyOn(component.limitChange, 'emit');
     component.limit = 25;
@@ -79,16 +61,12 @@ describe('TeamFilterComponent', () => {
   it('getGetTeamOptions should build the team query object used by the parent component', () => {
     component.filterName = 'Platform';
     component.filterDescription = 'Core systems';
-    component.filterMinBudget = 100;
-    component.filterMaxBudget = 900;
 
     const options: GetTeamOptions = component.getGetTeamOptions();
 
     expect(options).toEqual({
       Name: 'Platform',
       Description: 'Core systems',
-      MinBudget: 100,
-      MaxBudget: 900,
       Limit: undefined,
       Offset: undefined,
     });

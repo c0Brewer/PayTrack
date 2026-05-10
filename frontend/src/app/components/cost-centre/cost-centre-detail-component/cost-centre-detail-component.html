@@ -1,5 +1,7 @@
 <div class="cost-centre-detail">
-  <button class="back-btn" (click)="goBack()"><span class="material-symbols-outlined">arrow_back</span> Back to Cost Centres</button>
+  <button class="back-btn" (click)="goBack()">
+    <span class="material-symbols-outlined">arrow_back</span> Back to Cost Centres
+  </button>
 
   @if (costCentre) {
     <div class="detail-card">
@@ -19,7 +21,8 @@
             <th>Description</th>
             <td>{{ costCentre.description ?? '—' }}</td>
           </tr>
-     </table>
+        </tbody>
+      </table>
 
       <h3>Budgets ({{ (costCentre.budgets ?? []).length }})</h3>
 
@@ -35,9 +38,9 @@
             </tr>
           </thead>
           <tbody>
-            @for (b of (costCentre.budgets ?? []); track b.id) {
+            @for (b of costCentre.budgets ?? []; track b.id) {
               <tr>
-                <td>{{ b.targetAmount }}</td>
+                <td>{{ formatBudgetAmount(b.targetAmount) }}</td>
                 <td>{{ b.periodStart | slice: 0 : 10 }}</td>
                 <td>{{ b.periodEnd | slice: 0 : 10 }}</td>
               </tr>

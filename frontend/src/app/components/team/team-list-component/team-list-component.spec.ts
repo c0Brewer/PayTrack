@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
-import { TeamDto } from '../../../types/exporter';
+import { CostCentreDto, TeamDto } from '../../../types/exporter';
 
 import { TeamListComponent } from './team-list-component';
 
@@ -27,6 +28,7 @@ describe('TeamListComponent', () => {
       name: 'Platform',
       description: 'Builds product features',
       displayColor: '#2563eb',
+      isActive: true,
       members: [mockMember],
       budgets: [
         {
@@ -45,6 +47,30 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
         },
+        {
+          id: 4,
+          costCentreId: 12,
+          teamId: 1,
+          targetAmount: 6000,
+          periodStart: buildBudgetDate(-20, 'start'),
+          periodEnd: buildBudgetDate(20, 'end'),
+        },
+        {
+          id: 5,
+          costCentreId: 13,
+          teamId: 1,
+          targetAmount: 7000,
+          periodStart: buildBudgetDate(-10, 'start'),
+          periodEnd: buildBudgetDate(10, 'end'),
+        },
+        {
+          id: 6,
+          costCentreId: 14,
+          teamId: 1,
+          targetAmount: 8000,
+          periodStart: buildBudgetDate(-5, 'start'),
+          periodEnd: buildBudgetDate(5, 'end'),
+        },
       ],
     },
     {
@@ -52,8 +78,44 @@ describe('TeamListComponent', () => {
       name: 'Operations',
       description: null,
       displayColor: null,
+      isActive: false,
       members: null,
       budgets: undefined,
+    },
+  ];
+
+  const mockCostCentres: CostCentreDto[] = [
+    {
+      id: 10,
+      name: 'Vehicle',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    },
+    {
+      id: 12,
+      name: 'Operations',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    },
+    {
+      id: 13,
+      name: 'Software',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    },
+    {
+      id: 14,
+      name: 'Travel',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
     },
   ];
 
@@ -62,6 +124,7 @@ describe('TeamListComponent', () => {
     name: 'Finance',
     description: 'No active budget',
     displayColor: '#0f766e',
+    isActive: true,
     members: [],
     budgets: [
       {
@@ -78,6 +141,7 @@ describe('TeamListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TeamListComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TeamListComponent);
@@ -108,12 +172,37 @@ describe('TeamListComponent', () => {
     expect(component.getDisplayColor(mockTeams[1])).toBe('transparent');
   });
 
-  it('should count members and return the active target amount for the current date', () => {
+  it('should count members and return all active budgets for the current date', () => {
     expect(component.getMembersCount(mockTeams[0])).toBe(1);
     expect(component.getMembersCount(mockTeams[1])).toBe(0);
-    expect(component.getBudgetTargetAmount(mockTeams[0])).toBe(5000);
-    expect(component.getBudgetTargetAmount(mockTeams[1])).toBeNull();
-    expect(component.getBudgetTargetAmount(nonMatchingBudgetTeam)).toBeNull();
+    expect(component.getCurrentBudgets(mockTeams[0]).map((budget) => budget.targetAmount)).toEqual([
+      5000, 6000, 7000, 8000,
+    ]);
+    expect(component.getCurrentBudgets(mockTeams[1])).toEqual([]);
+    expect(component.getCurrentBudgets(nonMatchingBudgetTeam)).toEqual([]);
+  });
+
+  it('should limit visible active budgets to three until expanded', () => {
+    expect(
+      component.getVisibleCurrentBudgets(mockTeams[0]).map((budget) => budget.targetAmount),
+    ).toEqual([5000, 6000, 7000]);
+    expect(component.getHiddenCurrentBudgetCount(mockTeams[0])).toBe(1);
+    expect(component.hasHiddenCurrentBudgets(mockTeams[0])).toBe(true);
+
+    component.toggleBudgetList(mockTeams[0]);
+
+    expect(
+      component.getVisibleCurrentBudgets(mockTeams[0]).map((budget) => budget.targetAmount),
+    ).toEqual([5000, 6000, 7000, 8000]);
+  });
+
+  it('should include the corresponding cost centre name in the budget display value', () => {
+    component.costCentres = mockCostCentres;
+
+    expect(component.getBudgetDisplayValue(mockTeams[0].budgets![1])).toBe('Vehicle: 5.000 €');
+    expect(component.getBudgetDisplayValue(nonMatchingBudgetTeam.budgets![0])).toBe(
+      'Cost centre #11: 7.000 €',
+    );
   });
 
   it('should accept @Input teams and render one row per team', () => {
@@ -127,7 +216,7 @@ describe('TeamListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('should always render the member count and team budget columns', () => {
+  it('should always render the member count and status columns', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
@@ -137,14 +226,26 @@ describe('TeamListComponent', () => {
     );
 
     expect(headers).toContain('Member Count');
-    expect(headers).toContain('Team Budget');
+    expect(headers).toContain('Status');
   });
 
-  it('should render the member count and current team budget in each row', () => {
+  it('should render status badges for active and inactive teams', () => {
     fixture.componentRef.setInput('teams', mockTeams);
     fixture.detectChanges();
 
-    const columns = fixture.nativeElement.querySelectorAll('colgroup col');
+    const badges = Array.from(
+      fixture.nativeElement.querySelectorAll('.status-badge') as NodeListOf<HTMLSpanElement>,
+      (badge) => badge.textContent?.trim(),
+    );
+
+    expect(badges).toEqual(['Active', 'Inactive']);
+  });
+
+  it('should render the member count in each row', () => {
+    fixture.componentRef.setInput('teams', mockTeams);
+    fixture.componentRef.setInput('costCentres', mockCostCentres);
+    fixture.detectChanges();
+
     const firstRowCells = Array.from(
       fixture.nativeElement.querySelectorAll(
         'tbody tr:first-child td',
@@ -158,10 +259,9 @@ describe('TeamListComponent', () => {
       (cell) => cell.textContent?.trim(),
     );
 
-    expect(columns.length).toBe(5);
     expect(firstRowCells).toContain('1');
-    expect(firstRowCells).toContain('5000 €');
-    expect(secondRowCells).toContain('No budget set');
+    expect(firstRowCells).toContain('Active');
+    expect(secondRowCells).toContain('Inactive');
   });
 
   it('should render the empty-state row when no teams are available', () => {
@@ -178,7 +278,7 @@ describe('TeamListComponent', () => {
 
     const emptyStateCell = fixture.nativeElement.querySelector('tbody tr td');
 
-    expect(emptyStateCell.getAttribute('colspan')).toBe('5');
+    expect(emptyStateCell.getAttribute('colspan')).toBe('6');
   });
 });
 
