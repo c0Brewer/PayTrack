@@ -177,7 +177,7 @@ package_backend:
     - cd backend
     - mkdir -p ./PayTrack/wwwroot
     - rm -rf ./PayTrack/wwwroot/*
-    - cp -r ../frontend/dist/pay-track/browser/. ./PayTrack/wwwroot/
+    - cp -r ../frontend/dist/PayTrack/browser/. ./PayTrack/wwwroot/
     - export DOTNET_CONTAINER_REGISTRY_UNAME="$CI_REGISTRY_USER"
     - export DOTNET_CONTAINER_REGISTRY_PWORD="$CI_REGISTRY_PASSWORD"
     - dotnet restore ./PayTrack/PayTrack.csproj
