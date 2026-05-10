@@ -65,6 +65,8 @@ spec:
           volumeMounts:
             - name: postgres-config
               mountPath: /opt/bitnami/postgresql/conf
+            - name: postgres-tmp
+              mountPath: /opt/bitnami/postgresql/tmp
             - name: postgres-data
               mountPath: /bitnami/postgresql
           readinessProbe:
@@ -74,6 +76,8 @@ spec:
             periodSeconds: 5
       volumes:
         - name: postgres-config
+          emptyDir: {}
+        - name: postgres-tmp
           emptyDir: {}
         - name: postgres-data
           emptyDir: {}
