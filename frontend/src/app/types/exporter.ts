@@ -32,11 +32,15 @@ export type PaginatedPaymentRequestByUserDto =
 export type PaymentRequestByUserDto = components['schemas']['PaymentRequestByUserDto'];
 export type CreatePaymentRequestByUserDto = components['schemas']['CreatePaymentRequestByUserDto'];
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
+export type DuplicatePaymentRequestByUserDto =
+  components['schemas']['DuplicatePaymentRequestByUserDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
+export type GetDuplicatePaymentRequestsByUserOptions =
+  paths['/api/v1/transaction/user/duplicate']['get']['parameters']['query'];
 
 export enum PayoutType {
   User = 0,

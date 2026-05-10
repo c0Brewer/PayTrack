@@ -4,6 +4,8 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreatePaymentRequestByUserDto,
+  DuplicatePaymentRequestByUserDto,
+  GetDuplicatePaymentRequestsByUserOptions,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
   PaginatedPaymentRequestByUserDto,
@@ -91,6 +93,30 @@ export class PaymentRequestByUserService {
       }
       return res.json() as Promise<PaymentRequestByUserDto>;
     });
+
+    return from(promise);
+  }
+
+  public getDuplicatePaymentRequestsByUser(
+    queryOptions: GetDuplicatePaymentRequestsByUserOptions,
+  ): Observable<DuplicatePaymentRequestByUserDto[]> {
+    const promise = client
+      .GET('/api/v1/transaction/user/duplicate', {
+        params: {
+          query: queryOptions,
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) {
+          throw new Error(error.detail ?? 'Unexpected Error');
+        }
+
+        if (!data) {
+          throw new Error('Unexpected Error');
+        }
+
+        return data;
+      });
 
     return from(promise);
   }

@@ -8,6 +8,7 @@ using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Dto.User;
+using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Mapper
@@ -81,6 +82,30 @@ namespace PayTrack.Api.Mapper
         public static List<PaymentRequestByUserDto> ListToDto(List<PaymentRequestByUser> PaymentRequestByUser)
         {
             return PaymentRequestByUser.ConvertAll(ToDto);
+        }
+
+        /// <summary>
+        /// Turns DuplicatePaymentRequestByUserMatch object into a DuplicatePaymentRequestByUserDto.
+        /// </summary>
+        /// <param name="duplicatePaymentRequestByUser">DuplicatePaymentRequestByUserMatch to map.</param>
+        /// <returns>DuplicatePaymentRequestByUserDto instance.</returns>
+        public static DuplicatePaymentRequestByUserDto DuplicateToDto(DuplicatePaymentRequestByUserMatch duplicatePaymentRequestByUser)
+        {
+            return new DuplicatePaymentRequestByUserDto(
+                ToDto(duplicatePaymentRequestByUser.PaymentRequestByUser),
+                duplicatePaymentRequestByUser.Score,
+                duplicatePaymentRequestByUser.IsAmountAndUserMatch,
+                duplicatePaymentRequestByUser.IsAmountAndTeamMatch);
+        }
+
+        /// <summary>
+        /// Turns a List of DuplicatePaymentRequestByUserMatch objects into a List of DuplicatePaymentRequestByUserDto objects.
+        /// </summary>
+        /// <param name="duplicatePaymentRequestByUser">List of DuplicatePaymentRequestByUserMatch objects.</param>
+        /// <returns>List of DuplicatePaymentRequestByUserDto objects.</returns>
+        public static List<DuplicatePaymentRequestByUserDto> DuplicateListToDto(List<DuplicatePaymentRequestByUserMatch> duplicatePaymentRequestByUser)
+        {
+            return duplicatePaymentRequestByUser.ConvertAll(DuplicateToDto);
         }
     }
 }

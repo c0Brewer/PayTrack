@@ -13,6 +13,9 @@ namespace PayTrack.Application.Services.Implementation
     /// <inheritdoc/>
     public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
     {
+        private const int DuplicateMatchThreshold = 1;
+        private const int MaxDuplicateResults = 10;
+
         /// <summary>
         /// Repository for PaymentRequestByUsers.
         /// </summary>
@@ -99,6 +102,23 @@ namespace PayTrack.Application.Services.Implementation
             };
 
             return await this.repo.AddAsync(paymentRequest, receipt);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
+            int userId,
+            int teamId,
+            decimal amount)
+        {
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount);
+
+            return duplicateCandidates
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount))
+                .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
+                .OrderByDescending(duplicateMatch => duplicateMatch.Score)
+                .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
+                .Take(MaxDuplicateResults)
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -225,6 +245,34 @@ namespace PayTrack.Application.Services.Implementation
                 ".pdf" => "application/pdf",
                 _ => "application/octet-stream",
             };
+        }
+
+        private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
+            PaymentRequestByUser paymentRequestByUser,
+            int userId,
+            int teamId,
+            decimal amount)
+        {
+            bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
+            bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
+
+            int score = 0;
+
+            if (isAmountAndUserMatch)
+            {
+                score++;
+            }
+
+            if (isAmountAndTeamMatch)
+            {
+                score++;
+            }
+
+            return new DuplicatePaymentRequestByUserMatch(
+                paymentRequestByUser,
+                score,
+                isAmountAndUserMatch,
+                isAmountAndTeamMatch);
         }
     }
 }

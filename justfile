@@ -7,10 +7,22 @@ set dotenv-load
 
 # BACKEND
 
+[windows]
+[working-directory: "backend"]
+run-database:
+    docker-compose -f docker-compose-postgres.yml up -d
+
+[unix]
 [working-directory: "backend"]
 run-database:
     sudo docker-compose -f docker-compose-postgres.yml up -d
 
+[windows]
+[working-directory: "backend"]
+stop-database:
+    docker-compose -f docker-compose-postgres.yml down
+
+[unix]
 [working-directory: "backend"]
 stop-database:
     sudo docker-compose -f docker-compose-postgres.yml down

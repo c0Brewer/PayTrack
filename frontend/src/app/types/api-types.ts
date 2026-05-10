@@ -1098,6 +1098,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transaction/user/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    TeamId: number;
+                    Amount: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/user": {
         parameters: {
             query?: never;
@@ -1368,6 +1415,13 @@ export interface components {
             /** Format: int32 */
             invoiceCount?: number;
             warningMessage?: string | null;
+        };
+        DuplicatePaymentRequestByUserDto: {
+            paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
+            /** Format: int32 */
+            score: number;
+            isAmountAndUserMatch: boolean;
+            isAmountAndTeamMatch: boolean;
         };
         GoogleAuthCallbackDto: {
             code: string;
