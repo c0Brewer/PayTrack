@@ -63,6 +63,8 @@ spec:
               cpu: "500m"
               ephemeral-storage: "300Mi"
           volumeMounts:
+            - name: postgres-config
+              mountPath: /opt/bitnami/postgresql/conf
             - name: postgres-data
               mountPath: /bitnami/postgresql
           readinessProbe:
@@ -71,6 +73,8 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
       volumes:
+        - name: postgres-config
+          emptyDir: {}
         - name: postgres-data
           emptyDir: {}
 ---
