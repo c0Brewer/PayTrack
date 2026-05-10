@@ -1401,6 +1401,21 @@ export interface components {
             affectedUserCount: number;
             affectedTeamNames: string[];
         };
+        DeleteTeamImpactDto: {
+            /** Format: int32 */
+            teamId?: number;
+            teamName?: string | null;
+            canDelete?: boolean;
+            /** Format: int32 */
+            affectedUserCount?: number;
+            /** Format: int32 */
+            blockingBudgetCount?: number;
+            /** Format: int32 */
+            blockingTransactionCount?: number;
+            /** Format: int32 */
+            invoiceCount?: number;
+            warningMessage?: string | null;
+        };
         DuplicatePaymentRequestByUserDto: {
             paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
             /** Format: int32 */
