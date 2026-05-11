@@ -340,9 +340,9 @@ public static class DbSeeder
         CostCentre electronicsCostCentre,
         CostCentre compositesCostCentre)
     {
-        var presenterUser = await db.User.FirstOrDefaultAsync(u =>
-            u.Name == "Christoph Bräuer" ||
-            u.Email.StartsWith("christoph.braeuer"));
+        var presenterUser = await db.User
+            .OrderBy(u => u.Id)
+            .FirstOrDefaultAsync(u => u.Email.Contains("gmail"));
 
         if (presenterUser is null)
         {
