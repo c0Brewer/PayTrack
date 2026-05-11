@@ -99,6 +99,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var query = new GetTeamQuery
             {
                 Name = "Team",
+                IsActive = true,
                 IncludeMembers = true,
                 Limit = 1,
                 Offset = 2,
@@ -113,6 +114,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     It.Is<GetTeamQuery?>(q =>
                         q != null &&
                         q.Name == query.Name &&
+                        q.IsActive == query.IsActive &&
                         q.IncludeMembers == query.IncludeMembers &&
                         q.Limit == query.Limit &&
                         q.Offset == query.Offset)))
@@ -129,6 +131,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 It.Is<GetTeamQuery?>(q =>
                     q != null &&
                     q.Name == query.Name &&
+                    q.IsActive == query.IsActive &&
                     q.IncludeMembers == query.IncludeMembers &&
                     q.Limit == query.Limit &&
                     q.Offset == query.Offset)), Times.Once);
