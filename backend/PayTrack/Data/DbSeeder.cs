@@ -223,7 +223,7 @@ public static class DbSeeder
             db.CostCentres.Add(electronicsCostCentre);
         }
 
-        var compositesCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Composites"); 
+        var compositesCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Composites");
         if (compositesCostCentre is null)
         {
             compositesCostCentre = new CostCentre
