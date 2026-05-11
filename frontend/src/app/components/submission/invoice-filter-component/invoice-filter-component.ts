@@ -107,7 +107,7 @@ export class InvoiceFilterComponent implements OnInit {
     if (this.showUserFilter) {
       this.userService.getUser({ Limit: 1000 }).subscribe({
         next: (data) => {
-          this.users = data?.items ?? [];
+          this.users = data.items ?? [];
         },
         error: () => {},
       });
