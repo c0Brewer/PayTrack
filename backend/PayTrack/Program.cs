@@ -120,9 +120,7 @@ if (migrationsRunConfig && !isTestEnv)
 }
 
 var seedDataConfig = builder.Configuration.GetValue<bool>("SeedData:Auto");
-
-// TODO: Restore the SeedData:Auto guard after the MR2 presentation. Put this before "!isTestEnv": "seedDataConfig && " !!! 
-if (!isTestEnv)
+if (seedDataConfig && !isTestEnv)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
