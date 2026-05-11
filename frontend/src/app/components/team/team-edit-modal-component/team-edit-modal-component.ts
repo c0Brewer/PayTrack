@@ -30,6 +30,49 @@ export class TeamEditModalComponent implements OnChanges {
   readonly defaultColor = '#2563eb';
   readonly minNameLength = 3;
   readonly minDescriptionLength = 3;
+  readonly predefinedColors = [
+    // Neutrals
+    '#0f172a',
+    '#475569',
+
+    // Blues
+    '#1d4ed8',
+    '#60a5fa',
+
+    // Cyans
+    '#22d3ee',
+    '#67e8f9',
+
+    // Greens
+    '#059669',
+    '#65a30d',
+    '#84cc16',
+
+    // Yellows / Ambers
+    '#fbbf24',
+    '#fcd34d',
+
+    // Oranges
+    '#ea580c',
+    '#fb923c',
+
+    // Reds
+    '#dc2626',
+    '#f87171',
+
+    // Purples
+    '#7e22ce',
+    '#9333ea',
+    '#7c3aed',
+    '#a78bfa',
+    '#c084fc',
+    '#c4b5fd',
+
+    // Pinks
+    '#ec4899',
+    '#f472b6',
+    '#f9a8d4',
+  ];
 
   @Input() team: TeamDto = {
     id: -1,
