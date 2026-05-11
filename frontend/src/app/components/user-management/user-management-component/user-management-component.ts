@@ -36,6 +36,10 @@ export class UserManagementComponent implements OnInit {
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
+  readonly activeUserPlaceholderCount = 12;
+  readonly inactiveUserPlaceholderCount = 2;
+  readonly adminUserPlaceholderCount = 2;
+
   editingUser: UserDto | null = null;
   activeStatusPendingIds = new Set<number>();
 
