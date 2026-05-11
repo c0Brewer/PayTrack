@@ -357,7 +357,6 @@ public static class DbSeeder
             presenterUser,
             presenterBankAccount,
             chassisTeam,
-            manufacturingCostCentre,
             248.80m,
             "Workshop fasteners and carbon repair consumables",
             "Self-paid reimbursement for workshop material.",
@@ -371,7 +370,6 @@ public static class DbSeeder
             presenterUser,
             null,
             electronicsTeam,
-            electronicsCostCentre,
             736.42m,
             "Sensor connectors from electronics supplier",
             "External supplier should be paid directly.",
@@ -385,7 +383,6 @@ public static class DbSeeder
             presenterUser,
             presenterBankAccount,
             suspensionTeam,
-            compositesCostCentre,
             119.95m,
             "Hotel booking for supplier visit",
             "Self-paid travel expense for project coordination.",
@@ -399,7 +396,6 @@ public static class DbSeeder
             presenterUser,
             null,
             operationsTeam,
-            manufacturingCostCentre,
             1580.00m,
             "Workshop machine service invoice",
             "External workshop invoice submitted for finance processing.",
@@ -413,7 +409,6 @@ public static class DbSeeder
             presenterUser,
             null,
             electronicsTeam,
-            compositesCostCentre,
             87.30m,
             "Prototype cable labels",
             "Freshly submitted and waiting for finance review.",
@@ -453,7 +448,6 @@ public static class DbSeeder
         User presenterUser,
         BankAccount? bankAccount,
         Team team,
-        CostCentre costCentre,
         decimal amount,
         string purposeOfPayment,
         string comment,
@@ -462,24 +456,45 @@ public static class DbSeeder
         TransactionStatus status,
         int createdDaysAgo)
     {
-        if (await db.PaymentRequestsByUser.AnyAsync(p => p.InvoiceNumber == invoiceNumber))
+        var paidAt = DateTime.UtcNow.AddDays(-createdDaysAgo).ToUniversalTime();
+        var existingPaymentRequest = await db.PaymentRequestsByUser.FirstOrDefaultAsync(p => p.InvoiceNumber == invoiceNumber);
+
+        if (existingPaymentRequest is not null)
         {
+            existingPaymentRequest.User = presenterUser;
+            existingPaymentRequest.Team = team;
+            existingPaymentRequest.CostCentre = null!;
+            existingPaymentRequest.CostCentreId = null;
+            existingPaymentRequest.Amount = amount;
+            existingPaymentRequest.PurposeOfPayment = purposeOfPayment;
+            existingPaymentRequest.PaymentReference = string.Empty;
+            existingPaymentRequest.PaymentDirection = PaymentDirection.Out;
+            existingPaymentRequest.Status = status;
+            existingPaymentRequest.PaidAt = paidAt;
+            existingPaymentRequest.InvoiceNumber = invoiceNumber;
+            existingPaymentRequest.Comment = comment;
+            existingPaymentRequest.ReceiptUrl = receiptUrl;
+            existingPaymentRequest.PayoutType = payoutType;
+            existingPaymentRequest.BankAccount = payoutType == PayoutType.User ? bankAccount : null;
+
+            var existingStatusHistory = await db.TransactionStatusHistories
+                .Where(h => h.TransactionId == existingPaymentRequest.Id)
+                .ToListAsync();
+            db.TransactionStatusHistories.RemoveRange(existingStatusHistory);
+            AddPresenterStatusHistoryIfNeeded(db, presenterUser, existingPaymentRequest, status);
             return;
         }
 
-        var createdAt = DateTime.UtcNow.AddDays(-createdDaysAgo);
         var paymentRequest = new PaymentRequestByUser
         {
             User = presenterUser,
             Team = team,
-            CostCentre = costCentre,
             Amount = amount,
             PurposeOfPayment = purposeOfPayment,
             PaymentReference = string.Empty,
             PaymentDirection = PaymentDirection.Out,
             Status = status,
-            CreatedAt = createdAt,
-            PaidAt = status == TransactionStatus.Paid ? createdAt.AddDays(2) : null,
+            PaidAt = paidAt,
             InvoiceNumber = invoiceNumber,
             Comment = comment,
             ReceiptUrl = receiptUrl,
@@ -511,7 +526,7 @@ public static class DbSeeder
                 FromStatus = TransactionStatus.Submitted,
                 ToStatus = TransactionStatus.Approved,
                 Comment = "Approved during presentation setup.",
-                ChangedAt = paymentRequest.CreatedAt.AddDays(1),
+                ChangedAt = paymentRequest.PaidAt?.AddDays(1) ?? DateTime.UtcNow,
             });
             db.TransactionStatusHistories.Add(new TransactionStatusHistory
             {
@@ -520,7 +535,7 @@ public static class DbSeeder
                 FromStatus = TransactionStatus.Approved,
                 ToStatus = TransactionStatus.Paid,
                 Comment = "Marked as paid during presentation setup.",
-                ChangedAt = paymentRequest.PaidAt ?? paymentRequest.CreatedAt.AddDays(2),
+                ChangedAt = paymentRequest.PaidAt?.AddDays(2) ?? DateTime.UtcNow,
             });
             return;
         }
@@ -532,7 +547,7 @@ public static class DbSeeder
             FromStatus = TransactionStatus.Submitted,
             ToStatus = status,
             Comment = $"Moved to {status} during presentation setup.",
-            ChangedAt = paymentRequest.CreatedAt.AddDays(1),
+            ChangedAt = paymentRequest.PaidAt?.AddDays(1) ?? DateTime.UtcNow,
         });
     }
 }
