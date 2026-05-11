@@ -162,6 +162,9 @@ spec:
               memory: "512Mi"
               cpu: "500m"
               ephemeral-storage: "250Mi"
+          volumeMounts:
+            - name: backend-uploads
+              mountPath: /app/uploads
           startupProbe:
             httpGet:
               path: /health/ready
@@ -186,6 +189,9 @@ spec:
               httpGet:
                 path: /health/prepareShutdown
                 port: 8080
+      volumes:
+        - name: backend-uploads
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
