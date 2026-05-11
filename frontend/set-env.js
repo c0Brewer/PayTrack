@@ -36,7 +36,7 @@ const targetPath = path.resolve(__dirname, './src/environments/environment.ts');
 const environmentFileContent = `export const environment = {
   production: ${process.env.NODE_ENV === 'production'},
   googleClientId: '${process.env.GOOGLE_CLIENT_ID}',
-  apiBaseUrl: '${process.env.API_BASE_URL ?? 'http://localhost:5154'}',
+  apiBaseUrl: '${process.env.API_BASE_URL ?? ''}',
 };
 `;
 

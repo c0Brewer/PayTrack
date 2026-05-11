@@ -3,6 +3,7 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 import { client } from '../../client';
 import { CreatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
@@ -56,7 +57,19 @@ describe('PaymentRequestByUserService', () => {
 
     const result = await firstValueFrom(service.createPaymentRequestByUser(dto, file));
 
-    expect(globalThis.fetch).toHaveBeenCalled();
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
     expect(result).toEqual(apiResponse);
   });
 
