@@ -19,6 +19,12 @@ import { AuthService } from '../auth/auth-service';
 export class PaymentRequestByUserService {
   constructor(private readonly authService: AuthService) {}
 
+  private getUploadUrl(): string {
+    return environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user';
+  }
+
   public getPaymentRequestsByUser(
     queryOptions: GetPaymentRequestsByUserOptions,
   ): Observable<PaginatedPaymentRequestByUserDto> {
@@ -77,8 +83,7 @@ export class PaymentRequestByUserService {
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
     fd.append('transaction.paidAt', updateRequest.transaction.paidAt);
 
-    const uploadUrl = new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString();
-    const promise = fetch(uploadUrl, {
+    const promise = fetch(this.getUploadUrl(), {
       method: 'POST',
       headers: {
         // NOTE: do NOT set Content-Type here — browser sets it with the boundary

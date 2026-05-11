@@ -55,8 +55,12 @@ describe('PaymentRequestByUserService', () => {
 
     const result = await firstValueFrom(service.createPaymentRequestByUser(dto, file));
 
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user';
+
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString(),
+      expectedUrl,
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
