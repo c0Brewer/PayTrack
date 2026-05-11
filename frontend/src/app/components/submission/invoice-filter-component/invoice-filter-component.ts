@@ -90,7 +90,7 @@ export class InvoiceFilterComponent implements OnInit {
 
     this.teamService.getTeams({ Limit: 1000 }).subscribe({
       next: (data) => {
-        this.teams = data?.items ?? [];
+        this.teams = data.items ?? [];
       },
       error: () => {},
     });
@@ -98,7 +98,7 @@ export class InvoiceFilterComponent implements OnInit {
     if (this.showCostCentreFilter) {
       this.costCentreService.getCostCentres({ Limit: 1000 }).subscribe({
         next: (data) => {
-          this.costCentres = data?.items ?? [];
+          this.costCentres = data.items ?? [];
         },
         error: () => {},
       });
