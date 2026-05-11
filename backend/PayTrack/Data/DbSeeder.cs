@@ -363,7 +363,7 @@ public static class DbSeeder
             "Self-paid reimbursement for workshop material.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
             PayoutType.User,
-            TransactionStatus.Submitted,
+            TransactionStatus.Approved,
             2);
         await AddPresenterInvoiceIfMissingAsync(
             db,
@@ -377,7 +377,7 @@ public static class DbSeeder
             "External supplier should be paid directly.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
             PayoutType.External,
-            TransactionStatus.Submitted,
+            TransactionStatus.Paid,
             4);
         await AddPresenterInvoiceIfMissingAsync(
             db,
@@ -391,7 +391,7 @@ public static class DbSeeder
             "Self-paid travel expense for project coordination.",
             "uploads/presentation-invoices/invoice-hotel-booking-2026.jpg",
             PayoutType.User,
-            TransactionStatus.Submitted,
+            TransactionStatus.ChangesRequested,
             6);
         await AddPresenterInvoiceIfMissingAsync(
             db,
@@ -405,7 +405,7 @@ public static class DbSeeder
             "External workshop invoice submitted for finance processing.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
             PayoutType.External,
-            TransactionStatus.Submitted,
+            TransactionStatus.Declined,
             8);
         await AddPresenterInvoiceIfMissingAsync(
             db,
@@ -467,6 +467,7 @@ public static class DbSeeder
             return;
         }
 
+        var createdAt = DateTime.UtcNow.AddDays(-createdDaysAgo);
         var paymentRequest = new PaymentRequestByUser
         {
             User = presenterUser,
@@ -477,8 +478,8 @@ public static class DbSeeder
             PaymentReference = string.Empty,
             PaymentDirection = PaymentDirection.Out,
             Status = status,
-            CreatedAt = DateTime.UtcNow.AddDays(-createdDaysAgo),
-            PaidAt = null,
+            CreatedAt = createdAt,
+            PaidAt = status == TransactionStatus.Paid ? createdAt.AddDays(2) : null,
             InvoiceNumber = invoiceNumber,
             Comment = comment,
             ReceiptUrl = receiptUrl,
@@ -487,5 +488,51 @@ public static class DbSeeder
         };
 
         db.PaymentRequestsByUser.Add(paymentRequest);
+        AddPresenterStatusHistoryIfNeeded(db, presenterUser, paymentRequest, status);
+    }
+
+    private static void AddPresenterStatusHistoryIfNeeded(
+        AppDbContext db,
+        User presenterUser,
+        PaymentRequestByUser paymentRequest,
+        TransactionStatus status)
+    {
+        if (status == TransactionStatus.Submitted)
+        {
+            return;
+        }
+
+        if (status == TransactionStatus.Paid)
+        {
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = paymentRequest,
+                ChangedBy = presenterUser,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Approved,
+                Comment = "Approved during presentation setup.",
+                ChangedAt = paymentRequest.CreatedAt.AddDays(1),
+            });
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = paymentRequest,
+                ChangedBy = presenterUser,
+                FromStatus = TransactionStatus.Approved,
+                ToStatus = TransactionStatus.Paid,
+                Comment = "Marked as paid during presentation setup.",
+                ChangedAt = paymentRequest.PaidAt ?? paymentRequest.CreatedAt.AddDays(2),
+            });
+            return;
+        }
+
+        db.TransactionStatusHistories.Add(new TransactionStatusHistory
+        {
+            Transaction = paymentRequest,
+            ChangedBy = presenterUser,
+            FromStatus = TransactionStatus.Submitted,
+            ToStatus = status,
+            Comment = $"Moved to {status} during presentation setup.",
+            ChangedAt = paymentRequest.CreatedAt.AddDays(1),
+        });
     }
 }
