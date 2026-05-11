@@ -64,6 +64,7 @@ export class TeamManagementComponent {
   filterOptions: NonNullable<GetTeamOptions> = {
     Name: undefined,
     Description: undefined,
+    IsActive: undefined,
     IncludeMembers: true,
     IncludeBudgets: true,
     Limit: this.limit,
@@ -116,6 +117,7 @@ export class TeamManagementComponent {
     const queryOptions: NonNullable<GetTeamOptions> = {
       Name: this.filterOptions?.Name ?? undefined,
       Description: this.filterOptions?.Description ?? undefined,
+      IsActive: this.filterOptions?.IsActive ?? undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: this.limit,
@@ -146,6 +148,7 @@ export class TeamManagementComponent {
     if (this.filterOptions && options) {
       this.filterOptions.Name = options.Name;
       this.filterOptions.Description = options.Description;
+      this.filterOptions.IsActive = options.IsActive;
       this.page = 0;
       this.loadTeams();
     }
