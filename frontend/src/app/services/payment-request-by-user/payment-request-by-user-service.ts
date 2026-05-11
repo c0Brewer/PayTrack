@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 import { client } from '../../client';
 import {
   CreatePaymentRequestByUserDto,
@@ -76,8 +77,8 @@ export class PaymentRequestByUserService {
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
     fd.append('transaction.paidAt', updateRequest.transaction.paidAt);
 
-    // TODO: Inject url
-    const promise = fetch(`http://localhost:5154/api/v1/transaction/user`, {
+    const uploadUrl = new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString();
+    const promise = fetch(uploadUrl, {
       method: 'POST',
       headers: {
         // NOTE: do NOT set Content-Type here — browser sets it with the boundary
