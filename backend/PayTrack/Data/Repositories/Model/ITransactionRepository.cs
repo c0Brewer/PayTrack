@@ -86,6 +86,8 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="transaction">Transaction object to store.</param>
         /// <returns>Instance of created Transaction object.</returns>
         Task<PaymentRequestByTeam> AddAsync(PaymentRequestByTeam transaction);
+
+        /// <summary>
         /// Gets potential duplicate PaymentRequestByUser entries based on exact duplicate criteria.
         /// </summary>
         /// <param name="userId">Current user id.</param>

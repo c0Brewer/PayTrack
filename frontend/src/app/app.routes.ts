@@ -7,11 +7,10 @@ import { CostCentreManagementComponent } from './components/cost-centre/cost-cen
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { PaymentRequestByTeamComponent } from './components/submission/payment-request-by-team-component/payment-request-by-team-component';
-import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
 import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
+import { PaymentRequestByTeamComponent } from './components/submission/payment-request-by-team-component/payment-request-by-team-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
 import { RequestsComponent } from './components/submission/requests-component/requests-component';
