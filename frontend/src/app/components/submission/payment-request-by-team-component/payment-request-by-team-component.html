@@ -75,41 +75,14 @@
           <!-- User search -->
           <div class="row mb-3">
             <div class="col-12 input-wrapper">
-              <label for="userSearch">Assign to User <span class="required">*</span></label><br />
-              <div class="user-search" [class.is-invalid]="isInvalid('userId')">
-                <div class="user-search__input-row">
-                  <input
-                    id="userSearch"
-                    type="text"
-                    formControlName="userSearch"
-                    placeholder="Search by name…"
-                    autocomplete="off"
-                    [class.is-invalid]="isInvalid('userId')"
-                    [attr.readonly]="selectedUser ? true : null"
-                  />
-                  @if (selectedUser) {
-                    <button
-                      type="button"
-                      class="user-search__clear"
-                      (click)="clearUserSelection()"
-                      aria-label="Clear user selection"
-                    >
-                      <span class="material-symbols-outlined">close</span>
-                    </button>
-                  }
-                </div>
-
-                @if (showUserDropdown) {
-                  <div class="user-search__dropdown">
-                    @for (user of userSearchResults; track user.id) {
-                      <div class="user-search__option" (click)="selectUser(user)">
-                        <span class="user-search__option__name">{{ user.name }}</span>
-                        <span class="user-search__option__email">{{ user.email }}</span>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
+              <label>Assign to User <span class="required">*</span></label><br />
+              <app-typeahead-select
+                [items]="allUsers"
+                placeholder="Search by name…"
+                [isInvalid]="isInvalid('userId')"
+                (itemSelected)="onUserSelected($event)"
+                (cleared)="onUserCleared()"
+              />
               @if (isInvalid('userId')) {
                 <span class="error-msg">
                   <span class="material-symbols-outlined">error</span>Please select a user.

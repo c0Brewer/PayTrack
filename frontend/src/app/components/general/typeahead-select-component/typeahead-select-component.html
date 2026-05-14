@@ -1,0 +1,31 @@
+<div class="typeahead">
+  <div class="typeahead__input-row">
+    <input
+      type="text"
+      [formControl]="searchControl"
+      [placeholder]="placeholder"
+      [attr.readonly]="selectedItem ? true : null"
+      [class.is-invalid]="isInvalid"
+      autocomplete="off"
+      (focus)="onFocus()"
+    />
+    @if (selectedItem) {
+      <button type="button" class="typeahead__clear" (click)="clear()" aria-label="Clear selection">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    }
+  </div>
+
+  @if (showDropdown) {
+    <div class="typeahead__dropdown">
+      @for (item of results; track item.id) {
+        <div class="typeahead__option" (mousedown)="select(item)">
+          <span class="typeahead__option__primary">{{ item.primaryText }}</span>
+          @if (item.secondaryText) {
+            <span class="typeahead__option__secondary">{{ item.secondaryText }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

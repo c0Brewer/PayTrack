@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,20 +9,19 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Subject, catchError, debounceTime, distinctUntilChanged, filter, of, switchMap, takeUntil } from 'rxjs';
+import { Subject, map, takeUntil } from 'rxjs';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
-import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
-import {
-  CostCentreDto,
-  CreatePaymentRequestByTeamDto,
-  TeamDto,
-  UserDto,
-} from '../../../types/exporter';
+import { CostCentreDto, CreatePaymentRequestByTeamDto, TeamDto } from '../../../types/exporter';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
+import {
+  TypeaheadItem,
+  TypeaheadSelectComponent,
+} from '../../general/typeahead-select-component/typeahead-select-component';
 
 function minDateValidator(min: Date): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -36,17 +35,17 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-payment-request-by-team-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, TypeaheadSelectComponent],
   templateUrl: './payment-request-by-team-component.html',
   styleUrl: './payment-request-by-team-component.scss',
 })
 export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
+  @ViewChild(TypeaheadSelectComponent) private readonly typeaheadRef!: TypeaheadSelectComponent;
+
   form!: FormGroup;
   teams: TeamDto[] = [];
   costCentres: CostCentreDto[] = [];
-  userSearchResults: UserDto[] = [];
-  showUserDropdown = false;
-  selectedUser: UserDto | null = null;
+  allUsers: TypeaheadItem[] = [];
   isSubmitting = false;
 
   private readonly destroy$ = new Subject<void>();
@@ -64,7 +63,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
     this.buildForm();
     this.loadTeams();
     this.loadCostCentres();
-    this.setupUserSearch();
+    this.loadUsers();
   }
 
   ngOnDestroy(): void {
@@ -74,7 +73,6 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.form = this.fb.group({
-      userSearch: [''],
       userId: [null, Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
@@ -96,6 +94,25 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
       });
   }
 
+  private loadUsers(): void {
+    this.userService
+      .getUser({ Limit: 1000 })
+      .pipe(
+        takeUntil(this.destroy$),
+        map((r) =>
+          (r.items ?? []).map((u) => ({
+            id: u.id!,
+            primaryText: u.name ?? '',
+            secondaryText: u.email ?? undefined,
+          })),
+        ),
+      )
+      .subscribe({
+        next: (users) => (this.allUsers = users),
+        error: () => this.notificationService.showError('Failed to load users.'),
+      });
+  }
+
   private loadCostCentres(): void {
     this.costCentreService
       .getCostCentres({})
@@ -108,39 +125,12 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setupUserSearch(): void {
-    this.form
-      .get('userSearch')!
-      .valueChanges.pipe(
-        takeUntil(this.destroy$),
-        debounceTime(300),
-        distinctUntilChanged(),
-        filter((term) => typeof term === 'string' && term.trim().length >= 2),
-        switchMap((term) =>
-          this.userService
-            .getUser({ Name: term, Limit: 8 })
-            .pipe(catchError(() => of(null))),
-        ),
-      )
-      .subscribe((result) => {
-        this.userSearchResults = result?.items ?? [];
-        this.showUserDropdown = this.userSearchResults.length > 0;
-      });
+  onUserSelected(item: TypeaheadItem): void {
+    this.form.get('userId')!.setValue(item.id);
   }
 
-  selectUser(user: UserDto): void {
-    this.selectedUser = user;
-    this.form.get('userId')!.setValue(user.id);
-    this.form.get('userSearch')!.setValue(`${user.name} (${user.email})`, { emitEvent: false });
-    this.showUserDropdown = false;
-  }
-
-  clearUserSelection(): void {
-    this.selectedUser = null;
+  onUserCleared(): void {
     this.form.get('userId')!.setValue(null);
-    this.form.get('userSearch')!.setValue('');
-    this.userSearchResults = [];
-    this.showUserDropdown = false;
   }
 
   getError(field: string): string | null {
@@ -187,9 +177,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         next: () => {
           this.notificationService.showSuccess('Payment request created.');
           this.form.reset();
-          this.selectedUser = null;
-          this.userSearchResults = [];
-          this.showUserDropdown = false;
+          this.typeaheadRef.reset();
           this.isSubmitting = false;
         },
         error: (err: Error) => {
