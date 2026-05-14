@@ -1,0 +1,88 @@
+@use 'variables' as v;
+
+:host {
+  display: block;
+}
+
+.stat-box {
+  align-items: center;
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  display: flex;
+  gap: v.$size-m;
+  justify-content: space-between;
+  min-height: 6.75rem;
+  padding: v.$size-m v.$size-l;
+  width: 100%;
+}
+
+.stat-box__content {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+  min-width: 0;
+}
+
+.stat-box__header {
+  color: v.$text-muted;
+  font-size: v.$font-s;
+  font-weight: v.$font-medium;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.stat-box__value {
+  color: v.$text-color;
+  font-size: 2rem;
+  font-weight: v.$font-bold;
+  line-height: 1;
+}
+
+.stat-box__icon {
+  align-items: center;
+  background: rgba(v.$TUR-primary-orange, 0.08);
+  border-radius: 8px;
+  color: v.$TUR-primary-orange;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.stat-box__icon .material-symbols-outlined {
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.stat-box--small {
+  min-height: 5.75rem;
+  padding: v.$size-s v.$size-m;
+
+  .stat-box__value {
+    font-size: 1.75rem;
+  }
+
+  .stat-box__icon {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-box {
+    min-height: 5.75rem;
+    padding: v.$size-s v.$size-m;
+  }
+
+  .stat-box__value {
+    font-size: 1.75rem;
+  }
+
+  .stat-box__icon {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+}

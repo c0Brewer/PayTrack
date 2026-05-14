@@ -1,0 +1,53 @@
+<app-modal-component title="Delete Team" (closeEvent)="onClose()">
+  <p>
+    You are about to delete <strong>{{ impact.teamName }}</strong
+    >.
+  </p>
+
+  @if (hasImpact) {
+    <div class="warning">
+      <p>
+        {{
+          isReadOnlyImpact
+            ? 'This team is already inactive and still has linked records:'
+            : 'This team has linked records and will be deactivated instead of deleted:'
+        }}
+      </p>
+      <ul>
+        @if ((impact.affectedUserCount ?? 0) > 0) {
+          <li>{{ impact.affectedUserCount }} affected user(s)</li>
+        }
+        @if ((impact.blockingBudgetCount ?? 0) > 0) {
+          <li>{{ impact.blockingBudgetCount }} budget(s)</li>
+        }
+        @if ((impact.blockingTransactionCount ?? 0) > 0) {
+          <li>{{ impact.blockingTransactionCount }} transaction(s)</li>
+        }
+        @if ((impact.invoiceCount ?? 0) > 0) {
+          <li>{{ impact.invoiceCount }} invoice(s)</li>
+        }
+      </ul>
+      @if (impact.warningMessage) {
+        <p>{{ impact.warningMessage }}</p>
+      }
+    </div>
+    <div class="modal-actions">
+      @if (isReadOnlyImpact) {
+        <button type="button" (click)="onClose()">Back</button>
+      } @else {
+        <button type="button" class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1" (click)="onConfirmDelete()">
+          Deactivate
+        </button>
+        <button type="button" class="btn btn-primary" (click)="onClose()">Cancel</button>
+      }
+    </div>
+  } @else {
+    <p>Are you sure? This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1" (click)="onConfirmDelete()">
+        <span class="material-symbols-outlined">delete</span>
+        Delete</button>
+      <button type="button" class="btn btn-primary" (click)="onClose()">Cancel</button>
+    </div>
+  }
+</app-modal-component>

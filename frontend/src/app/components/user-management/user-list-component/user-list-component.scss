@@ -1,65 +1,41 @@
 @use 'variables' as v;
 
 .user-table {
+  background: v.$background-light;
+  border-collapse: collapse;
+  border-radius: v.$size-xs;
+  font-size: v.$font-s;
+  overflow: hidden;
   table-layout: fixed;
   width: 100%;
-  border-collapse: collapse;
-  font-size: v.$font-s;
-  background: v.$background-light;
-  border-radius: v.$size-xs;
-  overflow: hidden;
 
   thead {
     background: v.$background-dark;
 
-    /* ---------- HEADER ---------- */
-
     th {
-      text-align: left;
-      padding: v.$size-s;
-      font-weight: v.$font-semibold;
-      color: v.$text-light;
       border-bottom: 1px solid v.$border-color;
+      color: v.$text-light;
+      font-weight: v.$font-semibold;
+      padding: v.$size-s;
+      text-align: left;
     }
   }
 
   tbody {
-    /* ---------- ROWS ---------- */
-
     td {
-      padding: v.$size-s;
       border-bottom: 1px solid v.$border-color;
+      padding: v.$size-s;
       vertical-align: middle;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .role {
-      padding: v.$size-xxs;
-      font-size: v.$font-xs;
-      border-radius: v.$size-xs;
-      font-weight: v.$font-medium;
-    }
-
-    .regular_user {
-      background-color: v.$background-dark;
-      color: v.$gray-600;
-    }
-
-    .team_lead {
-      background-color: v.$gray-600;
-      color: v.$background-color;
-    }
-
-    .admin {
-      background-color: v.$purple-color;
-      color: v.$background-color;
+      word-break: break-word;
     }
 
     tr {
+      margin-bottom: 1rem;
       transition: background 0.15s ease;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:hover {
@@ -67,19 +43,57 @@
     }
   }
 
-  /* ---------- TEAM ---------- */
+  .user-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .name {
+    font-weight: v.$font-medium;
+  }
+
+  .email {
+    color: v.$text-light;
+    font-size: v.$font-xs;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .role {
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: v.$font-xs;
+    font-weight: v.$font-semibold;
+    line-height: 1;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .regular_user {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+  }
+
+  .team_lead {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+
+  .admin {
+    background-color: #fee2e2;
+    color: #dc2626;
+  }
 
   .team {
-    display: flex;
     align-items: center;
+    display: flex;
     gap: v.$size-xs;
   }
 
   .team-color {
-    width: v.$size-xs;
-    height: v.$size-xs;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px v.$background-light;
+    display: none;
   }
 
   .no-team {
@@ -87,42 +101,199 @@
     font-style: italic;
   }
 
-  /* ---------- STATUS ---------- */
-
   .status-btn {
-    padding: v.$size-xxs v.$size-s;
-    font-size: v.$font-xs;
-    font-weight: v.$font-medium;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: v.$text-color;
+    display: inline-flex;
+    justify-content: center;
+    font-size: v.$font-s;
+    font-weight: v.$font-semibold;
+    gap: v.$size-xxs;
+    line-height: 1.2;
+    min-height: 2rem;
+    min-width: 6.25rem;
+    padding: 0.35rem 0.7rem;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .status-btn:hover,
+  .status-btn:focus-visible {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.16rem rgba(v.$TUR-primary-orange, 0.12);
+    outline: none;
+  }
+
+  .status-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  .status-dot {
+    border-radius: 50%;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 0.5rem;
+    width: 0.5rem;
   }
 
   .status-btn.active {
-    background: v.$success-color;
-    color: v.$background-light;
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
   }
 
-  .status-btn:not(.active) {
-    background: v.$accent-color;
-    color: v.$background-light;
+  .status-btn.active .status-dot {
+    background: #10b981;
   }
 
-  .status-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px v.$shadow-color;
+  .status-btn.inactive {
+    background: v.$gray-100;
+    border-color: v.$border-color;
+    color: v.$text-muted;
   }
 
-  /* ---------- EDIT BUTTON ---------- */
-
-  .edit-btn {
-    padding: v.$size-xxs v.$size-s;
-    border: 1px solid v.$border-color;
-    background: v.$background-light;
-    font-size: v.$font-xs;
+  .status-btn.inactive .status-dot {
+    background: v.$gray-500;
   }
 
-  /* ---------- ACTION COLUMN ---------- */
+  .user-col {
+    width: 30%;
+  }
+
+  .role-col {
+    width: 16%;
+  }
+
+  .team-col {
+    width: 24%;
+  }
+
+  .status-col {
+    width: 14%;
+  }
 
   .actions-col {
-    width: 1%;
+    width: 16%;
+  }
+
+  .actions-col {
+    text-align: left;
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .user-table {
+    background: transparent;
+    border-collapse: separate;
+    border-spacing: 0 v.$size-s;
+    table-layout: auto;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    tbody {
+      tr {
+        background: v.$background-light;
+        border: 1px solid v.$TUR-border-color;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px v.$shadow-color;
+        overflow: hidden;
+      }
+
+      td {
+        align-items: flex-start;
+        border-bottom: 1px solid v.$border-color;
+        display: grid;
+        gap: v.$size-s;
+        grid-template-columns: minmax(7.5rem, 38%) minmax(0, 1fr);
+        padding: v.$size-xs v.$size-s;
+        text-align: right;
+        word-break: break-word;
+
+        &::before {
+          color: v.$text-muted;
+          content: attr(data-label);
+          font-weight: v.$font-semibold;
+          text-align: left;
+        }
+
+        &:last-child {
+          border-bottom: 0;
+        }
+      }
+
+      tr:hover {
+        background: v.$background-light;
+      }
+    }
+
+    .user-summary {
+      align-items: center;
+    }
+
+    .email {
+      color: v.$text-color;
+    }
+
+    .user-col,
+    .role-col,
+    .team-col,
+    .status-col,
+    .actions-col {
+      text-align: right;
+      white-space: normal;
+      width: 100%;
+    }
+
+    .team {
+      justify-content: flex-end;
+    }
+
+    .status-btn {
+      justify-self: end;
+    }
+
+    .email {
+      white-space: normal;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .user-table {
+    tbody {
+      td {
+        gap: v.$size-xxs;
+        grid-template-columns: 1fr;
+        text-align: left;
+      }
+    }
+
+    .team {
+      justify-content: flex-start;
+    }
+
+    .status-btn {
+      justify-self: start;
+    }
+
+    .user-summary {
+      align-items: flex-start;
+    }
   }
 }

@@ -10,6 +10,7 @@ import { Role, UserDto } from '../../../types/exporter';
 })
 export class UserListComponent {
   @Input() user: UserDto[] = [];
+  @Input() activeStatusPendingIds: ReadonlySet<number> = new Set<number>();
 
   @Output() toggleActive = new EventEmitter<UserDto>();
   @Output() openEditUser = new EventEmitter<UserDto>();
@@ -21,6 +22,10 @@ export class UserListComponent {
 
   onToggleActive(user: UserDto): void {
     this.toggleActive.emit(user);
+  }
+
+  isActiveStatusPending(user: UserDto): boolean {
+    return this.activeStatusPendingIds.has(user.id);
   }
 
   onOpenEditUser(user: UserDto): void {

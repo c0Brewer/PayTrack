@@ -2,19 +2,9 @@
 
 
 #invoice-page{
-  background-color: v.$TUR-secondary-background;
-  margin: 4rem;
   p:first-of-type {
     color: v.$TUR-primary-grey;
     font-size: 1.2rem;
-  }
-}
-
-
-
-@media (max-width: 767.98px) {
-  #invoice-page{
-    margin: 1.5rem;
   }
 }
 
@@ -55,6 +45,11 @@
     padding: 0 1rem;
     border-radius: 0.2rem;
     font-size: 1rem;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
   }
 
   textarea {
@@ -292,5 +287,97 @@
 @media (max-width: 767.98px) {
   .payout-type__options {
     grid-template-columns: 1fr;
+  }
+}
+
+.duplicate-modal__subtitle {
+  margin-bottom: v.$size-s;
+}
+
+.duplicate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-s;
+}
+
+.duplicate-list__item {
+  border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  padding: v.$size-s;
+  background: v.$background-light;
+}
+
+.duplicate-list__main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: v.$size-m;
+}
+
+.duplicate-list__amount {
+  font-weight: v.$font-medium;
+  color: v.$text-color;
+}
+
+.duplicate-list__details {
+  margin-top: v.$size-xs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-m;
+
+  span {
+    font-size: v.$font-s;
+    color: v.$TUR-primary-grey;
+  }
+}
+
+.duplicate-list__meta {
+  margin-top: v.$size-xs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs;
+
+  span {
+    font-size: v.$font-xs;
+    color: v.$TUR-primary-grey;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xxs;
+    padding: 0.1rem 0.4rem;
+  }
+}
+
+.duplicate-list__meta .duplicate-list__match {
+  color: v.$TUR-primary-orange;
+  border-color: v.$TUR-primary-orange;
+  background-color: rgba(v.$TUR-primary-orange, 0.08);
+}
+
+.duplicate-modal__actions {
+  margin-top: v.$size-l;
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$size-s;
+}
+
+.duplicate-modal__cancel {
+  background: v.$background-dark;
+  color: v.$text-color;
+
+  &:hover {
+    background: v.$border-color;
+    cursor: pointer;
+  }
+}
+
+.duplicate-modal__submit {
+  background: v.$TUR-primary-orange;
+  color: white;
+
+  &:hover {
+    background: #b85402;
+    cursor: pointer;
   }
 }

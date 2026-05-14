@@ -1,0 +1,154 @@
+@use 'variables' as v;
+
+label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: v.$size-m;
+  font-size: v.$font-s;
+  color: v.$text-color;
+
+  span {
+    margin-bottom: v.$size-xxs;
+  }
+}
+input,
+select {
+  background: v.$TUR-secondary-background;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.45rem;
+  color: v.$text-color;
+  font-size: v.$font-s;
+  min-height: 2.6rem;
+  padding: 0 0.8rem;
+}
+
+input:focus,
+select:focus {
+  border-color: v.$TUR-primary-orange;
+  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  outline: none;
+}
+
+.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.12);
+}
+
+textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.field-error {
+  margin-top: v.$size-xxs;
+  color: #dc2626;
+  font-size: v.$font-s;
+}
+
+.color-field {
+  gap: v.$size-xxs;
+}
+
+.color-picker-input {
+  width: 3rem;
+  min-width: 3rem;
+  padding: 0.25rem;
+}
+
+.color-swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid v.$TUR-border-color;
+  border-radius: 999px;
+  padding: 0;
+
+  &.active {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.18);
+  }
+}
+
+.color-swatch__check {
+  margin-bottom: 0;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.team-preview {
+  margin-bottom: v.$size-m;
+}
+
+.team-preview__label {
+  display: block;
+  margin-bottom: v.$size-xs;
+  font-size: v.$font-s;
+  color: v.$text-color;
+}
+
+.team-preview__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  color: v.$background-light;
+  font-weight: 600;
+}
+
+.budgets-section h4 {
+  font-size: v.$font-s;
+  color: v.$text-color;
+}
+
+.budget-card {
+  background: v.$background-light;
+}
+
+.budget-card--new {
+  border-color: rgba(v.$TUR-primary-orange, 0.45) !important;
+}
+
+.budget-card--deleted {
+  background: v.$TUR-secondary-background;
+  opacity: 0.7;
+}
+
+.budget-card__details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: v.$size-m;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  span {
+    margin-bottom: v.$size-xxs;
+    color: v.$text-muted;
+    font-size: v.$font-xs;
+  }
+
+  strong {
+    overflow-wrap: anywhere;
+    color: v.$text-color;
+    font-size: v.$font-s;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .budget-card__details {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modal-actions {
+  margin-top: v.$size-l;
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$size-s;
+}

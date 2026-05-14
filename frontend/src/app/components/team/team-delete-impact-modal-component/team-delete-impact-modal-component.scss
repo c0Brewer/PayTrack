@@ -1,0 +1,25 @@
+@use 'variables' as v;
+
+.warning {
+  padding: v.$size-s;
+  border: 1px solid v.$accent-color;
+  border-radius: v.$size-xs;
+  background: rgba(v.$accent-color, 0.08);
+  color: v.$text-color;
+
+  ul {
+    margin: v.$size-xs 0;
+    padding-left: v.$size-l;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.modal-actions {
+  margin-top: v.$size-l;
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$size-s;
+}
