@@ -8,6 +8,7 @@ import { UnauthorizedComponent } from './components/general/unauthorized-compone
 import { HomeComponent } from './components/home/home-component/home-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
+import { PaymentRequestByTeamComponent } from './components/submission/payment-request-by-team-component/payment-request-by-team-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
@@ -69,6 +70,11 @@ export const routes: Routes = [
     path: 'cost-centre/:id',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: CostCentreDetailComponent,
+  },
+  {
+    path: 'create-payment-request',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: PaymentRequestByTeamComponent,
   },
   {
     path: 'unauthorized',

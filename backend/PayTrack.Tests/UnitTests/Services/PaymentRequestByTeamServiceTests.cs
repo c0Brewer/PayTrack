@@ -82,7 +82,8 @@ namespace PayTrack.Tests.UnitTests.Services
                     creatingUserId: 2,
                     teamId: 99,
                     amount: 100,
-                    purposeOfPayment: "test");
+                    purposeOfPayment: "test",
+                    dueDate: DateTime.Today.AddDays(7));
 
             await act.Should()
                 .ThrowAsync<NotFoundException>()
@@ -114,7 +115,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 creatingUserId: 2,
                 teamId: 5,
                 amount: 100,
-                purposeOfPayment: "test");
+                purposeOfPayment: "test",
+                dueDate: DateTime.Today.AddDays(7));
 
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
@@ -127,7 +129,8 @@ namespace PayTrack.Tests.UnitTests.Services
                     p.PurposeOfPayment == "test" &&
                     p.RequestedById == 2 &&
                     p.PaymentDirection == PaymentDirection.In &&
-                    p.Status == TransactionStatus.Submitted
+                    p.Status == TransactionStatus.Submitted &&
+                    p.DueDate != null
                 )),
                 Times.Once);
         }

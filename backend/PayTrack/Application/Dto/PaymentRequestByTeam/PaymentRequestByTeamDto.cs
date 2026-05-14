@@ -42,5 +42,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
 
         DateTime? PaidAt,
 
+        DateTime? DueDate,
+
         UserDto? CreatedByUser);
 }

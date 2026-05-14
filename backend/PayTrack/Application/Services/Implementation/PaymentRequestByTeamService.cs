@@ -38,7 +38,9 @@ namespace PayTrack.Application.Services.Implementation
             int creatingUserId,
             int teamId,
             decimal amount,
-            string purposeOfPayment)
+            string purposeOfPayment,
+            DateTime dueDate,
+            int? costCentreId = null)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
@@ -50,9 +52,10 @@ namespace PayTrack.Application.Services.Implementation
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
                 Status = TransactionStatus.Submitted,
-                CostCentreId = null, // Cost centre will be set later by the finance team
+                CostCentreId = costCentreId,
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.In, // Payment direction is in for payment requests to user
+                DueDate = dueDate,
 
                 // Created at is set automatically
                 RequestedById = creatingUserId,

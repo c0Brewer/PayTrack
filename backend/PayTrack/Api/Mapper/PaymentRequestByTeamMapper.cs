@@ -66,6 +66,7 @@ namespace PayTrack.Api.Mapper
                 statusHistory,
                 paymentRequestByTeam.CreatedAt,
                 paymentRequestByTeam.PaidAt,
+                paymentRequestByTeam.DueDate,
                 createdByUser);
         }
 

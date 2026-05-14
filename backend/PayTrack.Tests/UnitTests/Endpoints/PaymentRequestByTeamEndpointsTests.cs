@@ -127,7 +127,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     user.Id,
                     It.IsAny<int>(),
                     It.IsAny<decimal>(),
-                    It.IsAny<string>()))
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<int?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -140,7 +142,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     PurposeOfPayment: "test 123",
                     PaidAt: DateTime.Today
                 ),
-                0);
+                UserToAssignToId: 0,
+                DueDate: DateTime.Today.AddDays(7),
+                CostCentreId: null);
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);

@@ -15,5 +15,10 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
         CreateTransactionDto Transaction,
 
         [property: Required]
-        int UserToAssignToId);
+        int UserToAssignToId,
+
+        [property: Required]
+        DateTime DueDate,
+
+        int? CostCentreId);
 }

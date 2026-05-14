@@ -35,13 +35,17 @@ namespace PayTrack.Application.Services.Model
         /// <param name="teamId">Id of team.</param>
         /// <param name="amount">Amount.</param>
         /// <param name="purposeOfPayment">Purpose.</param>
+        /// <param name="dueDate">Due date requested by the finance team.</param>
+        /// <param name="costCentreId">Optional cost centre to assign.</param>
         /// <returns>Instance of created PaymentRequestByTeam object.</returns>
         Task<PaymentRequestByTeam> CreatePaymentRequestByTeamAsync(
             int userToAssignToId,
             int creatingUserId,
             int teamId,
             decimal amount,
-            string purposeOfPayment);
+            string purposeOfPayment,
+            DateTime dueDate,
+            int? costCentreId = null);
 
         /// <summary>
         /// Update a PaymentRequestByTeam using the given input.
