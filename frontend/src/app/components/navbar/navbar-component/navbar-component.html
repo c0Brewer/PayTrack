@@ -53,13 +53,6 @@
 
       @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">description</span>
-            View Requests
-            @if (submittedCount() > 0) {
-              <span class="nav-badge">{{ submittedCount() }}</span>
-            }
-          </a>
           <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
             User Management</a
@@ -77,8 +70,15 @@
           >
           <a routerLink="/payment-requests-by-team" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">receipt_long</span>
-            Payment Requests by Team</a
+            View Payment Requests</a
           >
+          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">description</span>
+            View Submitted Invoices
+            @if (submittedCount() > 0) {
+              <span class="nav-badge">{{ submittedCount() }}</span>
+            }
+          </a>
         </div>
       }
 
