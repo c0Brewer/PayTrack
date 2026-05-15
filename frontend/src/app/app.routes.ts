@@ -14,6 +14,8 @@ import { PaymentRequestByTeamComponent } from './components/submission/payment-r
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
 import { RequestsComponent } from './components/submission/requests-component/requests-component';
+import { TeamRequestAdminDetailComponent } from './components/submission/team-request-admin-detail-component/team-request-admin-detail-component';
+import { TeamRequestsComponent } from './components/submission/team-requests-component/team-requests-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
@@ -105,6 +107,16 @@ export const routes: Routes = [
     path: 'create-payment-request',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: PaymentRequestByTeamComponent,
+  },
+  {
+    path: 'payment-requests-by-team',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamRequestsComponent,
+  },
+  {
+    path: 'payment-requests-by-team/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamRequestAdminDetailComponent,
   },
   {
     path: 'unauthorized',

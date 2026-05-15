@@ -103,8 +103,12 @@ export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['paramete
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
+export type PaginatedPaymentRequestByTeamDto =
+  components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
   paths['/api/v1/transaction/team']['get']['parameters']['query'];
+export type GetPaymentRequestsByTeamByIdOptions =
+  paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
