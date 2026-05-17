@@ -13,6 +13,7 @@ using PayTrack.Application.Dto.Health;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Implementation;
@@ -42,6 +43,13 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+
+// Notification
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHttpClient<NotificationDispatchService>();
+builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -165,6 +173,7 @@ apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
+apiV1.MapNotificationEndpoints();
 
 if (hasFrontendBundle)
 {
