@@ -42,6 +42,15 @@ describe('TeamRequestAdminDetailComponent', () => {
     statusHistory: [],
   } as unknown as PaymentRequestByTeamDto;
 
+  const mockRequestWithUser = {
+    id: 7,
+    amount: 150.5,
+    status: 0,
+    dueDate: '2026-06-01T00:00:00Z',
+    statusHistory: [],
+    user: { id: 1, name: 'Jane Doe', email: 'jane@example.com' },
+  } as unknown as PaymentRequestByTeamDto;
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -108,5 +117,66 @@ describe('TeamRequestAdminDetailComponent', () => {
   it('should navigate to /payment-requests-by-team on back', () => {
     component.onBack();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/payment-requests-by-team']);
+  });
+
+  describe('openEmailModal / openSlackModal', () => {
+    it('sets modalType to email when openEmailModal is called', () => {
+      component.openEmailModal();
+      expect(component.modalType).toBe('email');
+    });
+
+    it('sets modalType to slack when openSlackModal is called', () => {
+      component.openSlackModal();
+      expect(component.modalType).toBe('slack');
+    });
+  });
+
+  describe('notificationEmail', () => {
+    it('returns the user email from the loaded request', () => {
+      component.request = mockRequestWithUser;
+      expect(component.notificationEmail).toBe('jane@example.com');
+    });
+
+    it('returns empty string when request has no user', () => {
+      component.request = mockRequest;
+      expect(component.notificationEmail).toBe('');
+    });
+  });
+
+  describe('notificationSubject', () => {
+    it('returns a subject line containing the request id', () => {
+      component.request = mockRequestWithUser;
+      expect(component.notificationSubject).toContain('7');
+    });
+  });
+
+  describe('notificationMessage', () => {
+    it('returns empty string when request is null', () => {
+      component.request = null;
+      expect(component.notificationMessage).toBe('');
+    });
+
+    it('returns an email message containing name, id, and amount when modalType is email', () => {
+      component.request = mockRequestWithUser;
+      component.modalType = 'email';
+      const message = component.notificationMessage;
+      expect(message).toContain('Jane Doe');
+      expect(message).toContain('7');
+      expect(message).toContain('150');
+    });
+
+    it('returns a slack message containing id and amount when modalType is slack', () => {
+      component.request = mockRequestWithUser;
+      component.modalType = 'slack';
+      const message = component.notificationMessage;
+      expect(message).toContain('7');
+      expect(message).toContain('150');
+    });
+
+    it('uses User as fallback name when the user is not included in the request', () => {
+      component.request = mockRequest;
+      component.modalType = 'email';
+      expect(component.notificationMessage).toContain('User');
+    });
   });
 });
