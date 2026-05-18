@@ -4,8 +4,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
+import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { Role } from '../../../types/exporter';
+import { Role, TransactionStatus } from '../../../types/exporter';
 
 @Component({
   selector: 'app-navbar-component',
@@ -19,10 +20,12 @@ export class NavbarComponent implements OnInit {
   protected readonly role = Role;
   protected readonly mobileMenuOpen = signal(false);
   protected readonly submittedCount = signal(0);
+  protected readonly teamRequestCount = signal(0);
 
   constructor(
     private readonly authService: AuthService,
     private readonly paymentRequestService: PaymentRequestByUserService,
+    private readonly teamRequestService: PaymentRequestByTeamService,
   ) {
     this.loggedIn$ = this.authService.loggedIn$;
     this.currentUser$ = this.authService.currentUser$;
@@ -39,6 +42,23 @@ export class NavbarComponent implements OnInit {
       )
       .subscribe({
         next: (result) => this.submittedCount.set(result.totalCount ?? 0),
+        error: () => {},
+      });
+
+    this.currentUser$
+      .pipe(
+        filter((user) => !!user),
+        take(1),
+        switchMap((user) =>
+          this.teamRequestService.getPaymentRequestsByTeam({
+            Status: TransactionStatus.Submitted,
+            UserId: user!.id,
+            Limit: 1,
+          }),
+        ),
+      )
+      .subscribe({
+        next: (result) => this.teamRequestCount.set(result.totalCount ?? 0),
         error: () => {},
       });
   }

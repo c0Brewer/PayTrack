@@ -24,6 +24,7 @@ export class TeamRequestFilterComponent implements OnInit {
   @Input() limitSelection: number[] = [];
   @Input() limit: number = 10;
 
+  @Input() showTeamFilter: boolean = true;
   @Input() showCostCentreFilter: boolean = true;
   @Input() showUserFilter: boolean = true;
 
@@ -67,12 +68,14 @@ export class TeamRequestFilterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.teamService.getTeams({ Limit: 1000 }).subscribe({
-      next: (data) => {
-        this.teams = data?.items ?? [];
-      },
-      error: () => {},
-    });
+    if (this.showTeamFilter) {
+      this.teamService.getTeams({ Limit: 1000 }).subscribe({
+        next: (data) => {
+          this.teams = data?.items ?? [];
+        },
+        error: () => {},
+      });
+    }
 
     if (this.showCostCentreFilter) {
       this.costCentreService.getCostCentres({ Limit: 1000 }).subscribe({
