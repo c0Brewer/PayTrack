@@ -248,5 +248,29 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ThrowAsync<NotFoundException>()
                 .WithMessage("Team not found");
         }
+
+        [Fact]
+        public async Task Update_ShouldUpdatePaidAt_WhenProvided()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+
+            var entity = new PaymentRequestByTeam { Id = 1, PaidAt = null };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
+                .ReturnsAsync((PaymentRequestByTeam p) => p);
+
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object);
+
+            var paidAt = new DateTime(2026, 5, 15, 0, 0, 0, DateTimeKind.Utc);
+            var result = await service.UpdatePaymentRequestByTeamAsync(1, paidAt: paidAt);
+
+            result.PaidAt.Should().Be(paidAt);
+        }
     }
 }
