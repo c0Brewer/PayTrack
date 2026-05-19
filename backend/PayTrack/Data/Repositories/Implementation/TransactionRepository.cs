@@ -72,6 +72,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             // Could potentially add other ordering logic here as well
             var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            await this.SetPotentialDuplicateFlagsAsync(items);
 
             return (items, totalCount);
         }
@@ -287,6 +288,64 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = dbQuery.Include(t => t.User);
 
             return dbQuery;
+        }
+
+        private async Task SetPotentialDuplicateFlagsAsync(List<PaymentRequestByUser> paymentRequests)
+        {
+            var keys = paymentRequests
+                .Where(paymentRequestByUser => paymentRequestByUser.PaidAt.HasValue)
+                .Select(paymentRequestByUser => new
+                {
+                    paymentRequestByUser.Id,
+                    paymentRequestByUser.UserId,
+                    paymentRequestByUser.TeamId,
+                    paymentRequestByUser.Amount,
+                    PaidAtDay = paymentRequestByUser.PaidAt!.Value.Date,
+                })
+                .ToList();
+
+            if (keys.Count == 0)
+            {
+                return;
+            }
+
+            var amounts = keys.Select(key => key.Amount).Distinct().ToList();
+            var userIds = keys.Select(key => key.UserId).Distinct().ToList();
+            var teamIds = keys.Select(key => key.TeamId).Distinct().ToList();
+            var minPaidAtDay = DateTime.SpecifyKind(keys.Min(key => key.PaidAtDay), DateTimeKind.Utc);
+            var maxPaidAtDayEnd = DateTime.SpecifyKind(keys.Max(key => key.PaidAtDay).AddDays(1), DateTimeKind.Utc);
+
+            var candidates = await this.context.PaymentRequestsByUser
+                .AsNoTracking()
+                .Where(paymentRequestByUser =>
+                    paymentRequestByUser.PaidAt.HasValue &&
+                    amounts.Contains(paymentRequestByUser.Amount) &&
+                    paymentRequestByUser.PaidAt >= minPaidAtDay &&
+                    paymentRequestByUser.PaidAt < maxPaidAtDayEnd &&
+                    (userIds.Contains(paymentRequestByUser.UserId) || teamIds.Contains(paymentRequestByUser.TeamId)))
+                .Select(paymentRequestByUser => new
+                {
+                    paymentRequestByUser.Id,
+                    paymentRequestByUser.UserId,
+                    paymentRequestByUser.TeamId,
+                    paymentRequestByUser.Amount,
+                    paymentRequestByUser.PaidAt,
+                })
+                .ToListAsync();
+
+            var duplicateIds = keys
+                .Where(key => candidates.Any(candidate =>
+                    candidate.Id != key.Id &&
+                    candidate.Amount == key.Amount &&
+                    candidate.PaidAt!.Value.Date == key.PaidAtDay &&
+                    (candidate.UserId == key.UserId || candidate.TeamId == key.TeamId)))
+                .Select(key => key.Id)
+                .ToHashSet();
+
+            foreach (var paymentRequest in paymentRequests)
+            {
+                paymentRequest.HasPotentialDuplicate = duplicateIds.Contains(paymentRequest.Id);
+            }
         }
     }
 }

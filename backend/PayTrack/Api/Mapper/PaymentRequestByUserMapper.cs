@@ -71,6 +71,7 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByUser.InvoiceNumber,
                 paymentRequestByUser.Comment,
                 paymentRequestByUser.PayoutType,
+                paymentRequestByUser.HasPotentialDuplicate,
                 bankAccountDto);
         }
 

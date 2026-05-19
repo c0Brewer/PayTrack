@@ -39,6 +39,23 @@ describe('InvoiceListComponent', () => {
     expect(emitted).toEqual(invoice);
   });
 
+  it('should render duplicate badge when duplicate indicator is enabled', () => {
+    fixture.componentRef.setInput('showDuplicateIndicator', true);
+    fixture.componentRef.setInput('invoices', [
+      {
+        id: 1,
+        amount: 100,
+        invoiceNumber: 'INV-1',
+        hasPotentialDuplicate: true,
+      } as PaymentRequestByUserDto,
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.duplicate-badge')?.textContent).toContain('Possible');
+  });
+
   it('should return correct text for getPayoutTypeLabel', () => {
     expect(component.getPayoutTypeLabel(0)).toBe('Pay to User');
     expect(component.getPayoutTypeLabel(1)).toBe('Pay to Supplier');

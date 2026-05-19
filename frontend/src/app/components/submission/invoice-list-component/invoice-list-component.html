@@ -15,6 +15,9 @@
       @if (showUserNameColumn) {
         <th>User</th>
       }
+      @if (showDuplicateIndicator) {
+        <th>Duplicate</th>
+      }
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -40,13 +43,25 @@
         @if (showUserNameColumn) {
           <td>{{ invoice.user?.name ?? '—' }}</td>
         }
+        @if (showDuplicateIndicator) {
+          <td>
+            @if (invoice.hasPotentialDuplicate) {
+              <span class="duplicate-badge" title="Another invoice matches amount, paid day, and user or team">
+                <span class="material-symbols-outlined">warning</span>
+                Possible
+              </span>
+            } @else {
+              <span class="duplicate-empty">-</span>
+            }
+          </td>
+        }
         <td class="actions-col">
           <button class="view-btn" (click)="onOpenDetail(invoice)">View</button>
         </td>
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="8 + (showCostCentreColumn ? 1 : 0) + (showUserNameColumn ? 1 : 0)">
+        <td [attr.colspan]="8 + (showCostCentreColumn ? 1 : 0) + (showUserNameColumn ? 1 : 0) + (showDuplicateIndicator ? 1 : 0)">
           No invoices found.
         </td>
       </tr>

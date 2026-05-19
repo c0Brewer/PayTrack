@@ -1457,6 +1457,7 @@ export interface components {
             invoiceNumber: string;
             comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
+            hasPotentialDuplicate: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {

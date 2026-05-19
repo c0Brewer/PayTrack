@@ -22,7 +22,8 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 PaidAt = null,
                 InvoiceNumber = "INV-1",
                 Comment = "Comment",
-                PayoutType = PayoutType.User
+                PayoutType = PayoutType.User,
+                HasPotentialDuplicate = true
             };
 
             // Act
@@ -39,6 +40,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             dto.InvoiceNumber.Should().Be(entity.InvoiceNumber);
             dto.Comment.Should().Be(entity.Comment);
             dto.PayoutType.Should().Be(entity.PayoutType);
+            dto.HasPotentialDuplicate.Should().BeTrue();
         }
 
         [Fact]
