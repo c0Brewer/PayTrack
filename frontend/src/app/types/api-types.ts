@@ -891,6 +891,8 @@ export interface paths {
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;
@@ -1077,6 +1079,53 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    TeamId: number;
+                    Amount: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
+                    };
+                };
                 /** @description Bad Request */
                 400: {
                     headers: {
@@ -1367,6 +1416,13 @@ export interface components {
             invoiceCount?: number;
             warningMessage?: string | null;
         };
+        DuplicatePaymentRequestByUserDto: {
+            paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
+            /** Format: int32 */
+            score: number;
+            isAmountAndUserMatch: boolean;
+            isAmountAndTeamMatch: boolean;
+        };
         GoogleAuthCallbackDto: {
             code: string;
         };
@@ -1381,24 +1437,24 @@ export interface components {
         PaymentRequestByUserDto: {
             /** Format: int32 */
             id: number;
-            user: components["schemas"]["UserDto"];
+            user?: components["schemas"]["UserDto"];
             /** Format: double */
             amount: number;
-            purposeOfPayment: string;
-            paymentReference: string;
+            purposeOfPayment?: string | null;
+            paymentReference?: string | null;
             status: components["schemas"]["TransactionStatus"];
-            costCentre: components["schemas"]["CostCentreDto"];
-            team: components["schemas"]["TeamDto"];
-            paymentDirection: components["schemas"]["PaymentDirection"];
-            statusHistory: components["schemas"]["TransactionStatusHistoryDto"][];
+            costCentre?: components["schemas"]["CostCentreDto"];
+            team?: components["schemas"]["TeamDto"];
+            paymentDirection?: components["schemas"]["PaymentDirection"];
+            statusHistory?: components["schemas"]["TransactionStatusHistoryDto"][] | null;
             /** Format: date-time */
-            createdAt: string;
+            createdAt?: string | null;
             /** Format: date-time */
-            paidAt: string;
+            paidAt?: string | null;
             invoiceNumber: string;
-            comment: string;
+            comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
-            bankAccount: components["schemas"]["BankAccountDto"];
+            bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;

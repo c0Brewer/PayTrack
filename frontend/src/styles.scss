@@ -1,4 +1,5 @@
 @use 'variables' as v;
+@use 'badges';
 
 /* You can add global styles to this file, and also import other style files */
 /* Jakob */
@@ -362,3 +363,10 @@ body {
   }
 }
 /* Table styling end */
+
+/* For Hints on invalid forms*/
+.hint-error {
+  color: v.$accent-dark;
+  font-size: v.$font-xxs;
+  font-weight: v.$font-semibold;
+}

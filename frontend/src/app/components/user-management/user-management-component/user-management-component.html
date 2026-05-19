@@ -5,15 +5,15 @@
 
   <div class="row g-3 align-items-stretch">
     <app-stat-box-component
-      header="Total User"
+      header="Total Users"
       [content]="totalUserCount"
       icon="group"
       size="small"
       class="col-12 col-sm-6 col-xl-3"
     />
     <app-stat-box-component
-      header="Active"
-      [content]="10"
+      header="Active Users"
+      [content]="activeUserPlaceholderCount"
       icon="check"
       iconColor="#10b981"
       iconBackgroundColor="#ECFDF5"
@@ -21,17 +21,17 @@
       class="col-12 col-sm-6 col-xl-3"
     />
     <app-stat-box-component
-      header="Blocked"
-      [content]="'€1000'"
-      icon="cancel"
-      iconColor="gray"
-      iconBackgroundColor="#e0e0e0"
+      header="Inactive Users"
+      [content]="inactiveUserPlaceholderCount"
+      icon="person_off"
+      iconColor="#6b7280"
+      iconBackgroundColor="#f3f4f6"
       size="small"
       class="col-12 col-sm-6 col-xl-3"
     />
     <app-stat-box-component
-      header="Admin"
-      [content]="10"
+      header="Admins"
+      [content]="adminUserPlaceholderCount"
       icon="shield"
       size="small"
       iconColor="#3b82f6"

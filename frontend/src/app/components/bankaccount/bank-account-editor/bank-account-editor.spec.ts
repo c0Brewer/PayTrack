@@ -36,7 +36,7 @@ describe('BankAccountEditorComponent', () => {
     });
 
     expect(component.form.controls.accountHolder.value).toBe('Alice');
-    expect(component.form.controls.iban.value).toBe('AT611904300234573201');
+    expect(component.form.controls.iban.value).toBe('AT61 1904 3002 3457 3201');
     expect(component.form.controls.bic.value).toBe('BKAUATWW');
   });
 
@@ -82,5 +82,33 @@ describe('BankAccountEditorComponent', () => {
     component.form.controls.accountHolder.setValue('Valid Name');
 
     expect(component.validationMessage).toBe('');
+  });
+
+  it('should visually group IBAN input in blocks of four characters', () => {
+    const input = document.createElement('input');
+    input.value = 'at611904300234573201';
+
+    component.onIbanInput({ target: input } as unknown as Event);
+
+    expect(input.value).toBe('AT61 1904 3002 3457 3201');
+    expect(component.form.controls.iban.value).toBe('AT61 1904 3002 3457 3201');
+  });
+
+  it('onSubmit should emit normalized IBAN without visual spaces', () => {
+    const emitSpy = vi.spyOn(component.submitForm, 'emit');
+
+    component.form.setValue({
+      accountHolder: 'Max Mustermann',
+      iban: 'AT61 1904 3002 3457 3201',
+      bic: 'BKAUATWW',
+    });
+
+    component.onSubmit();
+
+    expect(emitSpy).toHaveBeenCalledWith({
+      accountHolder: 'Max Mustermann',
+      iban: 'AT611904300234573201',
+      bic: 'BKAUATWW',
+    });
   });
 });

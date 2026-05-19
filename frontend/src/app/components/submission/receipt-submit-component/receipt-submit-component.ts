@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -9,17 +9,19 @@ import { NotificationService } from '../../../services/notification/notification
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
 import {
+  DuplicatePaymentRequestByUserDto,
   TeamDto,
   CreatePaymentRequestByUserDto,
   PayoutType,
   BankAccount,
 } from '../../../types/exporter';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, ModalComponent],
   templateUrl: './receipt-submit-component.html',
   styleUrl: './receipt-submit-component.scss',
 })
@@ -30,6 +32,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   selectedFile: File | null = null;
   selectedFileName = '';
+  duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
+  isDuplicateModalOpen = false;
+  pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
+  pendingSubmissionFile: File | null = null;
 
   readonly PayoutType = PayoutType;
 
@@ -51,6 +57,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +112,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           if (teams.items != null) {
             this.teams = teams.items;
           }
+
+          this.changeDetectorRef.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -116,6 +126,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (bankAccounts) => {
           this.bankAccounts = bankAccounts;
+
+          this.changeDetectorRef.markForCheck();
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
@@ -235,7 +247,67 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     };
 
     this.paymentRequestByUserService
-      .createPaymentRequestByUser(payload, this.selectedFile) // <- we pass the actual File here
+      .getDuplicatePaymentRequestsByUser({
+        TeamId: payload.transaction.teamId,
+        Amount: payload.transaction.amount,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (duplicates) => {
+          this.ngZone.run(() => {
+            if (duplicates.length > 0) {
+              this.duplicateCandidates = duplicates;
+              this.pendingSubmissionPayload = payload;
+              this.pendingSubmissionFile = this.selectedFile;
+              this.isDuplicateModalOpen = true;
+              this.isSubmitting = false;
+              this.changeDetectorRef.detectChanges();
+              return;
+            }
+
+            this.submitPaymentRequest(payload, this.selectedFile!);
+          });
+        },
+        error: (err: Error) => {
+          this.ngZone.run(() => {
+            this.notificationService.showError(err.message ?? 'Duplicate check failed.');
+            this.isSubmitting = false;
+            this.changeDetectorRef.detectChanges();
+          });
+        },
+      });
+  }
+
+  onDuplicateModalCancel(): void {
+    this.isDuplicateModalOpen = false;
+    this.duplicateCandidates = [];
+    this.pendingSubmissionPayload = null;
+    this.pendingSubmissionFile = null;
+  }
+
+  onDuplicateModalSubmitRegardless(): void {
+    if (!this.pendingSubmissionPayload || !this.pendingSubmissionFile) {
+      this.notificationService.showError('Submission data was lost. Please submit again.');
+      this.onDuplicateModalCancel();
+      this.isSubmitting = false;
+      return;
+    }
+
+    const payload = this.pendingSubmissionPayload;
+    const file = this.pendingSubmissionFile;
+
+    this.isDuplicateModalOpen = false;
+    this.duplicateCandidates = [];
+    this.pendingSubmissionPayload = null;
+    this.pendingSubmissionFile = null;
+    this.isSubmitting = true;
+
+    this.submitPaymentRequest(payload, file);
+  }
+
+  private submitPaymentRequest(payload: CreatePaymentRequestByUserDto, file: File): void {
+    this.paymentRequestByUserService
+      .createPaymentRequestByUser(payload, file)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -243,12 +315,18 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.form.reset();
           this.selectedFile = null;
           this.selectedFileName = '';
+          this.duplicateCandidates = [];
+          this.isDuplicateModalOpen = false;
+          this.pendingSubmissionPayload = null;
+          this.pendingSubmissionFile = null;
           this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
           this.router.navigate(['/']);
         },
         error: (err: Error) => {
           this.notificationService.showError(err.message ?? 'Submission failed.');
           this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
@@ -257,6 +335,32 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {
+    return (
+      (
+        duplicate.paymentRequestByUser.user as
+          | {
+              name?: string | null;
+            }
+          | null
+          | undefined
+      )?.name ?? 'Unknown user'
+    );
+  }
+
+  getDuplicateTeamName(duplicate: DuplicatePaymentRequestByUserDto): string {
+    return (
+      (
+        duplicate.paymentRequestByUser.team as
+          | {
+              name?: string | null;
+            }
+          | null
+          | undefined
+      )?.name ?? 'Unknown team'
+    );
   }
 
   protected readonly event = event;

@@ -32,16 +32,25 @@ export type PaginatedPaymentRequestByUserDto =
 export type PaymentRequestByUserDto = components['schemas']['PaymentRequestByUserDto'];
 export type CreatePaymentRequestByUserDto = components['schemas']['CreatePaymentRequestByUserDto'];
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
+export type DuplicatePaymentRequestByUserDto =
+  components['schemas']['DuplicatePaymentRequestByUserDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
+export type GetDuplicatePaymentRequestsByUserOptions =
+  paths['/api/v1/transaction/user/duplicate']['get']['parameters']['query'];
 
 export enum PayoutType {
   User = 0,
   External = 1,
 }
+
+export const PayoutTypeLabels: Record<PayoutType, string> = {
+  [PayoutType.User]: 'Pay to User',
+  [PayoutType.External]: 'Pay to Supplier',
+};
 
 // Roles
 export enum Role {
@@ -49,6 +58,30 @@ export enum Role {
   TEAM_LEAD = 1,
   ADMIN = 2,
 }
+// TransactionStatus
+export enum TransactionStatus {
+  Submitted = 0,
+  ChangesRequested = 1,
+  Approved = 2,
+  Paid = 3,
+  Declined = 4,
+}
+
+export const TransactionStatusLabels: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'Submitted',
+  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.Approved]: 'Approved',
+  [TransactionStatus.Paid]: 'Paid',
+  [TransactionStatus.Declined]: 'Declined',
+};
+
+export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
+  [TransactionStatus.Submitted]: 'status-submitted',
+  [TransactionStatus.ChangesRequested]: 'status-changes-requested',
+  [TransactionStatus.Approved]: 'status-approved',
+  [TransactionStatus.Paid]: 'status-paid',
+  [TransactionStatus.Declined]: 'status-declined',
+};
 
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
