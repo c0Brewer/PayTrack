@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
 import { provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -11,7 +11,6 @@ import { NavbarComponent } from './navbar-component';
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
-
 
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
@@ -28,12 +27,14 @@ describe('NavbarComponent', () => {
       currentUser$: new BehaviorSubject<UserDto | null>(null),
       logout: vi.fn(),
     };
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavbarComponent],
       providers: [
-        { provide: AuthService, useValue: authServiceMock }, provideRouter([]),
+        { provide: AuthService, useValue: authServiceMock },
+        provideRouter([]),
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
       ],
     }).compileComponents();

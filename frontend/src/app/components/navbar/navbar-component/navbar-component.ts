@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component,OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, switchMap, take } from 'rxjs';
