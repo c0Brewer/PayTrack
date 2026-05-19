@@ -15,6 +15,8 @@ interface WorkingBudget {
   markedForDeletion: boolean;
 }
 
+type BudgetField = 'teamId' | 'targetAmount' | 'periodStart' | 'periodEnd';
+
 @Component({
   selector: 'app-cost-centre-edit-modal-component',
   imports: [DatePipe, FormsModule, ModalComponent],
@@ -38,6 +40,7 @@ export class CostCentreEditModalComponent implements OnChanges {
   workingBudgets: WorkingBudget[] = [];
   newBudgets: UpsertBudgetEntryDto[] = [];
   newBudgetDraft: UpsertBudgetEntryDto = this.emptyDraft();
+  touchedBudgetFields: Record<BudgetField, boolean> = this.emptyBudgetTouchedFields();
 
   ngOnChanges(): void {
     if (this.costCentre) {
@@ -52,6 +55,7 @@ export class CostCentreEditModalComponent implements OnChanges {
       }));
       this.newBudgets = [];
       this.newBudgetDraft = this.emptyDraft();
+      this.touchedBudgetFields = this.emptyBudgetTouchedFields();
     }
   }
 
@@ -75,15 +79,15 @@ export class CostCentreEditModalComponent implements OnChanges {
   }
 
   addNewBudget(): void {
-    if (
-      !this.newBudgetDraft.teamId ||
-      !this.newBudgetDraft.periodStart ||
-      !this.newBudgetDraft.periodEnd
-    ) {
+    this.markAllBudgetFieldsTouched();
+
+    if (this.isBudgetDraftInvalid()) {
       return;
     }
+
     this.newBudgets.push({ ...this.newBudgetDraft });
     this.newBudgetDraft = this.emptyDraft();
+    this.touchedBudgetFields = this.emptyBudgetTouchedFields();
   }
 
   removeNewBudget(index: number): void {
@@ -110,6 +114,75 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   onClose(): void {
     this.closeEvent.emit();
+  }
+
+  onBudgetFieldBlur(field: BudgetField): void {
+    this.touchedBudgetFields[field] = true;
+  }
+
+  hasBudgetFieldError(field: BudgetField): boolean {
+    return this.touchedBudgetFields[field] && this.getBudgetFieldError(field).length > 0;
+  }
+
+  getBudgetFieldError(field: BudgetField): string {
+    switch (field) {
+      case 'teamId':
+        return this.newBudgetDraft.teamId ? '' : 'Team ID is required.';
+      case 'targetAmount':
+        if (
+          this.newBudgetDraft.targetAmount === null ||
+          this.newBudgetDraft.targetAmount === undefined ||
+          Number.isNaN(Number(this.newBudgetDraft.targetAmount))
+        ) {
+          return 'Amount is required.';
+        }
+
+        if (Number(this.newBudgetDraft.targetAmount) < 0) {
+          return 'Amount must be non-negative.';
+        }
+
+        return '';
+      case 'periodStart':
+        return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
+      case 'periodEnd':
+        if (!this.newBudgetDraft.periodEnd) {
+          return 'Period end is required.';
+        }
+
+        if (
+          this.newBudgetDraft.periodStart &&
+          this.newBudgetDraft.periodEnd < this.newBudgetDraft.periodStart
+        ) {
+          return 'Period end must not be before period start.';
+        }
+
+        return '';
+    }
+  }
+
+  private markAllBudgetFieldsTouched(): void {
+    this.touchedBudgetFields.teamId = true;
+    this.touchedBudgetFields.targetAmount = true;
+    this.touchedBudgetFields.periodStart = true;
+    this.touchedBudgetFields.periodEnd = true;
+  }
+
+  private isBudgetDraftInvalid(): boolean {
+    return (
+      this.getBudgetFieldError('teamId').length > 0 ||
+      this.getBudgetFieldError('targetAmount').length > 0 ||
+      this.getBudgetFieldError('periodStart').length > 0 ||
+      this.getBudgetFieldError('periodEnd').length > 0
+    );
+  }
+
+  private emptyBudgetTouchedFields(): Record<BudgetField, boolean> {
+    return {
+      teamId: false,
+      targetAmount: false,
+      periodStart: false,
+      periodEnd: false,
+    };
   }
 
   private emptyDraft(): UpsertBudgetEntryDto {

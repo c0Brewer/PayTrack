@@ -74,19 +74,53 @@
     <div class="add-budget-form">
       <label>
         Team ID
-        <input type="number" [(ngModel)]="newBudgetDraft.teamId" placeholder="Team ID" />
+        <input
+          type="number"
+          [(ngModel)]="newBudgetDraft.teamId"
+          [class.input-error]="hasBudgetFieldError('teamId')"
+          (blur)="onBudgetFieldBlur('teamId')"
+          placeholder="Team ID"
+        />
+        @if (hasBudgetFieldError('teamId')) {
+          <span class="field-error">{{ getBudgetFieldError('teamId') }}</span>
+        }
       </label>
       <label>
         Amount
-        <input type="number" [(ngModel)]="newBudgetDraft.targetAmount" placeholder="0.00" />
+        <input
+          type="number"
+          [(ngModel)]="newBudgetDraft.targetAmount"
+          [class.input-error]="hasBudgetFieldError('targetAmount')"
+          (blur)="onBudgetFieldBlur('targetAmount')"
+          placeholder="0.00"
+        />
+        @if (hasBudgetFieldError('targetAmount')) {
+          <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+        }
       </label>
       <label>
         Period Start
-        <input type="date" [(ngModel)]="newBudgetDraft.periodStart" />
+        <input
+          type="date"
+          [(ngModel)]="newBudgetDraft.periodStart"
+          [class.input-error]="hasBudgetFieldError('periodStart')"
+          (blur)="onBudgetFieldBlur('periodStart')"
+        />
+        @if (hasBudgetFieldError('periodStart')) {
+          <span class="field-error">{{ getBudgetFieldError('periodStart') }}</span>
+        }
       </label>
       <label>
         Period End
-        <input type="date" [(ngModel)]="newBudgetDraft.periodEnd" />
+        <input
+          type="date"
+          [(ngModel)]="newBudgetDraft.periodEnd"
+          [class.input-error]="hasBudgetFieldError('periodEnd')"
+          (blur)="onBudgetFieldBlur('periodEnd')"
+        />
+        @if (hasBudgetFieldError('periodEnd')) {
+          <span class="field-error">{{ getBudgetFieldError('periodEnd') }}</span>
+        }
       </label>
       <button type="button" class="btn-add-budget" (click)="addNewBudget()">+ Add Budget</button>
     </div>

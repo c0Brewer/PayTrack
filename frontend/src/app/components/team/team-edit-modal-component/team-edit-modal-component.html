@@ -92,7 +92,12 @@
         <div class="row g-3 align-items-end">
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
-            <select class="form-select" [(ngModel)]="newBudgetDraft.costCentreId">
+            <select
+              class="form-select"
+              [(ngModel)]="newBudgetDraft.costCentreId"
+              [class.input-error]="hasBudgetFieldError('costCentreId')"
+              (blur)="onBudgetFieldBlur('costCentreId')"
+            >
               <option [ngValue]="0" disabled>Select cost centre</option>
               @for (costCentre of costCentres; track costCentre.id) {
                 <option [ngValue]="costCentre.id" [disabled]="costCentre.isActive === false">
@@ -100,6 +105,9 @@
                 </option>
               }
             </select>
+            @if (hasBudgetFieldError('costCentreId')) {
+              <span class="field-error">{{ getBudgetFieldError('costCentreId') }}</span>
+            }
           </label>
           <label class="col-12 col-sm-4 mb-0">
             Amount (€)
@@ -107,17 +115,40 @@
               type="number"
               class="form-control"
               [(ngModel)]="newBudgetDraft.targetAmount"
+              [class.input-error]="hasBudgetFieldError('targetAmount')"
+              (blur)="onBudgetFieldBlur('targetAmount')"
               placeholder="0.00"
             />
+            @if (hasBudgetFieldError('targetAmount')) {
+              <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+            }
           </label>
           <div class="w-100"></div>
           <label class="col-12 col-sm-6 mb-0">
             Period Start
-            <input type="date" class="form-control" [(ngModel)]="newBudgetDraft.periodStart" />
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.periodStart"
+              [class.input-error]="hasBudgetFieldError('periodStart')"
+              (blur)="onBudgetFieldBlur('periodStart')"
+            />
+            @if (hasBudgetFieldError('periodStart')) {
+              <span class="field-error">{{ getBudgetFieldError('periodStart') }}</span>
+            }
           </label>
           <label class="col-12 col-sm-6 mb-0">
             Period End
-            <input type="date" class="form-control" [(ngModel)]="newBudgetDraft.periodEnd" />
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.periodEnd"
+              [class.input-error]="hasBudgetFieldError('periodEnd')"
+              (blur)="onBudgetFieldBlur('periodEnd')"
+            />
+            @if (hasBudgetFieldError('periodEnd')) {
+              <span class="field-error">{{ getBudgetFieldError('periodEnd') }}</span>
+            }
           </label>
           <div class="col-12 d-flex justify-content-end">
             <button
