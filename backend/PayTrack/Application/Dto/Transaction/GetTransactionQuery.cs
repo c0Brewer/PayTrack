@@ -19,12 +19,12 @@ namespace PayTrack.Application.Dto.Transaction
         /// <summary>
         /// Min Amount to query.
         /// </summary>
-        public int? MinAmount { get; init; }
+        public decimal? MinAmount { get; init; }
 
         /// <summary>
-        /// Min Amount to query.
+        /// Max Amount to query.
         /// </summary>
-        public int? MaxAmount { get; init; }
+        public decimal? MaxAmount { get; init; }
 
         /// <summary>
         /// Purpose of Payment to query.

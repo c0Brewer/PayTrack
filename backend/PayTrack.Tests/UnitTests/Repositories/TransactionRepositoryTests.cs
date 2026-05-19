@@ -103,6 +103,34 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetAllTransactions_FilterByDecimalAmount_ShouldReturnMatchingData()
+        {
+            await using var context = GetInMemoryDbContext("FilterByDecimalAmount");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.Transactions.AddRange(
+                new PaymentRequestByUser { Id = 1, Amount = 105.30m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "1" },
+                new PaymentRequestByUser { Id = 2, Amount = 105.40m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "2" },
+                new PaymentRequestByUser { Id = 3, Amount = 105.50m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "3" });
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (transactions, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
+            {
+                MinAmount = 105.4m,
+                MaxAmount = 105.4m,
+            });
+
+            totalCount.Should().Be(1);
+            transactions.Should().ContainSingle(t => t.Id == 2);
+        }
+
+        [Fact]
         public async Task GetAllTransactions_FilterByMinPaidAt_ShouldExcludeUnpaidAndEarlier()
         {
             await using var context = GetInMemoryDbContext("FilterByMinPaidAt");
