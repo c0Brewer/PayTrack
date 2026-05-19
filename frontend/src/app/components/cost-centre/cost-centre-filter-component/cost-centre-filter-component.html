@@ -1,12 +1,47 @@
-<div class="toolbar">
-  <input type="text" placeholder="Filter by name..." (input)="onNameFilterChange($event)" />
-  <input type="text" placeholder="Filter by description..." (input)="onDescriptionFilterChange($event)" />
-  <input type="number" placeholder="Min budget..." min="0" (input)="onMinBudgetFilterChange($event)" />
-  <input type="number" placeholder="Max budget..." min="0" (input)="onMaxBudgetFilterChange($event)" />
+<div class="m-0 row g-3 mb-4 p-3 rounded-2">
+  <div class="col-12 col-md-6 col-xl">
+    <input
+      class="form-control"
+      type="text"
+      placeholder="Name..."
+      (input)="onNameFilterChange($event)"
+    />
+  </div>
 
-  <select [(ngModel)]="limit" (change)="onLimitChange()">
-    @for (l of limitSelection; track l) {
-      <option [value]="l">{{ l }} per page</option>
-    }
-  </select>
+  <div class="col-12 col-md-6 col-xl">
+    <input
+      class="form-control"
+      type="text"
+      placeholder="Description..."
+      (input)="onDescriptionFilterChange($event)"
+    />
+  </div>
+
+  <div class="col-12 col-md-6 col-xl">
+    <input
+      class="form-control"
+      type="number"
+      placeholder="Min budget..."
+      min="0"
+      (input)="onMinBudgetFilterChange($event)"
+    />
+  </div>
+
+  <div class="col-12 col-md-6 col-xl">
+    <input
+      class="form-control"
+      type="number"
+      placeholder="Max budget..."
+      min="0"
+      (input)="onMaxBudgetFilterChange($event)"
+    />
+  </div>
+
+  <div class="col-12 col-md-6 col-xl-auto">
+    <select class="form-select" [(ngModel)]="limit" (change)="onLimitChange()">
+      @for (l of limitSelection; track l) {
+        <option [value]="l">{{ l }} per page</option>
+      }
+    </select>
+  </div>
 </div>

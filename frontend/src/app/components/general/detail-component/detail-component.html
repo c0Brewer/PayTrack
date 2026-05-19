@@ -1,0 +1,51 @@
+<section class="detail-shell">
+  <!-- AI Assisted/generated Component-->
+  @if (backLabel) {
+    <button type="button" class="detail-shell__back" (click)="onBackClick()">
+      <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      {{ backLabel }}
+    </button>
+  }
+
+  <header class="detail-shell__header">
+    <div class="detail-shell__heading">
+      @if (icon) {
+        <span class="detail-shell__icon material-symbols-outlined" aria-hidden="true">
+          {{ icon }}
+        </span>
+      }
+
+      <div class="detail-shell__title-group">
+        @if (eyebrow) {
+          <p class="detail-shell__eyebrow">{{ eyebrow }}</p>
+        }
+
+        <div class="detail-shell__title-row">
+          <h1>{{ title }}</h1>
+
+          @if (statusLabel) {
+            <span class="detail-shell__status" [class]="'detail-shell__status--' + statusVariant">
+              {{ statusLabel }}
+            </span>
+          }
+        </div>
+
+        @if (subtitle) {
+          <p class="detail-shell__subtitle">{{ subtitle }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="detail-shell__actions">
+      <ng-content select="[detail-actions]"></ng-content>
+    </div>
+  </header>
+
+  <div class="detail-shell__meta">
+    <ng-content select="[detail-meta]"></ng-content>
+  </div>
+
+  <div class="detail-shell__content">
+    <ng-content></ng-content>
+  </div>
+</section>
