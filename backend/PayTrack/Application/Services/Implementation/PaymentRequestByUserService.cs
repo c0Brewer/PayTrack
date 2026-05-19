@@ -211,8 +211,9 @@ namespace PayTrack.Application.Services.Implementation
             {
                 Role.RegularUser => query.UserId == currentUser.Id,
 
-                Role.TeamLead => currentUser.TeamId.HasValue
-                                  && query.TeamId == currentUser.TeamId,
+                Role.TeamLead => query.UserId == currentUser.Id
+                                  || (currentUser.TeamId.HasValue
+                                      && query.TeamId == currentUser.TeamId),
 
                 Role.Admin => true,
 

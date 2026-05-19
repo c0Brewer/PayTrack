@@ -8,7 +8,6 @@ import { PaymentRequestByUserService } from '../../../services/payment-request-b
 import {
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
-  Role,
   UserDto,
 } from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
@@ -59,7 +58,7 @@ export class MyInvoicesComponent implements OnInit {
   loadInvoices(): void {
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.role === Role.REGULAR_USER ? this.currentUser.id : undefined,
+      UserId: this.currentUser?.id,
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
