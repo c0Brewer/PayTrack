@@ -8,8 +8,11 @@ import { HomeComponent } from './components/home/home-component/home-component';
 import { InitialLoginBankAccountComponent } from './components/inital-login-bank-account/initial-login-bank-account-component/initial-login-bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
-import { ReceiptOverviewComponent } from './components/submission/receipt-overview-component/receipt-overview-component';
+import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
+import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
+import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
+import { RequestsComponent } from './components/submission/requests-component/requests-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
@@ -33,6 +36,16 @@ export const routes: Routes = [
     component: LoginComponent,
   },
   {
+    path: 'my-invoices',
+    canActivate: [authGuard],
+    component: MyInvoicesComponent,
+  },
+  {
+    path: 'my-invoices/:id',
+    canActivate: [authGuard],
+    component: MyInvoiceDetailComponent,
+  },
+  {
     path: 'submit',
     canActivate: [authGuard],
     component: ReceiptSubmitComponent,
@@ -40,7 +53,12 @@ export const routes: Routes = [
   {
     path: 'requests',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: ReceiptOverviewComponent,
+    component: RequestsComponent,
+  },
+  {
+    path: 'requests/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: RequestDetailComponent,
   },
   {
     path: 'bankaccount',
