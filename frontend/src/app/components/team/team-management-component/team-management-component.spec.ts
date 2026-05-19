@@ -145,6 +145,7 @@ describe('TeamManagementComponent', () => {
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,
       Description: undefined,
+      IsActive: undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: 10,
@@ -160,6 +161,7 @@ describe('TeamManagementComponent', () => {
     component.filterOptions = {
       Name: 'Platform',
       Description: 'Builds',
+      IsActive: true,
       IncludeMembers: false,
       IncludeBudgets: false,
       Limit: undefined,
@@ -173,6 +175,7 @@ describe('TeamManagementComponent', () => {
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: 'Platform',
       Description: 'Builds',
+      IsActive: true,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: 25,
@@ -203,12 +206,14 @@ describe('TeamManagementComponent', () => {
     component.updateFilterOptions({
       Name: 'Operations',
       Description: 'running',
+      IsActive: true,
     });
 
     expect(component.filterOptions).toEqual(
       expect.objectContaining({
         Name: 'Operations',
         Description: 'running',
+        IsActive: true,
         IncludeMembers: true,
         IncludeBudgets: true,
       }),
