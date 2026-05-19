@@ -142,6 +142,31 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetAllAsync_ShouldFilterTeamsByInactiveStatus()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_FilterByInactiveStatus");
+            context.Teams.AddRange(
+                new Team { Name = "Active Team", IsActive = true },
+                new Team { Name = "Inactive Team", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IsActive = false,
+            });
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Inactive Team");
+            resultList[0].IsActive.Should().BeFalse();
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
         public async Task GetAllAsync_ShouldFilterTeamsByNameAndDescription()
         {
             // Arrange
