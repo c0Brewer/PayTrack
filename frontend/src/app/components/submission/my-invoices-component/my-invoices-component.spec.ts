@@ -7,7 +7,7 @@ import { AuthService } from '../../../services/auth/auth-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
-import { PaymentRequestByUserDto } from '../../../types/exporter';
+import { PaymentRequestByUserDto, Role, UserDto } from '../../../types/exporter';
 
 import { MyInvoicesComponent } from './my-invoices-component';
 
@@ -86,6 +86,24 @@ describe('MyInvoicesComponent', () => {
 
     expect(component.invoices).toEqual(apiResponse.items);
     expect(component.totalCount).toBe(2);
+  });
+
+  it('should filter my invoices by current admin user id', () => {
+    const admin = { id: 7, role: Role.ADMIN } as UserDto;
+    const apiResponse = {
+      items: [{ id: 1, amount: 100 }] as PaymentRequestByUserDto[],
+      totalCount: 1,
+      hasNext: false,
+      hasPrevious: false,
+    };
+    authServiceMock.getCurrentUser.mockReturnValue(of(admin));
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of(apiResponse));
+
+    component.ngOnInit();
+
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith(
+      expect.objectContaining({ UserId: admin.id }),
+    );
   });
 
   it('should show error on API failure', () => {

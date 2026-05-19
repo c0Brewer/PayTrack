@@ -434,11 +434,31 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public void ValidateQuery_TeamLead_ReturnsTrue_WhenUserIdMatchesCurrent()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var query = new GetPaymentRequestByUserQuery { UserId = 1 };
+
+            service.ValidateQuery(query, user).Should().BeTrue();
+        }
+
+        [Fact]
         public void ValidateQuery_TeamLead_ReturnsFalse_WhenTeamIdDiffers()
         {
             var service = BuildService();
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
             var query = new GetPaymentRequestByUserQuery { TeamId = 99 };
+
+            service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ValidateQuery_TeamLead_ReturnsFalse_WhenUserIdDiffers()
+        {
+            var service = BuildService();
+            var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 10 };
+            var query = new GetPaymentRequestByUserQuery { UserId = 99 };
 
             service.ValidateQuery(query, user).Should().BeFalse();
         }
