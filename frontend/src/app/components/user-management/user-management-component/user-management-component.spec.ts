@@ -198,4 +198,20 @@ describe('UserManagementComponent', () => {
     expect(component.totalUserCount).toBe(2);
     expect(statBox.content()).toBe(2);
   });
+
+  it('should show user-focused placeholder statistics', () => {
+    fixture.detectChanges();
+
+    const statBoxes = fixture.debugElement
+      .queryAll(By.directive(StatBoxComponent))
+      .map((statBox) => statBox.componentInstance as StatBoxComponent);
+
+    expect(statBoxes.map((statBox) => statBox.header())).toEqual([
+      'Total Users',
+      'Active Users',
+      'Inactive Users',
+      'Admins',
+    ]);
+    expect(statBoxes.map((statBox) => statBox.content())).toEqual([2, 12, 2, 2]);
+  });
 });
