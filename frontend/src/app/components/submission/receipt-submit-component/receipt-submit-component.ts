@@ -250,6 +250,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .getDuplicatePaymentRequestsByUser({
         TeamId: payload.transaction.teamId,
         Amount: payload.transaction.amount,
+        PaidAt: payload.transaction.paidAt,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({

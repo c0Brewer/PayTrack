@@ -68,8 +68,9 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="userId">Current user id.</param>
         /// <param name="teamId">Team id.</param>
         /// <param name="amount">Amount.</param>
+        /// <param name="paidAt">Paid-at day.</param>
         /// <returns>List of potential duplicates.</returns>
-        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount);
+        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount, DateTime paidAt);
 
         /// <summary>
         /// Updates a PaymentRequestByUser using the given input.

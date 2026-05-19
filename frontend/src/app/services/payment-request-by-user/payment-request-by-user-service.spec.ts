@@ -204,7 +204,7 @@ describe('PaymentRequestByUserService', () => {
     } as any);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = { TeamId: 1, Amount: 100 } as any;
+    const query = { TeamId: 1, Amount: 100, PaidAt: '2025-01-01T00:00:00.000Z' } as any;
     const result = await firstValueFrom(service.getDuplicatePaymentRequestsByUser(query));
 
     expect(client.GET).toHaveBeenCalledWith('/api/v1/transaction/user/duplicate', {

@@ -313,6 +313,11 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledOnce();
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
+      TeamId: 1,
+      Amount: 100,
+      PaidAt: '2025-01-01T00:00:00.000Z',
+    });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
     expect(component.isDuplicateModalOpen).toBe(true);
     expect(component.pendingSubmissionPayload).not.toBeNull();

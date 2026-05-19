@@ -108,12 +108,13 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount)
+            decimal amount,
+            DateTime paidAt)
         {
-            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount);
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount, paidAt);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount))
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount, paidAt))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
@@ -251,10 +252,12 @@ namespace PayTrack.Application.Services.Implementation
             PaymentRequestByUser paymentRequestByUser,
             int userId,
             int teamId,
-            decimal amount)
+            decimal amount,
+            DateTime paidAt)
         {
-            bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
-            bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
+            bool isSameAmountAndDay = paymentRequestByUser.Amount == amount && paymentRequestByUser.PaidAt?.Date == paidAt.Date;
+            bool isAmountAndUserMatch = isSameAmountAndDay && paymentRequestByUser.UserId == userId;
+            bool isAmountAndTeamMatch = isSameAmountAndDay && paymentRequestByUser.TeamId == teamId;
 
             int score = 0;
 

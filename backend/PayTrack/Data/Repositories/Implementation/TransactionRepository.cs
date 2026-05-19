@@ -148,13 +148,18 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount)
+        public async Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount, DateTime paidAt)
         {
+            var paidAtDayStart = DateTime.SpecifyKind(paidAt.Date, DateTimeKind.Utc);
+            var paidAtDayEnd = paidAtDayStart.AddDays(1);
+
             return await this.context.PaymentRequestsByUser
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
-                    (paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount) ||
-                    (paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount))
+                    paymentRequestByUser.Amount == amount &&
+                    paymentRequestByUser.PaidAt >= paidAtDayStart &&
+                    paymentRequestByUser.PaidAt < paidAtDayEnd &&
+                    (paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId))
                 .Include(paymentRequestByUser => paymentRequestByUser.User)
                 .Include(paymentRequestByUser => paymentRequestByUser.Team)
                 .Include(paymentRequestByUser => paymentRequestByUser.CostCentre)

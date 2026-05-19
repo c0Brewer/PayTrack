@@ -23,5 +23,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [Required]
         [Range(0.01, double.MaxValue)]
         required public decimal Amount { get; init; }
+
+        /// <summary>
+        /// Paid-at day to compare against.
+        /// </summary>
+        [Required]
+        required public DateTime PaidAt { get; init; }
     }
 }

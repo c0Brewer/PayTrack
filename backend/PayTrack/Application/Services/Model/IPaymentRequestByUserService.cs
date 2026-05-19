@@ -66,11 +66,13 @@ namespace PayTrack.Application.Services.Model
         /// <param name="userId">Current user id for matching.</param>
         /// <param name="teamId">Team id for matching.</param>
         /// <param name="amount">Amount for matching.</param>
+        /// <param name="paidAt">Paid-at day for matching.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount);
+            decimal amount,
+            DateTime paidAt);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.

@@ -178,6 +178,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var teamMock = new Mock<ITeamService>();
             var fileMock = new Mock<IFileRepository>();
             var bankMock = new Mock<IBankAccountService>();
+            var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
 
             var duplicateCandidates = new List<PaymentRequestByUser>
             {
@@ -188,6 +189,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     TeamId = 99,
                     Amount = 100,
                     InvoiceNumber = "INV-100",
+                    PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new()
@@ -197,6 +199,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     TeamId = 99,
                     Amount = 100,
                     InvoiceNumber = "ANY-1",
+                    PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new()
@@ -206,6 +209,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     TeamId = 1,
                     Amount = 100,
                     InvoiceNumber = "ANY-2",
+                    PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new()
@@ -215,12 +219,23 @@ namespace PayTrack.Tests.UnitTests.Services
                     TeamId = 1,
                     Amount = 50,
                     InvoiceNumber = "OTHER",
+                    PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 25, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 5,
+                    UserId = 42,
+                    TeamId = 99,
+                    Amount = 100,
+                    InvoiceNumber = "OTHER-DAY",
+                    PaidAt = paidAt.AddDays(1),
+                    CreatedAt = new DateTime(2026, 1, 30, 0, 0, 0, DateTimeKind.Utc)
                 }
             };
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -229,7 +244,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt);
 
             result.Should().HaveCount(3);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
@@ -246,7 +261,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result[2].IsAmountAndTeamMatch.Should().BeTrue();
 
             repoMock.Verify(
-                r => r.GetPotentialDuplicatesAsync(42, 99, 100),
+                r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt),
                 Times.Once);
         }
 
@@ -257,6 +272,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var teamMock = new Mock<ITeamService>();
             var fileMock = new Mock<IFileRepository>();
             var bankMock = new Mock<IBankAccountService>();
+            var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
 
             var duplicateCandidates = Enumerable.Range(1, 12)
                 .Select(i => new PaymentRequestByUser
@@ -266,12 +282,13 @@ namespace PayTrack.Tests.UnitTests.Services
                     TeamId = 99,
                     Amount = 100,
                     InvoiceNumber = "INV-100",
+                    PaidAt = paidAt,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-i),
                 })
                 .ToList();
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -280,7 +297,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt);
 
             result.Should().HaveCount(10);
             result.Should().OnlyContain(match => match.Score >= 1);

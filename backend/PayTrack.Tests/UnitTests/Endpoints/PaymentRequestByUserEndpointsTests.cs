@@ -196,6 +196,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             var user = new User { Id = 123 };
+            var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
             var matches = new List<DuplicatePaymentRequestByUserMatch>
             {
                 new(
@@ -204,6 +205,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         Id = 1,
                         Amount = 100,
                         InvoiceNumber = "INV-100",
+                        PaidAt = paidAt,
                         User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
                         Team = new Team { Id = 99, Name = "Team A" }
                     },
@@ -217,14 +219,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
-                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100))
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date)))
                 .ReturnsAsync(matches);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
-            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100");
+            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100&PaidAt=2026-01-05T00:00:00.0000000Z");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -236,7 +238,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto[0].Score.Should().Be(2);
 
             _factory.ServiceMock.Verify(
-                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100),
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date)),
                 Times.Once);
         }
 

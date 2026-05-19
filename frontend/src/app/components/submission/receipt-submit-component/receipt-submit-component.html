@@ -200,7 +200,7 @@
     (closeEvent)="onDuplicateModalCancel()"
   >
     <p class="duplicate-modal__subtitle">
-      We found existing submissions with matching amount.
+      We found existing submissions with matching amount and invoice date.
     </p>
 
     <ul class="duplicate-list">
@@ -214,8 +214,8 @@
             <span>Team: {{ getDuplicateTeamName(duplicate) }}</span>
           </div>
           <div class="duplicate-list__meta">
-            <span [class.duplicate-list__match]="duplicate.isAmountAndUserMatch">Amount + User</span>
-            <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Team</span>
+            <span [class.duplicate-list__match]="duplicate.isAmountAndUserMatch">Amount + Day + User</span>
+            <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Day + Team</span>
           </div>
         </li>
       }

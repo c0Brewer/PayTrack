@@ -1111,6 +1111,8 @@ export interface paths {
                 query: {
                     TeamId: number;
                     Amount: number;
+                    /** Format: date-time */
+                    PaidAt: string;
                 };
                 header?: never;
                 path?: never;
