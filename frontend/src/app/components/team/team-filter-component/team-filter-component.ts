@@ -37,7 +37,7 @@ export class TeamFilterComponent implements OnInit {
     });
 
     this.filterIsActiveSubject.pipe(debounceTime(100)).subscribe((value) => {
-      this.filterIsActive = value ?? undefined;
+      this.filterIsActive = value;
       this.updateFilter.emit(this.getGetTeamOptions());
     });
   }
@@ -46,7 +46,7 @@ export class TeamFilterComponent implements OnInit {
     return {
       Name: this.filterName ?? undefined,
       Description: this.filterDescription ?? undefined,
-      IsActive: this.filterIsActive ?? undefined,
+      IsActive: this.filterIsActive,
       Limit: undefined,
       Offset: undefined,
     };
