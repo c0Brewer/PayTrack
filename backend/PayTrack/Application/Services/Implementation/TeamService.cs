@@ -26,6 +26,8 @@ namespace PayTrack.Application.Services.Implementation
             string? displayColor,
             IList<CreateTeamBudgetEntryDto>? budgetEntries)
         {
+            ValidateBudgetEntries(budgetEntries);
+
             var team = new Team
             {
                 Name = name,
@@ -63,6 +65,8 @@ namespace PayTrack.Application.Services.Implementation
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete)
         {
+            ValidateBudgetEntries(budgetsToUpsert);
+
             if (budgetsToUpsert is not null && budgetIdsToDelete is not null)
             {
                 var upsertIds = budgetsToUpsert.Where(e => e.Id > 0).Select(e => e.Id!.Value).ToHashSet();
@@ -85,6 +89,40 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<Team?> DeleteTeamAsync(int id)
         {
             return await this.repo.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// Validates budget entries supplied during team creation before they are passed to the repository.
+        /// </summary>
+        /// <param name="budgetEntries">Optional budget entries to validate.</param>
+        private static void ValidateBudgetEntries(IEnumerable<CreateTeamBudgetEntryDto>? budgetEntries)
+        {
+            if (budgetEntries is null)
+            {
+                return;
+            }
+
+            foreach (var entry in budgetEntries)
+            {
+                BudgetEntryValidation.EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
+            }
+        }
+
+        /// <summary>
+        /// Validates budget entries supplied during team update before they are passed to the repository.
+        /// </summary>
+        /// <param name="budgetEntries">Optional budget entries to validate.</param>
+        private static void ValidateBudgetEntries(IEnumerable<UpsertTeamBudgetEntryDto>? budgetEntries)
+        {
+            if (budgetEntries is null)
+            {
+                return;
+            }
+
+            foreach (var entry in budgetEntries)
+            {
+                BudgetEntryValidation.EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
+            }
         }
     }
 }
