@@ -38,10 +38,11 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
 
-            group.MapGet("/team/", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
+            group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
             group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
-            group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync);
+            group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin);
 
             group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
 

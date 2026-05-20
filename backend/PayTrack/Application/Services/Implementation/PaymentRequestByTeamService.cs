@@ -11,13 +11,15 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService) : IPaymentRequestByTeamService
+    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService, IUserService _userService, ICostCentreService _costCentreService) : IPaymentRequestByTeamService
     {
         /// <summary>
         /// Repository for PaymentRequestByTeams.
         /// </summary>
         private readonly ITransactionRepository repo = repo;
         private readonly ITeamService teamService = _teamService;
+        private readonly IUserService userService = _userService;
+        private readonly ICostCentreService costCentreService = _costCentreService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByTeam> paymentRequestByTeam, int totalCount)> GetAllAsync(
@@ -43,11 +45,27 @@ namespace PayTrack.Application.Services.Implementation
             int? costCentreId = null)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
+            var userToAssignTo = await this.userService.GetUserByIdAsync(userToAssignToId) ?? throw new NotFoundException("Assigned user could not be found");
+            var creatingUser = await this.userService.GetUserByIdAsync(creatingUserId) ?? throw new NotFoundException("Creating user could not be found");
+            if (costCentreId.HasValue)
+            {
+                _ = await this.costCentreService.GetByIdAsync(costCentreId.Value) ?? throw new NotFoundException("Cost centre could not be found");
+            }
+
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be greater than 0");
+            }
+
+            if (dueDate.Date < DateTime.Today)
+            {
+                throw new ArgumentException("Due date cannot be in the past");
+            }
 
             var paymentRequest = new PaymentRequestByTeam
             {
                 // Transaction settings
-                UserId = userToAssignToId,
+                UserId = userToAssignTo.Id,
                 Amount = amount,
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
@@ -58,7 +76,7 @@ namespace PayTrack.Application.Services.Implementation
                 DueDate = dueDate,
 
                 // Created at is set automatically
-                RequestedById = creatingUserId,
+                RequestedById = creatingUser.Id,
             };
 
             return await this.repo.AddAsync(paymentRequest);
@@ -99,6 +117,22 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateQuery(GetPaymentRequestByTeamQuery query, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => query.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                  && query.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
         }
     }
 }
