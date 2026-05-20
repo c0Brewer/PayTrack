@@ -38,7 +38,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var (paymentRequestByUser, totalCount) = await service.GetAllAsync();
 
@@ -67,7 +68,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.GetPaymentRequestByUserByIdAsync(1);
 
@@ -96,7 +98,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var futureDate = DateTime.Today.AddDays(1);
 
@@ -144,7 +147,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var file = new FormFile(Stream.Null, 0, 0, "file", "test.pdf");
 
@@ -180,7 +184,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 teamMock.Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             var file = new FormFile(Stream.Null, 0, 0, "file", "test.pdf");
 
@@ -218,7 +223,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 teamMock.Object,
                 new Mock<IFileRepository>().Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var file = new FormFile(Stream.Null, 0, 0, "file", "test.pdf");
 
@@ -260,7 +266,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 new Mock<IFileRepository>().Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var file = new FormFile(Stream.Null, 0, 0, "file", "test.pdf");
 
@@ -298,7 +305,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.UpdatePaymentRequestByUserAsync(1);
@@ -334,7 +342,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.UpdatePaymentRequestByUserAsync(
                 1,
@@ -371,7 +380,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.UpdatePaymentRequestByUserAsync(
                 1,
@@ -422,7 +432,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.MarkPaymentRequestByUserAsPaidAsync(
                 1,
@@ -464,7 +475,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.MarkPaymentRequestByUserAsPaidAsync(
@@ -504,7 +516,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.MarkPaymentRequestByUserAsPaidAsync(
@@ -537,7 +550,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.MarkPaymentRequestByUserAsPaidAsync(
@@ -616,7 +630,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.ApprovePaymentRequestByUserAsync(1, 42, 0, null);
@@ -627,9 +642,10 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task Approve_ShouldAssignCostCentreId_WhenCostCentreServiceIsNotConfigured()
+        public async Task Approve_ShouldThrow_WhenCostCentreDoesNotExist()
         {
             var repoMock = new Mock<ITransactionRepository>();
+            var costCentreMock = new Mock<ICostCentreService>();
             repoMock
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(new PaymentRequestByUser
@@ -639,20 +655,24 @@ namespace PayTrack.Tests.UnitTests.Services
                     Status = TransactionStatus.Submitted,
                     StatusHistory = []
                 });
-            repoMock
-                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
-                .ReturnsAsync((PaymentRequestByUser p) => p);
+            costCentreMock
+                .Setup(c => c.GetByIdAsync(7))
+                .ReturnsAsync((CostCentre?)null);
 
             var service = new PaymentRequestByUserService(
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                costCentreMock.Object);
 
-            var result = await service.ApprovePaymentRequestByUserAsync(1, 42, 7, null);
+            Func<Task> act = async () =>
+                await service.ApprovePaymentRequestByUserAsync(1, 42, 7, null);
 
-            result.CostCentreId.Should().Be(7);
-            result.StatusHistory.Single().Comment.Should().BeNull();
+            await act.Should()
+                .ThrowAsync<NotFoundException>()
+                .WithMessage("Cost centre not found");
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()), Times.Never);
         }
 
         [Fact]
@@ -682,7 +702,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.RequestChangesPaymentRequestByUserAsync(1, 42, " upload clearer receipt ");
 
@@ -720,7 +741,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.DeclinePaymentRequestByUserAsync(1, 42, " duplicate invoice ");
 
@@ -754,7 +776,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.DeclinePaymentRequestByUserAsync(1, 42, "duplicate invoice");
@@ -794,7 +817,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.GetReceiptForPaymentRequestByUserByIdAsync(1);
 
@@ -831,7 +855,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 fileMock.Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
 
             var result = await service.GetReceiptForPaymentRequestByUserByIdAsync(1);
 
@@ -1010,7 +1035,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object);
         }
 
         [Fact]
@@ -1036,7 +1062,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object);
 
             Func<Task> act = async () =>
                 await service.GetReceiptForPaymentRequestByUserByIdAsync(1);

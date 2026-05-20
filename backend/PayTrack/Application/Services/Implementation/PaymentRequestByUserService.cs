@@ -16,7 +16,7 @@ namespace PayTrack.Application.Services.Implementation
         ITeamService _teamService,
         IFileRepository _fileRepo,
         IBankAccountService _bankAccountService,
-        ICostCentreService? _costCentreService = null) : IPaymentRequestByUserService
+        ICostCentreService _costCentreService) : IPaymentRequestByUserService
     {
         /// <summary>
         /// Repository for PaymentRequestByUsers.
@@ -25,7 +25,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IFileRepository fileRepo = _fileRepo;
         private readonly ITeamService teamService = _teamService;
         private readonly IBankAccountService bankAccountService = _bankAccountService;
-        private readonly ICostCentreService? costCentreService = _costCentreService;
+        private readonly ICostCentreService costCentreService = _costCentreService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -231,17 +231,10 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException("Cost centre is required");
             }
 
-            if (this.costCentreService != null)
-            {
-                var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
-                    ?? throw new NotFoundException("Cost centre not found");
+            var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
+                ?? throw new NotFoundException("Cost centre not found");
 
-                transaction.CostCentreId = costCentre.Id;
-            }
-            else
-            {
-                transaction.CostCentreId = costCentreId;
-            }
+            transaction.CostCentreId = costCentre.Id;
 
             AddStatusHistory(
                 transaction,

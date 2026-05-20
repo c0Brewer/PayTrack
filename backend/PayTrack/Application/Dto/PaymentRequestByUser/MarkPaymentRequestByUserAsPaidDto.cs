@@ -21,5 +21,6 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         string PurposeOfPayment,
 
         [property: Required]
-        DateTime PaymentDate);
+        [property: Range(typeof(DateTime), "1900-01-01", "9999-12-31")]
+        DateTime? PaymentDate);
 }

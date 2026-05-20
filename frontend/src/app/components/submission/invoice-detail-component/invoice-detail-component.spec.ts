@@ -249,6 +249,98 @@ describe('InvoiceDetailComponent', () => {
     expect(emitted).not.toHaveBeenCalled();
   });
 
+  it('should render status admin controls when management is enabled for submitted invoice', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.costCentres = [{ id: 12, name: 'CC-Finance' }];
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.status-actions')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.approve-btn')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.request-changes-btn')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
+  });
+
+  it('should hide status admin controls when management is disabled', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = false;
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.status-actions')).toBeNull();
+  });
+
+  it('should render only decline and mark paid controls for approved invoice', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.canMarkPaid = true;
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.approve-btn')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.request-changes-btn')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.mark-paid-btn')).not.toBeNull();
+  });
+
+  it('should hide mark paid controls when invoice is not approved', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canMarkPaid = true;
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.mark-paid-btn')).toBeNull();
+  });
+
+  it('should disable pending action buttons', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.approvalCostCentreId = 12;
+    component.changeRequestReason = 'missing receipt';
+    component.declineReason = 'duplicate';
+    component.statusActionPending = 'requestChanges';
+
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('.request-changes-btn') as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('.approve-btn') as HTMLButtonElement).disabled,
+    ).toBe(false);
+    expect(
+      (fixture.nativeElement.querySelector('.decline-btn') as HTMLButtonElement).disabled,
+    ).toBe(false);
+  });
+
+  it('should disable mark paid button while marking paid', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canMarkPaid = true;
+    component.markingPaid = true;
+    component.paymentReference = 'REF-123';
+    component.paymentPurpose = 'Supplier payout';
+    component.paymentDate = '2026-02-03';
+
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('.mark-paid-btn') as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+
   it('should show cost centre when showCostCentre is true and costCentre is set', () => {
     component.invoice = {
       ...mockInvoice,

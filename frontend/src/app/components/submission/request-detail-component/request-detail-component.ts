@@ -8,6 +8,7 @@ import {
   ApprovePaymentRequestByUserDto,
   CostCentreDto,
   DeclinePaymentRequestByUserDto,
+  GetPaymentRequestsByUserByIdOptions,
   MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
   RequestChangesPaymentRequestByUserDto,
@@ -21,6 +22,14 @@ import { InvoiceDetailComponent } from '../invoice-detail-component/invoice-deta
   styleUrl: './request-detail-component.scss',
 })
 export class RequestDetailComponent implements OnInit, OnDestroy {
+  private readonly invoiceIncludes: GetPaymentRequestsByUserByIdOptions = {
+    IncludeUser: true,
+    IncludeTeam: true,
+    IncludeCostCentre: true,
+    IncludeBankAccount: true,
+    IncludeStatusHistory: true,
+  };
+
   constructor(
     private readonly service: PaymentRequestByUserService,
     private readonly costCentreService: CostCentreService,
@@ -54,25 +63,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('id'));
 
-      this.service
-        .getPaymentRequestsByUserById(id, {
-          IncludeUser: true,
-          IncludeTeam: true,
-          IncludeCostCentre: true,
-          IncludeBankAccount: true,
-          IncludeStatusHistory: true,
-        })
-        .subscribe({
-          next: (data) => {
-            this.invoice = data;
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: (err: Error) => {
-            this.notificationService.showError('Could not load invoice: ' + err.message);
-            this.loading = false;
-          },
-        });
+      this.loadInvoice(id);
 
       this.service.downloadReceipt(id).subscribe({
         next: (blob) => {
@@ -113,8 +104,8 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
 
     this.markingPaid = true;
     this.service.markPaymentRequestByUserAsPaid(this.invoice.id, markPaidRequest).subscribe({
-      next: (invoice) => {
-        this.invoice = invoice;
+      next: () => {
+        this.loadInvoice(this.invoice!.id);
         this.markingPaid = false;
         this.notificationService.showSuccess('Invoice marked as paid');
         this.cdr.detectChanges();
@@ -155,8 +146,8 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
 
     this.statusActionPending = action;
     request().subscribe({
-      next: (invoice) => {
-        this.invoice = invoice;
+      next: () => {
+        this.loadInvoice(this.invoice!.id);
         this.statusActionPending = null;
         this.notificationService.showSuccess(successMessage);
         this.cdr.detectChanges();
@@ -164,6 +155,21 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
       error: (err: Error) => {
         this.statusActionPending = null;
         this.notificationService.showError(errorPrefix + err.message);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadInvoice(id: number): void {
+    this.service.getPaymentRequestsByUserById(id, this.invoiceIncludes).subscribe({
+      next: (data) => {
+        this.invoice = data;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load invoice: ' + err.message);
+        this.loading = false;
         this.cdr.detectChanges();
       },
     });

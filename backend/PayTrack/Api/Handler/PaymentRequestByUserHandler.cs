@@ -147,13 +147,14 @@ namespace PayTrack.Api.Handler
             IPaymentRequestByUserService paymentRequestByUserService)
         {
             var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+            var paymentDate = markPaidDto.PaymentDate ?? throw new InvalidStateException("Payment date is required");
 
             var updatedPaymentRequestByUser = await paymentRequestByUserService.MarkPaymentRequestByUserAsPaidAsync(
                 id,
                 currentUser.Id,
                 markPaidDto.PaymentReference,
                 markPaidDto.PurposeOfPayment,
-                markPaidDto.PaymentDate);
+                paymentDate);
 
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
 

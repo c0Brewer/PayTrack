@@ -262,6 +262,50 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
+        public async Task MarkPaid_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var paymentDate = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc);
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Paid,
+                PaymentReference = "REF-123",
+                PurposeOfPayment = "Supplier payout",
+                FinancePaidAt = paymentDate,
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.MarkPaymentRequestByUserAsPaidAsync(
+                    1,
+                    adminUser.Id,
+                    "REF-123",
+                    "Supplier payout",
+                    paymentDate))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            var dto = new MarkPaymentRequestByUserAsPaidDto(
+                "REF-123",
+                "Supplier payout",
+                paymentDate);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/mark-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Paid);
+            result.PaymentReference.Should().Be("REF-123");
+            result.FinancePaidAt.Should().Be(paymentDate);
+        }
+
+        [Fact]
         public async Task Decline_ReturnsOk()
         {
             // Arrange
