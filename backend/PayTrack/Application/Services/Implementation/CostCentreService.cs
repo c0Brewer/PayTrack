@@ -38,7 +38,7 @@ namespace PayTrack.Application.Services.Implementation
             string? displayColor,
             IList<CreateCostCentreBudgetEntryDto>? budgetEntries)
         {
-            ValidateBudgetEntries(budgetEntries);
+            BudgetEntryValidation.EnsureValidEntries(budgetEntries);
 
             var costCentre = new CostCentre
             {
@@ -53,7 +53,7 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertCostCentreBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
         {
-            ValidateBudgetEntries(budgetsToUpsert);
+            BudgetEntryValidation.EnsureValidEntries(budgetsToUpsert);
 
             if (budgetsToUpsert is not null && budgetIdsToDelete is not null)
             {
@@ -77,40 +77,6 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<CostCentre?> DeleteAsync(int id)
         {
             return await this.repo.DeleteAsync(id);
-        }
-
-        /// <summary>
-        /// Validates budget entries supplied during cost centre creation before they are passed to the repository.
-        /// </summary>
-        /// <param name="budgetEntries">Optional budget entries to validate.</param>
-        private static void ValidateBudgetEntries(IEnumerable<CreateCostCentreBudgetEntryDto>? budgetEntries)
-        {
-            if (budgetEntries is null)
-            {
-                return;
-            }
-
-            foreach (var entry in budgetEntries)
-            {
-                BudgetEntryValidation.EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
-            }
-        }
-
-        /// <summary>
-        /// Validates budget entries supplied during cost centre update before they are passed to the repository.
-        /// </summary>
-        /// <param name="budgetEntries">Optional budget entries to validate.</param>
-        private static void ValidateBudgetEntries(IEnumerable<UpsertCostCentreBudgetEntryDto>? budgetEntries)
-        {
-            if (budgetEntries is null)
-            {
-                return;
-            }
-
-            foreach (var entry in budgetEntries)
-            {
-                BudgetEntryValidation.EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
-            }
         }
     }
 }

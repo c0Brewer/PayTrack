@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Exceptions;
 
 namespace PayTrack.Application.Services.Implementation
@@ -31,6 +32,25 @@ namespace PayTrack.Application.Services.Implementation
             if (periodEnd < periodStart)
             {
                 throw new InvalidStateException(PeriodEndMustNotBeBeforePeriodStart);
+            }
+        }
+
+        /// <summary>
+        /// Ensures all supplied budget entries satisfy service-level business rules.
+        /// </summary>
+        /// <typeparam name="T">Budget entry DTO type.</typeparam>
+        /// <param name="budgetEntries">Optional budget entries to validate.</param>
+        public static void EnsureValidEntries<T>(IEnumerable<T>? budgetEntries)
+            where T : IBudgetEntryDto
+        {
+            if (budgetEntries is null)
+            {
+                return;
+            }
+
+            foreach (var entry in budgetEntries)
+            {
+                EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
             }
         }
     }
