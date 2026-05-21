@@ -6,6 +6,8 @@ import { PaymentRequestByTeamService } from '../../../../../services/payment-req
 import {
   GetPaymentRequestsByTeamOptions,
   PaymentRequestByTeamDto,
+  TEAM_REQUEST_ALLOWED_STATUSES,
+  TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
@@ -56,7 +58,9 @@ export class TeamRequestsComponent implements OnInit {
     this.paymentRequestByTeamService.getPaymentRequestsByTeam(query).subscribe({
       next: (data) => {
         if (data?.items) {
-          this.requests = data.items;
+          this.requests = data.items.filter((r) =>
+            TEAM_REQUEST_ALLOWED_STATUSES.includes(r.status as TransactionStatus),
+          );
           this.totalCount = data.totalCount;
           this.hasNext = data.hasNext ?? false;
           this.hasPrev = data.hasPrevious ?? false;

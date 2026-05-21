@@ -604,7 +604,7 @@ public static class DbSeeder
             electronicsCostCentre,
             320.50m,
             "CAN bus hardware contribution",
-            TransactionStatus.Approved,
+            TransactionStatus.Submitted,
             DateTime.UtcNow.AddDays(10),
             10);
 
@@ -616,7 +616,7 @@ public static class DbSeeder
             compositesCostCentre,
             89.00m,
             "Damper test rig maintenance fee",
-            TransactionStatus.ChangesRequested,
+            TransactionStatus.Submitted,
             DateTime.UtcNow.AddDays(-5),
             14);
 
@@ -640,7 +640,7 @@ public static class DbSeeder
             null,
             45.00m,
             "Event transport cost share – FSAE Austria",
-            TransactionStatus.Declined,
+            TransactionStatus.Paid,
             DateTime.UtcNow.AddDays(-15),
             18);
 
