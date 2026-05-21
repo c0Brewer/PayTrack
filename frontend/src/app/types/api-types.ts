@@ -1459,6 +1459,8 @@ export interface paths {
                     MaxCreatedAt?: string;
                     MinPaidAt?: string;
                     MaxPaidAt?: string;
+                    MinDueDate?: string;
+                    MaxDueDate?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
@@ -1685,6 +1687,8 @@ export interface paths {
                     MaxCreatedAt?: string;
                     MinPaidAt?: string;
                     MaxPaidAt?: string;
+                    MinDueDate?: string;
+                    MaxDueDate?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;

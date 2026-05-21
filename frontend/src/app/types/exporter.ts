@@ -83,6 +83,11 @@ export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
   [TransactionStatus.Declined]: 'status-declined',
 };
 
+export const TEAM_REQUEST_ALLOWED_STATUSES: readonly TransactionStatus[] = [
+  TransactionStatus.Submitted,
+  TransactionStatus.Paid,
+];
+
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
@@ -112,8 +117,12 @@ export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestD
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
+export type PaginatedPaymentRequestByTeamDto =
+  components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
   paths['/api/v1/transaction/team']['get']['parameters']['query'];
+export type GetPaymentRequestsByTeamByIdOptions =
+  paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];

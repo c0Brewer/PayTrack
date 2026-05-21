@@ -135,9 +135,33 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public Task<PaymentRequestByTeam?> GetByIdAsync(int id, GetPaymentRequestByTeamQueryById? query = null)
+        public async Task<PaymentRequestByTeam?> GetByIdAsync(int id, GetPaymentRequestByTeamQueryById? query = null)
         {
-            throw new NotImplementedException();
+            IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
+
+            if (query?.IncludeCostCentre == true)
+            {
+                dbQuery = dbQuery.Include(t => t.CostCentre);
+            }
+
+            if (query?.IncludeUser == true)
+            {
+                dbQuery = dbQuery.Include(t => t.User);
+            }
+
+            if (query?.IncludeTeam == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Team);
+            }
+
+            if (query?.IncludeStatusHistory == true)
+            {
+                dbQuery = dbQuery.Include(t => t.StatusHistory);
+            }
+
+            dbQuery = dbQuery.Include(t => t.RequestedBy);
+
+            return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <inheritdoc/>
@@ -249,7 +273,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.PurposeOfPayment))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.PurposeOfPayment, $"%{query.PurposeOfPayment}%"));
+                var purposeLower = query.PurposeOfPayment.ToLower();
+                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(purposeLower));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.PaymentReference))
@@ -294,6 +319,18 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 var maxPaidAt = DateTime.SpecifyKind(query.MaxPaidAt.Value.Date.AddDays(1), DateTimeKind.Utc);
                 dbQuery = dbQuery.Where(t => t.PaidAt < maxPaidAt);
+            }
+
+            if (query?.MinDueDate.HasValue == true)
+            {
+                var minDueDate = DateTime.SpecifyKind(query.MinDueDate.Value, DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.DueDate >= minDueDate);
+            }
+
+            if (query?.MaxDueDate.HasValue == true)
+            {
+                var maxDueDate = DateTime.SpecifyKind(query.MaxDueDate.Value.Date.AddDays(1), DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.DueDate < maxDueDate);
             }
 
             return dbQuery;

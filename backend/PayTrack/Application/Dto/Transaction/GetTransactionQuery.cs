@@ -72,6 +72,16 @@ namespace PayTrack.Application.Dto.Transaction
         public DateTime? MaxPaidAt { get; init; }
 
         /// <summary>
+        /// MinDueDate to query.
+        /// </summary>
+        public DateTime? MinDueDate { get; init; }
+
+        /// <summary>
+        /// MaxDueDate to query.
+        /// </summary>
+        public DateTime? MaxDueDate { get; init; }
+
+        /// <summary>
         /// Limit of query.
         /// </summary>
         public int? Limit { get; init; }

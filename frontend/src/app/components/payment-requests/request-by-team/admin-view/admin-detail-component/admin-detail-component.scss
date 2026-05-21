@@ -1,0 +1,14 @@
+@use 'variables' as v;
+
+.notification-actions {
+  display: flex;
+  gap: v.$size-s;
+  margin-top: v.$size-m;
+  padding: 0 v.$size-m;
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$size-xs;
+  }
+}

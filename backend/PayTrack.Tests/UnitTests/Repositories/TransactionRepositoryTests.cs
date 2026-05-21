@@ -412,6 +412,97 @@ namespace PayTrack.Tests.UnitTests.Repositories
             ex.Message.Should().Contain("Transaction");
         }
 
+        // ----------------------------
+        // GET BY ID (PaymentRequestByTeam)
+        // ----------------------------
+        [Fact]
+        public async Task GetByIdAsyncTeam_ShouldReturnEntity_WhenExists()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdTeam_Found");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.User.Add(new User { Id = 2, Email = "admin@123", Name = "admin" });
+            context.Teams.Add(new Team { Id = 1, Name = "Chassis" });
+            context.PaymentRequestsByTeam.Add(new PaymentRequestByTeam
+            {
+                Id = 10,
+                UserId = 1,
+                RequestedById = 2,
+                TeamId = 1,
+                Amount = 150,
+                CreatedAt = DateTime.UtcNow,
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetByIdAsync(10, (GetPaymentRequestByTeamQueryById?)null);
+
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(10);
+            result.Amount.Should().Be(150);
+        }
+
+        [Fact]
+        public async Task GetByIdAsyncTeam_ShouldReturnNull_WhenNotExists()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdTeam_NotFound");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetByIdAsync(999, (GetPaymentRequestByTeamQueryById?)null);
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_FilterByDueDate_ShouldReturnMatchingEntries()
+        {
+            await using var context = GetInMemoryDbContext("FilterByDueDate");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            var cutoff = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = cutoff.AddDays(10) },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, DueDate = cutoff.AddDays(-10) },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, DueDate = null }
+            );
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (results, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery { MinDueDate = cutoff });
+
+            count.Should().Be(1);
+            results.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_FilterByPurpose_ShouldBeCaseInsensitive()
+        {
+            await using var context = GetInMemoryDbContext("FilterPurposeCaseInsensitive");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PurposeOfPayment = "Engine repair" },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, PurposeOfPayment = "Chassis work" },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, PurposeOfPayment = null }
+            );
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (results, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery { PurposeOfPayment = "engine" });
+
+            count.Should().Be(1);
+            results.Should().ContainSingle(t => t.Id == 1);
+        }
+
         [Fact]
         public async Task GetAllTransactions_ShouldApplyOffsetAndLimit()
         {
@@ -444,6 +535,179 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             count.Should().Be(5);
             result.Should().HaveCount(2);
+        }
+
+        // ----------------------------
+        // ADD PaymentRequestByTeam
+        // ----------------------------
+        [Fact]
+        public async Task AddPaymentRequestByTeam_ShouldPersistEntity()
+        {
+            await using var context = GetInMemoryDbContext("AddPaymentRequestByTeam");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var entity = new PaymentRequestByTeam
+            {
+                Amount = 500,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var result = await repo.AddAsync(entity);
+
+            result.Should().NotBeNull();
+            result.Id.Should().NotBe(0);
+
+            var db = await context.PaymentRequestsByTeam.FindAsync(result.Id);
+            db.Should().NotBeNull();
+            db!.Amount.Should().Be(500);
+        }
+
+        [Fact]
+        public async Task AddPaymentRequestByTeam_ShouldThrow_WhenSaveFails()
+        {
+            var context = new FailingDbContext("FailAddTeam");
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var entity = new PaymentRequestByTeam { Amount = 100 };
+
+            async Task act() => await repo.AddAsync(entity);
+
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
+            ex.Message.Should().Contain("Transaction");
+        }
+
+        // ----------------------------
+        // UPDATE PaymentRequestByTeam
+        // ----------------------------
+        [Fact]
+        public async Task UpdatePaymentRequestByTeam_ShouldPersistChanges()
+        {
+            await using var context = GetInMemoryDbContext("UpdatePaymentRequestByTeam");
+
+            var existing = new PaymentRequestByTeam { Id = 1, Amount = 100 };
+            context.PaymentRequestsByTeam.Add(existing);
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            existing.Amount = 750;
+            var result = await repo.UpdateAsync(existing);
+
+            result.Amount.Should().Be(750);
+
+            var db = await context.PaymentRequestsByTeam.FindAsync(1);
+            db!.Amount.Should().Be(750);
+        }
+
+        [Fact]
+        public async Task UpdatePaymentRequestByTeam_ShouldThrow_WhenSaveFails()
+        {
+            var context = new FailingDbContext("FailUpdateTeam");
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var entity = new PaymentRequestByTeam { Id = 1, Amount = 100 };
+
+            async Task act() => await repo.UpdateAsync(entity);
+
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
+            ex.Message.Should().Contain("Transaction");
+        }
+
+        // ----------------------------
+        // GET ALL PaymentRequestByTeam – remaining filters
+        // ----------------------------
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_FilterByRequestById_ShouldReturnMatchingEntries()
+        {
+            await using var context = GetInMemoryDbContext("FilterByRequestById");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "a@a.com", Name = "A" },
+                new User { Id = 2, Email = "b@b.com", Name = "B" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, RequestedById = 1 },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, RequestedById = 2 },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, RequestedById = 1 });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (results, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery { RequestById = 1 });
+
+            count.Should().Be(2);
+            results.Should().OnlyContain(t => t.RequestedById == 1);
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_FilterByMaxDueDate_ShouldReturnMatchingEntries()
+        {
+            await using var context = GetInMemoryDbContext("FilterByMaxDueDate");
+
+            context.User.Add(new User { Id = 1, Email = "test@test.com", Name = "T" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            var cutoff = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = cutoff.AddDays(-1) },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, DueDate = cutoff.AddDays(10) },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, DueDate = null });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (results, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery { MaxDueDate = cutoff });
+
+            count.Should().Be(1);
+            results.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        // ----------------------------
+        // GET BY ID PaymentRequestByTeam – includes
+        // ----------------------------
+        [Fact]
+        public async Task GetByIdAsyncTeam_ShouldIncludeNavigationProperties_WhenRequested()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdTeam_Includes");
+
+            context.User.Add(new User { Id = 1, Email = "u@u.com", Name = "User" });
+            context.User.Add(new User { Id = 2, Email = "r@r.com", Name = "Requester" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team" });
+            context.CostCentres.Add(new CostCentre { Id = 1, Name = "CC" });
+
+            context.PaymentRequestsByTeam.Add(new PaymentRequestByTeam
+            {
+                Id = 5,
+                UserId = 1,
+                RequestedById = 2,
+                TeamId = 1,
+                CostCentreId = 1,
+                Amount = 200,
+                CreatedAt = DateTime.UtcNow,
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetByIdAsync(5, new GetPaymentRequestByTeamQueryById
+            {
+                IncludeUser = true,
+                IncludeTeam = true,
+                IncludeCostCentre = true,
+            });
+
+            result.Should().NotBeNull();
+            result!.User.Should().NotBeNull();
+            result.User!.Id.Should().Be(1);
+            result.Team.Should().NotBeNull();
+            result.Team!.Id.Should().Be(1);
+            result.CostCentre.Should().NotBeNull();
+            result.CostCentre!.Id.Should().Be(1);
+            result.RequestedBy.Should().NotBeNull();
+            result.RequestedBy!.Id.Should().Be(2);
         }
     }
 }
