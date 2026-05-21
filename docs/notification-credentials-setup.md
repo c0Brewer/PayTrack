@@ -1,6 +1,6 @@
 # Notification Credentials Setup
 
-The notification dispatch service (`/api/v1/notify/email` and `/api/v1/notify/slack`) requires
+The notification dispatch service (`/api/v1/notification/email` and `/api/v1/notification/slack`) requires
 SMTP and Slack credentials to deliver messages. This document covers setup for both local
 development and production deployment.
 
@@ -9,7 +9,7 @@ development and production deployment.
 ## Configuration structure
 
 The backend reads credentials from `appsettings.json` (committed, values left empty) and
-overrides from `appsettings.Development.json` (not committed — add to `.gitignore` if missing).
+overrides from `appsettings.Development.json`.
 
 ```
 backend/PayTrack/
@@ -22,8 +22,6 @@ For production the same keys are supplied via environment variables (see [Produc
 ---
 
 ## Local development
-
-Create `backend/PayTrack/appsettings.Development.json` if it does not exist:
 
 ```json
 {
