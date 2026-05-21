@@ -10,6 +10,7 @@ import { LoginComponent } from './components/login/login-component/login-compone
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
 import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
+import { PaymentRequestByTeamComponent } from './components/submission/payment-request-by-team-component/payment-request-by-team-component';
 import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
 import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
 import { RequestsComponent } from './components/submission/requests-component/requests-component';
@@ -99,6 +100,11 @@ export const routes: Routes = [
     path: 'cost-centre/:id',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: CostCentreDetailComponent,
+  },
+  {
+    path: 'create-payment-request',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: PaymentRequestByTeamComponent,
   },
   {
     path: 'unauthorized',

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
@@ -77,6 +78,29 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<(List<PaymentRequestByTeam> transaction, int totalCount)> GetAllAsync(GetPaymentRequestByTeamQuery? query = null)
+        {
+            IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
+
+            dbQuery = ApplyBasePreFilters(dbQuery, query);
+
+            if (query?.RequestById.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.RequestedById == query.RequestById.Value);
+            }
+
+            // Calculate total count before limit / offset
+            var totalCount = await dbQuery.CountAsync();
+
+            dbQuery = ApplyBasePostFilters(dbQuery, query);
+
+            // Could potentially add other ordering logic here as well
+            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        /// <inheritdoc/>
         public Task<Transaction?> GetByIdAsync(int id, GetTransactionQueryById? query = null)
         {
             throw new NotImplementedException();
@@ -116,6 +140,12 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public Task<PaymentRequestByTeam?> GetByIdAsync(int id, GetPaymentRequestByTeamQueryById? query = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
         public async Task<Transaction> AddAsync(Transaction transaction)
         {
             this.context.Transactions.Add(transaction);
@@ -123,7 +153,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
 
             return transaction;
@@ -141,7 +171,21 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> AddAsync(PaymentRequestByTeam transaction)
+        {
+            this.context.PaymentRequestsByTeam.Add(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
 
             return transaction;
@@ -170,7 +214,21 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction)
+        {
+            this.context.PaymentRequestsByTeam.Update(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transaction.");
             }
 
             return transaction;

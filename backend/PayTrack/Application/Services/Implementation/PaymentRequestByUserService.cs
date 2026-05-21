@@ -133,7 +133,7 @@ namespace PayTrack.Application.Services.Implementation
             PayoutType? payoutType = null,
             int? bankAccountId = null)
         {
-            var transaction = await this.repo.GetByIdAsync(id, new())
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByUserQueryById())
                 ?? throw new NotFoundException("Transaction not found");
 
             if (teamId.HasValue)
@@ -176,12 +176,12 @@ namespace PayTrack.Application.Services.Implementation
 
             if (bankAccountId.HasValue)
             {
-                // TODO: Retrieve bank and set correct id like with team above. This should be implemented as soon as the bankAccountService is available!
+                var bankAccounts = await this.bankAccountService.GetBankAccountsAsync(transaction.UserId) ?? throw new NotFoundException("Bank Accounts could not be found");
 
-                /*
-                // var bankAccount = await this.bankAccountService.GetByIdAsync(bankAccountId.Value)
-                //     ?? throw new NotFoundException("Bank account not found");
-                */
+                if (!bankAccounts.Any(b => b.Id == bankAccountId.Value))
+                {
+                    throw new InvalidStateException("Could not find specified bank account");
+                }
 
                 transaction.BankAccountId = bankAccountId;
             }

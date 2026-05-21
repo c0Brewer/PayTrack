@@ -1,0 +1,86 @@
+@use '../../../../styles/variables' as v;
+
+#payment-request-page {
+  background-color: v.$TUR-secondary-background;
+  margin: 4rem;
+
+  p:first-of-type {
+    color: v.$TUR-primary-grey;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  #payment-request-page {
+    margin: 1.5rem;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    background-color: rgb(235 106 0);
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  button:hover {
+    cursor: pointer;
+    background-color: rgb(214 98 2);
+  }
+}
+
+.submit-button__content {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+  line-height: 1;
+}
+
+.submit-button__content .material-symbols-outlined {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.input-wrapper {
+  input,
+  select,
+  textarea {
+    width: 100%;
+    border: 1px solid white;
+    background-color: v.$TUR-secondary-background;
+    height: 2.2rem;
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+  }
+
+  label {
+    .required {
+      color: #ef4444;
+    }
+
+    margin-top: 0.5rem;
+  }
+}
+
+.error-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ef4444;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  margin-top: 0.35rem;
+
+  .material-symbols-outlined {
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+}
+
+.required {
+  color: #ef4444;
+}
