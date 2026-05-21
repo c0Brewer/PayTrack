@@ -34,6 +34,14 @@
           Home
         </a>
         <a
+          routerLink="/submit"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+          ><span class="material-symbols-outlined">upload_file</span>
+          Submit An Invoice
+        </a>
+        <a
           routerLink="/my-invoices"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
@@ -42,12 +50,15 @@
           My Invoices
         </a>
         <a
-          routerLink="/submit"
+          routerLink="/my-team-requests"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-          ><span class="material-symbols-outlined">upload_file</span>
-          Submit An Invoice
+          ><span class="material-symbols-outlined">receipt_long</span>
+          My Payment Requests
+          @if (teamRequestCount() > 0) {
+            <span class="nav-badge">{{ teamRequestCount() }}</span>
+          }
         </a>
       </div>
 

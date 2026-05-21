@@ -10,6 +10,8 @@ import { LoginComponent } from './components/login/login-component/login-compone
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
 import { TeamRequestsComponent } from './components/payment-requests/request-by-team/admin-view/admin-list-component/admin-list-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
+import { TeamRequestUserDetailComponent } from './components/payment-requests/request-by-team/user-view/user-detail-component/user-detail-component';
+import { TeamRequestUserListComponent } from './components/payment-requests/request-by-team/user-view/user-list-component/user-list-component';
 import { RequestDetailComponent } from './components/payment-requests/request-by-user/admin-view/admin-detail-component/admin-detail-component';
 import { RequestsComponent } from './components/payment-requests/request-by-user/admin-view/admin-list-component/admin-list-component';
 import { ReceiptSubmitComponent } from './components/payment-requests/request-by-user/submission-component/submission-component';
@@ -123,6 +125,16 @@ export const routes: Routes = [
     path: 'payment-requests-by-team/:id',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamRequestAdminDetailComponent,
+  },
+  {
+    path: 'my-team-requests',
+    canActivate: [authGuard],
+    component: TeamRequestUserListComponent,
+  },
+  {
+    path: 'my-team-requests/:id',
+    canActivate: [authGuard],
+    component: TeamRequestUserDetailComponent,
   },
   {
     path: 'unauthorized',
