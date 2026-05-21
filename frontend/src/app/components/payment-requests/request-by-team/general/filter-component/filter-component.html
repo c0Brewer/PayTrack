@@ -12,12 +12,14 @@
     }
   </select>
 
-  <select (change)="onTeamChange($event)">
-    <option value="">All teams</option>
-    @for (team of teams; track team.id) {
-      <option [value]="team.id">{{ team.name }}</option>
-    }
-  </select>
+  @if (showTeamFilter) {
+    <select (change)="onTeamChange($event)">
+      <option value="">All teams</option>
+      @for (team of teams; track team.id) {
+        <option [value]="team.id">{{ team.name }}</option>
+      }
+    </select>
+  }
 
   <input type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
   <input type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />

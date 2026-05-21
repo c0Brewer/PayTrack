@@ -4,7 +4,9 @@
       <th>Amount</th>
       <th>Due Date</th>
       <th>Purpose</th>
-      <th>Team</th>
+      @if (showTeamColumn) {
+        <th>Team</th>
+      }
       <th>Status</th>
       @if (showCostCentreColumn) {
         <th>Cost Centre</th>
@@ -22,7 +24,9 @@
         <td>{{ request.amount | currency: 'EUR' }}</td>
         <td>{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
         <td>{{ request.purposeOfPayment ?? '—' }}</td>
-        <td>{{ request.team?.name ?? '—' }}</td>
+        @if (showTeamColumn) {
+          <td>{{ request.team?.name ?? '—' }}</td>
+        }
         <td>
           <span [class]="'status ' + getStatusClass(request.status)">
             {{ getTransactionStatusLabel(request.status) }}
@@ -40,7 +44,7 @@
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="5 + (showCostCentreColumn ? 1 : 0) + (showUserColumn ? 1 : 0) + 1">
+        <td [attr.colspan]="4 + (showTeamColumn ? 1 : 0) + (showCostCentreColumn ? 1 : 0) + (showUserColumn ? 1 : 0) + 1">
           No payment requests found.
         </td>
       </tr>
