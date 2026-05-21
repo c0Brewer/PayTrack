@@ -299,6 +299,18 @@ public static class DbSeeder
             electronicsCostCentre,
             compositesCostCentre);
 
+        await AddPresenterTeamRequestsIfUserExistsAsync(
+            db,
+            chassisTeam,
+            electronicsTeam,
+            suspensionTeam,
+            batteryTeam,
+            powertrainTeam,
+            operationsTeam,
+            manufacturingCostCentre,
+            electronicsCostCentre,
+            compositesCostCentre);
+
         await db.SaveChangesAsync();
     }
 
@@ -548,6 +560,220 @@ public static class DbSeeder
             ToStatus = status,
             Comment = $"Moved to {status} during presentation setup.",
             ChangedAt = paymentRequest.PaidAt?.AddDays(1) ?? DateTime.UtcNow,
+        });
+    }
+
+    private static async Task AddPresenterTeamRequestsIfUserExistsAsync(
+        AppDbContext db,
+        Team chassisTeam,
+        Team electronicsTeam,
+        Team suspensionTeam,
+        Team batteryTeam,
+        Team powertrainTeam,
+        Team operationsTeam,
+        CostCentre manufacturingCostCentre,
+        CostCentre electronicsCostCentre,
+        CostCentre compositesCostCentre)
+    {
+        var presenterUser = await db.User
+            .OrderBy(u => u.Id)
+            .FirstOrDefaultAsync(u => u.Email.Contains("gmail"));
+
+        if (presenterUser is null)
+        {
+            return;
+        }
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            chassisTeam,
+            manufacturingCostCentre,
+            150.00m,
+            "Workshop tool deposit – spring season",
+            TransactionStatus.Submitted,
+            DateTime.UtcNow.AddDays(30),
+            5);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            electronicsTeam,
+            electronicsCostCentre,
+            320.50m,
+            "CAN bus hardware contribution",
+            TransactionStatus.Submitted,
+            DateTime.UtcNow.AddDays(10),
+            10);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            suspensionTeam,
+            compositesCostCentre,
+            89.00m,
+            "Damper test rig maintenance fee",
+            TransactionStatus.Submitted,
+            DateTime.UtcNow.AddDays(-5),
+            14);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            powertrainTeam,
+            manufacturingCostCentre,
+            2800.00m,
+            "Engine testbench booking – Q2",
+            TransactionStatus.Paid,
+            null,
+            20);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            operationsTeam,
+            null,
+            45.00m,
+            "Event transport cost share – FSAE Austria",
+            TransactionStatus.Paid,
+            DateTime.UtcNow.AddDays(-15),
+            18);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            batteryTeam,
+            electronicsCostCentre,
+            560.00m,
+            "High-voltage safety training fee",
+            TransactionStatus.Submitted,
+            DateTime.UtcNow.AddDays(45),
+            2);
+    }
+
+    private static async Task AddTeamRequestIfMissingAsync(
+        AppDbContext db,
+        User requestedBy,
+        User targetUser,
+        Team team,
+        CostCentre? costCentre,
+        decimal amount,
+        string purposeOfPayment,
+        TransactionStatus status,
+        DateTime? dueDate,
+        int createdDaysAgo)
+    {
+        var createdAt = DateTime.UtcNow.AddDays(-createdDaysAgo).ToUniversalTime();
+        var paidAt = status == TransactionStatus.Paid
+            ? createdAt.AddDays(3)
+            : (DateTime?)null;
+
+        var existingRequest = await db.PaymentRequestsByTeam
+            .FirstOrDefaultAsync(r => r.PurposeOfPayment == purposeOfPayment);
+
+        if (existingRequest is not null)
+        {
+            existingRequest.RequestedBy = requestedBy;
+            existingRequest.User = targetUser;
+            existingRequest.Team = team;
+            existingRequest.Amount = amount;
+            existingRequest.PurposeOfPayment = purposeOfPayment;
+            existingRequest.PaymentDirection = PaymentDirection.In;
+            existingRequest.Status = status;
+            existingRequest.DueDate = dueDate;
+            existingRequest.PaidAt = paidAt;
+
+            if (costCentre is null)
+            {
+                existingRequest.CostCentre = null!;
+                existingRequest.CostCentreId = null;
+            }
+            else
+            {
+                existingRequest.CostCentre = costCentre;
+            }
+
+            var existingHistory = await db.TransactionStatusHistories
+                .Where(h => h.TransactionId == existingRequest.Id)
+                .ToListAsync();
+            db.TransactionStatusHistories.RemoveRange(existingHistory);
+            AddTeamRequestStatusHistoryIfNeeded(db, requestedBy, existingRequest, status, createdAt);
+            return;
+        }
+
+        var teamRequest = new PaymentRequestByTeam
+        {
+            RequestedBy = requestedBy,
+            User = targetUser,
+            Team = team,
+            Amount = amount,
+            PurposeOfPayment = purposeOfPayment,
+            PaymentReference = string.Empty,
+            PaymentDirection = PaymentDirection.In,
+            Status = status,
+            CreatedAt = createdAt,
+            DueDate = dueDate,
+            PaidAt = paidAt,
+        };
+
+        if (costCentre is not null)
+        {
+            teamRequest.CostCentre = costCentre;
+        }
+
+        db.PaymentRequestsByTeam.Add(teamRequest);
+        AddTeamRequestStatusHistoryIfNeeded(db, requestedBy, teamRequest, status, createdAt);
+    }
+
+    private static void AddTeamRequestStatusHistoryIfNeeded(
+        AppDbContext db,
+        User changedBy,
+        PaymentRequestByTeam teamRequest,
+        TransactionStatus status,
+        DateTime createdAt)
+    {
+        if (status == TransactionStatus.Submitted)
+        {
+            return;
+        }
+
+        if (status == TransactionStatus.Paid)
+        {
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = teamRequest,
+                ChangedBy = changedBy,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Approved,
+                Comment = "Approved during presentation setup.",
+                ChangedAt = createdAt.AddDays(1),
+            });
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = teamRequest,
+                ChangedBy = changedBy,
+                FromStatus = TransactionStatus.Approved,
+                ToStatus = TransactionStatus.Paid,
+                Comment = "Marked as paid during presentation setup.",
+                ChangedAt = createdAt.AddDays(2),
+            });
+            return;
+        }
+
+        db.TransactionStatusHistories.Add(new TransactionStatusHistory
+        {
+            Transaction = teamRequest,
+            ChangedBy = changedBy,
+            FromStatus = TransactionStatus.Submitted,
+            ToStatus = status,
+            Comment = $"Moved to {status} during presentation setup.",
+            ChangedAt = createdAt.AddDays(1),
         });
     }
 }

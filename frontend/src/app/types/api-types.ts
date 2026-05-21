@@ -597,6 +597,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notification/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SendEmailNotificationDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notification/slack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SendSlackNotificationDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -993,6 +1085,8 @@ export interface paths {
                     MaxCreatedAt?: string;
                     MinPaidAt?: string;
                     MaxPaidAt?: string;
+                    MinDueDate?: string;
+                    MaxDueDate?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;
@@ -1222,6 +1316,8 @@ export interface paths {
                     MaxCreatedAt?: string;
                     MinPaidAt?: string;
                     MaxPaidAt?: string;
+                    MinDueDate?: string;
+                    MaxDueDate?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeCostCentre?: boolean;
@@ -1818,6 +1914,17 @@ export interface components {
          * @enum {integer}
          */
         Role: 0 | 1 | 2;
+        SendEmailNotificationDto: {
+            /** Format: email */
+            recipientEmail: string;
+            subject: string;
+            body: string;
+        };
+        SendSlackNotificationDto: {
+            /** Format: email */
+            recipientEmail: string;
+            message: string;
+        };
         TeamDto: {
             /** Format: int32 */
             id: number;
