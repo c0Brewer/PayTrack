@@ -1,6 +1,10 @@
 <div class="row gx-4 gx-xl-5 gy-4">
   <div class="col-12">
-    <app-box-component title="Bank Accounts" subtitle="Manage reimbursement accounts used for payouts." size="large">
+    <app-box-component
+      title="Bank Accounts"
+      subtitle="Manage reimbursement accounts used for payouts."
+      size="large"
+    >
       <div class="bank-accounts-toolbar">
         <div>
           <p class="bank-accounts-kicker">Payout settings</p>
@@ -40,7 +44,7 @@
                   <dl>
                     <div>
                       <dt>IBAN</dt>
-                      <dd>{{ account.iban }}</dd>
+                      <dd>{{ formatIbanForDisplay(account.iban) }}</dd>
                     </div>
                     <div>
                       <dt>BIC</dt>
@@ -51,11 +55,19 @@
               </div>
 
               <div class="bank-account-card__actions">
-                <button type="button" class="bank-accounts-secondary" (click)="openEditModal(account)">
+                <button
+                  type="button"
+                  class="bank-accounts-secondary"
+                  (click)="openEditModal(account)"
+                >
                   <span class="material-symbols-outlined">edit</span>
                   Edit
                 </button>
-                <button type="button" class="bank-accounts-danger" (click)="openDeleteModal(account)">
+                <button
+                  type="button"
+                  class="bank-accounts-danger"
+                  (click)="openDeleteModal(account)"
+                >
                   <span class="material-symbols-outlined">delete</span>
                   Delete
                 </button>
@@ -85,7 +97,8 @@
     [initialValue]="null"
     [errorMessage]="modalErrorMessage"
     (cancel)="closeModal()"
-    (submitForm)="createBankAccount($event)" />
+    (submitForm)="createBankAccount($event)"
+  />
 }
 
 @if (editingBankAccount) {
@@ -95,7 +108,8 @@
     [initialValue]="editingBankAccount"
     [errorMessage]="modalErrorMessage"
     (cancel)="closeModal()"
-    (submitForm)="updateBankAccount($event)" />
+    (submitForm)="updateBankAccount($event)"
+  />
 }
 
 @if (bankAccountPendingDelete) {
@@ -112,7 +126,7 @@
       </p>
       <div class="delete-modal__details">
         <span>IBAN</span>
-        <strong>{{ bankAccountPendingDelete.iban }}</strong>
+        <strong>{{ formatIbanForDisplay(bankAccountPendingDelete.iban) }}</strong>
       </div>
 
       @if (modalErrorMessage) {
@@ -123,7 +137,9 @@
       }
 
       <div class="delete-modal__actions">
-        <button type="button" class="bank-accounts-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="bank-accounts-secondary" (click)="closeDeleteModal()">
+          Cancel
+        </button>
         <button type="button" class="bank-accounts-danger" (click)="deleteBankAccount()">
           <span class="material-symbols-outlined">delete</span>
           Delete

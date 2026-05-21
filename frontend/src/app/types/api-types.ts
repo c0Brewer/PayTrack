@@ -802,6 +802,7 @@ export interface paths {
                     Description?: string;
                     MinBudget?: number;
                     MaxBudget?: number;
+                    IsActive?: boolean;
                     IncludeMembers?: boolean;
                     IncludeBudgets?: boolean;
                     Limit?: number;

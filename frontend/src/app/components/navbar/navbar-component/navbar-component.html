@@ -91,6 +91,14 @@
           (click)="closeMobileMenu()"
         >
           <span class="material-symbols-outlined">settings</span> Settings
+          @if (hasNoBankAccounts) {
+            <div class="warning-badge-wrapper" title="You have no Bank Account set">
+              <div class="warning-badge">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="warning-badge-ring"></div>
+            </div>
+          }
         </a>
         <button class="sidebar__logout" (click)="logout()">
           <span class="material-symbols-outlined">logout</span> Sign Out

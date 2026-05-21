@@ -21,12 +21,21 @@ namespace PayTrack.Api.Handler
         /// Returns all PaymentRequestByTeams.
         /// </summary>
         /// <param name="query">Query object including all query options.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
         /// <param name="paymentRequestByTeamService">Dependency injected PaymentRequestByTeam service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<PaginatedResponse<PaymentRequestByTeamDto>>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPaymentRequestByTeamsAsync(
             [AsParameters] GetPaymentRequestByTeamQuery query,
+            IAuthService authService,
             IPaymentRequestByTeamService paymentRequestByTeamService)
         {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            if (!paymentRequestByTeamService.ValidateQuery(query, currentUser))
+            {
+                throw new ForbiddenException("You do not have permission to access these invoices.");
+            }
+
             var (paymentRequestByTeamList, totalCount) = await paymentRequestByTeamService.GetAllAsync(query);
 
             var paymentRequestByTeamListDto = PaymentRequestByTeamMapper.ListToDto(paymentRequestByTeamList);

@@ -8,11 +8,11 @@ import { BankAccountService } from '../../../services/bank-account/bank-account-
 import { NotificationService } from '../../../services/notification/notification-service';
 import { Role, UserDto } from '../../../types/exporter';
 
-import { BankInformationComponent } from './bank-information-component';
+import { InitialLoginBankAccountComponent } from './initial-login-bank-account-component';
 
-describe('BankInformationComponent', () => {
-  let component: BankInformationComponent;
-  let fixture: ComponentFixture<BankInformationComponent>;
+describe('InitialLoginBankAccountComponent', () => {
+  let component: InitialLoginBankAccountComponent;
+  let fixture: ComponentFixture<InitialLoginBankAccountComponent>;
 
   const userNeedingBankInfo: UserDto = {
     id: 1,
@@ -72,7 +72,7 @@ describe('BankInformationComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [BankInformationComponent],
+      imports: [InitialLoginBankAccountComponent],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
@@ -81,7 +81,7 @@ describe('BankInformationComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BankInformationComponent);
+    fixture = TestBed.createComponent(InitialLoginBankAccountComponent);
     component = fixture.componentInstance;
   });
 
@@ -108,6 +108,16 @@ describe('BankInformationComponent', () => {
       bic: 'BKAUATWW',
     });
     expect(routerMock.navigate).toHaveBeenCalledWith(['']);
+  });
+
+  it('should visually group IBAN input in blocks of four characters', () => {
+    const input = document.createElement('input');
+    input.value = 'at611904300234573201';
+
+    component['onIbanInput']({ target: input } as unknown as Event);
+
+    expect(input.value).toBe('AT61 1904 3002 3457 3201');
+    expect(component['form'].controls.iban.value).toBe('AT61 1904 3002 3457 3201');
   });
 
   it('should not save invalid form data', async () => {

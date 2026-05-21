@@ -49,6 +49,36 @@ describe('TeamFilterComponent', () => {
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ Description: 'Core systems' }));
   });
 
+  it('should emit an updated filter when the active status changes after debounce', () => {
+    const spy = vi.spyOn(component.updateFilter, 'emit');
+
+    component.filterIsActive = true;
+    component.onIsActiveFilterChange();
+    vi.advanceTimersByTime(100);
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IsActive: true }));
+  });
+
+  it('should emit an updated filter when the inactive status changes after debounce', () => {
+    const spy = vi.spyOn(component.updateFilter, 'emit');
+
+    component.filterIsActive = false;
+    component.onIsActiveFilterChange();
+    vi.advanceTimersByTime(100);
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IsActive: false }));
+  });
+
+  it('should emit undefined active status when returning to all teams', () => {
+    const spy = vi.spyOn(component.updateFilter, 'emit');
+
+    component.filterIsActive = undefined;
+    component.onIsActiveFilterChange();
+    vi.advanceTimersByTime(100);
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ IsActive: undefined }));
+  });
+
   it('should emit the new limit when the page size changes', () => {
     const spy = vi.spyOn(component.limitChange, 'emit');
     component.limit = 25;
@@ -61,12 +91,14 @@ describe('TeamFilterComponent', () => {
   it('getGetTeamOptions should build the team query object used by the parent component', () => {
     component.filterName = 'Platform';
     component.filterDescription = 'Core systems';
+    component.filterIsActive = true;
 
     const options: GetTeamOptions = component.getGetTeamOptions();
 
     expect(options).toEqual({
       Name: 'Platform',
       Description: 'Core systems',
+      IsActive: true,
       Limit: undefined,
       Offset: undefined,
     });

@@ -36,9 +36,17 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new() { Id = 2, Amount = 200 }
             };
 
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
             _factory.ServiceMock
                 .Setup(s => s.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
                 .ReturnsAsync((list, list.Count));
+
+            _factory.ServiceMock
+                .Setup(s => s.ValidateQuery(It.IsAny<GetPaymentRequestByTeamQuery>(), It.IsAny<User>()))
+                .Returns(true);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
