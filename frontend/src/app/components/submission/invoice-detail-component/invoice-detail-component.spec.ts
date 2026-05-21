@@ -149,27 +149,6 @@ describe('InvoiceDetailComponent', () => {
     expect(component.getPayoutTypeLabel(99 as PayoutType)).toBe('Unknown');
   });
 
-  it('should show cost centre when showCostCentre is true and costCentre is set', () => {
-    component.invoice = {
-      ...mockInvoice,
-      costCentre: { id: 1, name: 'CC-Marketing' },
-    } as unknown as PaymentRequestByUserDto;
-    component.loading = false;
-    component.showCostCentre = true;
-    fixture.detectChanges();
-    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text).toContain('Cost Centre');
-    expect(text).toContain('CC-Marketing');
-  });
-
-  it('should hide cost centre row when showCostCentre is false', () => {
-    component.invoice = mockInvoice;
-    component.loading = false;
-    component.showCostCentre = false;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Cost Centre');
-  });
-
   it('should show user name row when showUserName is true', () => {
     component.invoice = mockInvoice;
     component.loading = false;

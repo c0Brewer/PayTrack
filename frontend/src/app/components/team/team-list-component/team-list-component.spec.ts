@@ -258,7 +258,7 @@ describe('TeamListComponent', () => {
     fixture.detectChanges();
 
     const badges = Array.from(
-      fixture.nativeElement.querySelectorAll('.status-badge') as NodeListOf<HTMLSpanElement>,
+      fixture.nativeElement.querySelectorAll('.status-btn') as NodeListOf<HTMLSpanElement>,
       (badge) => badge.textContent?.trim(),
     );
 

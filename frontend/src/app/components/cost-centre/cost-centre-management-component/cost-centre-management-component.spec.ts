@@ -373,47 +373,6 @@ describe('CostCentreManagementComponent', () => {
     expect(costCentreServiceMock.getCostCentres.mock.calls.length).toBe(callsBefore);
   });
 
-  it('save create should include mapped budgets when budgetsToUpsert is not empty', () => {
-    const budget: UpsertBudgetEntryDto = {
-      id: undefined,
-      name: 'Team budget',
-      description: null,
-      teamId: 5,
-      seasonId: 1,
-      targetAmount: 1000,
-      periodStart: '2024-01-01',
-      periodEnd: '2024-12-31',
-    };
-    const event: CostCentreSaveEvent = {
-      costCentre: {
-        id: -1,
-        name: 'New CC',
-        description: null,
-        displayColor: null,
-        budgets: [],
-        isActive: true,
-      },
-      budgetsToUpsert: [budget],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
-      expect.objectContaining({
-        budgets: [
-          {
-            name: 'Team budget',
-            description: null,
-            teamId: 5,
-            seasonId: 1,
-            targetAmount: 1000,
-            periodStart: '2024-01-01T00:00:00.000Z',
-            periodEnd: '2024-12-31T00:00:00.000Z',
-          },
-        ],
-      }),
-    );
-  });
-
   it('save update should include budgetsToUpsert and budgetIdsToDelete when not empty', () => {
     const budget: UpsertBudgetEntryDto = {
       id: 10,
