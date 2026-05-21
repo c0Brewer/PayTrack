@@ -39,7 +39,6 @@ export class TeamRequestsComponent implements OnInit {
 
   filterOptions: GetPaymentRequestsByTeamOptions = {
     IncludeTeam: true,
-    IncludeCostCentre: true,
   };
 
   ngOnInit(): void {
@@ -50,7 +49,6 @@ export class TeamRequestsComponent implements OnInit {
     const query: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
       IncludeTeam: true,
-      IncludeCostCentre: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
     };

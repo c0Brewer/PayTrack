@@ -36,7 +36,6 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
         .getPaymentRequestsByUserById(id, {
           IncludeUser: true,
           IncludeTeam: true,
-          IncludeCostCentre: true,
           IncludeBankAccount: true,
           IncludeStatusHistory: true,
         })

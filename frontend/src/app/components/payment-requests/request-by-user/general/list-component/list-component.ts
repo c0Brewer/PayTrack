@@ -18,7 +18,6 @@ import {
 })
 export class InvoiceListComponent {
   @Input() invoices: PaymentRequestByUserDto[] = [];
-  @Input() showCostCentreColumn: boolean = false;
   @Input() showUserNameColumn: boolean = false;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();

@@ -95,7 +95,6 @@ describe('RequestDetailComponent', () => {
     expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
       IncludeUser: true,
       IncludeTeam: true,
-      IncludeCostCentre: true,
       IncludeBankAccount: true,
       IncludeStatusHistory: true,
     });

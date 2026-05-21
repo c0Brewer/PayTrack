@@ -17,6 +17,7 @@ import { RequestsComponent } from './components/payment-requests/request-by-user
 import { ReceiptSubmitComponent } from './components/payment-requests/request-by-user/submission-component/submission-component';
 import { MyInvoiceDetailComponent } from './components/payment-requests/request-by-user/user-view/user-detail-component/user-detail-component';
 import { MyInvoicesComponent } from './components/payment-requests/request-by-user/user-view/user-list-component/user-list-component';
+import { SeasonManagementComponent } from './components/season/season-management-component/season-management-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
@@ -94,6 +95,11 @@ export const routes: Routes = [
     path: 'cost-centre',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: CostCentreManagementComponent,
+  },
+  {
+    path: 'season',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: SeasonManagementComponent,
   },
   {
     path: 'settings',

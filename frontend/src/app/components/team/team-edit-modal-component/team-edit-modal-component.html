@@ -80,6 +80,115 @@
       </span>
     </div>
 
+<!-- <<<<<<< HEAD -->
+<!--     <div class="budgets-section"> -->
+<!--       <h4>Budgets</h4> -->
+<!---->
+<!--       <div class="add-budget-form"> -->
+<!--         <label> -->
+<!--           Name -->
+<!--           <input [(ngModel)]="newBudgetDraft.name" placeholder="Budget name" /> -->
+<!--         </label> -->
+<!--         <label> -->
+<!--           Season -->
+<!--           <select [(ngModel)]="newBudgetDraft.seasonId"> -->
+<!--             <option [ngValue]="0" disabled>Select season</option> -->
+<!--             @for (season of seasons; track season.id) { -->
+<!--               <option [ngValue]="season.id">{{ season.name }}</option> -->
+<!--             } -->
+<!--           </select> -->
+<!--         </label> -->
+<!--         <label> -->
+<!--           Cost Centre -->
+<!--           <select [(ngModel)]="newBudgetDraft.costCentreId"> -->
+<!--             <option [ngValue]="0" disabled>Select cost centre</option> -->
+<!--             @for (costCentre of costCentres; track costCentre.id) { -->
+<!--               <option [ngValue]="costCentre.id" [disabled]="costCentre.isActive === false"> -->
+<!--                 {{ getCostCentreOptionLabel(costCentre) }} -->
+<!--               </option> -->
+<!--             } -->
+<!--           </select> -->
+<!--         </label> -->
+<!--         <label> -->
+<!--           Amount -->
+<!--           <input type="number" [(ngModel)]="newBudgetDraft.targetAmount" placeholder="0.00" /> -->
+<!--         </label> -->
+<!--         <label> -->
+<!--           Period Start -->
+<!--           <input type="date" [(ngModel)]="newBudgetDraft.periodStart" /> -->
+<!--         </label> -->
+<!--         <label> -->
+<!--           Period End -->
+<!--           <input type="date" [(ngModel)]="newBudgetDraft.periodEnd" /> -->
+<!--         </label> -->
+<!--         <button type="button" class="btn-add-budget" (click)="addNewBudget()">+ Add Budget</button> -->
+<!--       </div> -->
+<!---->
+<!--       @if (workingBudgets.length > 0) { -->
+<!--         <table class="budget-table"> -->
+<!--           <thead> -->
+<!--             <tr> -->
+<!--               <th>Name</th> -->
+<!--               <th>Season</th> -->
+<!--               <th>Cost Centre</th> -->
+<!--               <th>Amount</th> -->
+<!--               <th>Period Start</th> -->
+<!--               <th>Period End</th> -->
+<!--               <th></th> -->
+<!--             </tr> -->
+<!--           </thead> -->
+<!--           <tbody> -->
+<!--             @for (budget of workingBudgets; track budget.originalId) { -->
+<!--               <tr [class.deleted]="budget.markedForDeletion"> -->
+<!--                 <td>{{ budget.name }}</td> -->
+<!--                 <td>{{ getSeasonName(budget.seasonId) }}</td> -->
+<!--                 <td>{{ getCostCentreName(budget.costCentreId) }}</td> -->
+<!--                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td> -->
+<!--                 <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td> -->
+<!--                 <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td> -->
+<!--                 <td> -->
+<!--                   <button type="button" class="btn-icon" (click)="toggleBudgetDeletion(budget)"> -->
+<!--                     {{ budget.markedForDeletion ? 'Restore' : 'Remove' }} -->
+<!--                   </button> -->
+<!--                 </td> -->
+<!--               </tr> -->
+<!--             } -->
+<!--           </tbody> -->
+<!--         </table> -->
+<!--       } -->
+<!---->
+<!--       @if (newBudgets.length > 0) { -->
+<!--         <table class="budget-table new-budgets"> -->
+<!--           <thead> -->
+<!--             <tr> -->
+<!--               <th>Name</th> -->
+<!--               <th>Season</th> -->
+<!--               <th>Cost Centre</th> -->
+<!--               <th>Amount</th> -->
+<!--               <th>Period Start</th> -->
+<!--               <th>Period End</th> -->
+<!--               <th></th> -->
+<!--             </tr> -->
+<!--           </thead> -->
+<!--           <tbody> -->
+<!--             @for (budget of newBudgets; track $index) { -->
+<!--               <tr> -->
+<!--                 <td>{{ budget.name }}</td> -->
+<!--                 <td>{{ getSeasonName(budget.seasonId) }}</td> -->
+<!--                 <td>{{ getCostCentreName(budget.costCentreId) }}</td> -->
+<!--                 <td>{{ formatBudgetAmount(budget.targetAmount) }}</td> -->
+<!--                 <td>{{ budget.periodStart }}</td> -->
+<!--                 <td>{{ budget.periodEnd }}</td> -->
+<!--                 <td> -->
+<!--                   <button type="button" class="btn-icon" (click)="removeNewBudget($index)"> -->
+<!--                     Remove -->
+<!--                   </button> -->
+<!--                 </td> -->
+<!--               </tr> -->
+<!--             } -->
+<!--           </tbody> -->
+<!--         </table> -->
+<!-- ======= -->
     <div class="budgets-section mb-4">
       <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
         <h4 class="m-0">Budgets</h4>
@@ -90,6 +199,15 @@
 
       <div class="border rounded p-3 mb-3">
         <div class="row g-3 align-items-end">
+          <label class="col-12 col-sm-12 mb-0">
+            Name
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.name"
+              placeholder="Name"
+            />
+          </label>
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
             <select class="form-select" [(ngModel)]="newBudgetDraft.costCentreId">
@@ -109,6 +227,15 @@
               [(ngModel)]="newBudgetDraft.targetAmount"
               placeholder="0.00"
             />
+          </label>
+          <label class="col-12 col-sm-12 mb-0">
+            Season
+            <select [(ngModel)]="newBudgetDraft.seasonId">
+              <option [ngValue]="0" disabled>Select season</option>
+              @for (season of seasons; track season.id) {
+                <option [ngValue]="season.id">{{ season.name }}</option>
+              }
+            </select>
           </label>
           <div class="w-100"></div>
           <label class="col-12 col-sm-6 mb-0">
@@ -141,7 +268,7 @@
             >
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-light border mt-1">Existing</span>
                 </div>
                 <button
@@ -178,7 +305,7 @@
             <div class="budget-card border rounded p-3 budget-card--new">
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-primary mt-1">New</span>
                 </div>
                 <button
@@ -209,6 +336,7 @@
         </div>
       } @else {
         <div class="text-muted border rounded p-3">No budgets added yet.</div>
+>>>>>>> master
       }
     </div>
 

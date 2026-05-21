@@ -4,12 +4,16 @@ import { FormsModule } from '@angular/forms';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
+import { TeamService } from '../../../services/team/team-service';
 import {
-  BudgetDto,
   CostCentreDto,
   GetCostCentreOptions,
   CreateCostCentreRequestDto,
   DeleteCostCentrePreviewDto,
+  GetTeamOptions,
+  SeasonDto,
+  TeamDto,
   UpdateCostCentreRequestDto,
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
@@ -22,6 +26,9 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
 
 interface WorkingBudget {
   originalId: number;
+  name: string;
+  seasonId: number;
+  costCentreId: number;
   teamId: number;
   targetAmount: number;
   periodStart: string;
@@ -46,11 +53,15 @@ interface WorkingBudget {
 export class CostCentreManagementComponent implements OnInit {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly seasonService: SeasonService,
+    private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   costCentres: CostCentreDto[] = [];
+  teams: TeamDto[] = [];
+  seasons: SeasonDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
   originalCostCentre: CostCentreDto | null = null;
   workingBudgets: WorkingBudget[] = [];
@@ -78,6 +89,39 @@ export class CostCentreManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadTeams();
+    this.loadSeasons();
+  }
+
+  loadTeams(): void {
+    const queryOptions: GetTeamOptions = {
+      IncludeMembers: false,
+      IncludeBudgets: false,
+      Limit: 1000,
+      Offset: 0,
+    };
+
+    this.teamService.getTeams(queryOptions).subscribe({
+      next: (data) => {
+        this.teams = data.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load teams: ' + err.message);
+      },
+    });
+  }
+
+  loadSeasons(): void {
+    this.seasonService.getSeasons().subscribe({
+      next: (seasons) => {
+        this.seasons = seasons;
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load seasons: ' + err.message);
+      },
+    });
   }
 
   load(): void {
@@ -215,15 +259,6 @@ export class CostCentreManagementComponent implements OnInit {
         name: costCentre.name,
         description: costCentre.description ?? undefined,
         displayColor: costCentre.displayColor ?? undefined,
-        budgets:
-          budgetsToUpsert.length > 0
-            ? budgetsToUpsert.map(({ teamId, targetAmount, periodStart, periodEnd }) => ({
-                teamId,
-                targetAmount,
-                periodStart,
-                periodEnd,
-              }))
-            : undefined,
       };
       this.costCentreService.createCostCentre(request).subscribe({
         next: () => {
@@ -240,7 +275,10 @@ export class CostCentreManagementComponent implements OnInit {
         name: costCentre.name,
         description: costCentre.description ?? undefined,
         displayColor: costCentre.displayColor ?? undefined,
-        budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+        budgetsToUpsert:
+          budgetsToUpsert.length > 0
+            ? budgetsToUpsert.map((budget) => this.normalizeBudgetDates(budget))
+            : undefined,
         budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
       };
       this.costCentreService.updateCostCentre(costCentre.id, request).subscribe({
@@ -320,21 +358,61 @@ export class CostCentreManagementComponent implements OnInit {
     }
   }
 
+  private normalizeBudgetDates(budget: UpsertBudgetEntryDto): UpsertBudgetEntryDto {
+    return {
+      ...budget,
+      periodStart: this.toApiDateTime(budget.periodStart),
+      periodEnd: this.toApiDateTime(budget.periodEnd),
+    };
+  }
+
+  private toApiDateTime(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    return value;
+  }
+
   private prepareEditState(costCentre: CostCentreDto): void {
     this.originalCostCentre = structuredClone(costCentre);
-    this.workingBudgets = (costCentre.budgets ?? []).map((b: BudgetDto) => ({
-      originalId: b.id,
-      teamId: b.teamId,
-      targetAmount: b.targetAmount,
-      periodStart: b.periodStart,
-      periodEnd: b.periodEnd,
-      markedForDeletion: false,
-    }));
     this.newBudgets = [];
     this.newBudgetDraft = this.emptyDraft();
   }
 
   private emptyDraft(): UpsertBudgetEntryDto {
-    return { id: null, teamId: 0, targetAmount: 0, periodStart: '', periodEnd: '' };
+    return {
+      id: null,
+      name: '',
+      description: '',
+      seasonId: 0,
+      teamId: 0,
+      targetAmount: 0,
+      periodStart: '',
+      periodEnd: '',
+    };
+  }
+
+  getSeasonName(seasonId: number): string {
+    return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
+  }
+
+  getCostCentreName(costCentreId: number): string {
+    return (
+      this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
+      `Cost Centre #${costCentreId}`
+    );
+  }
+
+  formatBudgetAmount(amount: number): string {
+    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+  }
+
+  getTeamName(teamId: number): string {
+    return this.teams.find((team) => team.id === teamId)?.name ?? `Team #${teamId}`;
+  }
+
+  getTeamOptionLabel(team: TeamDto): string {
+    return team.isActive === false ? `${team.name} (inactive)` : team.name;
   }
 }

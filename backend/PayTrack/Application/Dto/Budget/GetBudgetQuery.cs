@@ -2,8 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Data.Entities;
-
 namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
@@ -11,6 +9,11 @@ namespace PayTrack.Application.Dto.Budget
     /// </summary>
     public class GetBudgetQuery
     {
+        /// <summary>
+        /// Name to query.
+        /// </summary>
+        public string? Name { get; init; }
+
         /// <summary>
         /// TeamId to query.
         /// </summary>
@@ -22,7 +25,12 @@ namespace PayTrack.Application.Dto.Budget
         public int? CostCentreId { get; init; }
 
         /// <summary>
-        /// Team Name to query.
+        /// SeasonId to query.
+        /// </summary>
+        public int? SeasonId { get; init; }
+
+        /// <summary>
+        /// TargetAmount to query.
         /// </summary>
         public decimal? TargetAmount { get; init; }
 

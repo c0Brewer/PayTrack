@@ -13,6 +13,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             var budget = new Budget
             {
                 Id = 10,
+                Name = "Aero budget",
                 TeamId = 2,
                 CostCentreId = 1,
                 TargetAmount = 1500m,

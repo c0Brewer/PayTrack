@@ -19,7 +19,6 @@ import {
 })
 export class InvoiceDetailComponent {
   @Input() invoice: PaymentRequestByUserDto | null = null;
-  @Input() showCostCentre: boolean = false;
   @Input() showUserName: boolean = false;
   @Input() receiptBlobUrl: string | null = null;
   @Input() isReceiptImage: boolean = false;

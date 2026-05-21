@@ -43,20 +43,6 @@ describe('TeamRequestListComponent', () => {
     expect(rows.length).toBe(1);
   });
 
-  it('should show cost centre column when showCostCentreColumn is true', () => {
-    component.requests = mockRequests;
-    component.showCostCentreColumn = true;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('CC-Eng');
-  });
-
-  it('should hide cost centre column when showCostCentreColumn is false', () => {
-    component.requests = mockRequests;
-    component.showCostCentreColumn = false;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('CC-Eng');
-  });
-
   it('should show user column when showUserColumn is true', () => {
     component.requests = mockRequests;
     component.showUserColumn = true;

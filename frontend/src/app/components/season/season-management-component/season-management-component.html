@@ -1,0 +1,35 @@
+<div class="season-management">
+  <div class="season-management__header">
+    <h2>Season Management</h2>
+  </div>
+
+  <form class="season-management__create" (ngSubmit)="createSeason()">
+    <label>
+      Name
+      <input
+        name="seasonName"
+        [(ngModel)]="newSeasonName"
+        placeholder="e.g. 2026"
+        autocomplete="off"
+      />
+    </label>
+    <button type="submit">Create</button>
+  </form>
+
+  <table class="season-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Budgets</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (season of seasons; track season.id) {
+        <tr>
+          <td>{{ season.name }}</td>
+          <td>{{ season.budgets?.length ?? 0 }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

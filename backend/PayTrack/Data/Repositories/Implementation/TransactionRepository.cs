@@ -111,11 +111,6 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             IQueryable<PaymentRequestByUser> dbQuery = this.context.PaymentRequestsByUser.AsQueryable();
 
-            if (query?.IncludeCostCentre == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
-            }
-
             if (query?.IncludeUser == true)
             {
                 dbQuery = dbQuery.Include(t => t.User);
@@ -143,11 +138,6 @@ namespace PayTrack.Data.Repositories.Implementation
         public async Task<PaymentRequestByTeam?> GetByIdAsync(int id, GetPaymentRequestByTeamQueryById? query = null)
         {
             IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
-
-            if (query?.IncludeCostCentre == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
-            }
 
             if (query?.IncludeUser == true)
             {
@@ -225,7 +215,7 @@ namespace PayTrack.Data.Repositories.Implementation
                     (paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount))
                 .Include(paymentRequestByUser => paymentRequestByUser.User)
                 .Include(paymentRequestByUser => paymentRequestByUser.Team)
-                .Include(paymentRequestByUser => paymentRequestByUser.CostCentre)
+                .Include(paymentRequestByUser => paymentRequestByUser.Budget)
                 .Include(paymentRequestByUser => paymentRequestByUser.BankAccount)
                 .ToListAsync();
         }
@@ -292,11 +282,6 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.Status == query.Status.Value);
             }
 
-            if (query?.CostCentreId.HasValue == true)
-            {
-                dbQuery = dbQuery.Where(t => t.CostCentreId == query.CostCentreId.Value);
-            }
-
             if (query?.TeamId.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.TeamId == query.TeamId.Value);
@@ -357,11 +342,6 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.Limit.HasValue == true)
             {
                 dbQuery = dbQuery.Take(query.Limit.Value);
-            }
-
-            if (query?.IncludeCostCentre.HasValue == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
             }
 
             if (query?.IncludeTeam.HasValue == true)

@@ -3,14 +3,12 @@
 
   <app-invoice-filter-component
     [limitSelection]="limitSelection"
-    [showCostCentreFilter]="true"
     [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
   ></app-invoice-filter-component>
 
   <app-invoice-list-component
     [invoices]="invoices"
-    [showCostCentreColumn]="true"
     [showUserNameColumn]="true"
     (openDetail)="onOpenDetail($event)"
   ></app-invoice-list-component>

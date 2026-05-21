@@ -32,7 +32,6 @@ export class TeamRequestUserDetailComponent implements OnInit {
         .getPaymentRequestsByTeamById(id, {
           IncludeUser: false,
           IncludeTeam: false,
-          IncludeCostCentre: false,
           IncludeStatusHistory: false,
         })
         .subscribe({

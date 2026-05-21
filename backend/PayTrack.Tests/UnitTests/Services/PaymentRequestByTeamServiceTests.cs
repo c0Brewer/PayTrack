@@ -20,7 +20,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var list = new List<PaymentRequestByTeam>
             {
@@ -32,7 +32,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
                 .ReturnsAsync((list, list.Count));
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             var (result, count) = await service.GetAllAsync();
 
@@ -49,7 +49,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var entity = new PaymentRequestByTeam { Id = 1 };
 
@@ -57,7 +57,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
                 .ReturnsAsync(entity);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             var result = await service.GetPaymentRequestByTeamByIdAsync(1);
 
@@ -74,13 +74,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock
                 .Setup(t => t.GetTeamByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Team?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -102,7 +102,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var team = new Team { Id = 5 };
             var assignedUser = new User { Id = 1 };
@@ -126,7 +126,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync(created);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             var result = await service.CreatePaymentRequestByTeamAsync(
                 userToAssignToId: 1,
@@ -162,13 +162,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             repoMock
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
                 .ReturnsAsync((PaymentRequestByTeam?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.UpdatePaymentRequestByTeamAsync(1);
@@ -184,7 +184,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var entity = new PaymentRequestByTeam
             {
@@ -201,7 +201,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync((PaymentRequestByTeam p) => p);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             var result = await service.UpdatePaymentRequestByTeamAsync(
                 1,
@@ -218,7 +218,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var entity = new PaymentRequestByTeam
             {
@@ -240,7 +240,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync((PaymentRequestByTeam p) => p);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             var result = await service.UpdatePaymentRequestByTeamAsync(1, teamId: 5);
 
@@ -253,7 +253,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             var entity = new PaymentRequestByTeam { Id = 1 };
 
@@ -265,7 +265,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(t => t.GetTeamByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Team?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.UpdatePaymentRequestByTeamAsync(1, teamId: 99);
@@ -284,12 +284,12 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -311,13 +311,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync((User?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -334,19 +334,19 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task Create_ShouldThrow_WhenCostCentreNotFound()
+        public async Task Create_ShouldThrow_WhenBudgetNotFound()
         {
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
-            costCentreMock.Setup(c => c.GetByIdAsync(99)).ReturnsAsync((CostCentre?)null);
+            budgetMock.Setup(c => c.GetByIdAsync(99)).ReturnsAsync((Budget?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -356,11 +356,11 @@ namespace PayTrack.Tests.UnitTests.Services
                     amount: 100,
                     purposeOfPayment: "test",
                     dueDate: DateTime.Today.AddDays(7),
-                    costCentreId: 99);
+                    budgetId: 99);
 
             await act.Should()
                 .ThrowAsync<NotFoundException>()
-                .WithMessage("Cost centre could not be found");
+                .WithMessage("Budget could not be found");
         }
 
         [Fact]
@@ -369,13 +369,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -397,13 +397,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -425,13 +425,13 @@ namespace PayTrack.Tests.UnitTests.Services
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
             var userMock = new Mock<IUserService>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
 
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, costCentreMock.Object);
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -459,7 +459,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 1, Role = role, TeamId = 1 };
             var query = new GetPaymentRequestByTeamQuery { UserId = queryUserId, TeamId = queryTeamId };
@@ -474,7 +474,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 7, Role = Role.RegularUser };
             var query = new GetPaymentRequestByTeamQuery { UserId = 7 };
@@ -489,7 +489,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 7, Role = Role.RegularUser };
             var query = new GetPaymentRequestByTeamQuery { UserId = 99 };
@@ -504,7 +504,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 3 };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 3 };
@@ -519,7 +519,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 3 };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 99 };
@@ -534,7 +534,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ITransactionRepository>().Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IUserService>().Object,
-                new Mock<ICostCentreService>().Object);
+                new Mock<IBudgetService>().Object);
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = null };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 3 };

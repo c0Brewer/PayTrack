@@ -37,12 +37,6 @@
               <td>{{ request.team?.name ?? '—' }}</td>
             </tr>
           }
-          @if (showCostCentre) {
-            <tr>
-              <th>Cost Centre</th>
-              <td>{{ request.costCentre?.name ?? '—' }}</td>
-            </tr>
-          }
           @if (showUser) {
             <tr>
               <th>User</th>

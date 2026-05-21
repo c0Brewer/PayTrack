@@ -44,6 +44,8 @@ builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserSer
 builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
+builder.Services.AddScoped<ISeasonService, SeasonService>();
 
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
@@ -60,6 +62,7 @@ builder.Services.AddScoped<IFileRepository, FileRepository>();
 builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -174,6 +177,8 @@ apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
+apiV1.MapBudgetEndpoints();
+apiV1.MapSeasonEndpoints();
 apiV1.MapNotificationEndpoints();
 
 if (hasFrontendBundle)

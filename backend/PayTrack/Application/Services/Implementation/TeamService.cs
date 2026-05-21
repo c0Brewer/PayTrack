@@ -59,6 +59,7 @@ namespace PayTrack.Application.Services.Implementation
             int id,
             string? name,
             string? description,
+            bool? isActive,
             string? displayColor,
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete)
@@ -76,6 +77,7 @@ namespace PayTrack.Application.Services.Implementation
                 id,
                 name,
                 description,
+                isActive,
                 displayColor,
                 budgetsToUpsert,
                 budgetIdsToDelete);

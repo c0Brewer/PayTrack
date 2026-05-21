@@ -33,43 +33,63 @@ describe('TeamListComponent', () => {
       budgets: [
         {
           id: 1,
+          name: 'Expired budget',
+          description: null,
           costCentreId: 10,
           teamId: 0,
+          seasonId: 1,
           targetAmount: 3000,
           periodStart: buildBudgetDate(-120, 'start'),
           periodEnd: buildBudgetDate(-60, 'end'),
+          transactionIds: [],
         },
         {
           id: 2,
+          name: 'Vehicle budget',
+          description: null,
           costCentreId: 10,
           teamId: 1,
+          seasonId: 1,
           targetAmount: 5000,
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
+          transactionIds: [],
         },
         {
           id: 4,
+          name: 'Operations budget',
+          description: null,
           costCentreId: 12,
           teamId: 1,
+          seasonId: 1,
           targetAmount: 6000,
           periodStart: buildBudgetDate(-20, 'start'),
           periodEnd: buildBudgetDate(20, 'end'),
+          transactionIds: [],
         },
         {
           id: 5,
+          name: 'Software budget',
+          description: null,
           costCentreId: 13,
           teamId: 1,
+          seasonId: 1,
           targetAmount: 7000,
           periodStart: buildBudgetDate(-10, 'start'),
           periodEnd: buildBudgetDate(10, 'end'),
+          transactionIds: [],
         },
         {
           id: 6,
+          name: 'Travel budget',
+          description: null,
           costCentreId: 14,
           teamId: 1,
+          seasonId: 1,
           targetAmount: 8000,
           periodStart: buildBudgetDate(-5, 'start'),
           periodEnd: buildBudgetDate(5, 'end'),
+          transactionIds: [],
         },
       ],
     },
@@ -129,11 +149,15 @@ describe('TeamListComponent', () => {
     budgets: [
       {
         id: 3,
+        name: 'Future budget',
+        description: null,
         costCentreId: 11,
         teamId: 1,
+        seasonId: 1,
         targetAmount: 7000,
         periodStart: buildBudgetDate(60, 'start'),
         periodEnd: buildBudgetDate(120, 'end'),
+        transactionIds: [],
       },
     ],
   };
@@ -234,7 +258,7 @@ describe('TeamListComponent', () => {
     fixture.detectChanges();
 
     const badges = Array.from(
-      fixture.nativeElement.querySelectorAll('.status-badge') as NodeListOf<HTMLSpanElement>,
+      fixture.nativeElement.querySelectorAll('.status-btn') as NodeListOf<HTMLSpanElement>,
       (badge) => badge.textContent?.trim(),
     );
 

@@ -19,6 +19,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                     new Budget
                     {
                         Id = 1,
+                        Name = "Past budget",
                         CostCentreId = 11,
                         TargetAmount = 100m,
                         PeriodStart = now.AddDays(-10),
@@ -27,6 +28,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                     new Budget
                     {
                         Id = 2,
+                        Name = "Current budget",
                         CostCentreId = 12,
                         TargetAmount = 200m,
                         PeriodStart = now.AddDays(-1),
