@@ -149,15 +149,15 @@ namespace PayTrack.Tests.UnitTests.Services
                 DisplayColor = "#112233",
             };
 
-            repoMock.Setup(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233", null, null))
+            repoMock.Setup(r => r.UpdateAsync(8, "Updated Team", "New Description", null, "#112233", null, null))
                 .ReturnsAsync(expectedTeam);
 
             // Act
-            var result = await service.UpdateTeamAsync(8, "Updated Team", "New Description", "#112233", null, null);
+            var result = await service.UpdateTeamAsync(8, "Updated Team", "New Description", null, "#112233", null, null);
 
             // Assert
             result.Should().BeSameAs(expectedTeam);
-            repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", "#112233", null, null), Times.Once);
+            repoMock.Verify(r => r.UpdateAsync(8, "Updated Team", "New Description", null, "#112233", null, null), Times.Once);
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var budgetIdsToDelete = new List<int> { 5 };
 
             // Act
-            var act = async () => await service.UpdateTeamAsync(8, null, null, null, budgetsToUpsert, budgetIdsToDelete);
+            var act = async () => await service.UpdateTeamAsync(8, null, null, null, null, budgetsToUpsert, budgetIdsToDelete);
 
             // Assert
             await act.Should()
@@ -182,6 +182,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     It.IsAny<int>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
+                    It.IsAny<bool?>(),
                     It.IsAny<string?>(),
                     It.IsAny<IList<UpsertTeamBudgetEntryDto>?>(),
                     It.IsAny<IList<int>?>()),

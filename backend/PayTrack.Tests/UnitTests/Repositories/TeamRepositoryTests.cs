@@ -471,7 +471,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
 
             // Act
-            var result = await repo.UpdateAsync(team.Id, "After", "New", "#ffffff", null, null);
+            var result = await repo.UpdateAsync(team.Id, "After", "New", null, "#ffffff", null, null);
 
             // Assert
             result.Name.Should().Be("After");
@@ -521,6 +521,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Act
             var result = await repo.UpdateAsync(
                 team.Id,
+                null,
                 null,
                 null,
                 null,
@@ -716,7 +717,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
             var teamToRename = await context.Teams.SingleAsync(t => t.Name == "Platform");
 
-            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null);
+            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null, null);
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
