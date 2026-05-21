@@ -30,7 +30,7 @@ export class UserManagementComponent implements OnInit {
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   user: UserDto[] = [];
   teams: TeamDto[] = [];
