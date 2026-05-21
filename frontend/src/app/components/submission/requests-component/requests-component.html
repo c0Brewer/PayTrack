@@ -14,7 +14,17 @@
     [showUserNameColumn]="true"
     [showDuplicateIndicator]="true"
     (openDetail)="onOpenDetail($event)"
+    (openDuplicates)="onOpenDuplicates($event)"
   ></app-invoice-list-component>
+
+  <app-duplicate-list-modal-component
+    [visible]="isDuplicateModalOpen"
+    [loading]="isDuplicateModalLoading"
+    [sourceInvoice]="selectedDuplicateInvoice"
+    [duplicates]="duplicateCandidates"
+    (closeModal)="onCloseDuplicateModal()"
+    (openDetail)="onOpenDuplicateDetail($event)"
+  ></app-duplicate-list-modal-component>
 
   <app-pagination-component
     [hasNext]="hasNext"

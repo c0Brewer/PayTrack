@@ -1,0 +1,55 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { DuplicatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../../types/exporter';
+
+import { DuplicateListModalComponent } from './duplicate-list-modal-component';
+
+describe('DuplicateListModalComponent', () => {
+  let component: DuplicateListModalComponent;
+  let fixture: ComponentFixture<DuplicateListModalComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DuplicateListModalComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(DuplicateListModalComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should render duplicate invoices', () => {
+    const duplicate = {
+      paymentRequestByUser: {
+        id: 2,
+        invoiceNumber: 'INV-2',
+        amount: 25,
+        user: { name: 'Max' },
+        team: { name: 'Finance' },
+      } as PaymentRequestByUserDto,
+      score: 1,
+      isAmountAndUserMatch: false,
+      isAmountAndTeamMatch: true,
+    } as DuplicatePaymentRequestByUserDto;
+
+    fixture.componentRef.setInput('visible', true);
+    fixture.componentRef.setInput('duplicates', [duplicate]);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('INV-2');
+    expect(compiled.textContent).toContain('Finance');
+  });
+
+  it('should emit close event', () => {
+    const spy = vi.fn();
+    component.closeModal.subscribe(spy);
+
+    component.onClose();
+
+    expect(spy).toHaveBeenCalledOnce();
+  });
+});

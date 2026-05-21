@@ -17,6 +17,7 @@ describe('RequestsComponent', () => {
 
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
+    getDuplicatePaymentRequestsByUser: vi.fn(),
   };
 
   const notificationMock = {
@@ -42,6 +43,9 @@ describe('RequestsComponent', () => {
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [RequestsComponent],
       providers: [
@@ -113,6 +117,50 @@ describe('RequestsComponent', () => {
     component.onOpenDetail(invoice);
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/requests', 1]);
+  });
+
+  it('should load duplicates for invoice and filter out current invoice', () => {
+    const invoice = {
+      id: 1,
+      amount: 100,
+      paidAt: '2026-05-21T00:00:00.000Z',
+      team: { id: 3 },
+    } as PaymentRequestByUserDto;
+    const duplicate = {
+      paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
+      score: 1,
+      isAmountAndUserMatch: false,
+      isAmountAndTeamMatch: true,
+    };
+    const selfMatch = {
+      paymentRequestByUser: { id: 1, invoiceNumber: 'INV-1' },
+      score: 1,
+      isAmountAndUserMatch: false,
+      isAmountAndTeamMatch: true,
+    };
+    paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
+      of([selfMatch, duplicate]),
+    );
+
+    component.onOpenDuplicates(invoice);
+
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
+      TeamId: 3,
+      Amount: 100,
+      PaidAt: '2026-05-21T00:00:00.000Z',
+    });
+    expect(component.duplicateCandidates).toEqual([duplicate]);
+    expect(component.isDuplicateModalOpen).toBe(true);
+    expect(component.isDuplicateModalLoading).toBe(false);
+  });
+
+  it('should show error when duplicate lookup is missing required data', () => {
+    component.onOpenDuplicates({ id: 1, amount: 100 } as PaymentRequestByUserDto);
+
+    expect(notificationMock.showError).toHaveBeenCalledWith(
+      'Duplicate lookup is missing team or paid date.',
+    );
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).not.toHaveBeenCalled();
   });
 
   it('should return 1 for getTotalPages when totalCount is 0', () => {

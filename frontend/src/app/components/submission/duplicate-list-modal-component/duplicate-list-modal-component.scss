@@ -1,0 +1,61 @@
+@use 'variables' as v;
+
+.duplicate-modal__subtitle,
+.duplicate-modal__empty {
+  margin: 0 0 v.$size-m;
+  color: v.$text-muted;
+}
+
+.duplicate-list {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-s;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.duplicate-list__item {
+  border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  display: grid;
+  gap: v.$size-xs;
+  padding: v.$size-s;
+}
+
+.duplicate-list__main {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: v.$size-s;
+}
+
+.duplicate-list__invoice,
+.duplicate-list__amount {
+  color: v.$text-color;
+  font-weight: v.$font-semibold;
+}
+
+.duplicate-list__details,
+.duplicate-list__meta {
+  color: v.$text-muted;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs v.$size-s;
+  font-size: v.$font-xs;
+}
+
+.duplicate-list__match {
+  color: #92400e;
+  font-weight: v.$font-semibold;
+}
+
+.duplicate-list__view {
+  justify-self: flex-start;
+  padding: v.$size-xxs v.$size-s;
+  border: 1px solid v.$border-color;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  cursor: pointer;
+  font-size: v.$font-xs;
+}

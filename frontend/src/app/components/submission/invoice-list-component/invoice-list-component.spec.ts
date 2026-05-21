@@ -39,6 +39,16 @@ describe('InvoiceListComponent', () => {
     expect(emitted).toEqual(invoice);
   });
 
+  it('should emit invoice when onOpenDuplicates is called', () => {
+    const invoice = { id: 1, amount: 100 } as PaymentRequestByUserDto;
+    let emitted: PaymentRequestByUserDto | undefined;
+    component.openDuplicates.subscribe((inv) => (emitted = inv));
+
+    component.onOpenDuplicates(invoice);
+
+    expect(emitted).toEqual(invoice);
+  });
+
   it('should render duplicate badge when duplicate indicator is enabled', () => {
     fixture.componentRef.setInput('showDuplicateIndicator', true);
     fixture.componentRef.setInput('invoices', [

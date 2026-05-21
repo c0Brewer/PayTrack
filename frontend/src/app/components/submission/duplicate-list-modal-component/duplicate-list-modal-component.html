@@ -1,0 +1,55 @@
+<app-modal-component
+  [visible]="visible"
+  title="Potential Duplicates"
+  icon="warning"
+  (closeEvent)="onClose()"
+>
+  @if (sourceInvoice) {
+    <p class="duplicate-modal__subtitle">
+      Possible duplicates for invoice {{ sourceInvoice.invoiceNumber }}.
+    </p>
+  }
+
+  @if (loading) {
+    <p class="duplicate-modal__empty">Loading duplicates...</p>
+  } @else if (duplicates.length > 0) {
+    <ul class="duplicate-list">
+      @for (duplicate of duplicates; track duplicate.paymentRequestByUser.id) {
+        <li class="duplicate-list__item">
+          <div class="duplicate-list__main">
+            <span class="duplicate-list__invoice">
+              {{ duplicate.paymentRequestByUser.invoiceNumber }}
+            </span>
+            <span class="duplicate-list__amount">
+              {{ duplicate.paymentRequestByUser.amount | currency: 'EUR' }}
+            </span>
+          </div>
+
+          <div class="duplicate-list__details">
+            <span>User: {{ getDuplicateUserName(duplicate) }}</span>
+            <span>Team: {{ getDuplicateTeamName(duplicate) }}</span>
+            <span>
+              Paid at:
+              {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
+            </span>
+          </div>
+
+          <div class="duplicate-list__meta">
+            <span [class.duplicate-list__match]="duplicate.isAmountAndUserMatch">Amount + Day + User</span>
+            <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Day + Team</span>
+          </div>
+
+          <button
+            type="button"
+            class="duplicate-list__view"
+            (click)="onOpenDetail(duplicate.paymentRequestByUser)"
+          >
+            View
+          </button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="duplicate-modal__empty">No duplicate requests found.</p>
+  }
+</app-modal-component>

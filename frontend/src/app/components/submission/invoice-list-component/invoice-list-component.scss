@@ -73,9 +73,14 @@
     border-radius: v.$size-xs;
     background: #fffbeb;
     color: #92400e;
+    cursor: pointer;
     font-size: v.$font-xs;
     font-weight: v.$font-semibold;
     white-space: nowrap;
+
+    &:hover {
+      background: #fef3c7;
+    }
 
     .material-symbols-outlined {
       font-size: 1rem;

@@ -46,10 +46,15 @@
         @if (showDuplicateIndicator) {
           <td>
             @if (invoice.hasPotentialDuplicate) {
-              <span class="duplicate-badge" title="Another invoice matches amount, paid day, and user or team">
+              <button
+                type="button"
+                class="duplicate-badge"
+                title="Show possible duplicate invoices"
+                (click)="onOpenDuplicates(invoice)"
+              >
                 <span class="material-symbols-outlined">warning</span>
                 Possible
-              </span>
+              </button>
             } @else {
               <span class="duplicate-empty">-</span>
             }

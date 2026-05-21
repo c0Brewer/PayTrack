@@ -3,14 +3,24 @@ import { Router } from '@angular/router';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { GetPaymentRequestsByUserOptions, PaymentRequestByUserDto } from '../../../types/exporter';
+import {
+  DuplicatePaymentRequestByUserDto,
+  GetPaymentRequestsByUserOptions,
+  PaymentRequestByUserDto,
+} from '../../../types/exporter';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
+import { DuplicateListModalComponent } from '../duplicate-list-modal-component/duplicate-list-modal-component';
 import { InvoiceFilterComponent } from '../invoice-filter-component/invoice-filter-component';
 import { InvoiceListComponent } from '../invoice-list-component/invoice-list-component';
 
 @Component({
   selector: 'app-requests-component',
-  imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent],
+  imports: [
+    PaginationComponent,
+    InvoiceFilterComponent,
+    InvoiceListComponent,
+    DuplicateListModalComponent,
+  ],
   templateUrl: './requests-component.html',
   styleUrl: './requests-component.scss',
 })
@@ -36,6 +46,11 @@ export class RequestsComponent implements OnInit {
     IncludeTeam: true,
     IncludeCostCentre: true,
   };
+
+  selectedDuplicateInvoice: PaymentRequestByUserDto | null = null;
+  duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
+  isDuplicateModalOpen: boolean = false;
+  isDuplicateModalLoading: boolean = false;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -76,6 +91,52 @@ export class RequestsComponent implements OnInit {
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.router.navigate(['/requests', invoice.id]);
+  }
+
+  onOpenDuplicates(invoice: PaymentRequestByUserDto): void {
+    if (!invoice.team?.id || !invoice.paidAt) {
+      this.notificationService.showError('Duplicate lookup is missing team or paid date.');
+      return;
+    }
+
+    this.selectedDuplicateInvoice = invoice;
+    this.duplicateCandidates = [];
+    this.isDuplicateModalOpen = true;
+    this.isDuplicateModalLoading = true;
+
+    this.paymentRequestService
+      .getDuplicatePaymentRequestsByUser({
+        TeamId: invoice.team.id,
+        Amount: invoice.amount,
+        PaidAt: invoice.paidAt,
+      })
+      .subscribe({
+        next: (duplicates) => {
+          this.duplicateCandidates = duplicates.filter(
+            (duplicate) => duplicate.paymentRequestByUser.id !== invoice.id,
+          );
+          this.isDuplicateModalLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError(err.message ?? 'Duplicate check failed.');
+          this.isDuplicateModalLoading = false;
+          this.isDuplicateModalOpen = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  onCloseDuplicateModal(): void {
+    this.isDuplicateModalOpen = false;
+    this.isDuplicateModalLoading = false;
+    this.selectedDuplicateInvoice = null;
+    this.duplicateCandidates = [];
+  }
+
+  onOpenDuplicateDetail(invoice: PaymentRequestByUserDto): void {
+    this.onCloseDuplicateModal();
+    this.onOpenDetail(invoice);
   }
 
   getTotalPages(): number {
