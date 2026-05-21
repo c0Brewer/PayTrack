@@ -54,6 +54,8 @@
 
     <app-team-list-component
       [teams]="teams"
+      [activeStatusPendingIds]="activeStatusPendingIds"
+      (toggleActive)="toggleActive($event)"
       [costCentres]="costCentres"
       (openEditTeam)="openEditTeam($event)"
     ></app-team-list-component>

@@ -9,9 +9,6 @@
       <th>Team</th>
       <th>Payout Type</th>
       <th>Status</th>
-      @if (showCostCentreColumn) {
-        <th>Cost Centre</th>
-      }
       @if (showUserNameColumn) {
         <th>User</th>
       }
@@ -34,9 +31,6 @@
             {{ getTransactionStatusLabel(invoice.status) }}
           </span>
         </td>
-        @if (showCostCentreColumn) {
-          <td>{{ invoice.costCentre?.name ?? '—' }}</td>
-        }
         @if (showUserNameColumn) {
           <td>{{ invoice.user?.name ?? '—' }}</td>
         }
@@ -46,7 +40,7 @@
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="8 + (showCostCentreColumn ? 1 : 0) + (showUserNameColumn ? 1 : 0)">
+        <td [attr.colspan]="8 + (showUserNameColumn ? 1 : 0)">
           No invoices found.
         </td>
       </tr>

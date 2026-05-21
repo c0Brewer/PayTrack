@@ -87,6 +87,7 @@ namespace PayTrack.Api.Handler
                 id,
                 updateTeamRequestDto.Name,
                 updateTeamRequestDto.Description,
+                updateTeamRequestDto.IsActive,
                 updateTeamRequestDto.DisplayColor,
                 updateTeamRequestDto.BudgetsToUpsert,
                 updateTeamRequestDto.BudgetIdsToDelete);

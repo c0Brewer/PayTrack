@@ -2421,6 +2421,7 @@ export interface components {
         UpdateTeamRequestDto: {
             name?: string | null;
             description?: string | null;
+            isActive?: boolean | null;
             displayColor?: string | null;
             budgetsToUpsert?: components["schemas"]["UpsertTeamBudgetEntryDto"][] | null;
             budgetIdsToDelete?: number[] | null;

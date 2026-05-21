@@ -219,6 +219,15 @@
               placeholder="0.00"
             />
           </label>
+        <label class="col12 col-sm-12 mb-0">
+          Season
+          <select [(ngModel)]="newBudgetDraft.seasonId">
+            <option [ngValue]="0" disabled>Select season</option>
+            @for (season of seasons; track season.id) {
+              <option [ngValue]="season.id">{{ season.name }}</option>
+            }
+          </select>
+        </label>
           <div class="w-100"></div>
           <label class="col-12 col-sm-6 mb-0">
             Period Start

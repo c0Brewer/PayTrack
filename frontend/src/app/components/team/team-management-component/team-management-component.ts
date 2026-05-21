@@ -51,6 +51,7 @@ export class TeamManagementComponent {
   ) {}
 
   teams: TeamDto[] = [];
+  activeStatusPendingIds = new Set<number>();
   costCentres: CostCentreDto[] = [];
   seasons: SeasonDto[] = [];
   editingTeam: TeamDto | null = null;
@@ -351,5 +352,48 @@ export class TeamManagementComponent {
     }
 
     return value;
+  }
+
+  private setActiveStatusPending(teamId: number, isPending: boolean): void {
+    const nextPendingIds = new Set(this.activeStatusPendingIds);
+
+    if (isPending) {
+      nextPendingIds.add(teamId);
+    } else {
+      nextPendingIds.delete(teamId);
+    }
+
+    this.activeStatusPendingIds = nextPendingIds;
+  }
+
+  toggleActive(team: TeamDto): void {
+    if (this.activeStatusPendingIds.has(team.id)) {
+      return;
+    }
+
+    const nextIsActive = !team.isActive;
+    const updateRequest: UpdateTeamDto = {
+      isActive: nextIsActive,
+    };
+
+    this.setActiveStatusPending(team.id, true);
+
+    this.teamService.updateTeam(team.id, updateRequest).subscribe({
+      next: () => {
+        this.notificationService.showSuccess(
+          'Successfully changed active status of user ' + team.name,
+        );
+        this.teams = this.teams.map((currentTeam) =>
+          currentTeam.id === team.id ? { ...currentTeam, isActive: nextIsActive } : currentTeam,
+        );
+        this.setActiveStatusPending(team.id, false);
+        this.cdr.markForCheck();
+      },
+      error: (error: Error) => {
+        this.setActiveStatusPending(team.id, false);
+        this.notificationService.showError('Could not update User: ' + error.message);
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

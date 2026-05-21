@@ -203,6 +203,7 @@ namespace PayTrack.Data.Repositories.Implementation
             int id,
             string? name,
             string? description,
+            bool? isActive,
             string? displayColor,
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete)
@@ -234,6 +235,12 @@ namespace PayTrack.Data.Repositories.Implementation
             if (displayColor is not null && team.DisplayColor != displayColor)
             {
                 team.DisplayColor = displayColor;
+                hasChanges = true;
+            }
+
+            if (isActive is not null && isActive.HasValue && team.IsActive != isActive)
+            {
+                team.IsActive = isActive.Value;
                 hasChanges = true;
             }
 

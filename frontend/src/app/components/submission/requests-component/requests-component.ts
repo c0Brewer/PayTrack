@@ -34,7 +34,6 @@ export class RequestsComponent implements OnInit {
 
   filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
-    IncludeCostCentre: true,
   };
 
   ngOnInit(): void {
@@ -45,7 +44,6 @@ export class RequestsComponent implements OnInit {
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
       IncludeTeam: true,
-      IncludeCostCentre: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
     };

@@ -1,5 +1,5 @@
 import type {
-    BudgetDto,
+  BudgetDto,
   CostCentreDto,
   TeamDto,
   UpsertBudgetEntryDto,
