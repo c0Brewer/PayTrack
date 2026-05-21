@@ -45,7 +45,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 Amount = 100,
                 User = new User { Id = 10, Name = "Assignee" },
                 RequestedBy = new User { Id = 20, Name = "Creator" },
-                Budget = new Budget { Id = 30, Name = "Electrical Parts"},
+                Budget = new Budget { Id = 30, Name = "Electrical Parts" },
                 Team = new Team { Id = 40, Name = "Engineering" },
                 StatusHistory =
                 [

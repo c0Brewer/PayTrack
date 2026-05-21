@@ -206,48 +206,6 @@ public static class DbSeeder
             db.Seasons.Add(currentSeason);
         }
 
-        var manufacturingBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Manufacturing");
-        if (manufacturingBudget is null)
-        {
-            manufacturingBudget = new Budget
-            {
-                Name = "Manufacturing",
-                Description = "Parts, machining, and production costs.",
-                SeasonId = currentSeason.Id,
-                Season = currentSeason,
-            };
-
-            db.Budgets.Add(manufacturingBudget);
-        }
-
-        var electronicsBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Electronics");
-        if (electronicsBudget is null)
-        {
-            electronicsBudget = new Budget
-            {
-                Name = "Electronics",
-                Description = "Electrical components and prototype hardware.",
-                SeasonId = currentSeason.Id,
-                Season = currentSeason,
-            };
-
-            db.Budgets.Add(electronicsBudget);
-        }
-
-        var compositesBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Composites");
-        if (compositesBudget is null)
-        {
-            compositesBudget = new Budget
-            {
-                Name = "Composites",
-                Description = "#0EA5E9",
-                SeasonId = currentSeason.Id,
-                Season = currentSeason,
-            };
-
-            db.Budgets.Add(compositesBudget);
-        }
-
         var manufacturingCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Manufacturing");
         if (manufacturingCostCentre is null)
         {
@@ -330,17 +288,17 @@ public static class DbSeeder
             db.CostCentres.Add(archivedSponsoringCostCentre);
         }
 
-        await AddBudgetIfMissingAsync(db, chassisTeam, manufacturingCostCentre, 15000m);
-        await AddBudgetIfMissingAsync(db, electronicsTeam, electronicsCostCentre, 8000m);
-        await AddBudgetIfMissingAsync(db, suspensionTeam, compositesCostCentre, 9500m);
-        await AddBudgetIfMissingAsync(db, aerodynamicsTeam, compositesCostCentre, 18000m);
-        await AddBudgetIfMissingAsync(db, powertrainTeam, manufacturingCostCentre, 22000m);
-        await AddBudgetIfMissingAsync(db, batteryTeam, oldAccumulatorCostCentre, 14000m);
-        await AddBudgetIfMissingAsync(db, softwareTeam, electronicsCostCentre, 7000m);
-        await AddBudgetIfMissingAsync(db, financeTeam, legacyToolingCostCentre, 3000m);
-        await AddBudgetIfMissingAsync(db, operationsTeam, manufacturingCostCentre, 6500m);
-        await AddBudgetIfMissingAsync(db, marketingTeam, electronicsCostCentre, 4500m);
-        await AddBudgetIfMissingAsync(db, legacyCombustionTeam, legacyToolingCostCentre, 1200m);
+        await AddBudgetIfMissingAsync("Electric tools", db, chassisTeam, manufacturingCostCentre, 15000m, currentSeason);
+        await AddBudgetIfMissingAsync("Cables", db, electronicsTeam, electronicsCostCentre, 8000m, currentSeason);
+        await AddBudgetIfMissingAsync("Screws", db, suspensionTeam, compositesCostCentre, 9500m, currentSeason);
+        await AddBudgetIfMissingAsync("Wheels", db, aerodynamicsTeam, compositesCostCentre, 18000m, currentSeason);
+        await AddBudgetIfMissingAsync("Rearwing Parts", db, powertrainTeam, manufacturingCostCentre, 22000m, currentSeason);
+        await AddBudgetIfMissingAsync("Engine Parts", db, batteryTeam, oldAccumulatorCostCentre, 14000m, currentSeason);
+        await AddBudgetIfMissingAsync("Screw Driver", db, softwareTeam, electronicsCostCentre, 7000m, currentSeason);
+        await AddBudgetIfMissingAsync("Tools", db, financeTeam, legacyToolingCostCentre, 3000m, currentSeason);
+        await AddBudgetIfMissingAsync("Combustion Parts", db, operationsTeam, manufacturingCostCentre, 6500m, currentSeason);
+        await AddBudgetIfMissingAsync("Charger", db, marketingTeam, electronicsCostCentre, 4500m, currentSeason);
+        await AddBudgetIfMissingAsync("Iron Parts", db, legacyCombustionTeam, legacyToolingCostCentre, 1200m, currentSeason);
 
         await AddPresenterInvoicesIfUserExistsAsync(
             db,
@@ -357,18 +315,20 @@ public static class DbSeeder
             batteryTeam,
             powertrainTeam,
             operationsTeam,
-            manufacturingBudget,
-            electronicsBudget,
-            compositesBudget);
+            manufacturingCostCentre,
+            electronicsCostCentre,
+            compositesCostCentre);
 
         await db.SaveChangesAsync();
     }
 
     private static async Task AddBudgetIfMissingAsync(
+        string name,
         AppDbContext db,
         Team team,
         CostCentre costCentre,
-        decimal targetAmount)
+        decimal targetAmount,
+        Season season)
     {
         var budgetStart = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var budgetEnd = new DateTime(DateTime.UtcNow.Year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
@@ -376,6 +336,7 @@ public static class DbSeeder
         if (await db.Budgets.AnyAsync(b =>
                 b.Team == team &&
                 b.CostCentre == costCentre &&
+                b.Season == season &&
                 b.PeriodStart == budgetStart &&
                 b.PeriodEnd == budgetEnd))
         {
@@ -384,11 +345,13 @@ public static class DbSeeder
 
         db.Budgets.Add(new Budget
         {
+            Name = name,
             Team = team,
             CostCentre = costCentre,
             TargetAmount = targetAmount,
             PeriodStart = budgetStart,
             PeriodEnd = budgetEnd,
+            Season = season,
         });
     }
 
@@ -618,9 +581,9 @@ public static class DbSeeder
         Team batteryTeam,
         Team powertrainTeam,
         Team operationsTeam,
-        Budget manufacturingBudget,
-        Budget electronicsBudget,
-        Budget compositesBudget)
+        CostCentre manufacturingCostCentre,
+        CostCentre electronicsCostCentre,
+        CostCentre compositesCostCentre)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -636,7 +599,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             chassisTeam,
-            manufacturingBudget,
+            manufacturingCostCentre.Budgets.FirstOrDefault(),
             150.00m,
             "Workshop tool deposit – spring season",
             TransactionStatus.Submitted,
@@ -648,7 +611,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             electronicsTeam,
-            electronicsBudget,
+            electronicsCostCentre.Budgets.FirstOrDefault(),
             320.50m,
             "CAN bus hardware contribution",
             TransactionStatus.Submitted,
@@ -660,7 +623,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             suspensionTeam,
-            compositesBudget,
+            compositesCostCentre.Budgets.FirstOrDefault(),
             89.00m,
             "Damper test rig maintenance fee",
             TransactionStatus.Submitted,
@@ -672,7 +635,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             powertrainTeam,
-            manufacturingBudget,
+            manufacturingCostCentre.Budgets.FirstOrDefault(),
             2800.00m,
             "Engine testbench booking – Q2",
             TransactionStatus.Paid,
@@ -696,7 +659,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             batteryTeam,
-            electronicsBudget,
+            electronicsCostCentre.Budgets.FirstOrDefault(),
             560.00m,
             "High-voltage safety training fee",
             TransactionStatus.Submitted,

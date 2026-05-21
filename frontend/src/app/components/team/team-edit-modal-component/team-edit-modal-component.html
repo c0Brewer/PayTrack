@@ -199,6 +199,15 @@
 
       <div class="border rounded p-3 mb-3">
         <div class="row g-3 align-items-end">
+          <label class="col-12 col-sm-12 mb-0">
+            Name
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.name"
+              placeholder="Name"
+            />
+          </label>
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
             <select class="form-select" [(ngModel)]="newBudgetDraft.costCentreId">
@@ -219,15 +228,15 @@
               placeholder="0.00"
             />
           </label>
-        <label class="col12 col-sm-12 mb-0">
-          Season
-          <select [(ngModel)]="newBudgetDraft.seasonId">
-            <option [ngValue]="0" disabled>Select season</option>
-            @for (season of seasons; track season.id) {
-              <option [ngValue]="season.id">{{ season.name }}</option>
-            }
-          </select>
-        </label>
+          <label class="col-12 col-sm-12 mb-0">
+            Season
+            <select [(ngModel)]="newBudgetDraft.seasonId">
+              <option [ngValue]="0" disabled>Select season</option>
+              @for (season of seasons; track season.id) {
+                <option [ngValue]="season.id">{{ season.name }}</option>
+              }
+            </select>
+          </label>
           <div class="w-100"></div>
           <label class="col-12 col-sm-6 mb-0">
             Period Start
@@ -259,7 +268,7 @@
             >
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-light border mt-1">Existing</span>
                 </div>
                 <button
@@ -296,7 +305,7 @@
             <div class="budget-card border rounded p-3 budget-card--new">
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-primary mt-1">New</span>
                 </div>
                 <button
