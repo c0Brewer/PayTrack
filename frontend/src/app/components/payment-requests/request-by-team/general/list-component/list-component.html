@@ -8,7 +8,7 @@
         <th>Team</th>
       }
       <th>Status</th>
-      @if (showCostCentreColumn) {
+      @if (showBudgetColumn) {
         <th>Cost Centre</th>
       }
       @if (showUserColumn) {
@@ -32,8 +32,8 @@
             {{ getTransactionStatusLabel(request.status) }}
           </span>
         </td>
-        @if (showCostCentreColumn) {
-          <td>{{ request.costCentre?.name ?? '—' }}</td>
+        @if (showBudgetColumn) {
+          <td>{{ request.budget?.name }}</td>
         }
         @if (showUserColumn) {
           <td>{{ request.user?.name ?? '—' }}</td>
@@ -44,7 +44,7 @@
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="4 + (showTeamColumn ? 1 : 0) + (showCostCentreColumn ? 1 : 0) + (showUserColumn ? 1 : 0) + 1">
+        <td [attr.colspan]="4 + (showTeamColumn ? 1 : 0) + (showBudgetColumn ? 1 : 0) + (showUserColumn ? 1 : 0) + 1">
           No payment requests found.
         </td>
       </tr>

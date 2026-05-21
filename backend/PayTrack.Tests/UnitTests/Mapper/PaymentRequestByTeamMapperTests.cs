@@ -45,7 +45,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 Amount = 100,
                 User = new User { Id = 10, Name = "Assignee" },
                 RequestedBy = new User { Id = 20, Name = "Creator" },
-                CostCentre = new CostCentre { Id = 30, Name = "Marketing" },
+                Budget = new Budget { Id = 30, Name = "Electrical Parts"},
                 Team = new Team { Id = 40, Name = "Engineering" },
                 StatusHistory =
                 [
@@ -62,8 +62,8 @@ namespace PayTrack.Tests.UnitTests.Mapper
             dto.CreatedByUser.Should().NotBeNull();
             dto.CreatedByUser!.Id.Should().Be(20);
 
-            dto.CostCentre.Should().NotBeNull();
-            dto.CostCentre!.Id.Should().Be(30);
+            dto.Budget.Should().NotBeNull();
+            dto.Budget!.Id.Should().Be(30);
 
             dto.Team.Should().NotBeNull();
             dto.Team!.Id.Should().Be(40);
@@ -87,7 +87,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
 
             dto.User.Should().BeNull();
             dto.CreatedByUser.Should().BeNull();
-            dto.CostCentre.Should().BeNull();
+            dto.Budget.Should().BeNull();
             dto.Team.Should().BeNull();
             dto.StatusHistory.Should().NotBeNull();
             dto.StatusHistory.Should().BeEmpty();

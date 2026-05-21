@@ -195,6 +195,59 @@ public static class DbSeeder
             db.Teams.Add(archivedKartingTeam);
         }
 
+        var currentSeason = await db.Seasons.FirstOrDefaultAsync(c => c.Name == "S25/26");
+        if (currentSeason is null)
+        {
+            currentSeason = new Season
+            {
+                Name = "S25/26",
+            };
+
+            db.Seasons.Add(currentSeason);
+        }
+
+        var manufacturingBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Manufacturing");
+        if (manufacturingBudget is null)
+        {
+            manufacturingBudget = new Budget
+            {
+                Name = "Manufacturing",
+                Description = "Parts, machining, and production costs.",
+                SeasonId = currentSeason.Id,
+                Season = currentSeason,
+            };
+
+            db.Budgets.Add(manufacturingBudget);
+        }
+
+        var electronicsBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Electronics");
+        if (electronicsBudget is null)
+        {
+            electronicsBudget = new Budget
+            {
+                Name = "Electronics",
+                Description = "Electrical components and prototype hardware.",
+                SeasonId = currentSeason.Id,
+                Season = currentSeason,
+            };
+
+            db.Budgets.Add(electronicsBudget);
+        }
+
+        var compositesBudget = await db.Budgets.FirstOrDefaultAsync(c => c.Name == "Composites");
+        if (compositesBudget is null)
+        {
+            compositesBudget = new Budget
+            {
+                Name = "Composites",
+                Description = "#0EA5E9",
+                SeasonId = currentSeason.Id,
+                Season = currentSeason,
+            };
+
+            db.Budgets.Add(compositesBudget);
+        }
+
         var manufacturingCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Manufacturing");
         if (manufacturingCostCentre is null)
         {
@@ -294,10 +347,7 @@ public static class DbSeeder
             chassisTeam,
             electronicsTeam,
             suspensionTeam,
-            operationsTeam,
-            manufacturingCostCentre,
-            electronicsCostCentre,
-            compositesCostCentre);
+            operationsTeam);
 
         await AddPresenterTeamRequestsIfUserExistsAsync(
             db,
@@ -307,9 +357,9 @@ public static class DbSeeder
             batteryTeam,
             powertrainTeam,
             operationsTeam,
-            manufacturingCostCentre,
-            electronicsCostCentre,
-            compositesCostCentre);
+            manufacturingBudget,
+            electronicsBudget,
+            compositesBudget);
 
         await db.SaveChangesAsync();
     }
@@ -347,10 +397,7 @@ public static class DbSeeder
         Team chassisTeam,
         Team electronicsTeam,
         Team suspensionTeam,
-        Team operationsTeam,
-        CostCentre manufacturingCostCentre,
-        CostCentre electronicsCostCentre,
-        CostCentre compositesCostCentre)
+        Team operationsTeam)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -571,9 +618,9 @@ public static class DbSeeder
         Team batteryTeam,
         Team powertrainTeam,
         Team operationsTeam,
-        CostCentre manufacturingCostCentre,
-        CostCentre electronicsCostCentre,
-        CostCentre compositesCostCentre)
+        Budget manufacturingBudget,
+        Budget electronicsBudget,
+        Budget compositesBudget)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -589,7 +636,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             chassisTeam,
-            manufacturingCostCentre,
+            manufacturingBudget,
             150.00m,
             "Workshop tool deposit – spring season",
             TransactionStatus.Submitted,
@@ -601,7 +648,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             electronicsTeam,
-            electronicsCostCentre,
+            electronicsBudget,
             320.50m,
             "CAN bus hardware contribution",
             TransactionStatus.Submitted,
@@ -613,7 +660,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             suspensionTeam,
-            compositesCostCentre,
+            compositesBudget,
             89.00m,
             "Damper test rig maintenance fee",
             TransactionStatus.Submitted,
@@ -625,7 +672,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             powertrainTeam,
-            manufacturingCostCentre,
+            manufacturingBudget,
             2800.00m,
             "Engine testbench booking – Q2",
             TransactionStatus.Paid,
@@ -649,7 +696,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             batteryTeam,
-            electronicsCostCentre,
+            electronicsBudget,
             560.00m,
             "High-voltage safety training fee",
             TransactionStatus.Submitted,
@@ -662,7 +709,7 @@ public static class DbSeeder
         User requestedBy,
         User targetUser,
         Team team,
-        CostCentre? costCentre,
+        Budget? budget,
         decimal amount,
         string purposeOfPayment,
         TransactionStatus status,
@@ -689,14 +736,14 @@ public static class DbSeeder
             existingRequest.DueDate = dueDate;
             existingRequest.PaidAt = paidAt;
 
-            if (costCentre is null)
+            if (budget is null)
             {
-                existingRequest.CostCentre = null!;
-                existingRequest.CostCentreId = null;
+                existingRequest.Budget = null!;
+                existingRequest.BudgetId = null;
             }
             else
             {
-                existingRequest.CostCentre = costCentre;
+                existingRequest.Budget = budget;
             }
 
             var existingHistory = await db.TransactionStatusHistories
@@ -722,9 +769,9 @@ public static class DbSeeder
             PaidAt = paidAt,
         };
 
-        if (costCentre is not null)
+        if (budget is not null)
         {
-            teamRequest.CostCentre = costCentre;
+            teamRequest.Budget = budget;
         }
 
         db.PaymentRequestsByTeam.Add(teamRequest);

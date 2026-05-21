@@ -74,22 +74,6 @@ describe('TeamRequestDetailComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Chassis Team');
   });
 
-  it('should show cost centre row when showCostCentre is true', () => {
-    component.request = mockRequest;
-    component.loading = false;
-    component.showCostCentre = true;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('CC-Engineering');
-  });
-
-  it('should hide cost centre row when showCostCentre is false', () => {
-    component.request = mockRequest;
-    component.loading = false;
-    component.showCostCentre = false;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('CC-Engineering');
-  });
-
   it('should show user row when showUser is true', () => {
     component.request = mockRequest;
     component.loading = false;

@@ -153,7 +153,6 @@ export class TeamRequestFilterComponent implements OnInit {
       MaxDueDate: this.filterMaxDueDate || undefined,
       Status: this.filterStatus,
       TeamId: this.filterTeamId,
-      CostCentreId: this.filterCostCentreId,
       UserId: this.filterUserId,
       Limit: undefined,
       Offset: undefined,

@@ -139,11 +139,6 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
 
-            if (query?.IncludeCostCentre == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
-            }
-
             if (query?.IncludeUser == true)
             {
                 dbQuery = dbQuery.Include(t => t.User);

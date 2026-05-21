@@ -4,7 +4,7 @@
   <app-team-request-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
-    [showCostCentreFilter]="true"
+    [showCostCentreFilter]="false"
     [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onUpdateLimit($event)"
@@ -12,7 +12,6 @@
 
   <app-team-request-list-component
     [requests]="requests"
-    [showCostCentreColumn]="true"
     [showUserColumn]="true"
     (openDetail)="onOpenDetail($event)"
   ></app-team-request-list-component>

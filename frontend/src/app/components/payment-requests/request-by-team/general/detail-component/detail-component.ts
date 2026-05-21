@@ -18,7 +18,6 @@ export class TeamRequestDetailComponent {
   @Input() request: PaymentRequestByTeamDto | null = null;
   @Input() loading: boolean = false;
   @Input() showTeam: boolean = true;
-  @Input() showCostCentre: boolean = true;
   @Input() showUser: boolean = true;
   @Output() back = new EventEmitter<void>();
 

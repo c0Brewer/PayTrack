@@ -81,7 +81,6 @@ describe('TeamRequestUserDetailComponent', () => {
     expect(serviceMock.getPaymentRequestsByTeamById).toHaveBeenCalledWith(5, {
       IncludeUser: false,
       IncludeTeam: false,
-      IncludeCostCentre: false,
       IncludeStatusHistory: false,
     });
   });
