@@ -22,7 +22,7 @@ describe('ExternalNotificationService', () => {
   });
 
   describe('sendEmail', () => {
-    it('should call POST /api/v1/notify/email with the correct body', async () => {
+    it('should call POST /api/v1/notification/email with the correct body', async () => {
       vi.spyOn(client, 'POST').mockResolvedValue({
         error: null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +30,7 @@ describe('ExternalNotificationService', () => {
 
       await firstValueFrom(service.sendEmail('user@example.com', 'Test Subject', 'Test Body'));
 
-      expect(client.POST).toHaveBeenCalledWith('/api/v1/notify/email', {
+      expect(client.POST).toHaveBeenCalledWith('/api/v1/notification/email', {
         body: { recipientEmail: 'user@example.com', subject: 'Test Subject', body: 'Test Body' },
       });
     });
@@ -70,7 +70,7 @@ describe('ExternalNotificationService', () => {
   });
 
   describe('sendSlack', () => {
-    it('should call POST /api/v1/notify/slack with the correct body', async () => {
+    it('should call POST /api/v1/notification/slack with the correct body', async () => {
       vi.spyOn(client, 'POST').mockResolvedValue({
         error: null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +78,7 @@ describe('ExternalNotificationService', () => {
 
       await firstValueFrom(service.sendSlack('user@example.com', 'Test Message'));
 
-      expect(client.POST).toHaveBeenCalledWith('/api/v1/notify/slack', {
+      expect(client.POST).toHaveBeenCalledWith('/api/v1/notification/slack', {
         body: { recipientEmail: 'user@example.com', message: 'Test Message' },
       });
     });

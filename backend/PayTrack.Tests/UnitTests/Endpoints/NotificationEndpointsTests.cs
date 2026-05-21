@@ -69,7 +69,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
-        // ── POST /notify/slack ────────────────────────────────────────────────
+        // ── POST /notification/slack ────────────────────────────────────────────────
 
         [Fact]
         public async Task SendSlack_ReturnsOk_WhenAdmin()
