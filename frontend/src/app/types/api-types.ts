@@ -597,7 +597,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/notify/email": {
+    "/api/v1/notification/email": {
         parameters: {
             query?: never;
             header?: never;
@@ -643,7 +643,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/notify/slack": {
+    "/api/v1/notification/slack": {
         parameters: {
             query?: never;
             header?: never;
@@ -802,6 +802,7 @@ export interface paths {
                     Description?: string;
                     MinBudget?: number;
                     MaxBudget?: number;
+                    IsActive?: boolean;
                     IncludeMembers?: boolean;
                     IncludeBudgets?: boolean;
                     Limit?: number;

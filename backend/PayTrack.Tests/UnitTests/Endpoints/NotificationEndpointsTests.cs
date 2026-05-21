@@ -18,7 +18,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
     {
         private readonly NotificationApiFactory factory = factory;
 
-        // ── POST /notify/email ────────────────────────────────────────────────
+        // ── POST /notification/email ────────────────────────────────────────────────
 
         [Fact]
         public async Task SendEmail_ReturnsOk_WhenAdmin()
@@ -31,7 +31,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             var response = await client.PostAsJsonAsync(
-                "api/v1/notify/email",
+                "api/v1/notification/email",
                 new SendEmailNotificationDto("user@example.com", "Subject", "Body"));
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -48,7 +48,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             await client.PostAsJsonAsync(
-                "api/v1/notify/email",
+                "api/v1/notification/email",
                 new SendEmailNotificationDto("user@example.com", "Test Subject", "Test Body"));
 
             this.factory.ServiceMock.Verify(
@@ -63,13 +63,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             var response = await client.PostAsJsonAsync(
-                "api/v1/notify/email",
+                "api/v1/notification/email",
                 new SendEmailNotificationDto("user@example.com", "Subject", "Body"));
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
-        // ── POST /notify/slack ────────────────────────────────────────────────
+        // ── POST /notification/slack ────────────────────────────────────────────────
 
         [Fact]
         public async Task SendSlack_ReturnsOk_WhenAdmin()
@@ -82,7 +82,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             var response = await client.PostAsJsonAsync(
-                "api/v1/notify/slack",
+                "api/v1/notification/slack",
                 new SendSlackNotificationDto("user@example.com", "Hello"));
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -99,7 +99,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             await client.PostAsJsonAsync(
-                "api/v1/notify/slack",
+                "api/v1/notification/slack",
                 new SendSlackNotificationDto("user@example.com", "Hello there"));
 
             this.factory.ServiceMock.Verify(
@@ -114,7 +114,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             var response = await client.PostAsJsonAsync(
-                "api/v1/notify/slack",
+                "api/v1/notification/slack",
                 new SendSlackNotificationDto("user@example.com", "Hello"));
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);

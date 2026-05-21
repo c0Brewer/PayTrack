@@ -9,7 +9,7 @@ import { client } from '../../client';
 export class ExternalNotificationService {
   public sendEmail(recipientEmail: string, subject: string, body: string): Observable<void> {
     const promise = client
-      .POST('/api/v1/notify/email', {
+      .POST('/api/v1/notification/email', {
         body: { recipientEmail, subject, body },
       })
       .then(({ error }) => {
@@ -21,7 +21,7 @@ export class ExternalNotificationService {
 
   public sendSlack(recipientEmail: string, message: string): Observable<void> {
     const promise = client
-      .POST('/api/v1/notify/slack', {
+      .POST('/api/v1/notification/slack', {
         body: { recipientEmail, message },
       })
       .then(({ error }) => {

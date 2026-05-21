@@ -73,11 +73,11 @@ namespace PayTrack.Api.Mapper
         /// <summary>
         /// Turns a List of PaymentRequestByTeam objects into a List of PaymentRequestByTeamDto objects.
         /// </summary>
-        /// <param name="PaymentRequestByTeam">List of PaymentRequestByTeam objects.</param>
+        /// <param name="paymentRequestByTeam">List of PaymentRequestByTeam objects.</param>
         /// <returns>List of PaymentRequestByTeamDto objects.</returns>
-        public static List<PaymentRequestByTeamDto> ListToDto(List<PaymentRequestByTeam> PaymentRequestByTeam)
+        public static List<PaymentRequestByTeamDto> ListToDto(List<PaymentRequestByTeam> paymentRequestByTeam)
         {
-            return PaymentRequestByTeam.ConvertAll(ToDto);
+            return paymentRequestByTeam.ConvertAll(ToDto);
         }
     }
 }

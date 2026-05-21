@@ -36,9 +36,17 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new() { Id = 2, Amount = 200 }
             };
 
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
             _factory.ServiceMock
                 .Setup(s => s.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
                 .ReturnsAsync((list, list.Count));
+
+            _factory.ServiceMock
+                .Setup(s => s.ValidateQuery(It.IsAny<GetPaymentRequestByTeamQuery>(), It.IsAny<User>()))
+                .Returns(true);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -155,6 +163,30 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByTeamDto>();
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Create_ReturnsNotFound_WhenCurrentUserIsNull()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync((User?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var requestDto = new CreatePaymentRequestByTeamDto(
+                new(TeamId: 1, Amount: 50, PurposeOfPayment: "test", PaidAt: DateTime.Today),
+                UserToAssignToId: 1,
+                DueDate: DateTime.Today.AddDays(7),
+                CostCentreId: null);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         // ----------------------------

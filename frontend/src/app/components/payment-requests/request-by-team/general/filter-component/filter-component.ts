@@ -8,6 +8,7 @@ import { UserService } from '../../../../../services/user/user-service';
 import {
   CostCentreDto,
   GetPaymentRequestsByTeamOptions,
+  TEAM_REQUEST_ALLOWED_STATUSES,
   TeamDto,
   TransactionStatus,
   TransactionStatusLabels,
@@ -57,9 +58,7 @@ export class TeamRequestFilterComponent implements OnInit {
 
   TransactionStatus = TransactionStatus;
   TransactionStatusLabels = TransactionStatusLabels;
-  transactionStatusOptions = Object.values(TransactionStatus).filter(
-    (v) => typeof v === 'number',
-  ) as TransactionStatus[];
+  transactionStatusOptions: TransactionStatus[] = [...TEAM_REQUEST_ALLOWED_STATUSES];
 
   constructor(
     private readonly teamService: TeamService,

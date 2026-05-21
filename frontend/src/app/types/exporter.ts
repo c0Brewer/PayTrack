@@ -83,6 +83,11 @@ export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
   [TransactionStatus.Declined]: 'status-declined',
 };
 
+export const TEAM_REQUEST_ALLOWED_STATUSES: readonly TransactionStatus[] = [
+  TransactionStatus.Submitted,
+  TransactionStatus.Paid,
+];
+
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];

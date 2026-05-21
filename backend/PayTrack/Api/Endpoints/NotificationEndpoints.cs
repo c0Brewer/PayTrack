@@ -14,7 +14,7 @@ namespace PayTrack.Api.Endpoints
     public static class NotificationEndpoints
     {
         private const string GroupName = "Notifications";
-        private const string GroupRoute = "notify";
+        private const string GroupRoute = "notification";
 
         /// <summary>
         /// Maps the endpoints for notification dispatch.

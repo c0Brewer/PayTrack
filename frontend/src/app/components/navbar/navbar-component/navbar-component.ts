@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, switchMap, take } from 'rxjs';
 
@@ -14,13 +15,14 @@ import { Role, TransactionStatus } from '../../../types/exporter';
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent {
   loggedIn$;
   currentUser$;
   protected readonly role = Role;
   protected readonly mobileMenuOpen = signal(false);
   protected readonly submittedCount = signal(0);
   protected readonly teamRequestCount = signal(0);
+  public hasNoBankAccounts = false;
 
   constructor(
     private readonly authService: AuthService,
@@ -29,6 +31,10 @@ export class NavbarComponent implements OnInit {
   ) {
     this.loggedIn$ = this.authService.loggedIn$;
     this.currentUser$ = this.authService.currentUser$;
+
+    this.currentUser$.pipe(takeUntilDestroyed()).subscribe((user) => {
+      this.hasNoBankAccounts = !!user && (user.bankAccounts?.length ?? 0) === 0;
+    });
   }
 
   ngOnInit(): void {

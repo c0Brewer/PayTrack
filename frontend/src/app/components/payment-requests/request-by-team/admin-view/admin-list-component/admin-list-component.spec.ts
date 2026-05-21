@@ -8,7 +8,7 @@ import { NotificationService } from '../../../../../services/notification/notifi
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import { UserService } from '../../../../../services/user/user-service';
-import { PaymentRequestByTeamDto } from '../../../../../types/exporter';
+import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { TeamRequestsComponent } from './admin-list-component';
 
@@ -83,8 +83,8 @@ describe('TeamRequestsComponent', () => {
 
   it('should set requests and totalCount on successful load', () => {
     const items = [
-      { id: 1, amount: 100 },
-      { id: 2, amount: 200 },
+      { id: 1, amount: 100, status: TransactionStatus.Submitted },
+      { id: 2, amount: 200, status: TransactionStatus.Paid },
     ] as PaymentRequestByTeamDto[];
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
       of({ items, totalCount: 2, hasNext: true, hasPrevious: false }),

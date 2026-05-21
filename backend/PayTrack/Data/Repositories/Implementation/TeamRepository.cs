@@ -90,6 +90,12 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.Description != null && t.Description.Contains(query.Description));
             }
 
+            // Filter by active status
+            if (query?.IsActive.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.IsActive == query.IsActive.Value);
+            }
+
             // Check if budget should be included
             if (query?.IncludeBudgets == true)
             {

@@ -62,5 +62,13 @@ namespace PayTrack.Application.Services.Model
             decimal? amount = null,
             string? purposeOfPayment = null,
             DateTime? paidAt = null);
+
+        /// <summary>
+        /// Validates that the supplied query parameters are permissible for the current user's role.
+        /// </summary>
+        /// <param name="query">The query submitted by the client.</param>
+        /// <param name="currentUser">The currently authenticated user.</param>
+        /// <returns><c>true</c> if the query is valid for the user's role; <c>false</c> otherwise.</returns>
+        bool ValidateQuery(GetPaymentRequestByTeamQuery query, User currentUser);
     }
 }

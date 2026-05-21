@@ -123,12 +123,12 @@ describe('CostCentreDetailComponent', () => {
 
     it('should show the back button', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.back-btn')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.detail-shell__back')).not.toBeNull();
     });
 
     it('should show cost centre name in heading', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('h2')?.textContent).toContain('Aerodynamics');
+      expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Aerodynamics');
     });
 
     it('should show cost centre description', () => {

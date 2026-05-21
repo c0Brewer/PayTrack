@@ -136,6 +136,10 @@
   font-weight: v.$font-semibold;
 }
 
+.sidebar__settings {
+  position: relative;
+}
+
 .sidebar__settings .material-symbols-outlined,
 .sidebar__logout .material-symbols-outlined {
   display: block;
@@ -231,5 +235,61 @@
 
   .sidebar__logo img {
     width: 3rem;
+  }
+}
+
+.warning-badge-wrapper {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+}
+
+.warning-badge {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-scale 1.4s ease-in-out infinite;
+  z-index: 1;
+}
+
+.warning-badge .material-symbols-outlined {
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.warning-badge-ring {
+  position: absolute;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: rgba(239, 68, 68, 0.4);
+  animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes pulse-scale {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
   }
 }
