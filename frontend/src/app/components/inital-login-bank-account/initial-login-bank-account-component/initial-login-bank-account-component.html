@@ -1,0 +1,71 @@
+<main class="bank-info-page d-flex align-items-center justify-content-center">
+  <section class="bank-info-panel">
+    <div class="text-center">
+      <h1 class="mb-4">Welcome to PayTrack</h1>
+    </div>
+    <div class="bank-info-title-row d-flex align-items-start align-items-sm-center gap-3">
+      <div
+        class="bank-info-icon d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle"
+        aria-hidden="true"
+      >
+        <span class="material-symbols-outlined">credit_card</span>
+      </div>
+      <div class="bank-info-header">
+        <p>First login</p>
+        <h1>Bank information</h1>
+      </div>
+    </div>
+
+    <span class="bank-info-intro"
+      >Enter your payout account now, or skip this step and add it later.</span
+    >
+
+    <form class="d-flex flex-column gap-3" [formGroup]="form" (ngSubmit)="save()">
+      <label class="d-flex flex-column gap-1">
+        <span>Account holder</span>
+        <input formControlName="accountHolder" autocomplete="name" />
+        @if (form.controls.accountHolder.touched && form.controls.accountHolder.invalid) {
+          <small class="hint-error">Use 3-255 characters.</small>
+        }
+      </label>
+
+      <label class="d-flex flex-column gap-1">
+        <span>IBAN</span>
+        <input
+          formControlName="iban"
+          autocomplete="off"
+          maxlength="42"
+          placeholder="AT61 1904 3002 3457 3201"
+          (input)="onIbanInput($event)"
+        />
+        @if (form.controls.iban.touched && form.controls.iban.invalid) {
+          <small class="hint-error">Use 15-34 characters.</small>
+        }
+      </label>
+
+      <label class="d-flex flex-column gap-1">
+        <span>BIC</span>
+        <input formControlName="bic" autocomplete="off" placeholder="BKAUATWW" />
+        @if (form.controls.bic.touched && form.controls.bic.invalid) {
+          <small class="hint-error">Use 8-11 characters.</small>
+        }
+      </label>
+
+      <div
+        class="bank-info-actions d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-3"
+      >
+        <button type="button" class="btn btn-secondary" (click)="skip()" [disabled]="isSaving">
+          Skip
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving">Save</button>
+      </div>
+    </form>
+  </section>
+
+  <!--Background Kreise-->
+  <div class="background-decorations">
+    <div class="bg-circle-top-right"></div>
+    <div class="bg-circle-bottom-left"></div>
+    <div class="bg-gradient-blur"></div>
+  </div>
+</main>

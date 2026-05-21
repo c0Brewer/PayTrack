@@ -43,7 +43,7 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Budget?> GetBudgetByIdAsync(int id)
+        public async Task<Budget?> GetByIdAsync(int id)
         {
             return await this.repo.GetByIdAsync(id);
         }

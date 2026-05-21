@@ -99,7 +99,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var teams = new List<Team>
             {
                 new() { Name = "Team1" },
-                new() { Name = "Team2" }
+                new() { Name = "Team2", IsActive = false }
             };
             context.Teams.AddRange(teams);
             await context.SaveChangesAsync();
@@ -114,6 +114,56 @@ namespace PayTrack.Tests.UnitTests.Repositories
             resultList.Should().ContainSingle(t => t.Name == "Team1");
             resultList.Should().ContainSingle(t => t.Name == "Team2");
             totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldFilterTeamsByActiveStatus()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_FilterByActiveStatus");
+            context.Teams.AddRange(
+                new Team { Name = "Active Team", IsActive = true },
+                new Team { Name = "Inactive Team", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IsActive = true,
+            });
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Active Team");
+            resultList[0].IsActive.Should().BeTrue();
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldFilterTeamsByInactiveStatus()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_FilterByInactiveStatus");
+            context.Teams.AddRange(
+                new Team { Name = "Active Team", IsActive = true },
+                new Team { Name = "Inactive Team", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IsActive = false,
+            });
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Inactive Team");
+            resultList[0].IsActive.Should().BeFalse();
+            totalCount.Should().Be(1);
         }
 
         [Fact]

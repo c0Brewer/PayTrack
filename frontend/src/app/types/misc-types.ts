@@ -1,4 +1,5 @@
 import type {
+    BudgetDto,
   CostCentreDto,
   TeamDto,
   UpsertBudgetEntryDto,
@@ -7,6 +8,12 @@ import type {
 
 export interface CostCentreSaveEvent {
   costCentre: CostCentreDto;
+  budgetsToUpsert: UpsertBudgetEntryDto[];
+  budgetIdsToDelete: number[];
+}
+
+export interface BudgetSaveEvent {
+  budget: BudgetDto;
   budgetsToUpsert: UpsertBudgetEntryDto[];
   budgetIdsToDelete: number[];
 }

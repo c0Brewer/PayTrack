@@ -1,6 +1,15 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 
 import { BudgetDto, CostCentreDto } from '../../../types/exporter';
 
@@ -10,11 +19,39 @@ import { BudgetDto, CostCentreDto } from '../../../types/exporter';
   templateUrl: './cost-centre-list-component.html',
   styleUrl: './cost-centre-list-component.scss',
 })
-export class CostCentreListComponent {
+export class CostCentreListComponent implements AfterViewChecked, OnDestroy {
   @Input() costCentres: CostCentreDto[] = [];
 
   @Output() openEdit = new EventEmitter<CostCentreDto>();
   @Output() openDelete = new EventEmitter<CostCentreDto>();
+
+  private tooltips = new Map<Element, Tooltip>();
+
+  constructor(private elementRef: ElementRef<HTMLElement>) {}
+
+  ngAfterViewChecked(): void {
+    const tooltipElements = new Set(
+      this.elementRef.nativeElement.querySelectorAll('[data-bs-toggle="tooltip"]'),
+    );
+
+    tooltipElements.forEach((element) => {
+      if (!this.tooltips.has(element)) {
+        this.tooltips.set(element, new Tooltip(element));
+      }
+    });
+
+    this.tooltips.forEach((tooltip, element) => {
+      if (!tooltipElements.has(element)) {
+        tooltip.dispose();
+        this.tooltips.delete(element);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.tooltips.forEach((tooltip) => tooltip.dispose());
+    this.tooltips.clear();
+  }
 
   getActiveBudget(budgets: BudgetDto[] | null | undefined): BudgetDto | undefined {
     if (!budgets) return undefined;

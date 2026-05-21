@@ -82,6 +82,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         // -------------------------------------------------------
         modelBuilder.Entity<Transaction>()
             .HasDiscriminator<string>("TransactionType")
+            .HasValue<Transaction>("Transaction")
             .HasValue<PaymentManual>("PaymentManual")
             .HasValue<PaymentRequestByUser>("PaymentRequestByUser")
             .HasValue<PaymentRequestByTeam>("PaymentRequestByTeam");

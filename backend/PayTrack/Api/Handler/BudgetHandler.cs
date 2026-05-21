@@ -43,7 +43,7 @@ namespace PayTrack.Api.Handler
             [FromRoute] int id,
             IBudgetService service)
         {
-            var budget = await service.GetBudgetByIdAsync(id) ?? throw new NotFoundException("Budget could not be found.");
+            var budget = await service.GetByIdAsync(id) ?? throw new NotFoundException("Budget could not be found.");
             return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }
 

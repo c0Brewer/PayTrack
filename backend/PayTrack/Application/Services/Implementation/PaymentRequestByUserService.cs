@@ -13,6 +13,9 @@ namespace PayTrack.Application.Services.Implementation
     /// <inheritdoc/>
     public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
     {
+        private const int DuplicateMatchThreshold = 1;
+        private const int MaxDuplicateResults = 10;
+
         /// <summary>
         /// Repository for PaymentRequestByUsers.
         /// </summary>
@@ -102,6 +105,23 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
+            int userId,
+            int teamId,
+            decimal amount)
+        {
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount);
+
+            return duplicateCandidates
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount))
+                .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
+                .OrderByDescending(duplicateMatch => duplicateMatch.Score)
+                .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
+                .Take(MaxDuplicateResults)
+                .ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(
             int id,
             int? teamId = null,
@@ -113,7 +133,7 @@ namespace PayTrack.Application.Services.Implementation
             PayoutType? payoutType = null,
             int? bankAccountId = null)
         {
-            var transaction = await this.repo.GetByIdAsync(id, new())
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByUserQueryById())
                 ?? throw new NotFoundException("Transaction not found");
 
             if (teamId.HasValue)
@@ -156,12 +176,12 @@ namespace PayTrack.Application.Services.Implementation
 
             if (bankAccountId.HasValue)
             {
-                // TODO: Retrieve bank and set correct id like with team above. This should be implemented as soon as the bankAccountService is available!
+                var bankAccounts = await this.bankAccountService.GetBankAccountsAsync(transaction.UserId) ?? throw new NotFoundException("Bank Accounts could not be found");
 
-                /*
-                // var bankAccount = await this.bankAccountService.GetByIdAsync(bankAccountId.Value)
-                //     ?? throw new NotFoundException("Bank account not found");
-                */
+                if (!bankAccounts.Any(b => b.Id == bankAccountId.Value))
+                {
+                    throw new InvalidStateException("Could not find specified bank account");
+                }
 
                 transaction.BankAccountId = bankAccountId;
             }
@@ -170,16 +190,89 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<byte[]> GetReceiptForPaymentRequestByUserByIdAsync(int id)
+        public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
 
-            if (paymentRequest?.ReceiptUrl == null)
+            if (string.IsNullOrEmpty(paymentRequest?.ReceiptUrl))
             {
                 throw new InvalidStateException("Receipt URL is null although it should not be.");
             }
 
-            return await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var content = await this.fileRepo.GetByPath(paymentRequest.ReceiptUrl);
+            var contentType = GetContentTypeFromPath(paymentRequest.ReceiptUrl);
+            return (content, contentType);
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateQuery(GetPaymentRequestByUserQuery query, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => query.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                  && query.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
+        /// <inheritdoc/>
+        public bool ValidateAccessToInvoice(PaymentRequestByUser invoice, User currentUser)
+        {
+            return currentUser.Role switch
+            {
+                Role.RegularUser => invoice.UserId == currentUser.Id,
+
+                Role.TeamLead => currentUser.TeamId.HasValue
+                                && invoice.TeamId == currentUser.TeamId,
+
+                Role.Admin => true,
+
+                _ => false
+            };
+        }
+
+        private static string GetContentTypeFromPath(string filePath)
+        {
+            return Path.GetExtension(filePath).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".pdf" => "application/pdf",
+                _ => "application/octet-stream",
+            };
+        }
+
+        private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
+            PaymentRequestByUser paymentRequestByUser,
+            int userId,
+            int teamId,
+            decimal amount)
+        {
+            bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
+            bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
+
+            int score = 0;
+
+            if (isAmountAndUserMatch)
+            {
+                score++;
+            }
+
+            if (isAmountAndTeamMatch)
+            {
+                score++;
+            }
+
+            return new DuplicatePaymentRequestByUserMatch(
+                paymentRequestByUser,
+                score,
+                isAmountAndUserMatch,
+                isAmountAndTeamMatch);
         }
     }
 }

@@ -56,7 +56,7 @@ namespace PayTrack.Tests.UnitTests.Services
             this.repoMock.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(budget);
 
             // Act
-            var result = await this.service.GetBudgetByIdAsync(5);
+            var result = await this.service.GetByIdAsync(5);
 
             // Assert
             result.Should().BeSameAs(budget);

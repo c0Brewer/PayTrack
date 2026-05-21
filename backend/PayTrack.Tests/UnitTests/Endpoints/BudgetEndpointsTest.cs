@@ -83,7 +83,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             this.factory.ServiceMock
-                .Setup(s => s.GetBudgetByIdAsync(1))
+                .Setup(s => s.GetByIdAsync(1))
                 .ReturnsAsync(CreateBudget(1, "Aero budget"));
 
             var client = this.factory.CreateClient();
@@ -103,7 +103,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             this.factory.ServiceMock
-                .Setup(s => s.GetBudgetByIdAsync(999))
+                .Setup(s => s.GetByIdAsync(999))
                 .ReturnsAsync((Budget?)null);
 
             var client = this.factory.CreateClient();

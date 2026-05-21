@@ -24,7 +24,7 @@ namespace PayTrack.Application.Services.Model
         /// </summary>
         /// <param name="id">Id of Budget to find.</param>
         /// <returns>Budget with given ID.</returns>
-        Task<Budget?> GetBudgetByIdAsync(int id);
+        Task<Budget?> GetByIdAsync(int id);
 
         /// <summary>
         /// Creates a Budget using the given input.

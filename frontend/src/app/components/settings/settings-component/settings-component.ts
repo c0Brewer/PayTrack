@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
+import { UserDto } from '../../../types/exporter';
 
 import { BankAccountsSettingsPageComponent } from './settings-pages/bank-accounts-settings-page/bank-accounts-settings-page';
 import { NotificationsSettingsPageComponent } from './settings-pages/notifications-settings-page/notifications-settings-page';
@@ -78,5 +79,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   protected isActiveTab(tabId: string): boolean {
     return this.activeTabId() === tabId;
+  }
+
+  protected hasNoBankAccounts(user: UserDto | null): boolean {
+    return !!user && (user.bankAccounts?.length ?? 0) === 0;
   }
 }

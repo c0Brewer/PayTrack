@@ -96,6 +96,11 @@ namespace PayTrack.Data.Entities
         public DateTime? PaidAt { get; set; }
 
         /// <summary>
+        /// Requested payment due date set by the finance team.
+        /// </summary>
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
         /// Reference for Status History.
         /// </summary>
         public ICollection<TransactionStatusHistory> StatusHistory { get; set; } = [];

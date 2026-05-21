@@ -70,7 +70,6 @@ public static class DbSeeder
             aerodynamicsTeam = new Team
             {
                 Name = "Aerodynamics",
-                Description = "Responsible for aero package, CFD, and composite surfaces.",
                 DisplayColor = "#14B8A6",
             };
 
@@ -168,6 +167,34 @@ public static class DbSeeder
             db.Teams.Add(driverlessTeam);
         }
 
+        var legacyCombustionTeam = await db.Teams.FirstOrDefaultAsync(t => t.Name == "Legacy Combustion");
+        if (legacyCombustionTeam is null)
+        {
+            legacyCombustionTeam = new Team
+            {
+                Name = "Legacy Combustion",
+                Description = "Inactive team kept for old combustion-era accounting records.",
+                DisplayColor = "#92400E",
+                IsActive = false,
+            };
+
+            db.Teams.Add(legacyCombustionTeam);
+        }
+
+        var archivedKartingTeam = await db.Teams.FirstOrDefaultAsync(t => t.Name == "Archived Karting");
+        if (archivedKartingTeam is null)
+        {
+            archivedKartingTeam = new Team
+            {
+                Name = "Archived Karting",
+                Description = "Inactive team without current members or budgets.",
+                DisplayColor = "#475569",
+                IsActive = false,
+            };
+
+            db.Teams.Add(archivedKartingTeam);
+        }
+
         var manufacturingCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Manufacturing");
         if (manufacturingCostCentre is null)
         {
@@ -196,264 +223,331 @@ public static class DbSeeder
             db.CostCentres.Add(electronicsCostCentre);
         }
 
-        var adminUser = await db.User.FirstOrDefaultAsync(u => u.Email == "admin@paytrack.local");
-        if (adminUser is null)
+        var compositesCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Composites");
+        if (compositesCostCentre is null)
         {
-            adminUser = new User
+            compositesCostCentre = new CostCentre
             {
-                Name = "Admin User",
-                Email = "admin@paytrack.local",
-                Role = Role.Admin,
-                Team = chassisTeam,
+                Name = "Composites",
+                DisplayColor = "#0EA5E9",
                 IsActive = true,
             };
 
-            db.User.Add(adminUser);
+            db.CostCentres.Add(compositesCostCentre);
         }
 
-        var teamLeadUser = await db.User.FirstOrDefaultAsync(u => u.Email == "lead@paytrack.local");
-        if (teamLeadUser is null)
+        var legacyToolingCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Legacy Tooling");
+        if (legacyToolingCostCentre is null)
         {
-            teamLeadUser = new User
+            legacyToolingCostCentre = new CostCentre
             {
-                Name = "Team Lead",
-                Email = "lead@paytrack.local",
-                Role = Role.TeamLead,
-                Team = electronicsTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(teamLeadUser);
-        }
-
-        var chassisMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "chassis.member@paytrack.local");
-        if (chassisMemberUser is null)
-        {
-            chassisMemberUser = new User
-            {
-                Name = "Chassis Member",
-                Email = "chassis.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = chassisTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(chassisMemberUser);
-        }
-
-        var electronicsMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "electronics.member@paytrack.local");
-        if (electronicsMemberUser is null)
-        {
-            electronicsMemberUser = new User
-            {
-                Name = "Electronics Member",
-                Email = "electronics.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = electronicsTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(electronicsMemberUser);
-        }
-
-        var inactiveUser = await db.User.FirstOrDefaultAsync(u => u.Email == "inactive@paytrack.local");
-        if (inactiveUser is null)
-        {
-            inactiveUser = new User
-            {
-                Name = "Inactive User",
-                Email = "inactive@paytrack.local",
-                Role = Role.RegularUser,
-                Team = chassisTeam,
+                Name = "Legacy Tooling",
+                Description = "Deprecated workshop tools and retired production fixtures.",
+                DisplayColor = "#78716C",
                 IsActive = false,
             };
 
-            db.User.Add(inactiveUser);
+            db.CostCentres.Add(legacyToolingCostCentre);
         }
 
-        var unassignedUser = await db.User.FirstOrDefaultAsync(u => u.Email == "unassigned@paytrack.local");
-        if (unassignedUser is null)
+        var oldAccumulatorCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Old Accumulator Program");
+        if (oldAccumulatorCostCentre is null)
         {
-            unassignedUser = new User
+            oldAccumulatorCostCentre = new CostCentre
             {
-                Name = "Unassigned User",
-                Email = "unassigned@paytrack.local",
-                Role = Role.RegularUser,
-                IsActive = true,
+                Name = "Old Accumulator Program",
+                Description = "Closed high-voltage accumulator development budget.",
+                DisplayColor = "#B91C1C",
+                IsActive = false,
             };
 
-            db.User.Add(unassignedUser);
+            db.CostCentres.Add(oldAccumulatorCostCentre);
         }
 
-        var chassisLeadUser = await db.User.FirstOrDefaultAsync(u => u.Email == "chassis.lead@paytrack.local");
-        if (chassisLeadUser is null)
+        var archivedSponsoringCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Archived Sponsoring");
+        if (archivedSponsoringCostCentre is null)
         {
-            chassisLeadUser = new User
+            archivedSponsoringCostCentre = new CostCentre
             {
-                Name = "Chassis Lead",
-                Email = "chassis.lead@paytrack.local",
-                Role = Role.TeamLead,
-                Team = chassisTeam,
-                IsActive = true,
+                Name = "Archived Sponsoring",
+                DisplayColor = "#A855F7",
+                IsActive = false,
             };
 
-            db.User.Add(chassisLeadUser);
+            db.CostCentres.Add(archivedSponsoringCostCentre);
         }
 
-        var suspensionMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "suspension.member@paytrack.local");
-        if (suspensionMemberUser is null)
-        {
-            suspensionMemberUser = new User
-            {
-                Name = "Suspension Member",
-                Email = "suspension.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = suspensionTeam,
-                IsActive = true,
-            };
+        await AddBudgetIfMissingAsync(db, chassisTeam, manufacturingCostCentre, 15000m);
+        await AddBudgetIfMissingAsync(db, electronicsTeam, electronicsCostCentre, 8000m);
+        await AddBudgetIfMissingAsync(db, suspensionTeam, compositesCostCentre, 9500m);
+        await AddBudgetIfMissingAsync(db, aerodynamicsTeam, compositesCostCentre, 18000m);
+        await AddBudgetIfMissingAsync(db, powertrainTeam, manufacturingCostCentre, 22000m);
+        await AddBudgetIfMissingAsync(db, batteryTeam, oldAccumulatorCostCentre, 14000m);
+        await AddBudgetIfMissingAsync(db, softwareTeam, electronicsCostCentre, 7000m);
+        await AddBudgetIfMissingAsync(db, financeTeam, legacyToolingCostCentre, 3000m);
+        await AddBudgetIfMissingAsync(db, operationsTeam, manufacturingCostCentre, 6500m);
+        await AddBudgetIfMissingAsync(db, marketingTeam, electronicsCostCentre, 4500m);
+        await AddBudgetIfMissingAsync(db, legacyCombustionTeam, legacyToolingCostCentre, 1200m);
 
-            db.User.Add(suspensionMemberUser);
-        }
+        await AddPresenterInvoicesIfUserExistsAsync(
+            db,
+            chassisTeam,
+            electronicsTeam,
+            suspensionTeam,
+            operationsTeam,
+            manufacturingCostCentre,
+            electronicsCostCentre,
+            compositesCostCentre);
 
-        var aeroMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "aero.member@paytrack.local");
-        if (aeroMemberUser is null)
-        {
-            aeroMemberUser = new User
-            {
-                Name = "Aero Member",
-                Email = "aero.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = aerodynamicsTeam,
-                IsActive = true,
-            };
+        await db.SaveChangesAsync();
+    }
 
-            db.User.Add(aeroMemberUser);
-        }
-
-        var embeddedMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "embedded.member@paytrack.local");
-        if (embeddedMemberUser is null)
-        {
-            embeddedMemberUser = new User
-            {
-                Name = "Embedded Member",
-                Email = "embedded.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = softwareTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(embeddedMemberUser);
-        }
-
-        var batteryMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "battery.member@paytrack.local");
-        if (batteryMemberUser is null)
-        {
-            batteryMemberUser = new User
-            {
-                Name = "Battery Member",
-                Email = "battery.member@paytrack.local",
-                Role = Role.RegularUser,
-                Team = batteryTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(batteryMemberUser);
-        }
-
-        var financeAdminUser = await db.User.FirstOrDefaultAsync(u => u.Email == "finance.admin@paytrack.local");
-        if (financeAdminUser is null)
-        {
-            financeAdminUser = new User
-            {
-                Name = "Finance Admin",
-                Email = "finance.admin@paytrack.local",
-                Role = Role.Admin,
-                Team = financeTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(financeAdminUser);
-        }
-
+    private static async Task AddBudgetIfMissingAsync(
+        AppDbContext db,
+        Team team,
+        CostCentre costCentre,
+        decimal targetAmount)
+    {
         var budgetStart = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var budgetEnd = new DateTime(DateTime.UtcNow.Year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
-        if (!await db.Budgets.AnyAsync(b =>
-                b.Team == chassisTeam &&
-                b.CostCentre == manufacturingCostCentre &&
+        if (await db.Budgets.AnyAsync(b =>
+                b.Team == team &&
+                b.CostCentre == costCentre &&
                 b.PeriodStart == budgetStart &&
                 b.PeriodEnd == budgetEnd))
         {
-            db.Budgets.Add(new Budget
-            {
-                Team = chassisTeam,
-                CostCentre = manufacturingCostCentre,
-                TargetAmount = 15000m,
-                PeriodStart = budgetStart,
-                PeriodEnd = budgetEnd,
-            });
+            return;
         }
 
-        if (!await db.Budgets.AnyAsync(b =>
-                b.Team == electronicsTeam &&
-                b.CostCentre == electronicsCostCentre &&
-                b.PeriodStart == budgetStart &&
-                b.PeriodEnd == budgetEnd))
+        db.Budgets.Add(new Budget
         {
-            db.Budgets.Add(new Budget
-            {
-                Team = electronicsTeam,
-                CostCentre = electronicsCostCentre,
-                TargetAmount = 8000m,
-                PeriodStart = budgetStart,
-                PeriodEnd = budgetEnd,
-            });
-        }
+            Team = team,
+            CostCentre = costCentre,
+            TargetAmount = targetAmount,
+            PeriodStart = budgetStart,
+            PeriodEnd = budgetEnd,
+        });
+    }
 
-        if (!await db.BankAccounts.AnyAsync(b => b.User == adminUser && b.Iban == "AT611904300234573201"))
+    private static async Task AddPresenterInvoicesIfUserExistsAsync(
+        AppDbContext db,
+        Team chassisTeam,
+        Team electronicsTeam,
+        Team suspensionTeam,
+        Team operationsTeam,
+        CostCentre manufacturingCostCentre,
+        CostCentre electronicsCostCentre,
+        CostCentre compositesCostCentre)
+    {
+        var presenterUser = await db.User
+            .OrderBy(u => u.Id)
+            .FirstOrDefaultAsync(u => u.Email.Contains("gmail"));
+
+        if (presenterUser is null)
         {
-            db.BankAccounts.Add(new BankAccount
-            {
-                User = adminUser,
-                Iban = "AT611904300234573201",
-                Bic = "BKAUATWW",
-                AccountHolder = "Admin User",
-            });
+            return;
         }
 
-        if (!await db.BankAccounts.AnyAsync(b => b.User == teamLeadUser && b.Iban == "AT483200000012345864"))
+        var presenterBankAccount = await GetOrCreatePresenterBankAccountAsync(db, presenterUser);
+
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SELF-PDF-001",
+            presenterUser,
+            presenterBankAccount,
+            chassisTeam,
+            248.80m,
+            "Workshop fasteners and carbon repair consumables",
+            "Self-paid reimbursement for workshop material.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.User,
+            TransactionStatus.Approved,
+            2);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SUPPLIER-PNG-001",
+            presenterUser,
+            null,
+            electronicsTeam,
+            736.42m,
+            "Sensor connectors from electronics supplier",
+            "External supplier should be paid directly.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.External,
+            TransactionStatus.Paid,
+            4);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SELF-JPG-001",
+            presenterUser,
+            presenterBankAccount,
+            suspensionTeam,
+            119.95m,
+            "Hotel booking for supplier visit",
+            "Self-paid travel expense for project coordination.",
+            "uploads/presentation-invoices/invoice-hotel-booking-2026.jpg",
+            PayoutType.User,
+            TransactionStatus.ChangesRequested,
+            6);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SUPPLIER-PDF-002",
+            presenterUser,
+            null,
+            operationsTeam,
+            1580.00m,
+            "Workshop machine service invoice",
+            "External workshop invoice submitted for finance processing.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.External,
+            TransactionStatus.Declined,
+            8);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SUBMITTED-PNG-001",
+            presenterUser,
+            null,
+            electronicsTeam,
+            87.30m,
+            "Prototype cable labels",
+            "Freshly submitted and waiting for finance review.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.External,
+            TransactionStatus.Submitted,
+            1);
+    }
+
+    private static async Task<BankAccount> GetOrCreatePresenterBankAccountAsync(AppDbContext db, User presenterUser)
+    {
+        const string presenterIban = "AT611904300234573299";
+        var bankAccount = await db.BankAccounts.FirstOrDefaultAsync(b =>
+            b.User == presenterUser &&
+            b.Iban == presenterIban);
+
+        if (bankAccount is not null)
         {
-            db.BankAccounts.Add(new BankAccount
-            {
-                User = teamLeadUser,
-                Iban = "AT483200000012345864",
-                Bic = "RLNWATWW",
-                AccountHolder = "Team Lead",
-            });
+            return bankAccount;
         }
 
-        if (!await db.BankAccounts.AnyAsync(b => b.User == chassisMemberUser && b.Iban == "AT026000000012345678"))
+        bankAccount = new BankAccount
         {
-            db.BankAccounts.Add(new BankAccount
-            {
-                User = chassisMemberUser,
-                Iban = "AT026000000012345678",
-                Bic = "OPSKATWW",
-                AccountHolder = "Chassis Member",
-            });
-        }
+            User = presenterUser,
+            Iban = presenterIban,
+            Bic = "BKAUATWW",
+            AccountHolder = presenterUser.Name,
+        };
 
-        if (!await db.BankAccounts.AnyAsync(b => b.User == electronicsMemberUser && b.Iban == "AT611904300234573202"))
+        db.BankAccounts.Add(bankAccount);
+        return bankAccount;
+    }
+
+    private static async Task AddPresenterInvoiceIfMissingAsync(
+        AppDbContext db,
+        string invoiceNumber,
+        User presenterUser,
+        BankAccount? bankAccount,
+        Team team,
+        decimal amount,
+        string purposeOfPayment,
+        string comment,
+        string receiptUrl,
+        PayoutType payoutType,
+        TransactionStatus status,
+        int createdDaysAgo)
+    {
+        var paidAt = DateTime.UtcNow.AddDays(-createdDaysAgo).ToUniversalTime();
+        var existingPaymentRequest = await db.PaymentRequestsByUser.FirstOrDefaultAsync(p => p.InvoiceNumber == invoiceNumber);
+
+        if (existingPaymentRequest is not null)
         {
-            db.BankAccounts.Add(new BankAccount
-            {
-                User = electronicsMemberUser,
-                Iban = "AT611904300234573202",
-                Bic = "BKAUATWW",
-                AccountHolder = "Electronics Member",
-            });
+            existingPaymentRequest.User = presenterUser;
+            existingPaymentRequest.Team = team;
+            existingPaymentRequest.Budget = null!;
+            existingPaymentRequest.BudgetId = null;
+            existingPaymentRequest.Amount = amount;
+            existingPaymentRequest.PurposeOfPayment = purposeOfPayment;
+            existingPaymentRequest.PaymentReference = string.Empty;
+            existingPaymentRequest.PaymentDirection = PaymentDirection.Out;
+            existingPaymentRequest.Status = status;
+            existingPaymentRequest.PaidAt = paidAt;
+            existingPaymentRequest.InvoiceNumber = invoiceNumber;
+            existingPaymentRequest.Comment = comment;
+            existingPaymentRequest.ReceiptUrl = receiptUrl;
+            existingPaymentRequest.PayoutType = payoutType;
+            existingPaymentRequest.BankAccount = payoutType == PayoutType.User ? bankAccount : null;
+
+            var existingStatusHistory = await db.TransactionStatusHistories
+                .Where(h => h.TransactionId == existingPaymentRequest.Id)
+                .ToListAsync();
+            db.TransactionStatusHistories.RemoveRange(existingStatusHistory);
+            AddPresenterStatusHistoryIfNeeded(db, presenterUser, existingPaymentRequest, status);
+            return;
         }
 
-        await db.SaveChangesAsync();
+        var paymentRequest = new PaymentRequestByUser
+        {
+            User = presenterUser,
+            Team = team,
+            Amount = amount,
+            PurposeOfPayment = purposeOfPayment,
+            PaymentReference = string.Empty,
+            PaymentDirection = PaymentDirection.Out,
+            Status = status,
+            PaidAt = paidAt,
+            InvoiceNumber = invoiceNumber,
+            Comment = comment,
+            ReceiptUrl = receiptUrl,
+            PayoutType = payoutType,
+            BankAccount = payoutType == PayoutType.User ? bankAccount : null,
+        };
+
+        db.PaymentRequestsByUser.Add(paymentRequest);
+        AddPresenterStatusHistoryIfNeeded(db, presenterUser, paymentRequest, status);
+    }
+
+    private static void AddPresenterStatusHistoryIfNeeded(
+        AppDbContext db,
+        User presenterUser,
+        PaymentRequestByUser paymentRequest,
+        TransactionStatus status)
+    {
+        if (status == TransactionStatus.Submitted)
+        {
+            return;
+        }
+
+        if (status == TransactionStatus.Paid)
+        {
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = paymentRequest,
+                ChangedBy = presenterUser,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Approved,
+                Comment = "Approved during presentation setup.",
+                ChangedAt = paymentRequest.PaidAt?.AddDays(1) ?? DateTime.UtcNow,
+            });
+            db.TransactionStatusHistories.Add(new TransactionStatusHistory
+            {
+                Transaction = paymentRequest,
+                ChangedBy = presenterUser,
+                FromStatus = TransactionStatus.Approved,
+                ToStatus = TransactionStatus.Paid,
+                Comment = "Marked as paid during presentation setup.",
+                ChangedAt = paymentRequest.PaidAt?.AddDays(2) ?? DateTime.UtcNow,
+            });
+            return;
+        }
+
+        db.TransactionStatusHistories.Add(new TransactionStatusHistory
+        {
+            Transaction = paymentRequest,
+            ChangedBy = presenterUser,
+            FromStatus = TransactionStatus.Submitted,
+            ToStatus = status,
+            Comment = $"Moved to {status} during presentation setup.",
+            ChangedAt = paymentRequest.PaidAt?.AddDays(1) ?? DateTime.UtcNow,
+        });
     }
 }
