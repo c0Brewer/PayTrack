@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.CostCentre;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.Transaction;
@@ -30,7 +31,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
         [property: Required]
         TransactionStatus Status,
 
-        CostCentreDto? CostCentre,
+        BudgetDto? Budget,
 
         TeamDto? Team,
 

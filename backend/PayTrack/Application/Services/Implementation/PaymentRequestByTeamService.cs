@@ -11,7 +11,7 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService, IUserService _userService, ICostCentreService _costCentreService) : IPaymentRequestByTeamService
+    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService, IUserService _userService, IBudgetService _budgetService) : IPaymentRequestByTeamService
     {
         /// <summary>
         /// Repository for PaymentRequestByTeams.
@@ -19,7 +19,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITransactionRepository repo = repo;
         private readonly ITeamService teamService = _teamService;
         private readonly IUserService userService = _userService;
-        private readonly ICostCentreService costCentreService = _costCentreService;
+        private readonly IBudgetService budgetService = _budgetService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByTeam> paymentRequestByTeam, int totalCount)> GetAllAsync(
@@ -42,14 +42,14 @@ namespace PayTrack.Application.Services.Implementation
             decimal amount,
             string purposeOfPayment,
             DateTime dueDate,
-            int? costCentreId = null)
+            int? budgetId = null)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
             var userToAssignTo = await this.userService.GetUserByIdAsync(userToAssignToId) ?? throw new NotFoundException("Assigned user could not be found");
             var creatingUser = await this.userService.GetUserByIdAsync(creatingUserId) ?? throw new NotFoundException("Creating user could not be found");
-            if (costCentreId.HasValue)
+            if (budgetId.HasValue)
             {
-                _ = await this.costCentreService.GetByIdAsync(costCentreId.Value) ?? throw new NotFoundException("Cost centre could not be found");
+                _ = await this.budgetService.GetByIdAsync(budgetId.Value) ?? throw new NotFoundException("Budget could not be found");
             }
 
             if (amount <= 0)
@@ -70,7 +70,7 @@ namespace PayTrack.Application.Services.Implementation
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
                 Status = TransactionStatus.Submitted,
-                CostCentreId = costCentreId,
+                BudgetId = budgetId,
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.In, // Payment direction is in for payment requests to user
                 DueDate = dueDate,

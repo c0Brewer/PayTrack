@@ -2,7 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.CostCentre;
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.Team;
 using PayTrack.Application.Dto.Transaction;
@@ -35,10 +35,10 @@ namespace PayTrack.Api.Mapper
                 createdByUser = UserMapper.ToDto(paymentRequestByTeam.RequestedBy);
             }
 
-            CostCentreDto? costCentre = null;
-            if (paymentRequestByTeam.CostCentre != null)
+            BudgetDto? budget = null;
+            if (paymentRequestByTeam.Budget != null)
             {
-                costCentre = CostCentreMapper.ToDto(paymentRequestByTeam.CostCentre);
+                budget = BudgetMapper.ToDto(paymentRequestByTeam.Budget);
             }
 
             TeamDto? team = null;
@@ -60,7 +60,7 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByTeam.PurposeOfPayment,
                 paymentRequestByTeam.PaymentReference,
                 paymentRequestByTeam.Status,
-                costCentre,
+                budget,
                 team,
                 paymentRequestByTeam.PaymentDirection,
                 statusHistory,
