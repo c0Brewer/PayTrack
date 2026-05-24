@@ -25,6 +25,17 @@ select {
   }
 }
 
+.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.12);
+}
+
+.field-error {
+  margin-top: v.$size-xxs;
+  color: #dc2626;
+  font-size: v.$font-s;
+}
+
 .budgets-section {
   margin-top: v.$size-m;
   border-top: 1px solid v.$border-color;
@@ -88,6 +99,10 @@ select {
   label {
     margin-bottom: 0;
   }
+}
+
+.budget-period-field {
+  align-self: flex-start;
 }
 
 .btn-add-budget {

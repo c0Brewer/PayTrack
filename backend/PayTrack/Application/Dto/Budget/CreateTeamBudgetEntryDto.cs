@@ -30,5 +30,5 @@ namespace PayTrack.Application.Dto.Budget
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd);
+        DateTime PeriodEnd) : IBudgetEntryDto;
 }
