@@ -23,10 +23,18 @@ interface WorkingBudget {
   markedForDeletion: boolean;
 }
 
-type BudgetField = 'costCentreId' | 'targetAmount' | 'periodStart' | 'periodEnd';
+type BudgetField =
+  | 'name'
+  | 'costCentreId'
+  | 'targetAmount'
+  | 'seasonId'
+  | 'periodStart'
+  | 'periodEnd';
 const budgetFields: readonly BudgetField[] = [
+  'name',
   'costCentreId',
   'targetAmount',
+  'seasonId',
   'periodStart',
   'periodEnd',
 ];
@@ -200,16 +208,6 @@ export class TeamEditModalComponent implements OnChanges {
     if (this.isBudgetDraftInvalid()) {
       return;
     }
-    if (
-      !this.newBudgetDraft.costCentreId ||
-      !this.newBudgetDraft.name ||
-      !this.newBudgetDraft.seasonId ||
-      !this.isCostCentreActive(this.newBudgetDraft.costCentreId) ||
-      !this.newBudgetDraft.periodStart ||
-      !this.newBudgetDraft.periodEnd
-    ) {
-      return;
-    }
 
     this.newBudgets.push({ ...this.newBudgetDraft });
     this.newBudgetDraft = this.emptyDraft();
@@ -246,6 +244,8 @@ export class TeamEditModalComponent implements OnChanges {
 
   getBudgetFieldError(field: BudgetField): string {
     switch (field) {
+      case 'name':
+        return this.newBudgetDraft.name?.trim() ? '' : 'Name is required.';
       case 'costCentreId':
         if (!this.newBudgetDraft.costCentreId) {
           return 'Cost centre is required.';
@@ -270,6 +270,8 @@ export class TeamEditModalComponent implements OnChanges {
         }
 
         return '';
+      case 'seasonId':
+        return this.newBudgetDraft.seasonId ? '' : 'Season is required.';
       case 'periodStart':
         return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
       case 'periodEnd':

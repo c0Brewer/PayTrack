@@ -334,15 +334,19 @@ describe('TeamEditModalComponent', () => {
     fixture.detectChanges(false);
 
     expect(component.newBudgets).toEqual([]);
+    expect(component.hasBudgetFieldError('name')).toBe(true);
     expect(component.hasBudgetFieldError('costCentreId')).toBe(true);
+    expect(component.hasBudgetFieldError('seasonId')).toBe(true);
     expect(component.hasBudgetFieldError('periodStart')).toBe(true);
     expect(component.hasBudgetFieldError('periodEnd')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Name is required.');
     expect(fixture.nativeElement.textContent).toContain('Cost centre is required.');
+    expect(fixture.nativeElement.textContent).toContain('Season is required.');
     expect(fixture.nativeElement.textContent).toContain('Period start is required.');
     expect(fixture.nativeElement.textContent).toContain('Period end is required.');
 
     const invalidControls = fixture.nativeElement.querySelectorAll('.input-error');
-    expect(invalidControls.length).toBeGreaterThanOrEqual(3);
+    expect(invalidControls.length).toBeGreaterThanOrEqual(5);
   });
 
   it('should mark a negative budget amount red with a message', () => {

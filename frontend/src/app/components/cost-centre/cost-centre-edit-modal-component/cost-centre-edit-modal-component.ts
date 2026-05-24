@@ -23,8 +23,15 @@ interface WorkingBudget {
   markedForDeletion: boolean;
 }
 
-type BudgetField = 'teamId' | 'targetAmount' | 'periodStart' | 'periodEnd';
-const budgetFields: readonly BudgetField[] = ['teamId', 'targetAmount', 'periodStart', 'periodEnd'];
+type BudgetField = 'name' | 'teamId' | 'targetAmount' | 'seasonId' | 'periodStart' | 'periodEnd';
+const budgetFields: readonly BudgetField[] = [
+  'name',
+  'teamId',
+  'targetAmount',
+  'seasonId',
+  'periodStart',
+  'periodEnd',
+];
 
 @Component({
   selector: 'app-cost-centre-edit-modal-component',
@@ -97,16 +104,6 @@ export class CostCentreEditModalComponent implements OnChanges {
     if (this.isBudgetDraftInvalid()) {
       return;
     }
-    if (
-      !this.newBudgetDraft.teamId ||
-      !this.newBudgetDraft.name ||
-      !this.newBudgetDraft.seasonId ||
-      !this.isTeamActive(this.newBudgetDraft.teamId) ||
-      !this.newBudgetDraft.periodStart ||
-      !this.newBudgetDraft.periodEnd
-    ) {
-      return;
-    }
 
     this.newBudgets.push({ ...this.newBudgetDraft });
     this.newBudgetDraft = this.emptyDraft();
@@ -165,8 +162,18 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   getBudgetFieldError(field: BudgetField): string {
     switch (field) {
+      case 'name':
+        return this.newBudgetDraft.name?.trim() ? '' : 'Name is required.';
       case 'teamId':
-        return this.newBudgetDraft.teamId ? '' : 'Team ID is required.';
+        if (!this.newBudgetDraft.teamId) {
+          return 'Team is required.';
+        }
+
+        if (!this.isTeamActive(this.newBudgetDraft.teamId)) {
+          return 'Select an active team.';
+        }
+
+        return '';
       case 'targetAmount':
         if (
           this.newBudgetDraft.targetAmount === null ||
@@ -181,6 +188,8 @@ export class CostCentreEditModalComponent implements OnChanges {
         }
 
         return '';
+      case 'seasonId':
+        return this.newBudgetDraft.seasonId ? '' : 'Season is required.';
       case 'periodStart':
         return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
       case 'periodEnd':

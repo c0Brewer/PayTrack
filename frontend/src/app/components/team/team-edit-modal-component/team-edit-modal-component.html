@@ -89,15 +89,20 @@
       </div>
 
       <div class="border rounded p-3 mb-3">
-        <div class="row g-3 align-items-end">
+        <div class="row g-3 align-items-start">
           <label class="col-12 col-sm-12 mb-0">
             Name
             <input
               type="text"
               class="form-control"
               [(ngModel)]="newBudgetDraft.name"
+              [class.input-error]="hasBudgetFieldError('name')"
+              (blur)="onBudgetFieldBlur('name')"
               placeholder="Name"
             />
+            @if (hasBudgetFieldError('name')) {
+              <span class="field-error">{{ getBudgetFieldError('name') }}</span>
+            }
           </label>
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
@@ -134,12 +139,19 @@
           </label>
           <label class="col-12 col-sm-12 mb-0">
             Season
-            <select [(ngModel)]="newBudgetDraft.seasonId">
+            <select
+              [(ngModel)]="newBudgetDraft.seasonId"
+              [class.input-error]="hasBudgetFieldError('seasonId')"
+              (blur)="onBudgetFieldBlur('seasonId')"
+            >
               <option [ngValue]="0" disabled>Select season</option>
               @for (season of seasons; track season.id) {
                 <option [ngValue]="season.id">{{ season.name }}</option>
               }
             </select>
+            @if (hasBudgetFieldError('seasonId')) {
+              <span class="field-error">{{ getBudgetFieldError('seasonId') }}</span>
+            }
           </label>
           <div class="w-100"></div>
           <label class="col-12 col-sm-6 mb-0 budget-period-field">
