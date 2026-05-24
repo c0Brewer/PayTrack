@@ -13,11 +13,11 @@ describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
 
-  const paymentServiceMock = {
-    getPaymentRequestsByUser: vi.fn(),
+  let paymentServiceMock: {
+    getPaymentRequestsByUser: ReturnType<typeof vi.fn>;
   };
-  const teamRequestServiceMock = {
-    getPaymentRequestsByTeam: vi.fn(),
+  let teamRequestServiceMock: {
+    getPaymentRequestsByTeam: ReturnType<typeof vi.fn>;
   };
   let authServiceMock: {
     loggedIn$: BehaviorSubject<boolean>;
@@ -31,8 +31,12 @@ describe('NavbarComponent', () => {
       currentUser$: new BehaviorSubject<UserDto | null>(null),
       logout: vi.fn(),
     };
-    paymentServiceMock.getPaymentRequestsByUser.mockReset().mockReturnValue(of({ totalCount: 0 }));
-    teamRequestServiceMock.getPaymentRequestsByTeam.mockReset().mockReturnValue(of({ totalCount: 0 }));
+    paymentServiceMock = {
+      getPaymentRequestsByUser: vi.fn(() => of({ totalCount: 0 })),
+    };
+    teamRequestServiceMock = {
+      getPaymentRequestsByTeam: vi.fn(() => of({ totalCount: 0 })),
+    };
   });
 
   beforeEach(async () => {
