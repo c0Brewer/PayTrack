@@ -26,6 +26,8 @@ namespace PayTrack.Application.Services.Implementation
             string? displayColor,
             IList<CreateTeamBudgetEntryDto>? budgetEntries)
         {
+            BudgetEntryValidation.EnsureValidEntries(budgetEntries);
+
             var team = new Team
             {
                 Name = name,
@@ -64,6 +66,8 @@ namespace PayTrack.Application.Services.Implementation
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete)
         {
+            BudgetEntryValidation.EnsureValidEntries(budgetsToUpsert);
+
             if (budgetsToUpsert is not null && budgetIdsToDelete is not null)
             {
                 var upsertIds = budgetsToUpsert.Where(e => e.Id > 0).Select(e => e.Id!.Value).ToHashSet();

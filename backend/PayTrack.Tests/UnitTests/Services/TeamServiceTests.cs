@@ -43,6 +43,32 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task CreateTeamAsync_WithNegativeBudgetAmount_ShouldThrowInvalidStateException()
+        {
+            // Arrange
+            var budgets = new List<CreateTeamBudgetEntryDto>
+            {
+                new(
+                    Name: "Budget",
+                    Description: null,
+                    CostCentreId: 12,
+                    SeasonId: 1,
+                    TargetAmount: -1m,
+                    PeriodStart: new DateTime(2026, 1, 1),
+                    PeriodEnd: new DateTime(2026, 1, 31)),
+            };
+
+            // Act
+            var act = async () => await service.CreateTeamAsync("My Team", null, null, budgets);
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Target amount must be non-negative.");
+            repoMock.Verify(r => r.AddAsync(It.IsAny<Team>(), It.IsAny<IList<CreateTeamBudgetEntryDto>?>()), Times.Never);
+        }
+
+        [Fact]
         public async Task GetTeamByIdAsync_ShouldForwardQueryToRepo()
         {
             // Arrange
@@ -177,6 +203,42 @@ namespace PayTrack.Tests.UnitTests.Services
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
                 .WithMessage("A budget ID cannot appear in both BudgetsToUpsert and BudgetIdsToDelete.");
+            repoMock.Verify(
+                r => r.UpdateAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<IList<UpsertTeamBudgetEntryDto>?>(),
+                    It.IsAny<IList<int>?>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateTeamAsync_WithBudgetPeriodEndBeforeStart_ShouldThrowInvalidStateException()
+        {
+            // Arrange
+            var budgetsToUpsert = new List<UpsertTeamBudgetEntryDto>
+            {
+                new(
+                    Id: null,
+                    Name: "Budget",
+                    Description: null,
+                    CostCentreId: 10,
+                    SeasonId: 1,
+                    TargetAmount: 100m,
+                    PeriodStart: new DateTime(2026, 2, 1),
+                    PeriodEnd: new DateTime(2026, 1, 31)),
+            };
+
+            // Act
+            var act = async () => await service.UpdateTeamAsync(8, null, null, null, null, budgetsToUpsert, null);
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Period end must not be before period start.");
             repoMock.Verify(
                 r => r.UpdateAsync(
                     It.IsAny<int>(),

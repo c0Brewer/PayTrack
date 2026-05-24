@@ -25,6 +25,17 @@ select {
   }
 }
 
+.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.12);
+}
+
+.field-error {
+  margin-top: v.$size-xxs;
+  color: #dc2626;
+  font-size: v.$font-s;
+}
+
 .budgets-section {
   margin-top: v.$size-m;
   border-top: 1px solid v.$border-color;
@@ -82,12 +93,16 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
   gap: v.$size-s;
-  align-items: flex-end;
+  align-items: flex-start;
   margin-top: v.$size-s;
 
   label {
     margin-bottom: 0;
   }
+}
+
+.budget-period-field {
+  align-self: flex-start;
 }
 
 .btn-add-budget {
