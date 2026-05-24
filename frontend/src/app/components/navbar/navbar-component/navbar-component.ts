@@ -47,7 +47,7 @@ export class NavbarComponent {
         ),
       )
       .subscribe({
-        next: (result) => this.submittedCount.set(result.totalCount ?? 0),
+        next: (result) => this.submittedCount.set(result?.totalCount ?? 0),
         error: () => {},
       });
 
@@ -64,7 +64,7 @@ export class NavbarComponent {
         ),
       )
       .subscribe({
-        next: (result) => this.teamRequestCount.set(result.totalCount ?? 0),
+        next: (result) => this.teamRequestCount.set(result?.totalCount ?? 0),
         error: () => {},
       });
   }
