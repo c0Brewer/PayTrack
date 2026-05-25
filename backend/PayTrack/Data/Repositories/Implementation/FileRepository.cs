@@ -127,6 +127,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             var request = driveService.Files.Create(fileMetadata, stream, GetContentType(fileName));
             request.Fields = "id";
+            request.SupportsAllDrives = true;
 
             var result = await request.UploadAsync();
 
@@ -228,6 +229,8 @@ namespace PayTrack.Data.Repositories.Implementation
             listRequest.Q = $"name = '{EscapeDriveQueryValue(folderName)}' and mimeType = 'application/vnd.google-apps.folder' and '{EscapeDriveQueryValue(parentFolderId)}' in parents and trashed = false";
             listRequest.Fields = "files(id, name)";
             listRequest.PageSize = 1;
+            listRequest.IncludeItemsFromAllDrives = true;
+            listRequest.SupportsAllDrives = true;
 
             var folders = await listRequest.ExecuteAsync();
             var existingFolder = folders.Files.FirstOrDefault();
@@ -246,6 +249,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             var createRequest = driveService.Files.Create(folderMetadata);
             createRequest.Fields = "id";
+            createRequest.SupportsAllDrives = true;
 
             var createdFolder = await createRequest.ExecuteAsync();
             return createdFolder.Id ?? throw new InternalErrorException("Creating Google Drive folder failed.");
