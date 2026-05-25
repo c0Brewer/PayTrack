@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -22,6 +22,7 @@ import {
   TypeaheadItem,
   TypeaheadSelectComponent,
 } from '../../../general/typeahead-select-component/typeahead-select-component';
+import { CsvBulkImportModalComponent } from '../csv-bulk-import-modal/csv-bulk-import-modal';
 
 function minDateValidator(min: Date): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -35,18 +36,22 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-payment-request-by-team-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent, TypeaheadSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, TypeaheadSelectComponent, CsvBulkImportModalComponent],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })
 export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
   @ViewChild(TypeaheadSelectComponent) private readonly typeaheadRef!: TypeaheadSelectComponent;
+  @ViewChild('csvFileInput') private readonly csvFileInputRef!: ElementRef<HTMLInputElement>;
 
   form!: FormGroup;
   teams: TeamDto[] = [];
   costCentres: CostCentreDto[] = [];
   allUsers: TypeaheadItem[] = [];
   isSubmitting = false;
+
+  isCsvModalOpen = false;
+  csvImportFile: File | null = null;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -123,6 +128,23 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load cost centres.'),
       });
+  }
+
+  onOpenCsvPicker(): void {
+    this.csvFileInputRef.nativeElement.click();
+  }
+
+  onCsvFileInputChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    this.csvImportFile = file;
+    this.isCsvModalOpen = true;
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  onCsvModalClose(): void {
+    this.isCsvModalOpen = false;
+    this.csvImportFile = null;
   }
 
   onUserSelected(item: TypeaheadItem): void {

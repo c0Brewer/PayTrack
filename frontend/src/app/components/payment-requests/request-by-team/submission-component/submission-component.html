@@ -152,4 +152,43 @@
     </div>
 
   </form>
+
+  <!-- ─── Bulk CSV Import ─── -->
+  <div class="row gx-4 gx-xl-5 mt-4">
+    <div class="col-12">
+      <app-box-component
+        title="Bulk CSV Import"
+        subtitle="Upload a CSV file to create multiple payment requests at once."
+        size="medium"
+      >
+        <div class="csv-import-area">
+          <input
+            #csvFileInput
+            type="file"
+            accept=".csv"
+            class="csv-file-input-hidden"
+            (change)="onCsvFileInputChange($event)"
+          />
+          <button type="button" class="btn csv-import-btn" (click)="onOpenCsvPicker()">
+            <span class="material-symbols-outlined">upload_file</span>
+            Select CSV File
+          </button>
+          <p class="csv-hint">
+            One row = one payment request. Rows with no name or &euro;&thinsp;0.00 are skipped automatically.
+          </p>
+        </div>
+      </app-box-component>
+    </div>
+  </div>
+
+  @if (isCsvModalOpen && csvImportFile) {
+    <app-csv-bulk-import-modal
+      [file]="csvImportFile"
+      [teams]="teams"
+      [costCentres]="costCentres"
+      [allUsers]="allUsers"
+      (closeEvent)="onCsvModalClose()"
+    />
+  }
+
 </div>

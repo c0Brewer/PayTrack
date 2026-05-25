@@ -1,0 +1,243 @@
+<app-modal-component title="Bulk CSV Import" icon="upload_file" (closeEvent)="onClose()">
+
+  <!-- ─── STEP 1: Configure ─── -->
+  @if (step === 'configure') {
+
+    <p class="step-indicator">Step 1 of 3 — Configure</p>
+
+    <p class="file-info">
+      <span class="material-symbols-outlined">description</span>
+      {{ file.name }} &mdash; {{ parsedRows.length }} valid row(s) found
+    </p>
+
+    @if (parsedRows.length === 0) {
+      <p class="no-rows-warning">
+        <span class="material-symbols-outlined">warning</span>
+        No valid rows were found in the CSV. Make sure the file has a "{{ 'Name' }}" and
+        "{{ 'Summe' }}" column with non-zero amounts.
+      </p>
+    }
+
+    <form [formGroup]="configForm" novalidate>
+      <div class="row gx-3 gy-3">
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-teamId">Team <span class="required">*</span></label><br />
+          <select id="csv-teamId" formControlName="teamId" [class.is-invalid]="isInvalid('teamId')">
+            <option [ngValue]="null" disabled>Select team…</option>
+            @for (team of teams; track team.id) {
+              <option [ngValue]="team.id">{{ team.name }}</option>
+            }
+          </select><br />
+          @if (getError('teamId')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('teamId') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-costCentreId">Cost Centre <span class="required">*</span></label><br />
+          <select id="csv-costCentreId" formControlName="costCentreId" [class.is-invalid]="isInvalid('costCentreId')">
+            <option [ngValue]="null" disabled>Select cost centre…</option>
+            @for (cc of costCentres; track cc.id) {
+              <option [ngValue]="cc.id">{{ cc.name }}</option>
+            }
+          </select><br />
+          @if (getError('costCentreId')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('costCentreId') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-12 input-wrapper">
+          <label for="csv-purposeOfPayment">Purpose of Payment <span class="required">*</span></label><br />
+          <input
+            id="csv-purposeOfPayment"
+            type="text"
+            formControlName="purposeOfPayment"
+            placeholder="e.g. Order list spring 2026"
+            [class.is-invalid]="isInvalid('purposeOfPayment')"
+          /><br />
+          @if (getError('purposeOfPayment')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('purposeOfPayment') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-dueDate">Due Date <span class="required">*</span></label><br />
+          <input
+            id="csv-dueDate"
+            type="date"
+            formControlName="dueDate"
+            [class.is-invalid]="isInvalid('dueDate')"
+          /><br />
+          @if (getError('dueDate')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('dueDate') }}
+            </span>
+          }
+        </div>
+
+      </div>
+    </form>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="parsedRows.length === 0"
+        (click)="onNextClicked()"
+      >
+        Next: Preview ({{ parsedRows.length }})
+      </button>
+    </div>
+
+  }
+
+  <!-- ─── WARNING SUB-MODAL (unmatched names) ─── -->
+  @if (showWarningModal) {
+    <app-modal-component
+      title="Some Names Need Manual Assignment"
+      icon="person_search"
+      (closeEvent)="showWarningModal = false"
+    >
+      <p class="warning-modal-text">
+        The following names could not be automatically matched to a user. You will be able to
+        assign them manually in the preview step:
+      </p>
+      <ul class="unmatched-list">
+        @for (name of unmatchedNames; track name) {
+          <li>{{ name }}</li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" (click)="onWarningOkClicked()">
+          OK, Continue to Preview
+        </button>
+      </div>
+    </app-modal-component>
+  }
+
+  <!-- ─── STEP 2: Preview ─── -->
+  @if (step === 'preview') {
+
+    <p class="step-indicator">Step 2 of 3 — Preview &amp; Assign Users</p>
+
+    @if (unmatchedNames.length > 0) {
+      <p class="unmatched-banner">
+        <span class="material-symbols-outlined">info</span>
+        {{ unmatchedNames.length }} row(s) need manual user assignment before you can submit.
+      </p>
+    }
+
+    <div class="table-wrapper">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>CSV Name</th>
+            <th>Assigned User</th>
+            <th class="col-amount">Amount (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of previewRows; track $index; let i = $index) {
+            <tr [class.row-unmatched]="!row.isAutoMatched">
+              <td>{{ row.rawName }}</td>
+              <td>
+                @if (row.isAutoMatched) {
+                  {{ row.displayName }}
+                } @else {
+                  <select
+                    [class.is-invalid]="row.userId === null"
+                    (change)="onUserAssigned(i, $any($event.target).value)"
+                  >
+                    <option value="" disabled [selected]="row.userId === null">Assign user…</option>
+                    @for (user of allUsers; track user.id) {
+                      <option [value]="user.id">{{ user.primaryText }}</option>
+                    }
+                  </select>
+                }
+              </td>
+              <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="onBackClicked()">Back</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!allRowsAssigned || isSubmitting"
+        (click)="onSubmitAll()"
+      >
+        @if (isSubmitting) {
+          <span>Submitting…</span>
+        } @else {
+          <span>Confirm &amp; Submit All ({{ previewRows.length }})</span>
+        }
+      </button>
+    </div>
+
+  }
+
+  <!-- ─── STEP 3: Results ─── -->
+  @if (step === 'results') {
+
+    <p class="step-indicator">Step 3 of 3 — Results</p>
+
+    <p class="results-summary">
+      <span class="result-ok">{{ successCount }} succeeded</span>,
+      @if (failureCount > 0) {
+        <span class="result-err">{{ failureCount }} failed</span>
+      } @else {
+        <span>{{ failureCount }} failed</span>
+      }
+    </p>
+
+    <div class="table-wrapper">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th class="col-amount">Amount (€)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of previewRows; track $index) {
+            <tr
+              [class.row-success]="row.status === 'success'"
+              [class.row-error]="row.status === 'error'"
+            >
+              <td>{{ row.displayName ?? row.rawName }}</td>
+              <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
+              <td class="status-cell">
+                @if (row.status === 'success') {
+                  <span class="material-symbols-outlined status-ok">check_circle</span>
+                }
+                @if (row.status === 'error') {
+                  <span class="material-symbols-outlined status-err">error</span>
+                  <span class="error-detail">{{ row.errorMessage }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-primary" (click)="onClose()">Close</button>
+    </div>
+
+  }
+
+</app-modal-component>
