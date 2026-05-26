@@ -169,7 +169,9 @@ namespace PayTrack.Data.Repositories.Implementation
                     (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
                         && (paymentRequestByUser.Amount == amount
                             || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
-                    || (hasInvoiceNumber && paymentRequestByUser.InvoiceNumber.ToUpper() == normalizedInvoiceNumber)));
+                    || (hasInvoiceNumber
+                        && paymentRequestByUser.InvoiceNumber != null
+                        && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)));
 
             if (paymentRequestByUserId.HasValue)
             {
@@ -418,7 +420,8 @@ namespace PayTrack.Data.Repositories.Implementation
                     (((userIds.Contains(paymentRequestByUser.UserId) || teamIds.Contains(paymentRequestByUser.TeamId))
                         && (amounts.Contains(paymentRequestByUser.Amount)
                             || (paymentRequestByUser.PaidAt >= minPaidAtDay && paymentRequestByUser.PaidAt < maxPaidAtDayEnd)))
-                    || invoiceNumbers.Contains(paymentRequestByUser.InvoiceNumber.ToUpper())))
+                    || (paymentRequestByUser.InvoiceNumber != null
+                        && invoiceNumbers.Contains(paymentRequestByUser.InvoiceNumber.Trim().ToUpper()))))
                 .Select(paymentRequestByUser => new
                 {
                     paymentRequestByUser.Id,
