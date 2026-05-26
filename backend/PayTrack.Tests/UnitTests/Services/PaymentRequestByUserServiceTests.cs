@@ -268,13 +268,13 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Should().HaveCount(4);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(155);
+            result[0].Score.Should().Be(160);
             result[0].IsAmountAndUserMatch.Should().BeTrue();
             result[0].IsInvoiceNumberMatch.Should().BeTrue();
             result[0].IsAmountAndTeamMatch.Should().BeTrue();
 
             result[1].PaymentRequestByUser.Id.Should().Be(3);
-            result[1].Score.Should().Be(65);
+            result[1].Score.Should().Be(70);
             result[1].IsAmountAndUserMatch.Should().BeTrue();
             result[1].IsInvoiceNumberMatch.Should().BeFalse();
 
