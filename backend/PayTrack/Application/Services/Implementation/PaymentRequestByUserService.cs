@@ -13,7 +13,6 @@ namespace PayTrack.Application.Services.Implementation
     /// <inheritdoc/>
     public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
     {
-        private const int DuplicateMatchThreshold = 1;
         private const int MaxDuplicateResults = 10;
 
         /// <summary>
@@ -141,11 +140,12 @@ namespace PayTrack.Application.Services.Implementation
                 matchTeamId,
                 matchAmount,
                 matchPaidAt,
+                matchInvoiceNumber,
                 paymentRequestByUserId);
 
             return duplicateCandidates
                 .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt, matchInvoiceNumber))
-                .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
+                .Where(duplicateMatch => duplicateMatch.Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
                 .Take(MaxDuplicateResults)
@@ -300,12 +300,6 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static bool IsInvoiceNumberMatch(string candidateInvoiceNumber, string? invoiceNumber)
-        {
-            return !string.IsNullOrWhiteSpace(invoiceNumber)
-                && string.Equals(candidateInvoiceNumber.Trim(), invoiceNumber.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
             PaymentRequestByUser paymentRequestByUser,
             int userId,
@@ -314,34 +308,20 @@ namespace PayTrack.Application.Services.Implementation
             DateTime paidAt,
             string? invoiceNumber)
         {
-            bool isSameAmountAndDay = paymentRequestByUser.Amount == amount && paymentRequestByUser.PaidAt?.Date == paidAt.Date;
-            bool isAmountAndUserMatch = isSameAmountAndDay && paymentRequestByUser.UserId == userId;
-            bool isAmountAndTeamMatch = isSameAmountAndDay && paymentRequestByUser.TeamId == teamId;
-            bool isInvoiceNumberMatch = IsInvoiceNumberMatch(paymentRequestByUser.InvoiceNumber, invoiceNumber);
-
-            int score = 0;
-
-            if (isAmountAndUserMatch)
-            {
-                score++;
-            }
-
-            if (isAmountAndTeamMatch)
-            {
-                score++;
-            }
-
-            if (isInvoiceNumberMatch)
-            {
-                score++;
-            }
+            var duplicateScore = DuplicatePaymentRequestByUserScorer.Calculate(
+                paymentRequestByUser,
+                userId,
+                teamId,
+                amount,
+                paidAt,
+                invoiceNumber);
 
             return new DuplicatePaymentRequestByUserMatch(
                 paymentRequestByUser,
-                score,
-                isAmountAndUserMatch,
-                isInvoiceNumberMatch,
-                isAmountAndTeamMatch);
+                duplicateScore.Score,
+                duplicateScore.IsAmountAndUserMatch,
+                duplicateScore.IsInvoiceNumberMatch,
+                duplicateScore.IsAmountAndTeamMatch);
         }
     }
 }

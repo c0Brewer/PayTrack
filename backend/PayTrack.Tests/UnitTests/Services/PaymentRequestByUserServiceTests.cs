@@ -217,9 +217,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     Id = 4,
                     UserId = 1,
                     TeamId = 1,
-                    Amount = 50,
-                    InvoiceNumber = "OTHER",
-                    PaidAt = paidAt,
+                    Amount = 100,
+                    InvoiceNumber = "ONLY-AMOUNT",
+                    PaidAt = paidAt.AddDays(3),
                     CreatedAt = new DateTime(2026, 1, 25, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new()
@@ -231,11 +231,31 @@ namespace PayTrack.Tests.UnitTests.Services
                     InvoiceNumber = "OTHER-DAY",
                     PaidAt = paidAt.AddDays(1),
                     CreatedAt = new DateTime(2026, 1, 30, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 6,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 100,
+                    InvoiceNumber = "INV-101",
+                    PaidAt = paidAt.AddDays(3),
+                    CreatedAt = new DateTime(2026, 1, 25, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 7,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 50,
+                    InvoiceNumber = "OTHER",
+                    PaidAt = paidAt,
+                    CreatedAt = new DateTime(2026, 1, 25, 0, 0, 0, DateTimeKind.Utc)
                 }
             };
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "inv-100", null))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -246,24 +266,30 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt, "inv-100");
 
-            result.Should().HaveCount(3);
+            result.Should().HaveCount(4);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(3);
+            result[0].Score.Should().Be(155);
             result[0].IsAmountAndUserMatch.Should().BeTrue();
             result[0].IsInvoiceNumberMatch.Should().BeTrue();
             result[0].IsAmountAndTeamMatch.Should().BeTrue();
 
             result[1].PaymentRequestByUser.Id.Should().Be(3);
-            result[1].Score.Should().Be(1);
+            result[1].Score.Should().Be(65);
             result[1].IsAmountAndUserMatch.Should().BeTrue();
             result[1].IsInvoiceNumberMatch.Should().BeFalse();
 
-            result[2].PaymentRequestByUser.Id.Should().Be(2);
-            result[2].Score.Should().Be(1);
-            result[2].IsAmountAndTeamMatch.Should().BeTrue();
+            result[2].PaymentRequestByUser.Id.Should().Be(6);
+            result[2].Score.Should().Be(65);
+            result[2].IsInvoiceNumberMatch.Should().BeFalse();
+
+            result[3].PaymentRequestByUser.Id.Should().Be(2);
+            result[3].Score.Should().Be(60);
+            result[3].IsAmountAndTeamMatch.Should().BeTrue();
+            result.Should().NotContain(match => match.PaymentRequestByUser.Id == 4);
+            result.Should().NotContain(match => match.PaymentRequestByUser.Id == 5);
 
             repoMock.Verify(
-                r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null),
+                r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "inv-100", null),
                 Times.Once);
         }
 
@@ -290,7 +316,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ToList();
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null, null))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -302,7 +328,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt);
 
             result.Should().HaveCount(10);
-            result.Should().OnlyContain(match => match.Score >= 1);
+            result.Should().OnlyContain(match => match.Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold);
         }
 
         [Fact]
@@ -327,7 +353,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetByIdAsync(7, null))
                 .ReturnsAsync(source);
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, 7))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "SRC", 7))
                 .ReturnsAsync([]);
 
             var service = new PaymentRequestByUserService(
@@ -339,7 +365,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var result = await service.GetDuplicatePaymentRequestsByUserAsync(1, 2, 3, DateTime.UtcNow, null, 7);
 
             result.Should().BeEmpty();
-            repoMock.Verify(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, 7), Times.Once);
+            repoMock.Verify(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "SRC", 7), Times.Once);
         }
 
         [Fact]

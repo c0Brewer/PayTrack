@@ -154,18 +154,22 @@ namespace PayTrack.Data.Repositories.Implementation
             int teamId,
             decimal amount,
             DateTime paidAt,
+            string? invoiceNumber = null,
             int? paymentRequestByUserId = null)
         {
             var paidAtDayStart = DateTime.SpecifyKind(paidAt.Date, DateTimeKind.Utc);
             var paidAtDayEnd = paidAtDayStart.AddDays(1);
+            var hasInvoiceNumber = !string.IsNullOrWhiteSpace(invoiceNumber);
+            var normalizedInvoiceNumber = invoiceNumber?.Trim().ToUpperInvariant();
 
             var query = this.context.PaymentRequestsByUser
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
-                    paymentRequestByUser.Amount == amount &&
-                    paymentRequestByUser.PaidAt >= paidAtDayStart &&
-                    paymentRequestByUser.PaidAt < paidAtDayEnd &&
-                    (paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId));
+                    paymentRequestByUser.PaidAt.HasValue &&
+                    (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
+                        && (paymentRequestByUser.Amount == amount
+                            || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
+                    || (hasInvoiceNumber && paymentRequestByUser.InvoiceNumber.ToUpper() == normalizedInvoiceNumber)));
 
             if (paymentRequestByUserId.HasValue)
             {
@@ -386,6 +390,7 @@ namespace PayTrack.Data.Repositories.Implementation
                     paymentRequestByUser.TeamId,
                     paymentRequestByUser.Amount,
                     PaidAtDay = paymentRequestByUser.PaidAt!.Value.Date,
+                    paymentRequestByUser.InvoiceNumber,
                 })
                 .ToList();
 
@@ -397,6 +402,12 @@ namespace PayTrack.Data.Repositories.Implementation
             var amounts = keys.Select(key => key.Amount).Distinct().ToList();
             var userIds = keys.Select(key => key.UserId).Distinct().ToList();
             var teamIds = keys.Select(key => key.TeamId).Distinct().ToList();
+            var invoiceNumbers = keys
+                .Select(key => key.InvoiceNumber)
+                .Where(invoiceNumber => !string.IsNullOrWhiteSpace(invoiceNumber))
+                .Select(invoiceNumber => invoiceNumber.Trim().ToUpperInvariant())
+                .Distinct()
+                .ToList();
             var minPaidAtDay = DateTime.SpecifyKind(keys.Min(key => key.PaidAtDay), DateTimeKind.Utc);
             var maxPaidAtDayEnd = DateTime.SpecifyKind(keys.Max(key => key.PaidAtDay).AddDays(1), DateTimeKind.Utc);
 
@@ -404,10 +415,10 @@ namespace PayTrack.Data.Repositories.Implementation
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
                     paymentRequestByUser.PaidAt.HasValue &&
-                    amounts.Contains(paymentRequestByUser.Amount) &&
-                    paymentRequestByUser.PaidAt >= minPaidAtDay &&
-                    paymentRequestByUser.PaidAt < maxPaidAtDayEnd &&
-                    (userIds.Contains(paymentRequestByUser.UserId) || teamIds.Contains(paymentRequestByUser.TeamId)))
+                    (((userIds.Contains(paymentRequestByUser.UserId) || teamIds.Contains(paymentRequestByUser.TeamId))
+                        && (amounts.Contains(paymentRequestByUser.Amount)
+                            || (paymentRequestByUser.PaidAt >= minPaidAtDay && paymentRequestByUser.PaidAt < maxPaidAtDayEnd)))
+                    || invoiceNumbers.Contains(paymentRequestByUser.InvoiceNumber.ToUpper())))
                 .Select(paymentRequestByUser => new
                 {
                     paymentRequestByUser.Id,
@@ -415,6 +426,7 @@ namespace PayTrack.Data.Repositories.Implementation
                     paymentRequestByUser.TeamId,
                     paymentRequestByUser.Amount,
                     paymentRequestByUser.PaidAt,
+                    paymentRequestByUser.InvoiceNumber,
                 })
                 .ToListAsync();
 
@@ -443,10 +455,21 @@ namespace PayTrack.Data.Repositories.Implementation
             var duplicateIds = keys
                 .Where(key => candidates.Any(candidate =>
                     candidate.Id != key.Id &&
-                    candidate.Amount == key.Amount &&
-                    candidate.PaidAt!.Value.Date == key.PaidAtDay &&
-                    (candidate.UserId == key.UserId || candidate.TeamId == key.TeamId) &&
-                    !dismissedPairKeys.Contains(CreateDuplicatePairKey(key.Id, candidate.Id))))
+                    !dismissedPairKeys.Contains(CreateDuplicatePairKey(key.Id, candidate.Id)) &&
+                    DuplicatePaymentRequestByUserScorer.Calculate(
+                        new PaymentRequestByUser
+                        {
+                            UserId = candidate.UserId,
+                            TeamId = candidate.TeamId,
+                            Amount = candidate.Amount,
+                            PaidAt = candidate.PaidAt,
+                            InvoiceNumber = candidate.InvoiceNumber,
+                        },
+                        key.UserId,
+                        key.TeamId,
+                        key.Amount,
+                        key.PaidAtDay,
+                        key.InvoiceNumber).Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold))
                 .Select(key => key.Id)
                 .ToHashSet();
 

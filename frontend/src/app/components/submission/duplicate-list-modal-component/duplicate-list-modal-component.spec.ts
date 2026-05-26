@@ -30,7 +30,7 @@ describe('DuplicateListModalComponent', () => {
         user: { name: 'Max' },
         team: { name: 'Finance' },
       } as PaymentRequestByUserDto,
-      score: 1,
+      score: 155,
       isAmountAndUserMatch: false,
       isInvoiceNumberMatch: true,
       isAmountAndTeamMatch: true,
@@ -43,6 +43,7 @@ describe('DuplicateListModalComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('INV-2');
     expect(compiled.textContent).toContain('Finance');
+    expect(compiled.textContent).toContain('Score: 155');
     expect(compiled.textContent).toContain('Invoice number');
   });
 
@@ -62,7 +63,7 @@ describe('DuplicateListModalComponent', () => {
         invoiceNumber: 'INV-2',
         amount: 25,
       } as PaymentRequestByUserDto,
-      score: 1,
+      score: 60,
       isAmountAndUserMatch: false,
       isInvoiceNumberMatch: true,
       isAmountAndTeamMatch: true,

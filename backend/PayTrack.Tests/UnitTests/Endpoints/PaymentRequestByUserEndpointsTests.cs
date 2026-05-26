@@ -209,7 +209,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
                         Team = new Team { Id = 99, Name = "Team A" }
                     },
-                    3,
+                    155,
                     true,
                     true,
                     true),
@@ -242,7 +242,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto.Should().NotBeNull();
             dto.Should().HaveCount(1);
             dto![0].PaymentRequestByUser.Id.Should().Be(1);
-            dto[0].Score.Should().Be(3);
+            dto[0].Score.Should().Be(155);
             dto[0].IsInvoiceNumberMatch.Should().BeTrue();
 
             _factory.ServiceMock.Verify(

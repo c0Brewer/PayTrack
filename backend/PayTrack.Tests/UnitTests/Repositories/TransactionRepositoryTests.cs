@@ -248,7 +248,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
 
-            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, 1);
+            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, null, 1);
 
             result.Select(t => t.Id).Should().Equal(3);
         }
