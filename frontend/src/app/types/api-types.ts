@@ -1113,6 +1113,7 @@ export interface paths {
                     Amount: number;
                     /** Format: date-time */
                     PaidAt: string;
+                    PaymentRequestByUserId?: number;
                 };
                 header?: never;
                 path?: never;

@@ -51,6 +51,7 @@ export class RequestsComponent implements OnInit {
   duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
   isDuplicateModalOpen: boolean = false;
   isDuplicateModalLoading: boolean = false;
+  duplicateActionInvoiceId: number | null = null;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -109,6 +110,7 @@ export class RequestsComponent implements OnInit {
         TeamId: invoice.team.id,
         Amount: invoice.amount,
         PaidAt: invoice.paidAt,
+        PaymentRequestByUserId: invoice.id,
       })
       .subscribe({
         next: (duplicates) => {
@@ -130,6 +132,7 @@ export class RequestsComponent implements OnInit {
   onCloseDuplicateModal(): void {
     this.isDuplicateModalOpen = false;
     this.isDuplicateModalLoading = false;
+    this.duplicateActionInvoiceId = null;
     this.selectedDuplicateInvoice = null;
     this.duplicateCandidates = [];
   }
@@ -137,6 +140,70 @@ export class RequestsComponent implements OnInit {
   onOpenDuplicateDetail(invoice: PaymentRequestByUserDto): void {
     this.onCloseDuplicateModal();
     this.onOpenDetail(invoice);
+  }
+
+  onDeleteDuplicateInvoice(invoice: PaymentRequestByUserDto): void {
+    if (!invoice.id) {
+      this.notificationService.showError('Invoice id is missing.');
+      return;
+    }
+
+    if (!window.confirm(`Delete invoice ${invoice.invoiceNumber}?`)) {
+      return;
+    }
+
+    this.duplicateActionInvoiceId = invoice.id;
+
+    this.paymentRequestService.deletePaymentRequestByUser(invoice.id).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Invoice deleted.');
+        this.onCloseDuplicateModal();
+        this.loadInvoices();
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError(err.message ?? 'Deleting invoice failed.');
+        this.duplicateActionInvoiceId = null;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
+    if (!this.selectedDuplicateInvoice?.id || !duplicate.paymentRequestByUser.id) {
+      this.notificationService.showError('Duplicate warning cannot be dismissed.');
+      return;
+    }
+
+    this.duplicateActionInvoiceId = duplicate.paymentRequestByUser.id;
+
+    this.paymentRequestService
+      .dismissDuplicatePaymentRequestByUser(
+        this.selectedDuplicateInvoice.id,
+        duplicate.paymentRequestByUser.id,
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Duplicate warning dismissed.');
+          this.duplicateCandidates = this.duplicateCandidates.filter(
+            (candidate) =>
+              candidate.paymentRequestByUser.id !== duplicate.paymentRequestByUser.id,
+          );
+          this.duplicateActionInvoiceId = null;
+
+          if (this.duplicateCandidates.length === 0) {
+            this.onCloseDuplicateModal();
+          }
+
+          this.loadInvoices();
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError(err.message ?? 'Dismissing duplicate warning failed.');
+          this.duplicateActionInvoiceId = null;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   getTotalPages(): number {

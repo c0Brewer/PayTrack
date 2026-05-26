@@ -13,11 +13,14 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
 export class DuplicateListModalComponent {
   @Input() visible = false;
   @Input() loading = false;
+  @Input() actionInvoiceId: number | null = null;
   @Input() sourceInvoice: PaymentRequestByUserDto | null = null;
   @Input() duplicates: DuplicatePaymentRequestByUserDto[] = [];
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
+  @Output() deleteInvoice = new EventEmitter<PaymentRequestByUserDto>();
+  @Output() dismissDuplicate = new EventEmitter<DuplicatePaymentRequestByUserDto>();
 
   onClose(): void {
     this.closeModal.emit();
@@ -25,6 +28,14 @@ export class DuplicateListModalComponent {
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.openDetail.emit(invoice);
+  }
+
+  onDeleteInvoice(invoice: PaymentRequestByUserDto): void {
+    this.deleteInvoice.emit(invoice);
+  }
+
+  onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
+    this.dismissDuplicate.emit(duplicate);
   }
 
   getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PayTrack.Data;
@@ -11,9 +12,11 @@ using PayTrack.Data;
 namespace PayTrack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510213509_RepairMissingTransactionCostCentre")]
+    partial class RepairMissingTransactionCostCentre
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,33 +90,6 @@ namespace PayTrack.Migrations
                         .IsUnique();
 
                     b.ToTable("Budgets");
-                });
-
-            modelBuilder.Entity("PayTrack.Data.Entities.DismissedDuplicatePaymentRequestByUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("FirstPaymentRequestByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SecondPaymentRequestByUserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FirstPaymentRequestByUserId", "SecondPaymentRequestByUserId")
-                        .IsUnique();
-
-                    b.HasIndex("SecondPaymentRequestByUserId");
-
-                    b.ToTable("DismissedDuplicatePaymentRequestsByUser");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.CostCentre", b =>
@@ -414,25 +390,6 @@ namespace PayTrack.Migrations
                     b.Navigation("CostCentre");
 
                     b.Navigation("Team");
-                });
-
-            modelBuilder.Entity("PayTrack.Data.Entities.DismissedDuplicatePaymentRequestByUser", b =>
-                {
-                    b.HasOne("PayTrack.Data.Entities.PaymentRequestByUser", "FirstPaymentRequestByUser")
-                        .WithMany()
-                        .HasForeignKey("FirstPaymentRequestByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PayTrack.Data.Entities.PaymentRequestByUser", "SecondPaymentRequestByUser")
-                        .WithMany()
-                        .HasForeignKey("SecondPaymentRequestByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FirstPaymentRequestByUser");
-
-                    b.Navigation("SecondPaymentRequestByUser");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Transaction", b =>

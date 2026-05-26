@@ -67,12 +67,14 @@ namespace PayTrack.Application.Services.Model
         /// <param name="teamId">Team id for matching.</param>
         /// <param name="amount">Amount for matching.</param>
         /// <param name="paidAt">Paid-at day for matching.</param>
+        /// <param name="paymentRequestByUserId">Optional source payment request id to exclude dismissed pairs.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
             decimal amount,
-            DateTime paidAt);
+            DateTime paidAt,
+            int? paymentRequestByUserId = null);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.
@@ -88,6 +90,21 @@ namespace PayTrack.Application.Services.Model
         /// <param name="bankAccountId">The new bank account id that the PaymentRequestByUser should be assigned.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Dismisses a potential duplicate warning between two PaymentRequestByUser entries.
+        /// </summary>
+        /// <param name="paymentRequestByUserId">Source PaymentRequestByUser id.</param>
+        /// <param name="duplicatePaymentRequestByUserId">Potential duplicate PaymentRequestByUser id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId);
 
         /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.

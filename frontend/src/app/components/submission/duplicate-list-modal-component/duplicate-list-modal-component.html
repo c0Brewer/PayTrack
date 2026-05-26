@@ -39,13 +39,31 @@
             <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Day + Team</span>
           </div>
 
-          <button
-            type="button"
-            class="duplicate-list__view"
-            (click)="onOpenDetail(duplicate.paymentRequestByUser)"
-          >
-            View
-          </button>
+          <div class="duplicate-list__actions">
+            <button
+              type="button"
+              class="duplicate-list__button"
+              (click)="onOpenDetail(duplicate.paymentRequestByUser)"
+            >
+              View
+            </button>
+            <button
+              type="button"
+              class="duplicate-list__button"
+              [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
+              (click)="onDismissDuplicate(duplicate)"
+            >
+              Dismiss warning
+            </button>
+            <button
+              type="button"
+              class="duplicate-list__button duplicate-list__button--danger"
+              [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
+              (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
+            >
+              Delete invoice
+            </button>
+          </div>
         </li>
       }
     </ul>

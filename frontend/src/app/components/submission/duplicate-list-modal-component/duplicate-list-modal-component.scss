@@ -50,12 +50,31 @@
   font-weight: v.$font-semibold;
 }
 
-.duplicate-list__view {
-  justify-self: flex-start;
+.duplicate-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs;
+}
+
+.duplicate-list__button {
   padding: v.$size-xxs v.$size-s;
   border: 1px solid v.$border-color;
   background: v.$background-light;
   border-radius: v.$size-xs;
   cursor: pointer;
   font-size: v.$font-xs;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+}
+
+.duplicate-list__button--danger {
+  border-color: #b91c1c;
+  color: #991b1b;
+
+  &:hover:not(:disabled) {
+    background: #fef2f2;
+  }
 }

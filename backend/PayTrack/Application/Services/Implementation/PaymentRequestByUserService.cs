@@ -109,12 +109,39 @@ namespace PayTrack.Application.Services.Implementation
             int userId,
             int teamId,
             decimal amount,
-            DateTime paidAt)
+            DateTime paidAt,
+            int? paymentRequestByUserId = null)
         {
-            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount, paidAt);
+            var matchUserId = userId;
+            var matchTeamId = teamId;
+            var matchAmount = amount;
+            var matchPaidAt = paidAt;
+
+            if (paymentRequestByUserId.HasValue)
+            {
+                var sourcePaymentRequest = await this.repo.GetByIdAsync(paymentRequestByUserId.Value, null)
+                    ?? throw new NotFoundException("PaymentRequestByUser could not be found");
+
+                if (!sourcePaymentRequest.PaidAt.HasValue)
+                {
+                    throw new InvalidStateException("Duplicate lookup is missing paid date.");
+                }
+
+                matchUserId = sourcePaymentRequest.UserId;
+                matchTeamId = sourcePaymentRequest.TeamId;
+                matchAmount = sourcePaymentRequest.Amount;
+                matchPaidAt = sourcePaymentRequest.PaidAt.Value;
+            }
+
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(
+                matchUserId,
+                matchTeamId,
+                matchAmount,
+                matchPaidAt,
+                paymentRequestByUserId);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount, paidAt))
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
@@ -188,6 +215,28 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task DeletePaymentRequestByUserAsync(int id)
+        {
+            var wasDeleted = await this.repo.DeletePaymentRequestByUserAsync(id);
+
+            if (!wasDeleted)
+            {
+                throw new NotFoundException("PaymentRequestByUser could not be found");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
+        {
+            if (paymentRequestByUserId == duplicatePaymentRequestByUserId)
+            {
+                throw new InvalidStateException("A payment request cannot be a duplicate of itself.");
+            }
+
+            await this.repo.DismissDuplicatePaymentRequestByUserAsync(paymentRequestByUserId, duplicatePaymentRequestByUserId);
         }
 
         /// <inheritdoc/>

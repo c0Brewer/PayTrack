@@ -29,5 +29,10 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         /// </summary>
         [Required]
         required public DateTime PaidAt { get; init; }
+
+        /// <summary>
+        /// Existing payment request id to compare from. Used to hide dismissed duplicate pairs.
+        /// </summary>
+        public int? PaymentRequestByUserId { get; init; }
     }
 }
