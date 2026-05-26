@@ -137,14 +137,14 @@ describe('RequestsComponent', () => {
     } as PaymentRequestByUserDto;
     const duplicate = {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
-      score: 1,
+      score: 60,
       isAmountAndUserMatch: false,
       isInvoiceNumberMatch: false,
       isAmountAndTeamMatch: true,
     };
     const selfMatch = {
       paymentRequestByUser: { id: 1, invoiceNumber: 'INV-1' },
-      score: 1,
+      score: 140,
       isAmountAndUserMatch: false,
       isInvoiceNumberMatch: true,
       isAmountAndTeamMatch: true,
@@ -193,7 +193,7 @@ describe('RequestsComponent', () => {
     component.selectedDuplicateInvoice = { id: 1, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
     const duplicate = {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
-      score: 1,
+      score: 60,
       isAmountAndUserMatch: false,
       isInvoiceNumberMatch: false,
       isAmountAndTeamMatch: true,
