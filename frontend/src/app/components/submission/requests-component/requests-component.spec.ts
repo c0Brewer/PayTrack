@@ -7,7 +7,10 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
-import { PaymentRequestByUserDto } from '../../../types/exporter';
+import {
+  DuplicatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
+} from '../../../types/exporter';
 
 import { RequestsComponent } from './requests-component';
 
@@ -18,10 +21,13 @@ describe('RequestsComponent', () => {
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
     getDuplicatePaymentRequestsByUser: vi.fn(),
+    deletePaymentRequestByUser: vi.fn(),
+    dismissDuplicatePaymentRequestByUser: vi.fn(),
   };
 
   const notificationMock = {
     showError: vi.fn(),
+    showSuccess: vi.fn(),
   };
 
   const routerMock = {
@@ -45,6 +51,8 @@ describe('RequestsComponent', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
+    paymentServiceMock.deletePaymentRequestByUser.mockReturnValue(of(undefined));
+    paymentServiceMock.dismissDuplicatePaymentRequestByUser.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [RequestsComponent],
@@ -148,6 +156,7 @@ describe('RequestsComponent', () => {
       TeamId: 3,
       Amount: 100,
       PaidAt: '2026-05-21T00:00:00.000Z',
+      PaymentRequestByUserId: 1,
     });
     expect(component.duplicateCandidates).toEqual([duplicate]);
     expect(component.isDuplicateModalOpen).toBe(true);
@@ -161,6 +170,37 @@ describe('RequestsComponent', () => {
       'Duplicate lookup is missing team or paid date.',
     );
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).not.toHaveBeenCalled();
+  });
+
+  it('should delete duplicate invoice after confirmation', () => {
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const invoice = { id: 2, invoiceNumber: 'INV-2' } as PaymentRequestByUserDto;
+
+    component.onDeleteDuplicateInvoice(invoice);
+
+    expect(paymentServiceMock.deletePaymentRequestByUser).toHaveBeenCalledWith(2);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice deleted.');
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
+  });
+
+  it('should dismiss duplicate warning and remove candidate from modal', () => {
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
+    component.selectedDuplicateInvoice = { id: 1, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
+    const duplicate = {
+      paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
+      score: 1,
+      isAmountAndUserMatch: false,
+      isAmountAndTeamMatch: true,
+    } as DuplicatePaymentRequestByUserDto;
+    component.duplicateCandidates = [duplicate];
+
+    component.onDismissDuplicate(duplicate);
+
+    expect(paymentServiceMock.dismissDuplicatePaymentRequestByUser).toHaveBeenCalledWith(1, 2);
+    expect(component.duplicateCandidates).toEqual([]);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Duplicate warning dismissed.');
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
   });
 
   it('should return 1 for getTotalPages when totalCount is 0', () => {

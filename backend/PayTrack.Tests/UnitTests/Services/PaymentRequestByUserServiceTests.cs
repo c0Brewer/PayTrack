@@ -235,7 +235,7 @@ namespace PayTrack.Tests.UnitTests.Services
             };
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -261,7 +261,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result[2].IsAmountAndTeamMatch.Should().BeTrue();
 
             repoMock.Verify(
-                r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt),
+                r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null),
                 Times.Once);
         }
 
@@ -288,7 +288,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ToList();
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -301,6 +301,100 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Should().HaveCount(10);
             result.Should().OnlyContain(match => match.Score >= 1);
+        }
+
+        [Fact]
+        public async Task GetDuplicatePaymentRequestsByUserAsync_ShouldUseSourceInvoice_WhenProvided()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+            var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
+            var source = new PaymentRequestByUser
+            {
+                Id = 7,
+                UserId = 42,
+                TeamId = 99,
+                Amount = 100,
+                InvoiceNumber = "SRC",
+                PaidAt = paidAt,
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, null))
+                .ReturnsAsync(source);
+            repoMock
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, 7))
+                .ReturnsAsync([]);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(1, 2, 3, DateTime.UtcNow, 7);
+
+            result.Should().BeEmpty();
+            repoMock.Verify(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, 7), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldCallRepository_WhenFound()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            repoMock.Setup(r => r.DeletePaymentRequestByUserAsync(5)).ReturnsAsync(true);
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object);
+
+            await service.DeletePaymentRequestByUserAsync(5);
+
+            repoMock.Verify(r => r.DeletePaymentRequestByUserAsync(5), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldThrow_WhenMissing()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            repoMock.Setup(r => r.DeletePaymentRequestByUserAsync(5)).ReturnsAsync(false);
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByUserAsync(5);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequestByUserAsync_ShouldCallRepository()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object);
+
+            await service.DismissDuplicatePaymentRequestByUserAsync(1, 2);
+
+            repoMock.Verify(r => r.DismissDuplicatePaymentRequestByUserAsync(1, 2), Times.Once);
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequestByUserAsync_ShouldThrow_WhenSameInvoice()
+        {
+            var service = BuildService();
+
+            Func<Task> act = async () => await service.DismissDuplicatePaymentRequestByUserAsync(1, 1);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
         }
 
         // ----------------------------

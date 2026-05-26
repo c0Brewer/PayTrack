@@ -243,6 +243,50 @@ describe('PaymentRequestByUserService', () => {
     ).rejects.toThrow('Unexpected Error');
   });
 
+  it('should delete payment request via fetch', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+
+    await firstValueFrom(service.deletePaymentRequestByUser(5));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/5', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/5';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+  });
+
+  it('should dismiss duplicate warning via fetch', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+
+    await firstValueFrom(service.dismissDuplicatePaymentRequestByUser(1, 2));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/1/duplicate/2/dismiss', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/1/duplicate/2/dismiss';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+  });
+
   // -----------------------
   // UPDATE
   // -----------------------

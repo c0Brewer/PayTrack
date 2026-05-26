@@ -217,16 +217,22 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             _factory.AuthServiceMock
                 .Setup(a => a.GetCurrentUser())
                 .ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(s => s.GetPaymentRequestByUserByIdAsync(7, null))
+                .ReturnsAsync(new PaymentRequestByUser { Id = 7, UserId = user.Id, InvoiceNumber = "SRC" });
+            _factory.ServiceMock
+                .Setup(s => s.ValidateAccessToInvoice(It.IsAny<PaymentRequestByUser>(), user))
+                .Returns(true);
 
             _factory.ServiceMock
-                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date)))
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), 7))
                 .ReturnsAsync(matches);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
-            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100&PaidAt=2026-01-05T00:00:00.0000000Z");
+            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100&PaidAt=2026-01-05T00:00:00.0000000Z&PaymentRequestByUserId=7");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -238,7 +244,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto[0].Score.Should().Be(2);
 
             _factory.ServiceMock.Verify(
-                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date)),
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), 7),
                 Times.Once);
         }
 
@@ -284,6 +290,30 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result!.Amount.Should().Be(999);
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequest_ReturnsNoContent()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.DeleteAsync("api/v1/transaction/user/1");
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            _factory.ServiceMock.Verify(s => s.DeletePaymentRequestByUserAsync(1), Times.Once);
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequest_ReturnsNoContent()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/duplicate/2/dismiss", null);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            _factory.ServiceMock.Verify(s => s.DismissDuplicatePaymentRequestByUserAsync(1, 2), Times.Once);
         }
 
         // ----------------------------

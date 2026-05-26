@@ -192,6 +192,67 @@ namespace PayTrack.Tests.UnitTests.Repositories
             transactions.Single(t => t.Id == 5).HasPotentialDuplicate.Should().BeFalse();
         }
 
+        [Fact]
+        public async Task GetAllPaymentRequests_ShouldIgnoreDismissedDuplicatePairs()
+        {
+            await using var context = GetInMemoryDbContext("IgnoreDismissedDuplicates");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-1" },
+                new PaymentRequestByUser { Id = 2, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-2" });
+            context.DismissedDuplicatePaymentRequestsByUser.Add(
+                new DismissedDuplicatePaymentRequestByUser
+                {
+                    FirstPaymentRequestByUserId = 1,
+                    SecondPaymentRequestByUserId = 2,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var (transactions, _) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery());
+
+            transactions.Single(t => t.Id == 1).HasPotentialDuplicate.Should().BeFalse();
+            transactions.Single(t => t.Id == 2).HasPotentialDuplicate.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetPotentialDuplicatesAsync_ShouldExcludeDismissedPairsForSource()
+        {
+            await using var context = GetInMemoryDbContext("PotentialDuplicatesDismissed");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" },
+                new User { Id = 3, Email = "user3@paytrack.dev", Name = "User 3" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "SRC" },
+                new PaymentRequestByUser { Id = 2, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DISMISSED" },
+                new PaymentRequestByUser { Id = 3, UserId = 3, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "VISIBLE" });
+            context.DismissedDuplicatePaymentRequestsByUser.Add(
+                new DismissedDuplicatePaymentRequestByUser
+                {
+                    FirstPaymentRequestByUserId = 1,
+                    SecondPaymentRequestByUserId = 2,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, 1);
+
+            result.Select(t => t.Id).Should().Equal(3);
+        }
+
         // ----------------------------
         // ADD TRANSACTION
         // ----------------------------
@@ -396,6 +457,52 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
 
             ex.Message.Should().Contain("Transaction");
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldRemoveInvoice_WhenFound()
+        {
+            await using var context = GetInMemoryDbContext("DeletePaymentRequestByUser");
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser { Id = 1, InvoiceNumber = "INV-1" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.DeletePaymentRequestByUserAsync(1);
+
+            result.Should().BeTrue();
+            (await context.PaymentRequestsByUser.FindAsync(1)).Should().BeNull();
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldReturnFalse_WhenMissing()
+        {
+            await using var context = GetInMemoryDbContext("DeletePaymentRequestByUserMissing");
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.DeletePaymentRequestByUserAsync(999);
+
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequestByUserAsync_ShouldStoreNormalizedPair()
+        {
+            await using var context = GetInMemoryDbContext("DismissDuplicatePair");
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, InvoiceNumber = "INV-1" },
+                new PaymentRequestByUser { Id = 2, InvoiceNumber = "INV-2" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            await repo.DismissDuplicatePaymentRequestByUserAsync(2, 1);
+            await repo.DismissDuplicatePaymentRequestByUserAsync(1, 2);
+
+            context.DismissedDuplicatePaymentRequestsByUser.Should().ContainSingle();
+            var dismissal = await context.DismissedDuplicatePaymentRequestsByUser.SingleAsync();
+            dismissal.FirstPaymentRequestByUserId.Should().Be(1);
+            dismissal.SecondPaymentRequestByUserId.Should().Be(2);
         }
     }
 }
