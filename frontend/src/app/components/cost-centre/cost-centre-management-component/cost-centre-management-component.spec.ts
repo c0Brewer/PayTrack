@@ -8,11 +8,8 @@ import { NotificationService } from '../../../services/notification/notification
 import {
   CostCentreDto,
   CostCentreDtoPaginatedResponse,
-  DeleteCostCentrePreviewDto,
   GetCostCentreOptions,
-  UpsertBudgetEntryDto,
 } from '../../../types/exporter';
-import { CostCentreSaveEvent } from '../../../types/misc-types';
 
 import { CostCentreManagementComponent } from './cost-centre-management-component';
 
@@ -37,14 +34,6 @@ const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
   hasPrevious: false,
 };
 
-const mockPreview: DeleteCostCentrePreviewDto = {
-  costCentreName: 'Aerodynamics',
-  budgetCount: 0,
-  transactionCount: 0,
-  affectedUserCount: 0,
-  affectedTeamNames: [],
-};
-
 describe('CostCentreManagementComponent', () => {
   let component: CostCentreManagementComponent;
   let fixture: ComponentFixture<CostCentreManagementComponent>;
@@ -66,7 +55,7 @@ describe('CostCentreManagementComponent', () => {
       getCostCentres: vi.fn().mockReturnValue(of(mockPaginatedResponse)),
       createCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
       updateCostCentre: vi.fn().mockReturnValue(of(mockCostCentres[0])),
-      getDeletePreview: vi.fn().mockReturnValue(of(mockPreview)),
+      getDeletePreview: vi.fn(),
       deleteCostCentre: vi.fn().mockReturnValue(of(null)),
     };
     notificationServiceMock = {
@@ -115,10 +104,10 @@ describe('CostCentreManagementComponent', () => {
     expect(component.editingCostCentre!.name).toBe('');
   });
 
-  it('openEdit should set editingCostCentre to a clone of the given cost centre', () => {
+  it('openEdit should set editingCostCentre to the given cost centre', () => {
     component.openEdit(mockCostCentres[0]);
     expect(component.editingCostCentre).toEqual(mockCostCentres[0]);
-    expect(component.editingCostCentre).not.toBe(mockCostCentres[0]);
+    expect(component.editingCostCentre).toBe(mockCostCentres[0]);
   });
 
   it('closeEdit should reset editingCostCentre', () => {
@@ -127,138 +116,31 @@ describe('CostCentreManagementComponent', () => {
     expect(component.editingCostCentre).toBeNull();
   });
 
-  it('save with id -1 should call createCostCentre', () => {
-    const event: CostCentreSaveEvent = {
-      costCentre: {
-        id: -1,
-        name: 'New CC',
-        description: null,
-        displayColor: null,
-        budgets: [],
-        isActive: true,
-      },
-      budgetsToUpsert: [],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith({
-      name: 'New CC',
-      description: undefined,
-      displayColor: undefined,
-      budgets: undefined,
-    });
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
+  it('onCostCentreSaved should reload and close edit modal', () => {
+    component.editingCostCentre = { ...mockCostCentres[0] };
+    component.onCostCentreSaved();
+
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
     expect(component.editingCostCentre).toBeNull();
   });
 
-  it('save with existing id should call updateCostCentre', () => {
-    const event: CostCentreSaveEvent = {
-      costCentre: { ...mockCostCentres[0], name: 'Updated' },
-      budgetsToUpsert: [],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(1, {
-      name: 'Updated',
-      description: 'Aero costs',
-      displayColor: '#FF5733',
-      budgetsToUpsert: undefined,
-      budgetIdsToDelete: undefined,
-    });
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
-    expect(component.editingCostCentre).toBeNull();
-  });
-
-  it('save create should show error when API throws', () => {
-    costCentreServiceMock.createCostCentre.mockReturnValueOnce(
-      throwError(() => new Error('Create failed')),
-    );
-    const event: CostCentreSaveEvent = {
-      costCentre: {
-        id: -1,
-        name: 'X',
-        description: null,
-        displayColor: null,
-        budgets: [],
-        isActive: true,
-      },
-      budgetsToUpsert: [],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(notificationServiceMock.showError).toHaveBeenCalled();
-  });
-
-  it('save update should show error when API throws', () => {
-    costCentreServiceMock.updateCostCentre.mockReturnValueOnce(
-      throwError(() => new Error('Update failed')),
-    );
-    const event: CostCentreSaveEvent = {
-      costCentre: mockCostCentres[0],
-      budgetsToUpsert: [],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(notificationServiceMock.showError).toHaveBeenCalled();
-  });
-
-  it('openDelete should call getDeletePreview and set state', () => {
+  it('openDelete should set deletingCostCentre', () => {
     component.openDelete(mockCostCentres[0]);
-    expect(costCentreServiceMock.getDeletePreview).toHaveBeenCalledWith(1);
     expect(component.deletingCostCentre).toEqual(mockCostCentres[0]);
-    expect(component.deletePreview).toEqual(mockPreview);
   });
 
-  it('openDelete should show error when API throws', () => {
-    costCentreServiceMock.getDeletePreview.mockReturnValueOnce(
-      throwError(() => new Error('Preview failed')),
-    );
-    component.openDelete(mockCostCentres[0]);
-    expect(notificationServiceMock.showError).toHaveBeenCalled();
-  });
-
-  it('closeDelete should reset delete state', () => {
+  it('closeDelete should reset deletingCostCentre', () => {
     component.deletingCostCentre = mockCostCentres[0];
-    component.deletePreview = mockPreview;
     component.closeDelete();
     expect(component.deletingCostCentre).toBeNull();
-    expect(component.deletePreview).toBeNull();
   });
 
-  it('confirmDelete should hard-delete and show "deleted successfully" when service returns null', () => {
+  it('onCostCentreDeleted should reload and close delete modal', () => {
     component.deletingCostCentre = mockCostCentres[0];
-    component.confirmDelete();
-    expect(costCentreServiceMock.deleteCostCentre).toHaveBeenCalledWith(1);
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
-      expect.stringContaining('deleted successfully'),
-    );
+    component.onCostCentreDeleted();
+
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
     expect(component.deletingCostCentre).toBeNull();
-  });
-
-  it('confirmDelete should soft-delete and show "deactivated" when service returns a CostCentreDto', () => {
-    const deactivated: CostCentreDto = { ...mockCostCentres[0], isActive: false };
-    costCentreServiceMock.deleteCostCentre.mockReturnValueOnce(of(deactivated));
-    component.deletingCostCentre = mockCostCentres[0];
-    component.confirmDelete();
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
-      expect.stringContaining('deactivated'),
-    );
-    expect(component.deletingCostCentre).toBeNull();
-  });
-
-  it('confirmDelete should do nothing when deletingCostCentre is null', () => {
-    component.deletingCostCentre = null;
-    component.confirmDelete();
-    expect(costCentreServiceMock.deleteCostCentre).not.toHaveBeenCalled();
-  });
-
-  it('confirmDelete should show error when API throws', () => {
-    costCentreServiceMock.deleteCostCentre.mockReturnValueOnce(
-      throwError(() => new Error('Delete failed')),
-    );
-    component.deletingCostCentre = mockCostCentres[0];
-    component.confirmDelete();
-    expect(notificationServiceMock.showError).toHaveBeenCalled();
   });
 
   it('load should show error when response has no items', () => {
@@ -328,55 +210,5 @@ describe('CostCentreManagementComponent', () => {
     component.previousPage();
     expect(component.page).toBe(0);
     expect(costCentreServiceMock.getCostCentres.mock.calls.length).toBe(callsBefore);
-  });
-
-  it('save create should include mapped budgets when budgetsToUpsert is not empty', () => {
-    const budget: UpsertBudgetEntryDto = {
-      id: undefined,
-      teamId: 5,
-      targetAmount: 1000,
-      periodStart: '2024-01-01',
-      periodEnd: '2024-12-31',
-    };
-    const event: CostCentreSaveEvent = {
-      costCentre: {
-        id: -1,
-        name: 'New CC',
-        description: null,
-        displayColor: null,
-        budgets: [],
-        isActive: true,
-      },
-      budgetsToUpsert: [budget],
-      budgetIdsToDelete: [],
-    };
-    component.save(event);
-    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
-      expect.objectContaining({
-        budgets: [
-          { teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' },
-        ],
-      }),
-    );
-  });
-
-  it('save update should include budgetsToUpsert and budgetIdsToDelete when not empty', () => {
-    const budget: UpsertBudgetEntryDto = {
-      id: 10,
-      teamId: 3,
-      targetAmount: 200,
-      periodStart: '2024-01-01',
-      periodEnd: '2024-06-30',
-    };
-    const event: CostCentreSaveEvent = {
-      costCentre: mockCostCentres[0],
-      budgetsToUpsert: [budget],
-      budgetIdsToDelete: [99],
-    };
-    component.save(event);
-    expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({ budgetsToUpsert: [budget], budgetIdsToDelete: [99] }),
-    );
   });
 });

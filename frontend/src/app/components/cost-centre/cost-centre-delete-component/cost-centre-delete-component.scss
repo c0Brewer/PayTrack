@@ -1,0 +1,43 @@
+@use 'variables' as v;
+
+.delete-modal-text {
+  font-size: v.$font-s;
+  margin: 0 0 v.$size-s;
+}
+
+.delete-warning {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid v.$accent-color;
+  border-radius: v.$size-xs;
+  margin-bottom: v.$size-m;
+  padding: v.$size-s;
+
+  p {
+    color: v.$accent-color;
+    font-weight: v.$font-medium;
+    margin: 0 0 v.$size-xs;
+  }
+
+  ul {
+    font-size: v.$font-s;
+    margin: 0;
+    padding-left: v.$size-m;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
+  margin-top: v.$size-l;
+}
+
+@media (max-width: 575.98px) {
+  .modal-actions {
+    flex-direction: column-reverse;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}

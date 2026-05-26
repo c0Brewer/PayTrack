@@ -76,148 +76,18 @@
   ></app-pagination-component>
 
   @if (editingCostCentre) {
-    <app-modal-component
-      [title]="isCreating ? 'Create Cost Centre' : 'Edit Cost Centre'"
+    <app-cost-centre-edit-component
+      [costCentre]="editingCostCentre"
+      (saveEvent)="onCostCentreSaved()"
       (closeEvent)="closeEdit()"
-    >
-      <label>
-        Name
-        <input [(ngModel)]="editingCostCentre.name" placeholder="Required, min 3 characters" />
-      </label>
-
-      <label>
-        Description
-        <input [(ngModel)]="editingCostCentre.description" placeholder="Optional" />
-      </label>
-
-      <div class="budgets-section">
-        <h4>Budgets</h4>
-
-        @if (workingBudgets.length > 0) {
-          <table class="budget-table">
-            <thead>
-              <tr>
-                <th>Team ID</th>
-                <th>Amount</th>
-                <th>Period Start</th>
-                <th>Period End</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (budget of workingBudgets; track budget.originalId) {
-                <tr [class.deleted]="budget.markedForDeletion">
-                  <td>{{ budget.teamId }}</td>
-                  <td>{{ budget.targetAmount }}</td>
-                  <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
-                  <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
-                  <td>
-                    <button type="button" class="btn-icon" (click)="toggleBudgetDeletion(budget)">
-                      {{ budget.markedForDeletion ? 'Restore' : 'Remove' }}
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-
-        @if (newBudgets.length > 0) {
-          <table class="budget-table new-budgets">
-            <thead>
-              <tr>
-                <th>Team ID</th>
-                <th>Amount</th>
-                <th>Period Start</th>
-                <th>Period End</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (budget of newBudgets; track $index) {
-                <tr>
-                  <td>{{ budget.teamId }}</td>
-                  <td>{{ budget.targetAmount }}</td>
-                  <td>{{ budget.periodStart }}</td>
-                  <td>{{ budget.periodEnd }}</td>
-                  <td>
-                    <button type="button" class="btn-icon" (click)="removeNewBudget($index)">
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-
-        <div class="add-budget-form">
-          <label>
-            Team ID
-            <input type="number" [(ngModel)]="newBudgetDraft.teamId" placeholder="Team ID" />
-          </label>
-          <label>
-            Amount
-            <input type="number" [(ngModel)]="newBudgetDraft.targetAmount" placeholder="0.00" />
-          </label>
-          <label>
-            Period Start
-            <input type="date" [(ngModel)]="newBudgetDraft.periodStart" />
-          </label>
-          <label>
-            Period End
-            <input type="date" [(ngModel)]="newBudgetDraft.periodEnd" />
-          </label>
-          <button type="button" class="btn-add-budget" (click)="addNewBudget()">
-            + Add Budget
-          </button>
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="closeEdit()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="saveEdit()">
-          {{ isCreating ? 'Create' : 'Save' }}
-        </button>
-      </div>
-    </app-modal-component>
+    ></app-cost-centre-edit-component>
   }
 
-  @if (deletingCostCentre && deletePreview) {
-    <app-modal-component title="Delete Cost Centre" (closeEvent)="closeDelete()" icon="delete">
-      <p class="delete-modal-text">
-        You are about to delete <strong>{{ deletePreview.costCentreName }}</strong
-        >.
-      </p>
-
-      @if (hasLinkedDeleteRecords) {
-        <div class="delete-warning">
-          <p>This cost centre has linked records and will be deactivated instead of deleted:</p>
-          <ul>
-            @if (deletePreview.budgetCount > 0) {
-              <li>{{ deletePreview.budgetCount }} budget(s)</li>
-            }
-            @if (deletePreview.transactionCount > 0) {
-              <li>{{ deletePreview.transactionCount }} transaction(s)</li>
-            }
-            @if (deletePreview.affectedUserCount > 0) {
-              <li>{{ deletePreview.affectedUserCount }} affected user(s)</li>
-            }
-            @if (deletePreview.affectedTeamNames.length > 0) {
-              <li>Affected teams: {{ deletePreview.affectedTeamNames.join(', ') }}</li>
-            }
-          </ul>
-        </div>
-      } @else {
-        <p class="delete-modal-text">Are you sure? This action cannot be undone.</p>
-      }
-
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="closeDelete()">Cancel</button>
-        <button type="button" class="btn btn-outline-danger" (click)="confirmDelete()">
-          {{ hasLinkedDeleteRecords ? 'Deactivate' : 'Delete' }}
-        </button>
-      </div>
-    </app-modal-component>
+  @if (deletingCostCentre) {
+    <app-cost-centre-delete-component
+      [costCentre]="deletingCostCentre"
+      (deleteEvent)="onCostCentreDeleted()"
+      (closeEvent)="closeDelete()"
+    ></app-cost-centre-delete-component>
   }
 </div>
