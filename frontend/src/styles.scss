@@ -369,3 +369,43 @@ body {
   font-size: v.$font-xxs;
   font-weight: v.$font-semibold;
 }
+
+
+/* Show text on CRUD buttons */
+
+.icon-hover-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: gap 0.2s ease;
+}
+
+.icon-hover-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.icon-hover-btn .btn-text {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-6px);
+  overflow: hidden;
+  transition:
+    max-width 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.25s ease;
+}
+
+.icon-hover-btn:hover,
+.icon-hover-btn:focus-visible {
+  gap: 0.4rem;
+}
+
+.icon-hover-btn:hover .btn-text,
+.icon-hover-btn:focus-visible .btn-text {
+  max-width: 4rem;
+  opacity: 1;
+  transform: translateX(0);
+}
+
