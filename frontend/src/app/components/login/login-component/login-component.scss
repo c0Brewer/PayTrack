@@ -1,5 +1,31 @@
 @use 'variables' as v;
 
+/** AI Generated CSS Rules Start*/
+.login-progress-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 72%);
+  backdrop-filter: blur(2px);
+}
+
+.login-progress-overlay__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 12rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: v.$size-xs;
+  background: white;
+  color: v.$text-color;
+  font-weight: v.$font-semibold;
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 12%);
+}
+/** AI Generated CSS Rules End*/
 #right-section-login {
   img {
     margin-bottom: 2.5rem;
@@ -53,6 +79,12 @@
 
     &:hover {
       transform: scale(1.01);
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.75;
+      transform: none;
     }
   }
 
