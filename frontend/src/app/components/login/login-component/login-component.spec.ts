@@ -67,7 +67,7 @@ describe('LoginComponent', () => {
       showError: vi.fn(),
     };
 
-    (window as any).google = {
+    window.google = {
       accounts: {
         oauth2: {
           initCodeClient: vi.fn().mockReturnValue({
@@ -113,7 +113,7 @@ describe('LoginComponent', () => {
   });
 
   it('should show error if google not available', async () => {
-    (window as any).google = undefined;
+    window.google = undefined;
 
     await component.ngAfterViewInit();
 
