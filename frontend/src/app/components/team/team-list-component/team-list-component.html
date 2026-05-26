@@ -4,7 +4,7 @@
       <th class="name-col">Name</th>
       <th class="description-col">Description</th>
       <th class="members-col">Member Count</th>
-      <th class="members-col">Status</th>
+      <th class="status-col">Status</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -27,8 +27,13 @@
         </td>
         <td class="members-col" data-label="Member Count">{{ getMembersCount(team) }}</td>
 
-        <td class="members-col" data-label="Status">
-          <span class="status-badge" [class.active]="team.isActive">
+        <td class="status-col" data-label="Status">
+          <span
+            class="status-btn status-badge"
+            [class.active]="team.isActive"
+            [class.inactive]="!team.isActive"
+          >
+            <span class="status-dot" aria-hidden="true"></span>
             {{ team.isActive ? 'Active' : 'Inactive' }}
           </span>
         </td>
