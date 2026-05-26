@@ -78,6 +78,8 @@
       <div class="lower-nav">
         <a
           class="sidebar__settings"
+          [class.sidebar__settings--warning]="hasNoBankAccounts"
+          [attr.data-tooltip]="hasNoBankAccounts ? 'You have no Bank Account set' : null"
           routerLink="/settings"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
@@ -85,7 +87,7 @@
         >
           <span class="material-symbols-outlined">settings</span> Settings
           @if (hasNoBankAccounts) {
-            <div class="warning-badge-wrapper" title="You have no Bank Account set">
+            <div class="warning-badge-wrapper">
               <div class="warning-badge">
                 <span class="material-symbols-outlined">error</span>
               </div>
