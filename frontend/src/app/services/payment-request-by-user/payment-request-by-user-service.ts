@@ -22,9 +22,7 @@ export class PaymentRequestByUserService {
   constructor(private readonly authService: AuthService) {}
 
   private getApiUrl(path: string): string {
-    return environment.apiBaseUrl
-      ? new URL(path, environment.apiBaseUrl).toString()
-      : path;
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
   }
 
   private getUploadUrl(): string {

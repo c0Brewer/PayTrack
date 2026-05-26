@@ -7,10 +7,7 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../services/team/team-service';
-import {
-  DuplicatePaymentRequestByUserDto,
-  PaymentRequestByUserDto,
-} from '../../../types/exporter';
+import { DuplicatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../../types/exporter';
 
 import { RequestsComponent } from './requests-component';
 
@@ -190,7 +187,10 @@ describe('RequestsComponent', () => {
 
   it('should dismiss duplicate warning and remove candidate from modal', () => {
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
-    component.selectedDuplicateInvoice = { id: 1, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
+    component.selectedDuplicateInvoice = {
+      id: 1,
+      invoiceNumber: 'INV-1',
+    } as PaymentRequestByUserDto;
     const duplicate = {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
       score: 60,

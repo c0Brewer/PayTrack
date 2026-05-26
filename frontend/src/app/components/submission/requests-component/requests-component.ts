@@ -187,8 +187,7 @@ export class RequestsComponent implements OnInit {
         next: () => {
           this.notificationService.showSuccess('Duplicate warning dismissed.');
           this.duplicateCandidates = this.duplicateCandidates.filter(
-            (candidate) =>
-              candidate.paymentRequestByUser.id !== duplicate.paymentRequestByUser.id,
+            (candidate) => candidate.paymentRequestByUser.id !== duplicate.paymentRequestByUser.id,
           );
           this.duplicateActionInvoiceId = null;
 
