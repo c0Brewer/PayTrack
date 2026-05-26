@@ -1,0 +1,150 @@
+@use 'variables' as v;
+
+label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: v.$size-m;
+  font-size: v.$font-s;
+  color: v.$text-color;
+}
+
+input,
+select {
+  width: 100%;
+  padding: v.$size-xs v.$size-s;
+  font-size: v.$font-s;
+  border: 1px solid v.$border-color;
+  border-radius: 0.375rem;
+  background: v.$background-light;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: v.$primary-color;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+  }
+}
+
+.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.12);
+}
+
+.field-error {
+  margin-top: v.$size-xxs;
+  color: #dc2626;
+  font-size: v.$font-s;
+}
+
+.budgets-section {
+  margin-top: v.$size-m;
+  border-top: 1px solid v.$border-color;
+  padding-top: v.$size-m;
+
+  h4 {
+    margin: 0 0 v.$size-s;
+    font-size: v.$font-s;
+    color: v.$text-color;
+  }
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  margin-bottom: v.$size-s;
+
+  th,
+  td {
+    padding: v.$size-xs v.$size-s;
+    text-align: left;
+    border-bottom: 1px solid v.$border-color;
+  }
+
+  th {
+    color: v.$text-color;
+    font-weight: v.$font-medium;
+  }
+
+  tr.deleted td {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+}
+
+.new-budgets tr td {
+  color: v.$primary-color;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: v.$accent-color;
+  cursor: pointer;
+  font-size: v.$font-s;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.add-budget-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: v.$size-s;
+  align-items: flex-start;
+  margin-top: v.$size-s;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.budget-period-field {
+  align-self: flex-start;
+}
+
+.btn-add-budget {
+  background: v.$primary-color;
+  color: v.$background-light;
+  padding: v.$size-xs v.$size-s;
+  border-radius: 0.375rem;
+  font-size: v.$font-s;
+  white-space: nowrap;
+  align-self: flex-end;
+  min-height: 2.75rem;
+
+  &:hover {
+    background: v.$primary-light;
+  }
+}
+
+.modal-actions {
+  margin-top: v.$size-l;
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$size-s;
+
+  button {
+    &:first-child {
+      background: v.$background-dark;
+      color: v.$text-color;
+
+      &:hover {
+        background: v.$border-color;
+      }
+    }
+
+    &:last-child {
+      background: v.$primary-color;
+      color: v.$background-light;
+
+      &:hover {
+        background: v.$primary-light;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}

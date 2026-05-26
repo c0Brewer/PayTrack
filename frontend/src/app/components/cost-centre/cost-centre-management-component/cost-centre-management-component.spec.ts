@@ -5,10 +5,14 @@ import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
+import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
   CostCentreDtoPaginatedResponse,
   GetCostCentreOptions,
+  SeasonDto,
+  TeamDtoPaginatedResponse,
 } from '../../../types/exporter';
 
 import { CostCentreManagementComponent } from './cost-centre-management-component';
@@ -34,6 +38,19 @@ const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
   hasPrevious: false,
 };
 
+const mockSeasons: SeasonDto[] = [
+  { id: 1, name: '2025', budgets: [] },
+  { id: 2, name: '2026', budgets: [] },
+];
+const mockTeams: TeamDtoPaginatedResponse = {
+  items: [{ id: 1, name: 'Platform', description: null, displayColor: null, members: [] }],
+  totalCount: 1,
+  limit: 1000,
+  offset: 0,
+  hasNext: false,
+  hasPrevious: false,
+};
+
 describe('CostCentreManagementComponent', () => {
   let component: CostCentreManagementComponent;
   let fixture: ComponentFixture<CostCentreManagementComponent>;
@@ -43,6 +60,12 @@ describe('CostCentreManagementComponent', () => {
     updateCostCentre: ReturnType<typeof vi.fn>;
     getDeletePreview: ReturnType<typeof vi.fn>;
     deleteCostCentre: ReturnType<typeof vi.fn>;
+  };
+  let seasonServiceMock: {
+    getSeasons: ReturnType<typeof vi.fn>;
+  };
+  let teamServiceMock: {
+    getTeams: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -58,6 +81,12 @@ describe('CostCentreManagementComponent', () => {
       getDeletePreview: vi.fn(),
       deleteCostCentre: vi.fn().mockReturnValue(of(null)),
     };
+    seasonServiceMock = {
+      getSeasons: vi.fn().mockReturnValue(of(mockSeasons)),
+    };
+    teamServiceMock = {
+      getTeams: vi.fn().mockReturnValue(of(mockTeams)),
+    };
     notificationServiceMock = {
       showError: vi.fn(),
       showSuccess: vi.fn(),
@@ -69,6 +98,8 @@ describe('CostCentreManagementComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: SeasonService, useValue: seasonServiceMock },
+        { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
       ],
@@ -86,7 +117,10 @@ describe('CostCentreManagementComponent', () => {
   it('ngOnInit should load cost centres', () => {
     component.ngOnInit();
     expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(teamServiceMock.getTeams).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
     expect(component.costCentres).toEqual(mockCostCentres);
+    expect(component.seasons).toEqual(mockSeasons);
   });
 
   it('load should show error when API throws', () => {
@@ -95,6 +129,16 @@ describe('CostCentreManagementComponent', () => {
     );
     component.load();
     expect(notificationServiceMock.showError).toHaveBeenCalled();
+  });
+
+  it('loadSeasons should show error when API throws', () => {
+    seasonServiceMock.getSeasons.mockReturnValueOnce(throwError(() => new Error('Season failed')));
+
+    component.loadSeasons();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not load seasons: Season failed',
+    );
   });
 
   it('openCreate should set editingCostCentre with id -1', () => {

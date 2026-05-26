@@ -77,6 +77,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         new Budget
                         {
                             Id = 8,
+                            Name = "Core budget",
                             TeamId = 1,
                             CostCentreId = 12,
                             TargetAmount = 600m,
@@ -93,6 +94,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     q.Description == "budget" &&
                     q.MinBudget == 100m &&
                     q.MaxBudget == 900m &&
+                    q.IsActive == true &&
                     q.IncludeMembers == true &&
                     q.IncludeBudgets == true &&
                     q.Limit == 1 &&
@@ -104,7 +106,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Act
             var response = await client.GetAsync(
-                "api/v1/team?name=Core&description=budget&minBudget=100&maxBudget=900&includeMembers=true&includeBudgets=true&limit=1&offset=2");
+                "api/v1/team?name=Core&description=budget&minBudget=100&maxBudget=900&isActive=true&includeMembers=true&includeBudgets=true&limit=1&offset=2");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -199,6 +201,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new Budget
                     {
                         Id = 5,
+                        Name = "Team budget",
                         TeamId = 1,
                         CostCentreId = 12,
                         TargetAmount = 2500m,
@@ -304,7 +307,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task UpdateTeam_ReturnsOkWithUpdatedTeam()
         {
             // Arrange
-            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "#445566", null, null);
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", null, "#445566", null, null);
             var updatedTeam = new Team
             {
                 Id = 1,
@@ -318,6 +321,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     1,
                     requestDto.Name,
                     requestDto.Description,
+                    requestDto.IsActive,
                     requestDto.DisplayColor,
                     requestDto.BudgetsToUpsert,
                     requestDto.BudgetIdsToDelete))
@@ -343,7 +347,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task UpdateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
         {
             // Arrange
-            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "My Color", null, null);
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", null, "My Color", null, null);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -358,6 +362,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     1,
                     requestDto.Name,
                     requestDto.Description,
+                    requestDto.IsActive,
                     requestDto.DisplayColor,
                     requestDto.BudgetsToUpsert,
                     requestDto.BudgetIdsToDelete),

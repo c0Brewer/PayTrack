@@ -39,18 +39,29 @@
       class="col-12 col-sm-6 col-xl-3"
     />
   </div>
+
   <app-user-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onLimitChange($event)"
   />
+
   <app-user-list-component
     [user]="user"
     [activeStatusPendingIds]="activeStatusPendingIds"
     (toggleActive)="toggleActive($event)"
     (openEditUser)="openEditUser($event)"
   />
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
 
   @if (editingUser) {
     <app-user-edit-modal-component

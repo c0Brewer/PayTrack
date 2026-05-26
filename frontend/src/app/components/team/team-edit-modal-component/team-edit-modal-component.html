@@ -90,10 +90,29 @@
       </div>
 
       <div class="border rounded p-3 mb-3">
-        <div class="row g-3 align-items-end">
+        <div class="row g-3 align-items-start">
+          <label class="col-12 col-sm-12 mb-0">
+            Name
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.name"
+              [class.input-error]="hasBudgetFieldError('name')"
+              (blur)="onBudgetFieldBlur('name')"
+              placeholder="Name"
+            />
+            @if (hasBudgetFieldError('name')) {
+              <span class="field-error">{{ getBudgetFieldError('name') }}</span>
+            }
+          </label>
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
-            <select class="form-select" [(ngModel)]="newBudgetDraft.costCentreId">
+            <select
+              class="form-select"
+              [(ngModel)]="newBudgetDraft.costCentreId"
+              [class.input-error]="hasBudgetFieldError('costCentreId')"
+              (blur)="onBudgetFieldBlur('costCentreId')"
+            >
               <option [ngValue]="0" disabled>Select cost centre</option>
               @for (costCentre of costCentres; track costCentre.id) {
                 <option [ngValue]="costCentre.id" [disabled]="costCentre.isActive === false">
@@ -101,6 +120,9 @@
                 </option>
               }
             </select>
+            @if (hasBudgetFieldError('costCentreId')) {
+              <span class="field-error">{{ getBudgetFieldError('costCentreId') }}</span>
+            }
           </label>
           <label class="col-12 col-sm-4 mb-0">
             Amount (€)
@@ -108,17 +130,56 @@
               type="number"
               class="form-control"
               [(ngModel)]="newBudgetDraft.targetAmount"
+              [class.input-error]="hasBudgetFieldError('targetAmount')"
+              (blur)="onBudgetFieldBlur('targetAmount')"
               placeholder="0.00"
             />
+            @if (hasBudgetFieldError('targetAmount')) {
+              <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+            }
+          </label>
+          <label class="col-12 col-sm-12 mb-0">
+            Season
+            <select
+              [(ngModel)]="newBudgetDraft.seasonId"
+              [class.input-error]="hasBudgetFieldError('seasonId')"
+              (blur)="onBudgetFieldBlur('seasonId')"
+            >
+              <option [ngValue]="0" disabled>Select season</option>
+              @for (season of seasons; track season.id) {
+                <option [ngValue]="season.id">{{ season.name }}</option>
+              }
+            </select>
+            @if (hasBudgetFieldError('seasonId')) {
+              <span class="field-error">{{ getBudgetFieldError('seasonId') }}</span>
+            }
           </label>
           <div class="w-100"></div>
-          <label class="col-12 col-sm-6 mb-0">
+          <label class="col-12 col-sm-6 mb-0 budget-period-field">
             Period Start
-            <input type="date" class="form-control" [(ngModel)]="newBudgetDraft.periodStart" />
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.periodStart"
+              [class.input-error]="hasBudgetFieldError('periodStart')"
+              (blur)="onBudgetFieldBlur('periodStart')"
+            />
+            @if (hasBudgetFieldError('periodStart')) {
+              <span class="field-error">{{ getBudgetFieldError('periodStart') }}</span>
+            }
           </label>
-          <label class="col-12 col-sm-6 mb-0">
+          <label class="col-12 col-sm-6 mb-0 budget-period-field">
             Period End
-            <input type="date" class="form-control" [(ngModel)]="newBudgetDraft.periodEnd" />
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.periodEnd"
+              [class.input-error]="hasBudgetFieldError('periodEnd')"
+              (blur)="onBudgetFieldBlur('periodEnd')"
+            />
+            @if (hasBudgetFieldError('periodEnd')) {
+              <span class="field-error">{{ getBudgetFieldError('periodEnd') }}</span>
+            }
           </label>
           <div class="col-12 d-flex justify-content-end">
             <button
@@ -142,7 +203,7 @@
             >
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-light border mt-1">Existing</span>
                 </div>
                 <button
@@ -179,7 +240,7 @@
             <div class="budget-card border rounded p-3 budget-card--new">
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
-                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) }}</div>
+                  <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
                   <span class="badge text-bg-primary mt-1">New</span>
                 </div>
                 <button

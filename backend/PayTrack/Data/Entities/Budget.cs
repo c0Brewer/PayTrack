@@ -21,6 +21,31 @@ namespace PayTrack.Data.Entities
         public int Id { get; set; }
 
         /// <summary>
+        /// Name of the Budget.
+        /// </summary>
+        [Required]
+        [MaxLength(255)]
+        public string Name { get; set; } = null!;
+
+        /// <summary>
+        /// Description of the Budget.
+        /// </summary>
+        [MaxLength(1000)]
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Foreign Key for Season.
+        /// </summary>
+        [Required]
+        public int SeasonId { get; set; }
+
+        /// <summary>
+        /// Reference to Season.
+        /// </summary>
+        [ForeignKey(nameof(SeasonId))]
+        public Season Season { get; set; } = null!;
+
+        /// <summary>
         /// Foreign Key for Team.
         /// </summary>
         [Required]
@@ -63,5 +88,10 @@ namespace PayTrack.Data.Entities
         /// </summary>
         [Required]
         public DateTime PeriodEnd { get; set; }
+
+        /// <summary>
+        /// Reference to linked Transactions.
+        /// </summary>
+        public ICollection<Transaction> Transactions { get; set; } = [];
     }
 }

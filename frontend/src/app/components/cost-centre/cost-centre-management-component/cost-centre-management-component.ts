@@ -2,7 +2,15 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
-import { CostCentreDto, GetCostCentreOptions } from '../../../types/exporter';
+import { SeasonService } from '../../../services/season/season-service';
+import { TeamService } from '../../../services/team/team-service';
+import {
+  CostCentreDto,
+  GetCostCentreOptions,
+  GetTeamOptions,
+  SeasonDto,
+  TeamDto,
+} from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { CostCentreDeleteComponent } from '../cost-centre-delete-component/cost-centre-delete-component';
@@ -26,11 +34,15 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
 export class CostCentreManagementComponent implements OnInit {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly seasonService: SeasonService,
+    private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   costCentres: CostCentreDto[] = [];
+  teams: TeamDto[] = [];
+  seasons: SeasonDto[] = [];
   editingCostCentre: CostCentreDto | null = null;
   deletingCostCentre: CostCentreDto | null = null;
 
@@ -53,6 +65,39 @@ export class CostCentreManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadTeams();
+    this.loadSeasons();
+  }
+
+  loadTeams(): void {
+    const queryOptions: GetTeamOptions = {
+      IncludeMembers: false,
+      IncludeBudgets: false,
+      Limit: 1000,
+      Offset: 0,
+    };
+
+    this.teamService.getTeams(queryOptions).subscribe({
+      next: (data) => {
+        this.teams = data.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load teams: ' + err.message);
+      },
+    });
+  }
+
+  loadSeasons(): void {
+    this.seasonService.getSeasons().subscribe({
+      next: (seasons) => {
+        this.seasons = seasons;
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load seasons: ' + err.message);
+      },
+    });
   }
 
   load(): void {

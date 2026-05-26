@@ -48,6 +48,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="id">The id of the team to update.</param>
         /// <param name="name">The new name that should be set for the team.</param>
         /// <param name="description">The new description that should be set for the team.</param>
+        /// <param name="isActive">The new isActive that should be set for the team.</param>
         /// <param name="displayColor">The new display color that should be set for the team.</param>
         /// <param name="budgetsToUpsert">Optional budgets to create or update for the team.</param>
         /// <param name="budgetIdsToDelete">Optional budget ids to remove from the team.</param>
@@ -56,6 +57,7 @@ namespace PayTrack.Application.Services.Model
             int id,
             string? name,
             string? description,
+            bool? isActive,
             string? displayColor,
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete);

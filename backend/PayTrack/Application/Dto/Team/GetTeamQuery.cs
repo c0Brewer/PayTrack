@@ -30,6 +30,11 @@ namespace PayTrack.Application.Dto.Team
         public decimal? MaxBudget { get; init; }
 
         /// <summary>
+        /// Active state to query.
+        /// </summary>
+        public bool? IsActive { get; init; }
+
+        /// <summary>
         /// Whether to include team members.
         /// </summary>
         public bool? IncludeMembers { get; init; }

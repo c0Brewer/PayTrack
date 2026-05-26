@@ -27,11 +27,15 @@ describe('CostCentreEditComponent', () => {
     budgets: [
       {
         id: 10,
+        name: 'Budget',
+        description: null,
         teamId: 3,
         costCentreId: 1,
+        seasonId: 1,
         targetAmount: 200,
         periodStart: '2024-01-01',
         periodEnd: '2024-06-30',
+        transactionIds: [],
       },
     ],
     isActive: true,
@@ -74,6 +78,8 @@ describe('CostCentreEditComponent', () => {
     expect(component.workingBudgets).toEqual([
       {
         originalId: 10,
+        name: 'Budget',
+        seasonId: 1,
         teamId: 3,
         targetAmount: 200,
         periodStart: '2024-01-01',
@@ -154,7 +160,10 @@ describe('CostCentreEditComponent', () => {
     component.newBudgets = [
       {
         id: undefined,
+        name: 'Budget',
+        description: null,
         teamId: 5,
+        seasonId: 1,
         targetAmount: 1000,
         periodStart: '2024-01-01',
         periodEnd: '2024-12-31',
@@ -166,7 +175,15 @@ describe('CostCentreEditComponent', () => {
     expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith(
       expect.objectContaining({
         budgets: [
-          { teamId: 5, targetAmount: 1000, periodStart: '2024-01-01', periodEnd: '2024-12-31' },
+          {
+            name: 'Budget',
+            description: null,
+            teamId: 5,
+            seasonId: 1,
+            targetAmount: 1000,
+            periodStart: '2024-01-01T00:00:00.000Z',
+            periodEnd: '2024-12-31T00:00:00.000Z',
+          },
         ],
       }),
     );
@@ -175,7 +192,10 @@ describe('CostCentreEditComponent', () => {
   it('saveEdit should include budgetsToUpsert and budgetIdsToDelete when updating', () => {
     const budget: UpsertBudgetEntryDto = {
       id: 10,
+      name: 'Budget',
+      description: null,
       teamId: 3,
+      seasonId: 1,
       targetAmount: 200,
       periodStart: '2024-01-01',
       periodEnd: '2024-06-30',
@@ -190,7 +210,14 @@ describe('CostCentreEditComponent', () => {
     expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
       1,
       expect.objectContaining({
-        budgetsToUpsert: [{ ...budget, id: null }],
+        budgetsToUpsert: [
+          {
+            ...budget,
+            id: null,
+            periodStart: '2024-01-01T00:00:00.000Z',
+            periodEnd: '2024-06-30T00:00:00.000Z',
+          },
+        ],
         budgetIdsToDelete: [10],
       }),
     );
@@ -235,7 +262,10 @@ describe('CostCentreEditComponent', () => {
   it('addNewBudget should add a complete draft and reset it', () => {
     component.newBudgetDraft = {
       id: null,
+      name: 'Budget',
+      description: null,
       teamId: 5,
+      seasonId: 1,
       targetAmount: 100,
       periodStart: '2024-01-01',
       periodEnd: '2024-12-31',
@@ -246,7 +276,10 @@ describe('CostCentreEditComponent', () => {
     expect(component.newBudgets).toEqual([
       {
         id: null,
+        name: 'Budget',
+        description: null,
         teamId: 5,
+        seasonId: 1,
         targetAmount: 100,
         periodStart: '2024-01-01',
         periodEnd: '2024-12-31',
@@ -254,7 +287,10 @@ describe('CostCentreEditComponent', () => {
     ]);
     expect(component.newBudgetDraft).toEqual({
       id: null,
+      name: '',
+      description: null,
       teamId: 0,
+      seasonId: 0,
       targetAmount: 0,
       periodStart: '',
       periodEnd: '',

@@ -55,7 +55,9 @@
 
   <app-team-list-component
     [teams]="teams"
+    [activeStatusPendingIds]="activeStatusPendingIds"
     [costCentres]="costCentres"
+    (toggleActive)="toggleActive($event)"
     (openEditTeam)="openEditTeam($event)"
   ></app-team-list-component>
 
@@ -72,6 +74,7 @@
     <app-team-edit-modal-component
       [team]="editingTeam"
       [costCentres]="costCentres"
+      [seasons]="seasons"
       (saveEvent)="saveTeam($event)"
       (deleteEvent)="openDeleteTeam($event)"
       (closeEvent)="closeEdit()"

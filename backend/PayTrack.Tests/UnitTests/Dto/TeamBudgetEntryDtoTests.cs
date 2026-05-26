@@ -11,9 +11,11 @@ namespace PayTrack.Tests.UnitTests.Dto
             var periodStart = new DateTime(2026, 1, 1);
             var periodEnd = new DateTime(2026, 1, 31);
 
-            var dto = new CreateTeamBudgetEntryDto(12, 250m, periodStart, periodEnd);
+            var dto = new CreateTeamBudgetEntryDto("Q1 budget", null, 12, 3, 250m, periodStart, periodEnd);
 
+            dto.Name.Should().Be("Q1 budget");
             dto.CostCentreId.Should().Be(12);
+            dto.SeasonId.Should().Be(3);
             dto.TargetAmount.Should().Be(250m);
             dto.PeriodStart.Should().Be(periodStart);
             dto.PeriodEnd.Should().Be(periodEnd);
@@ -25,10 +27,12 @@ namespace PayTrack.Tests.UnitTests.Dto
             var periodStart = new DateTime(2026, 2, 1);
             var periodEnd = new DateTime(2026, 2, 28);
 
-            var dto = new UpsertTeamBudgetEntryDto(7, 12, 500m, periodStart, periodEnd);
+            var dto = new UpsertTeamBudgetEntryDto(7, "Q2 budget", null, 12, 4, 500m, periodStart, periodEnd);
 
             dto.Id.Should().Be(7);
+            dto.Name.Should().Be("Q2 budget");
             dto.CostCentreId.Should().Be(12);
+            dto.SeasonId.Should().Be(4);
             dto.TargetAmount.Should().Be(500m);
             dto.PeriodStart.Should().Be(periodStart);
             dto.PeriodEnd.Should().Be(periodEnd);

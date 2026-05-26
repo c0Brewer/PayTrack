@@ -5,13 +5,20 @@ import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
 import { GetUserOptions, TeamDto, UpdateUserDto, UserDto } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
+import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { UserEditModalComponent } from '../user-edit-modal-component/user-edit-modal-component';
 import { UserFilterComponent } from '../user-filter-component/user-filter-component';
 import { UserListComponent } from '../user-list-component/user-list-component';
 
 @Component({
   selector: 'app-user-management-component',
-  imports: [StatBoxComponent, UserListComponent, UserFilterComponent, UserEditModalComponent],
+  imports: [
+    StatBoxComponent,
+    UserListComponent,
+    UserFilterComponent,
+    UserEditModalComponent,
+    PaginationComponent,
+  ],
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.scss',
 })

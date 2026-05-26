@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CostCentreDto, TeamDto } from '../../../types/exporter';
+import { CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
 
 import { TeamEditModalComponent } from './team-edit-modal-component';
 
@@ -25,6 +25,18 @@ describe('TeamEditModalComponent', () => {
       isActive: false,
     },
   ];
+  const seasons: SeasonDto[] = [
+    { id: 1, name: '2025', budgets: [] },
+    { id: 2, name: '2026', budgets: [] },
+  ];
+
+  function clickAddBudgetButton(): void {
+    const addButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('Add Budget'));
+
+    addButton?.click();
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -227,11 +239,14 @@ describe('TeamEditModalComponent', () => {
       budgets: [
         {
           id: 10,
+          name: 'Existing budget',
           teamId: 1,
           costCentreId: 2,
+          seasonId: 1,
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          transactionIds: [],
         },
       ],
     };
@@ -240,7 +255,9 @@ describe('TeamEditModalComponent', () => {
     component.newBudgets = [
       {
         id: null,
+        name: 'New budget',
         costCentreId: 3,
+        seasonId: 2,
         targetAmount: 500,
         periodStart: '2026-01-01',
         periodEnd: '2026-06-30',
@@ -255,7 +272,9 @@ describe('TeamEditModalComponent', () => {
       budgetsToUpsert: [
         {
           id: null,
+          name: 'New budget',
           costCentreId: 3,
+          seasonId: 2,
           targetAmount: 500,
           periodStart: '2026-01-01',
           periodEnd: '2026-06-30',
@@ -267,9 +286,12 @@ describe('TeamEditModalComponent', () => {
 
   it('should add and remove new budgets with active cost centres', () => {
     component.costCentres = costCentres;
+    component.seasons = seasons;
     component.newBudgetDraft = {
       id: null,
+      name: 'New budget',
       costCentreId: 1,
+      seasonId: 2,
       targetAmount: 500,
       periodStart: '2026-01-01',
       periodEnd: '2026-12-31',
@@ -280,7 +302,9 @@ describe('TeamEditModalComponent', () => {
     expect(component.newBudgets).toEqual([
       {
         id: null,
+        name: 'New budget',
         costCentreId: 1,
+        seasonId: 2,
         targetAmount: 500,
         periodStart: '2026-01-01',
         periodEnd: '2026-12-31',
@@ -288,7 +312,10 @@ describe('TeamEditModalComponent', () => {
     ]);
     expect(component.newBudgetDraft).toEqual({
       id: null,
+      name: '',
+      description: null,
       costCentreId: 0,
+      seasonId: 0,
       targetAmount: 0,
       periodStart: '',
       periodEnd: '',
@@ -297,6 +324,85 @@ describe('TeamEditModalComponent', () => {
     component.removeNewBudget(0);
 
     expect(component.newBudgets).toEqual([]);
+  });
+
+  it('should mark missing budget fields red with messages', () => {
+    component.costCentres = costCentres;
+    fixture.detectChanges(false);
+
+    clickAddBudgetButton();
+    fixture.detectChanges(false);
+
+    expect(component.newBudgets).toEqual([]);
+    expect(component.hasBudgetFieldError('name')).toBe(true);
+    expect(component.hasBudgetFieldError('costCentreId')).toBe(true);
+    expect(component.hasBudgetFieldError('seasonId')).toBe(true);
+    expect(component.hasBudgetFieldError('periodStart')).toBe(true);
+    expect(component.hasBudgetFieldError('periodEnd')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Name is required.');
+    expect(fixture.nativeElement.textContent).toContain('Cost centre is required.');
+    expect(fixture.nativeElement.textContent).toContain('Season is required.');
+    expect(fixture.nativeElement.textContent).toContain('Period start is required.');
+    expect(fixture.nativeElement.textContent).toContain('Period end is required.');
+
+    const invalidControls = fixture.nativeElement.querySelectorAll('.input-error');
+    expect(invalidControls.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('should mark a negative budget amount red with a message', () => {
+    component.costCentres = costCentres;
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Budget',
+      description: null,
+      costCentreId: 1,
+      seasonId: 1,
+      targetAmount: -1,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+    };
+    fixture.detectChanges(false);
+
+    clickAddBudgetButton();
+    fixture.detectChanges(false);
+
+    const amountInput = fixture.nativeElement.querySelector(
+      'input[type="number"]',
+    ) as HTMLInputElement;
+
+    expect(component.newBudgets).toEqual([]);
+    expect(component.hasBudgetFieldError('targetAmount')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Amount must be non-negative.');
+    expect(amountInput.classList).toContain('input-error');
+  });
+
+  it('should mark a budget period end before the start red with a message', () => {
+    component.costCentres = costCentres;
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Budget',
+      description: null,
+      costCentreId: 1,
+      seasonId: 1,
+      targetAmount: 500,
+      periodStart: '2026-12-31',
+      periodEnd: '2026-01-01',
+    };
+    fixture.detectChanges(false);
+
+    clickAddBudgetButton();
+    fixture.detectChanges(false);
+
+    const dateInputs = fixture.nativeElement.querySelectorAll(
+      'input[type="date"]',
+    ) as NodeListOf<HTMLInputElement>;
+
+    expect(component.newBudgets).toEqual([]);
+    expect(component.hasBudgetFieldError('periodEnd')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Period end must not be before period start.',
+    );
+    expect(dateInputs[1].classList).toContain('input-error');
   });
 
   it('should mark existing budgets for deletion and restore them', () => {
@@ -309,11 +415,14 @@ describe('TeamEditModalComponent', () => {
       budgets: [
         {
           id: 10,
+          name: 'Existing budget',
           teamId: 1,
           costCentreId: 2,
+          seasonId: 1,
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          transactionIds: [],
         },
       ],
     };
@@ -336,11 +445,21 @@ describe('TeamEditModalComponent', () => {
     expect(component.getCostCentreName(99)).toBe('Cost Centre #99');
   });
 
+  it('should resolve season names and fall back to the id', () => {
+    component.seasons = seasons;
+
+    expect(component.getSeasonName(2)).toBe('2026');
+    expect(component.getSeasonName(99)).toBe('Season #99');
+  });
+
   it('should label inactive cost centre options and prevent adding them to new budgets', () => {
     component.costCentres = costCentres;
+    component.seasons = seasons;
     component.newBudgetDraft = {
       id: null,
+      name: 'Blocked budget',
       costCentreId: 2,
+      seasonId: 1,
       targetAmount: 500,
       periodStart: '2026-01-01',
       periodEnd: '2026-12-31',
@@ -365,6 +484,7 @@ describe('TeamEditModalComponent', () => {
 
   it('should render inactive cost centres as disabled select options', () => {
     fixture.componentRef.setInput('costCentres', costCentres);
+    fixture.componentRef.setInput('seasons', seasons);
     fixture.detectChanges();
 
     const inactiveOption = Array.from(
@@ -373,5 +493,16 @@ describe('TeamEditModalComponent', () => {
 
     expect(inactiveOption).toBeTruthy();
     expect(inactiveOption?.disabled).toBe(true);
+  });
+
+  it('should render seasons as select options', () => {
+    fixture.componentRef.setInput('seasons', seasons);
+    fixture.detectChanges();
+
+    const seasonOption = Array.from(
+      fixture.nativeElement.querySelectorAll('option') as NodeListOf<HTMLOptionElement>,
+    ).find((option) => option.textContent?.trim() === '2026');
+
+    expect(seasonOption).toBeTruthy();
   });
 });

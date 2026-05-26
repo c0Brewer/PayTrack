@@ -28,17 +28,25 @@
         <td class="members-col" data-label="Member Count">{{ getMembersCount(team) }}</td>
 
         <td class="status-col" data-label="Status">
-          <span
-            class="status-btn status-badge"
+          <button
+            type="button"
+            class="status-btn"
             [class.active]="team.isActive"
             [class.inactive]="!team.isActive"
+            [disabled]="isActiveStatusPending(team)"
+            (click)="onToggleActive(team)"
+            [title]="team.isActive ? 'Click to deactivate user' : 'Click to activate team'"
           >
             <span class="status-dot" aria-hidden="true"></span>
             {{ team.isActive ? 'Active' : 'Inactive' }}
-          </span>
+          </button>
         </td>
         <td class="actions-col" data-label="Actions">
-          <button type="button" class="btn btn-secondary icon-hover-btn" (click)="onOpenEditTeam(team)">
+          <button
+            type="button"
+            class="btn btn-secondary icon-hover-btn"
+            (click)="onOpenEditTeam(team)"
+          >
             <span class="material-symbols-outlined">edit</span>
             <span class="btn-text">Edit</span>
           </button>

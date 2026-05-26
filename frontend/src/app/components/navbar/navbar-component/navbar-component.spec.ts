@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
+import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { Role, UserDto } from '../../../types/exporter';
 
@@ -12,8 +13,11 @@ describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
 
-  const paymentServiceMock = {
-    getPaymentRequestsByUser: vi.fn(),
+  let paymentServiceMock: {
+    getPaymentRequestsByUser: ReturnType<typeof vi.fn>;
+  };
+  let teamRequestServiceMock: {
+    getPaymentRequestsByTeam: ReturnType<typeof vi.fn>;
   };
   let authServiceMock: {
     loggedIn$: BehaviorSubject<boolean>;
@@ -27,6 +31,12 @@ describe('NavbarComponent', () => {
       currentUser$: new BehaviorSubject<UserDto | null>(null),
       logout: vi.fn(),
     };
+    paymentServiceMock = {
+      getPaymentRequestsByUser: vi.fn(() => of({ totalCount: 0 })),
+    };
+    teamRequestServiceMock = {
+      getPaymentRequestsByTeam: vi.fn(() => of({ totalCount: 0 })),
+    };
   });
 
   beforeEach(async () => {
@@ -36,6 +46,7 @@ describe('NavbarComponent', () => {
         { provide: AuthService, useValue: authServiceMock },
         provideRouter([]),
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: PaymentRequestByTeamService, useValue: teamRequestServiceMock },
       ],
     }).compileComponents();
 

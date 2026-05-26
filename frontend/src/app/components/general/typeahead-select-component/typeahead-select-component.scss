@@ -1,0 +1,80 @@
+@use '../../../../styles/variables' as v;
+
+:host {
+  display: block;
+}
+
+.typeahead {
+  position: relative;
+
+  &__input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    input {
+      flex: 1;
+      border: 1px solid white;
+      background-color: v.$TUR-secondary-background;
+      height: 2.2rem;
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+
+      &.is-invalid {
+        border-color: #ef4444;
+      }
+    }
+  }
+
+  &__clear {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: v.$TUR-primary-grey;
+    display: inline-flex;
+    align-items: center;
+
+    &:hover {
+      color: v.$TUR-primary-orange;
+    }
+
+    .material-symbols-outlined {
+      font-size: 1.1rem;
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    z-index: 200;
+    width: 100%;
+    border: 1.5px solid v.$TUR-border-color;
+    border-radius: 0.2rem;
+    background: v.$TUR-secondary-background;
+    max-height: 12rem;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &__option {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      background: v.$TUR-secondary-orange;
+    }
+
+    &__primary {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    &__secondary {
+      font-size: 0.78rem;
+      color: v.$TUR-primary-grey;
+    }
+  }
+}
