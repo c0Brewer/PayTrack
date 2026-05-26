@@ -36,7 +36,13 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-payment-request-by-team-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent, TypeaheadSelectComponent, CsvBulkImportModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    BoxComponent,
+    TypeaheadSelectComponent,
+    CsvBulkImportModalComponent,
+  ],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })

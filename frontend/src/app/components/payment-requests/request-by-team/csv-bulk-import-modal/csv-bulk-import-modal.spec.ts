@@ -113,12 +113,15 @@ describe('CsvBulkImportModalComponent', () => {
 
   describe('CSV parsing via parseCsvFile', () => {
     function setupPapaMock(rows: string[][]): void {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (vi.spyOn(Papa, 'parse') as any).mockImplementation((_file: any, config: Papa.ParseConfig) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        config.complete?.({ data: rows, errors: [], meta: {} as Papa.ParseMeta }, undefined as any);
-        return {} as Papa.Parser;
-      });
+      (vi.spyOn(Papa, 'parse') as ReturnType<typeof vi.spyOn>).mockImplementation(
+        (_file: unknown, config: Papa.ParseConfig) => {
+          config.complete?.(
+            { data: rows, errors: [], meta: {} as Papa.ParseMeta },
+            undefined,
+          );
+          return {} as Papa.Parser;
+        },
+      );
     }
 
     it('skips pre-header rows and finds the correct data header row', () => {
@@ -236,9 +239,9 @@ describe('CsvBulkImportModalComponent', () => {
       });
     }
 
-    it('onNextClicked with invalid form stays on configure and touches form', () => {
+    it('onNextClicked with invalid form still advances to preview but marks form touched', () => {
       component.onNextClicked();
-      expect(component.step).toBe('configure');
+      expect(component.step).toBe('preview');
       expect(component.configForm.touched).toBe(true);
     });
 
@@ -273,25 +276,60 @@ describe('CsvBulkImportModalComponent', () => {
 
     it('allRowsAssigned returns false when any row has userId=null', () => {
       component.previewRows = [
-        { rawName: 'A', amount: 1, userId: 1, displayName: 'A', isAutoMatched: true, status: 'pending' },
-        { rawName: 'B', amount: 2, userId: null, displayName: null, isAutoMatched: false, status: 'pending' },
+        {
+          rawName: 'A',
+          amount: 1,
+          userId: 1,
+          displayName: 'A',
+          isAutoMatched: true,
+          status: 'pending',
+        },
+        {
+          rawName: 'B',
+          amount: 2,
+          userId: null,
+          displayName: null,
+          isAutoMatched: false,
+          status: 'pending',
+        },
       ];
       expect(component.allRowsAssigned).toBe(false);
     });
 
     it('allRowsAssigned returns true when all rows have a userId', () => {
       component.previewRows = [
-        { rawName: 'A', amount: 1, userId: 1, displayName: 'A', isAutoMatched: true, status: 'pending' },
-        { rawName: 'B', amount: 2, userId: 2, displayName: 'B', isAutoMatched: true, status: 'pending' },
+        {
+          rawName: 'A',
+          amount: 1,
+          userId: 1,
+          displayName: 'A',
+          isAutoMatched: true,
+          status: 'pending',
+        },
+        {
+          rawName: 'B',
+          amount: 2,
+          userId: 2,
+          displayName: 'B',
+          isAutoMatched: true,
+          status: 'pending',
+        },
       ];
       expect(component.allRowsAssigned).toBe(true);
     });
 
     it('onUserAssigned sets userId and displayName on the correct row', () => {
       component.previewRows = [
-        { rawName: 'Unknown', amount: 5, userId: null, displayName: null, isAutoMatched: false, status: 'pending' },
+        {
+          rawName: 'Unknown',
+          amount: 5,
+          userId: null,
+          displayName: null,
+          isAutoMatched: false,
+          status: 'pending',
+        },
       ];
-      component.onUserAssigned(0, '100');
+      component.onUserAssigned(0, { id: 100, primaryText: 'Alice Müller' });
       expect(component.previewRows[0].userId).toBe(100);
       expect(component.previewRows[0].displayName).toBe('Alice Müller');
     });
@@ -314,14 +352,35 @@ describe('CsvBulkImportModalComponent', () => {
         dueDate: TOMORROW,
       });
       component.previewRows = [
-        { rawName: 'Alice Müller', amount: 10, userId: 100, displayName: 'Alice Müller', isAutoMatched: true, status: 'pending' },
-        { rawName: 'Bob Smith', amount: 20, userId: 101, displayName: 'Bob Smith', isAutoMatched: true, status: 'pending' },
+        {
+          rawName: 'Alice Müller',
+          amount: 10,
+          userId: 100,
+          displayName: 'Alice Müller',
+          isAutoMatched: true,
+          status: 'pending',
+        },
+        {
+          rawName: 'Bob Smith',
+          amount: 20,
+          userId: 101,
+          displayName: 'Bob Smith',
+          isAutoMatched: true,
+          status: 'pending',
+        },
       ];
     }
 
     it('onSubmitAll does not call service when rows have unassigned users', () => {
       component.previewRows = [
-        { rawName: 'Unknown', amount: 5, userId: null, displayName: null, isAutoMatched: false, status: 'pending' },
+        {
+          rawName: 'Unknown',
+          amount: 5,
+          userId: null,
+          displayName: null,
+          isAutoMatched: false,
+          status: 'pending',
+        },
       ];
       component.onSubmitAll();
       expect(mockPaymentRequestByTeamService.createPaymentRequestByTeam).not.toHaveBeenCalled();
@@ -354,9 +413,30 @@ describe('CsvBulkImportModalComponent', () => {
 
     it('successCount and failureCount return correct values', () => {
       component.previewRows = [
-        { rawName: 'A', amount: 1, userId: 1, displayName: 'A', isAutoMatched: true, status: 'success' },
-        { rawName: 'B', amount: 2, userId: 2, displayName: 'B', isAutoMatched: true, status: 'error' },
-        { rawName: 'C', amount: 3, userId: 3, displayName: 'C', isAutoMatched: true, status: 'success' },
+        {
+          rawName: 'A',
+          amount: 1,
+          userId: 1,
+          displayName: 'A',
+          isAutoMatched: true,
+          status: 'success',
+        },
+        {
+          rawName: 'B',
+          amount: 2,
+          userId: 2,
+          displayName: 'B',
+          isAutoMatched: true,
+          status: 'error',
+        },
+        {
+          rawName: 'C',
+          amount: 3,
+          userId: 3,
+          displayName: 'C',
+          isAutoMatched: true,
+          status: 'success',
+        },
       ];
       expect(component.successCount).toBe(2);
       expect(component.failureCount).toBe(1);

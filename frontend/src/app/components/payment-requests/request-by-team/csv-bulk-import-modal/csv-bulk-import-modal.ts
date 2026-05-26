@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -16,7 +24,10 @@ import { NotificationService } from '../../../../services/notification/notificat
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { CostCentreDto, CreatePaymentRequestByTeamDto, TeamDto } from '../../../../types/exporter';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
-import { TypeaheadItem } from '../../../general/typeahead-select-component/typeahead-select-component';
+import {
+  TypeaheadItem,
+  TypeaheadSelectComponent,
+} from '../../../general/typeahead-select-component/typeahead-select-component';
 
 // TODO: These column names should eventually be configurable by admins in the settings page.
 const CSV_COL_NAME = 'Name';
@@ -51,7 +62,7 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-csv-bulk-import-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
   templateUrl: './csv-bulk-import-modal.html',
   styleUrl: './csv-bulk-import-modal.scss',
 })
@@ -76,6 +87,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: FormBuilder,
+    private readonly cdr: ChangeDetectorRef,
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly notificationService: NotificationService,
   ) {}
@@ -106,9 +118,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
       complete: (result: Papa.ParseResult<string[]>) => {
         const rows = result.data;
 
-        // Strip BOM (﻿) and surrounding whitespace so headers match regardless of
-        // how the CSV was exported (Excel often adds both).
-        const normalize = (s: string) => s.replace(/^﻿/, '').trim();
+        const normalize = (s: string): string => s.trim();
 
         const headerRowIndex = rows.findIndex(
           (row) =>
@@ -121,6 +131,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
             `CSV format error: could not find "${CSV_COL_NAME}" and "${CSV_COL_SUMME}" header columns.`,
           );
           this.closeEvent.emit();
+          this.cdr.detectChanges();
           return;
         }
 
@@ -136,21 +147,26 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
             amount: this.parseEuroAmount(row[summeIdx] ?? ''),
           }))
           .filter((row) => row.amount > 0);
+
+        this.cdr.detectChanges();
       },
     });
   }
 
   parseEuroAmount(raw: string): number {
-    const cleaned = raw
-      .replace(/\s/g, '')
-      .replace('€', '')
-      .replace(/\./g, '')
-      .replace(',', '.');
+    const cleaned = raw.replace(/\s/g, '').replace('€', '').replace(/\./g, '').replace(',', '.');
     const val = parseFloat(cleaned);
     return isNaN(val) ? 0 : val;
   }
 
   private buildPreviewRows(): void {
+    const savedAssignments = new Map<string, { userId: number; displayName: string }>();
+    for (const row of this.previewRows) {
+      if (!row.isAutoMatched && row.userId !== null) {
+        savedAssignments.set(row.rawName, { userId: row.userId, displayName: row.displayName! });
+      }
+    }
+
     const userMap = new Map<string, TypeaheadItem>();
     for (const user of this.allUsers) {
       const key = user.primaryText.trim().toLowerCase();
@@ -166,6 +182,21 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
       const key = row.rawName.toLowerCase();
       const match = userMap.get(key);
       const isAutoMatched = !!match && match.id !== -1;
+
+      if (!isAutoMatched) {
+        const saved = savedAssignments.get(row.rawName);
+        if (saved) {
+          return {
+            rawName: row.rawName,
+            amount: row.amount,
+            userId: saved.userId,
+            displayName: saved.displayName,
+            isAutoMatched: false,
+            status: 'pending' as const,
+          };
+        }
+      }
+
       return {
         rawName: row.rawName,
         amount: row.amount,
@@ -177,20 +208,26 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     });
 
     this.unmatchedNames = this.previewRows
-      .filter((r) => !r.isAutoMatched)
+      .filter((r) => !r.isAutoMatched && r.userId === null)
       .map((r) => r.rawName);
   }
 
   onNextClicked(): void {
     this.configForm.markAllAsTouched();
-    if (this.configForm.invalid) return;
-
     this.buildPreviewRows();
 
     if (this.unmatchedNames.length > 0) {
       this.showWarningModal = true;
     } else {
       this.step = 'preview';
+    }
+  }
+
+  onStepClicked(target: 1 | 2): void {
+    if (target === 1) {
+      this.step = 'configure';
+    } else if (this.parsedRows.length > 0) {
+      this.onNextClicked();
     }
   }
 
@@ -203,18 +240,25 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     this.step = 'configure';
   }
 
-  onUserAssigned(index: number, value: string): void {
-    this.previewRows[index].userId = Number(value);
-    const user = this.allUsers.find((u) => u.id === Number(value));
-    this.previewRows[index].displayName = user?.primaryText ?? null;
+  onUserAssigned(index: number, item: TypeaheadItem): void {
+    this.previewRows[index].userId = item.id as number;
+    this.previewRows[index].displayName = item.primaryText;
   }
 
   get allRowsAssigned(): boolean {
     return this.previewRows.every((r) => r.userId !== null);
   }
 
+  get unassignedCount(): number {
+    return this.previewRows.filter((r) => r.userId === null).length;
+  }
+
+  get canSubmit(): boolean {
+    return this.allRowsAssigned && this.configForm.valid && !this.isSubmitting;
+  }
+
   onSubmitAll(): void {
-    if (!this.allRowsAssigned || this.isSubmitting) return;
+    if (!this.canSubmit) return;
     this.isSubmitting = true;
     this.submitSequentially(0);
   }
@@ -223,6 +267,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     if (index >= this.previewRows.length) {
       this.isSubmitting = false;
       this.step = 'results';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -235,11 +280,13 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           row.status = 'success';
+          this.cdr.detectChanges();
           this.submitSequentially(index + 1);
         },
         error: (err: Error) => {
           row.status = 'error';
           row.errorMessage = err.message ?? 'Submission failed.';
+          this.cdr.detectChanges();
           this.submitSequentially(index + 1);
         },
       });

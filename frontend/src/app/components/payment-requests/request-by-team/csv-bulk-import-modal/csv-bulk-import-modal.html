@@ -1,9 +1,27 @@
 <app-modal-component title="Bulk CSV Import" icon="upload_file" (closeEvent)="onClose()">
 
+  <!-- ─── STEP STEPPER (steps 1 & 2 only) ─── -->
+  @if (step !== 'results') {
+    <div class="step-stepper">
+      <button type="button" class="step-stepper__step"
+              [class.active]="step === 'configure'"
+              (click)="onStepClicked(1)">
+        <span class="step-num">1</span>
+        Configure
+      </button>
+      <span class="step-stepper__arrow">›</span>
+      <button type="button" class="step-stepper__step"
+              [class.active]="step === 'preview'"
+              [disabled]="parsedRows.length === 0"
+              (click)="onStepClicked(2)">
+        <span class="step-num">2</span>
+        Preview &amp; Assign
+      </button>
+    </div>
+  }
+
   <!-- ─── STEP 1: Configure ─── -->
   @if (step === 'configure') {
-
-    <p class="step-indicator">Step 1 of 3 — Configure</p>
 
     <p class="file-info">
       <span class="material-symbols-outlined">description</span>
@@ -126,13 +144,18 @@
   <!-- ─── STEP 2: Preview ─── -->
   @if (step === 'preview') {
 
-    <p class="step-indicator">Step 2 of 3 — Preview &amp; Assign Users</p>
-
-    @if (unmatchedNames.length > 0) {
-      <p class="unmatched-banner">
-        <span class="material-symbols-outlined">info</span>
-        {{ unmatchedNames.length }} row(s) need manual user assignment before you can submit.
-      </p>
+    @if (!allRowsAssigned || configForm.invalid) {
+      <div class="submit-blocked-banner">
+        <span class="material-symbols-outlined">warning</span>
+        <div class="submit-blocked-banner__messages">
+          @if (configForm.invalid) {
+            <span>Step 1 has incomplete required fields — go back to fix them.</span>
+          }
+          @if (!allRowsAssigned) {
+            <span>{{ unassignedCount }} row(s) still need a user assigned.</span>
+          }
+        </div>
+      </div>
     }
 
     <div class="table-wrapper">
@@ -152,15 +175,13 @@
                 @if (row.isAutoMatched) {
                   {{ row.displayName }}
                 } @else {
-                  <select
-                    [class.is-invalid]="row.userId === null"
-                    (change)="onUserAssigned(i, $any($event.target).value)"
-                  >
-                    <option value="" disabled [selected]="row.userId === null">Assign user…</option>
-                    @for (user of allUsers; track user.id) {
-                      <option [value]="user.id">{{ user.primaryText }}</option>
-                    }
-                  </select>
+                  <app-typeahead-select
+                    [items]="allUsers"
+                    placeholder="Search by name…"
+                    [isInvalid]="row.userId === null"
+                    [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName! } : null"
+                    (itemSelected)="onUserAssigned(i, $event)"
+                  />
                 }
               </td>
               <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
@@ -175,7 +196,7 @@
       <button
         type="button"
         class="btn btn-primary"
-        [disabled]="!allRowsAssigned || isSubmitting"
+        [disabled]="!canSubmit"
         (click)="onSubmitAll()"
       >
         @if (isSubmitting) {
@@ -191,7 +212,7 @@
   <!-- ─── STEP 3: Results ─── -->
   @if (step === 'results') {
 
-    <p class="step-indicator">Step 3 of 3 — Results</p>
+    <p class="step-indicator">Results</p>
 
     <p class="results-summary">
       <span class="result-ok">{{ successCount }} succeeded</span>,
