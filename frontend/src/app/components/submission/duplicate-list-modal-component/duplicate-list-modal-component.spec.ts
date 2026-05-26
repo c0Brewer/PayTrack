@@ -52,4 +52,27 @@ describe('DuplicateListModalComponent', () => {
 
     expect(spy).toHaveBeenCalledOnce();
   });
+
+  it('should render submit mode without admin actions', () => {
+    const duplicate = {
+      paymentRequestByUser: {
+        id: 2,
+        invoiceNumber: 'INV-2',
+        amount: 25,
+      } as PaymentRequestByUserDto,
+      score: 1,
+      isAmountAndUserMatch: false,
+      isAmountAndTeamMatch: true,
+    } as DuplicatePaymentRequestByUserDto;
+
+    fixture.componentRef.setInput('visible', true);
+    fixture.componentRef.setInput('mode', 'submit');
+    fixture.componentRef.setInput('duplicates', [duplicate]);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Submit Regardless');
+    expect(compiled.textContent).not.toContain('Dismiss warning');
+    expect(compiled.textContent).not.toContain('Delete invoice');
+  });
 });

@@ -13,6 +13,7 @@ import { ModalComponent } from '../../general/modal-component/modal-component';
 export class DuplicateListModalComponent {
   @Input() visible = false;
   @Input() loading = false;
+  @Input() mode: 'review' | 'submit' = 'review';
   @Input() actionInvoiceId: number | null = null;
   @Input() sourceInvoice: PaymentRequestByUserDto | null = null;
   @Input() duplicates: DuplicatePaymentRequestByUserDto[] = [];
@@ -21,6 +22,7 @@ export class DuplicateListModalComponent {
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
   @Output() deleteInvoice = new EventEmitter<PaymentRequestByUserDto>();
   @Output() dismissDuplicate = new EventEmitter<DuplicatePaymentRequestByUserDto>();
+  @Output() submitRegardless = new EventEmitter<void>();
 
   onClose(): void {
     this.closeModal.emit();
@@ -36,6 +38,10 @@ export class DuplicateListModalComponent {
 
   onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
     this.dismissDuplicate.emit(duplicate);
+  }
+
+  onSubmitRegardless(): void {
+    this.submitRegardless.emit();
   }
 
   getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {

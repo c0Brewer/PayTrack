@@ -86,3 +86,30 @@
     background: #fef2f2;
   }
 }
+
+.duplicate-modal__actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
+  margin-top: v.$size-m;
+}
+
+.duplicate-modal__cancel,
+.duplicate-modal__submit {
+  border-radius: v.$size-xs;
+  cursor: pointer;
+  font-size: v.$font-s;
+  padding: v.$size-xs v.$size-m;
+}
+
+.duplicate-modal__cancel {
+  background: v.$background-light;
+  border: 1px solid v.$border-color;
+  color: v.$text-muted;
+}
+
+.duplicate-modal__submit {
+  background: v.$primary-color;
+  border: 1px solid v.$primary-color;
+  color: v.$text-light;
+}

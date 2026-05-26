@@ -16,12 +16,12 @@ import {
   BankAccount,
 } from '../../../types/exporter';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
-import { ModalComponent } from '../../general/modal-component/modal-component';
+import { DuplicateListModalComponent } from '../duplicate-list-modal-component/duplicate-list-modal-component';
 
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent, ModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, DuplicateListModalComponent],
   templateUrl: './receipt-submit-component.html',
   styleUrl: './receipt-submit-component.scss',
 })
