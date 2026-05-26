@@ -13,5 +13,6 @@ namespace PayTrack.Application.Services.Model
         PaymentRequestByUser PaymentRequestByUser,
         int Score,
         bool IsAmountAndUserMatch,
+        bool IsInvoiceNumberMatch,
         bool IsAmountAndTeamMatch);
 }

@@ -110,6 +110,7 @@ export class RequestsComponent implements OnInit {
         TeamId: invoice.team.id,
         Amount: invoice.amount,
         PaidAt: invoice.paidAt,
+        InvoiceNumber: invoice.invoiceNumber,
         PaymentRequestByUserId: invoice.id,
       })
       .subscribe({

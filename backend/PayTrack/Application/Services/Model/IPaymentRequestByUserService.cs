@@ -67,6 +67,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="teamId">Team id for matching.</param>
         /// <param name="amount">Amount for matching.</param>
         /// <param name="paidAt">Paid-at day for matching.</param>
+        /// <param name="invoiceNumber">Invoice number for matching.</param>
         /// <param name="paymentRequestByUserId">Optional source payment request id to exclude dismissed pairs.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
@@ -74,6 +75,7 @@ namespace PayTrack.Application.Services.Model
             int teamId,
             decimal amount,
             DateTime paidAt,
+            string? invoiceNumber = null,
             int? paymentRequestByUserId = null);
 
         /// <summary>

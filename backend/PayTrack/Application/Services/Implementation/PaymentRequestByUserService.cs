@@ -110,12 +110,14 @@ namespace PayTrack.Application.Services.Implementation
             int teamId,
             decimal amount,
             DateTime paidAt,
+            string? invoiceNumber = null,
             int? paymentRequestByUserId = null)
         {
             var matchUserId = userId;
             var matchTeamId = teamId;
             var matchAmount = amount;
             var matchPaidAt = paidAt;
+            var matchInvoiceNumber = invoiceNumber;
 
             if (paymentRequestByUserId.HasValue)
             {
@@ -131,6 +133,7 @@ namespace PayTrack.Application.Services.Implementation
                 matchTeamId = sourcePaymentRequest.TeamId;
                 matchAmount = sourcePaymentRequest.Amount;
                 matchPaidAt = sourcePaymentRequest.PaidAt.Value;
+                matchInvoiceNumber = sourcePaymentRequest.InvoiceNumber;
             }
 
             var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(
@@ -141,7 +144,7 @@ namespace PayTrack.Application.Services.Implementation
                 paymentRequestByUserId);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt))
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt, matchInvoiceNumber))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
@@ -297,16 +300,24 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
+        private static bool IsInvoiceNumberMatch(string candidateInvoiceNumber, string? invoiceNumber)
+        {
+            return !string.IsNullOrWhiteSpace(invoiceNumber)
+                && string.Equals(candidateInvoiceNumber.Trim(), invoiceNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
             PaymentRequestByUser paymentRequestByUser,
             int userId,
             int teamId,
             decimal amount,
-            DateTime paidAt)
+            DateTime paidAt,
+            string? invoiceNumber)
         {
             bool isSameAmountAndDay = paymentRequestByUser.Amount == amount && paymentRequestByUser.PaidAt?.Date == paidAt.Date;
             bool isAmountAndUserMatch = isSameAmountAndDay && paymentRequestByUser.UserId == userId;
             bool isAmountAndTeamMatch = isSameAmountAndDay && paymentRequestByUser.TeamId == teamId;
+            bool isInvoiceNumberMatch = IsInvoiceNumberMatch(paymentRequestByUser.InvoiceNumber, invoiceNumber);
 
             int score = 0;
 
@@ -320,10 +331,16 @@ namespace PayTrack.Application.Services.Implementation
                 score++;
             }
 
+            if (isInvoiceNumberMatch)
+            {
+                score++;
+            }
+
             return new DuplicatePaymentRequestByUserMatch(
                 paymentRequestByUser,
                 score,
                 isAmountAndUserMatch,
+                isInvoiceNumberMatch,
                 isAmountAndTeamMatch);
         }
     }

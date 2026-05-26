@@ -1113,6 +1113,7 @@ export interface paths {
                     Amount: number;
                     /** Format: date-time */
                     PaidAt: string;
+                    InvoiceNumber?: string | null;
                     PaymentRequestByUserId?: number;
                 };
                 header?: never;
@@ -1425,6 +1426,7 @@ export interface components {
             /** Format: int32 */
             score: number;
             isAmountAndUserMatch: boolean;
+            isInvoiceNumberMatch: boolean;
             isAmountAndTeamMatch: boolean;
         };
         GoogleAuthCallbackDto: {

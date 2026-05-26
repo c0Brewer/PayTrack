@@ -251,6 +251,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         TeamId: payload.transaction.teamId,
         Amount: payload.transaction.amount,
         PaidAt: payload.transaction.paidAt,
+        InvoiceNumber: payload.invoiceNumber,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({

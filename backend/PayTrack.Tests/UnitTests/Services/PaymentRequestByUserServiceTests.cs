@@ -244,17 +244,19 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt);
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt, "inv-100");
 
             result.Should().HaveCount(3);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(2);
+            result[0].Score.Should().Be(3);
             result[0].IsAmountAndUserMatch.Should().BeTrue();
+            result[0].IsInvoiceNumberMatch.Should().BeTrue();
             result[0].IsAmountAndTeamMatch.Should().BeTrue();
 
             result[1].PaymentRequestByUser.Id.Should().Be(3);
             result[1].Score.Should().Be(1);
             result[1].IsAmountAndUserMatch.Should().BeTrue();
+            result[1].IsInvoiceNumberMatch.Should().BeFalse();
 
             result[2].PaymentRequestByUser.Id.Should().Be(2);
             result[2].Score.Should().Be(1);
@@ -334,7 +336,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 fileMock.Object,
                 bankMock.Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(1, 2, 3, DateTime.UtcNow, 7);
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(1, 2, 3, DateTime.UtcNow, null, 7);
 
             result.Should().BeEmpty();
             repoMock.Verify(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, 7), Times.Once);

@@ -130,6 +130,7 @@ describe('RequestsComponent', () => {
   it('should load duplicates for invoice and filter out current invoice', () => {
     const invoice = {
       id: 1,
+      invoiceNumber: 'INV-1',
       amount: 100,
       paidAt: '2026-05-21T00:00:00.000Z',
       team: { id: 3 },
@@ -138,12 +139,14 @@ describe('RequestsComponent', () => {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
       score: 1,
       isAmountAndUserMatch: false,
+      isInvoiceNumberMatch: false,
       isAmountAndTeamMatch: true,
     };
     const selfMatch = {
       paymentRequestByUser: { id: 1, invoiceNumber: 'INV-1' },
       score: 1,
       isAmountAndUserMatch: false,
+      isInvoiceNumberMatch: true,
       isAmountAndTeamMatch: true,
     };
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
@@ -156,6 +159,7 @@ describe('RequestsComponent', () => {
       TeamId: 3,
       Amount: 100,
       PaidAt: '2026-05-21T00:00:00.000Z',
+      InvoiceNumber: 'INV-1',
       PaymentRequestByUserId: 1,
     });
     expect(component.duplicateCandidates).toEqual([duplicate]);
@@ -191,6 +195,7 @@ describe('RequestsComponent', () => {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
       score: 1,
       isAmountAndUserMatch: false,
+      isInvoiceNumberMatch: false,
       isAmountAndTeamMatch: true,
     } as DuplicatePaymentRequestByUserDto;
     component.duplicateCandidates = [duplicate];

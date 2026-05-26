@@ -193,6 +193,7 @@ describe('PaymentRequestByUserService', () => {
         },
         score: 2,
         isAmountAndUserMatch: true,
+        isInvoiceNumberMatch: true,
         isAmountAndTeamMatch: true,
       },
     ];

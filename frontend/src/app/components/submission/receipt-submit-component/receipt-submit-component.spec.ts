@@ -304,6 +304,7 @@ describe('ReceiptSubmitComponent', () => {
           },
           score: 2,
           isAmountAndUserMatch: true,
+          isInvoiceNumberMatch: true,
           isAmountAndTeamMatch: true,
         },
       ]),
@@ -317,6 +318,7 @@ describe('ReceiptSubmitComponent', () => {
       TeamId: 1,
       Amount: 100,
       PaidAt: '2025-01-01T00:00:00.000Z',
+      InvoiceNumber: 'INV-1',
     });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
     expect(component.isDuplicateModalOpen).toBe(true);
@@ -357,6 +359,7 @@ describe('ReceiptSubmitComponent', () => {
         },
         score: 2,
         isAmountAndUserMatch: true,
+        isInvoiceNumberMatch: true,
         isAmountAndTeamMatch: true,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
