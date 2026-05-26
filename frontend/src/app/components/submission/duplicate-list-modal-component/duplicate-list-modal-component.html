@@ -6,7 +6,8 @@
 >
   @if (sourceInvoice) {
     <p class="duplicate-modal__subtitle">
-      Possible duplicates for invoice {{ sourceInvoice.invoiceNumber }}.
+      Possible duplicates for invoice
+      <span class="duplicate-modal__source-invoice">{{ sourceInvoice.invoiceNumber }}</span>
     </p>
   }
 
