@@ -35,7 +35,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="paidAt">Source payday.</param>
         /// <param name="invoiceNumber">Source invoice number.</param>
         /// <returns>Weighted score and exact match flags.</returns>
-        public static DuplicatePaymentRequestByUserScore Calculate(
+        public static DuplicatePaymentRequestByUserScoreResult Calculate(
             PaymentRequestByUser candidate,
             int userId,
             int teamId,
@@ -93,7 +93,7 @@ namespace PayTrack.Data.Repositories.Model
                 score += AmountPaydayTeamBonusScore;
             }
 
-            return new DuplicatePaymentRequestByUserScore(
+            return new DuplicatePaymentRequestByUserScoreResult(
                 score,
                 isAmountAndUserMatch,
                 isInvoiceNumberMatch,
