@@ -179,12 +179,10 @@
         </app-box-component>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn" [disabled]="isSubmitting">
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1" [disabled]="isSubmitting">
           @if (!isSubmitting) {
-            <span class="submit-button__content">
-              <span class="material-symbols-outlined">check_circle</span>
-              Submit Invoice
-            </span>
+            <span class="material-symbols-outlined">check_circle</span>
+            Submit Invoice
           }
           @if (isSubmitting) {
             <span>Submitting…</span>
