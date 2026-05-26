@@ -114,11 +114,39 @@ body {
 }
 
 .btn-secondary:active {
-
   box-shadow: 0 0.15rem 0.45rem rgb(235 106 0 / 18%);
 
   transform: translateY(0);
+}
 
+.app-modal {
+  select,
+  input:not([type='checkbox']) {
+    background-color: v.$TUR-secondary-background;
+    border: 1px solid white;
+    height: 2.5rem;
+  }
+
+  select:focus,
+  input:not([type='checkbox']):focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
+  }
+
+  select {
+    cursor: pointer;
+  }
+
+  .form-switch .form-check-input:checked {
+    background-color: v.$TUR-primary-orange;
+    border-color: v.$TUR-primary-orange;
+  }
+
+  .form-switch .form-check-input:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  }
 }
 
 /* Table Styling*/
@@ -370,7 +398,6 @@ body {
   font-weight: v.$font-semibold;
 }
 
-
 /* Show text on CRUD buttons */
 
 .icon-hover-btn {
@@ -408,4 +435,3 @@ body {
   opacity: 1;
   transform: translateX(0);
 }
-

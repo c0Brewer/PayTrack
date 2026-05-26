@@ -1,18 +1,17 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
-import { UserDto, GetUserOptions, UpdateUserDto, Role, TeamDto } from '../../../types/exporter';
+import { GetUserOptions, TeamDto, UpdateUserDto, UserDto } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
-import { ModalComponent } from '../../general/modal-component/modal-component';
+import { UserEditModalComponent } from '../user-edit-modal-component/user-edit-modal-component';
 import { UserFilterComponent } from '../user-filter-component/user-filter-component';
 import { UserListComponent } from '../user-list-component/user-list-component';
 
 @Component({
   selector: 'app-user-management-component',
-  imports: [FormsModule, StatBoxComponent, UserListComponent, UserFilterComponent, ModalComponent],
+  imports: [StatBoxComponent, UserListComponent, UserFilterComponent, UserEditModalComponent],
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.scss',
 })
@@ -42,12 +41,6 @@ export class UserManagementComponent implements OnInit {
 
   editingUser: UserDto | null = null;
   activeStatusPendingIds = new Set<number>();
-
-  roleOptions = [
-    { value: Role.REGULAR_USER, text: 'Regular User' },
-    { value: Role.TEAM_LEAD, text: 'Team Lead' },
-    { value: Role.ADMIN, text: 'Admin' },
-  ];
 
   filterOptions: GetUserOptions = {
     Name: undefined,
@@ -192,39 +185,16 @@ export class UserManagementComponent implements OnInit {
   }
 
   openEditUser(user: UserDto): void {
-    this.editingUser = {
-      ...user,
-      team: user.team ? { ...user.team } : { id: -1, name: 'No Team' },
-    };
+    this.editingUser = user;
   }
 
   closeEdit(): void {
     this.editingUser = null;
   }
 
-  saveUser(user: UserDto): void {
-    if (!user) return;
-
-    // Only set teamid if explicitly set
-    const teamId = user.team?.id && user.team.id != -1 ? user.team.id : null;
-
-    const updateRequest: UpdateUserDto = {
-      name: user.name,
-      role: user.role,
-      isActive: user.isActive,
-      teamId: teamId,
-    };
-
-    this.userService.updateUser(user.id, updateRequest).subscribe({
-      next: () => {
-        this.notificationService.showSuccess('Successfully updated user ' + user.name);
-        this.loadUser();
-        this.closeEdit();
-      },
-      error: (error: Error) => {
-        this.notificationService.showError('Could not update User: ' + error);
-      },
-    });
+  onUserSaved(): void {
+    this.loadUser();
+    this.closeEdit();
   }
 
   private setActiveStatusPending(userId: number, isPending: boolean): void {
