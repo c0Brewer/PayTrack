@@ -5,10 +5,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { CostCentreDto } from '../../../types/exporter';
+import { DetailComponent } from '../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-cost-centre-detail-component',
-  imports: [SlicePipe],
+  imports: [DetailComponent, SlicePipe],
   templateUrl: './cost-centre-detail-component.html',
   styleUrl: './cost-centre-detail-component.scss',
 })
