@@ -1,6 +1,7 @@
 <app-modal-component
   [title]="isCreating ? 'Create Cost Centre' : 'Edit Cost Centre'"
   (closeEvent)="onClose()"
+  [icon]="isCreating ? 'add' : 'edit'"
 >
   @if (editingCostCentre) {
     <label>
@@ -96,8 +97,11 @@
     </div>
 
     <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="saveEdit()">
+      <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onClose()">
+        <span class="material-symbols-outlined">cancel</span>
+        Cancel</button>
+      <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="saveEdit()">
+        <span class="material-symbols-outlined">save</span>
         {{ isCreating ? 'Create' : 'Save' }}
       </button>
     </div>

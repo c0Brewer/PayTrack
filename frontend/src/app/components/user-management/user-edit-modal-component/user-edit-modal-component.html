@@ -42,10 +42,24 @@
 
       <div class="row g-2 justify-content-sm-end pt-1">
         <div class="col-12 col-sm-auto order-2 order-sm-1">
-          <button type="button" class="btn btn-secondary w-100" (click)="onClose()">Cancel</button>
+          <button
+            type="button"
+            class="btn btn-secondary w-100 d-inline-flex align-items-center justify-content-center gap-1 p-2"
+            (click)="onClose()"
+          >
+            <span class="material-symbols-outlined">cancel</span>
+            Cancel
+          </button>
         </div>
         <div class="col-12 col-sm-auto order-1 order-sm-2">
-          <button type="button" class="btn btn-primary w-100" (click)="saveUser()">Save</button>
+          <button
+            type="button"
+            class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-1 p-2"
+            (click)="saveUser()"
+          >
+            <span class="material-symbols-outlined">save</span>
+            Save
+          </button>
         </div>
       </div>
     </form>
