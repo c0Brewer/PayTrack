@@ -70,7 +70,8 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="amount">Amount.</param>
         /// <param name="paidAt">Paid-at day.</param>
         /// <returns>List of potential duplicates.</returns>
-        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount, DateTime paidAt);
+        /// <param name="paymentRequestByUserId">Optional source payment request id. Dismissed pairs with this id are excluded.</param>
+        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount, DateTime paidAt, int? paymentRequestByUserId = null);
 
         /// <summary>
         /// Updates a PaymentRequestByUser using the given input.
@@ -78,5 +79,20 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="transaction">Transaction object to update.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser by id.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <returns><c>true</c> if an invoice was deleted; otherwise <c>false</c>.</returns>
+        Task<bool> DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Stores that a potential duplicate pair has been reviewed and dismissed.
+        /// </summary>
+        /// <param name="paymentRequestByUserId">First PaymentRequestByUser id.</param>
+        /// <param name="duplicatePaymentRequestByUserId">Second PaymentRequestByUser id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId);
     }
 }

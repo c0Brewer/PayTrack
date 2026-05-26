@@ -36,6 +36,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
 
+            group.MapDelete("/user/{id:int}", PaymentRequestByUserHandler.DeletePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin);
+
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
 
             // TODO: This should be implemented in another ticket. This will be about the requests created by the finance team.
@@ -49,6 +52,8 @@ namespace PayTrack.Api.Endpoints
             //If there are duplicates -> list of duplicates (maximum 10)
             //Custom DTO for duplicates in `PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto`
             //Invoice number, Amount (perhaps a fuzzy matcher)
+            group.MapPost("/user/{id:int}/duplicate/{duplicateId:int}/dismiss", PaymentRequestByUserHandler.DismissDuplicatePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin);
         }
     }
 }
