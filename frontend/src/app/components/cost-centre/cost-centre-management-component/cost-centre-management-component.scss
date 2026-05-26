@@ -1,5 +1,11 @@
 @use 'variables' as v;
 
+.cost-centre-management {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
+}
+
 label {
   color: v.$text-color;
   display: flex;
