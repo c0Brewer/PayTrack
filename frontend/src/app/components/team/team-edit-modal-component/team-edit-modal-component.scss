@@ -18,8 +18,9 @@ select {
   border-radius: 0.45rem;
   color: v.$text-color;
   font-size: v.$font-s;
-  min-height: 2.6rem;
-  padding: 0 0.8rem;
+  height: 2.6rem;
+  line-height: 1.5;
+  padding: 0.45rem 0.8rem;
 }
 
 input:focus,
