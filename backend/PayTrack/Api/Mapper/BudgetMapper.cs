@@ -27,15 +27,19 @@ namespace PayTrack.Api.Mapper
         /// </summary>
         /// <param name="budget">Budget to map.</param>
         /// <returns>TeamBudgetDto instance.</returns>
-        private static BudgetDto ToDto(Budget budget)
+        public static BudgetDto ToDto(Budget budget)
         {
             return new BudgetDto(
                 budget.Id,
+                budget.Name,
+                budget.Description,
                 budget.TeamId,
                 budget.CostCentreId,
+                budget.SeasonId,
                 budget.TargetAmount,
                 budget.PeriodStart,
-                budget.PeriodEnd);
+                budget.PeriodEnd,
+                [.. budget.Transactions.Select(t => t.Id)]);
         }
     }
 }

@@ -42,6 +42,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="id">Id of Team to update.</param>
         /// <param name="name">Name to optionally set.</param>
         /// <param name="description">Description to optionally set.</param>
+        /// <param name="isActive">IsActive to optionally set.</param>
         /// <param name="displayColor">Display color to optionally set.</param>
         /// <param name="budgetsToUpsert">Optional budgets to create or update for the team.</param>
         /// <param name="budgetIdsToDelete">Optional budget ids to remove from the team.</param>
@@ -50,6 +51,7 @@ namespace PayTrack.Data.Repositories.Model
             int id,
             string? name,
             string? description,
+            bool? isActive,
             string? displayColor,
             IList<UpsertTeamBudgetEntryDto>? budgetsToUpsert,
             IList<int>? budgetIdsToDelete);

@@ -144,7 +144,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int>()))
+                    It.IsAny<int?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -168,6 +168,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent("50"), "Transaction.Amount");
             content.Add(new StringContent("TestPurpose"), "Transaction.PurposeOfPayment");
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
+            content.Add(new StringContent("0"), "Transaction.BudgetId");
 
             // -----------------------
             // ROOT DTO FIELDS

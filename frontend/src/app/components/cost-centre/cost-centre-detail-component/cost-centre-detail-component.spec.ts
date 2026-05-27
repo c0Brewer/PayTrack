@@ -12,11 +12,15 @@ import { CostCentreDetailComponent } from './cost-centre-detail-component';
 
 const mockBudget: BudgetDto = {
   id: 1,
+  name: 'Aero budget',
+  description: null,
   teamId: 2,
   costCentreId: 10,
+  seasonId: 1,
   targetAmount: 1500,
   periodStart: '2024-01-01T00:00:00Z',
   periodEnd: '2024-12-31T00:00:00Z',
+  transactionIds: [],
 };
 
 const mockCostCentre: CostCentreDto = {

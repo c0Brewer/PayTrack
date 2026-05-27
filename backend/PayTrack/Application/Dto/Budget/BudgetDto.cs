@@ -7,11 +7,16 @@ using System.ComponentModel.DataAnnotations;
 namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
-    /// Dto representing a Budget entry linked to a cost center.
+    /// Dto representing a Budget entry.
     /// </summary>
     public sealed record class BudgetDto(
         [property: Required]
         int Id,
+
+        [property: Required]
+        string Name,
+
+        string? Description,
 
         [property: Required]
         int TeamId,
@@ -20,11 +25,17 @@ namespace PayTrack.Application.Dto.Budget
         int CostCentreId,
 
         [property: Required]
+        int SeasonId,
+
+        [property: Required]
         decimal TargetAmount,
 
         [property: Required]
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd);
+        DateTime PeriodEnd,
+
+        [property: Required]
+        IList<int> TransactionIds);
 }

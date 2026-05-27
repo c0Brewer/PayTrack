@@ -11,7 +11,16 @@ namespace PayTrack.Application.Dto.Budget
     /// </summary>
     public sealed record class CreateCostCentreBudgetEntryDto(
         [property: Required]
+        [property: MinLength(3)]
+        string Name,
+
+        string? Description,
+
+        [property: Required]
         int TeamId,
+
+        [property: Required]
+        int SeasonId,
 
         [property: Required]
         [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]
@@ -21,5 +30,5 @@ namespace PayTrack.Application.Dto.Budget
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd);
+        DateTime PeriodEnd) : IBudgetEntryDto;
 }

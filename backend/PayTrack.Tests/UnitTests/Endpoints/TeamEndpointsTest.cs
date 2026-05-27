@@ -77,6 +77,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         new Budget
                         {
                             Id = 8,
+                            Name = "Core budget",
                             TeamId = 1,
                             CostCentreId = 12,
                             TargetAmount = 600m,
@@ -200,6 +201,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new Budget
                     {
                         Id = 5,
+                        Name = "Team budget",
                         TeamId = 1,
                         CostCentreId = 12,
                         TargetAmount = 2500m,
@@ -305,7 +307,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task UpdateTeam_ReturnsOkWithUpdatedTeam()
         {
             // Arrange
-            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "#445566", null, null);
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", null, "#445566", null, null);
             var updatedTeam = new Team
             {
                 Id = 1,
@@ -319,6 +321,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     1,
                     requestDto.Name,
                     requestDto.Description,
+                    requestDto.IsActive,
                     requestDto.DisplayColor,
                     requestDto.BudgetsToUpsert,
                     requestDto.BudgetIdsToDelete))
@@ -344,7 +347,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task UpdateTeam_ReturnsBadRequest_WhenDisplayColorIsInvalid()
         {
             // Arrange
-            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", "My Color", null, null);
+            var requestDto = new UpdateTeamRequestDto("Updated Team", "Updated Description", null, "My Color", null, null);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -359,6 +362,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     1,
                     requestDto.Name,
                     requestDto.Description,
+                    requestDto.IsActive,
                     requestDto.DisplayColor,
                     requestDto.BudgetsToUpsert,
                     requestDto.BudgetIdsToDelete),

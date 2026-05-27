@@ -1,0 +1,69 @@
+<table class="invoice-table">
+  <thead>
+    <tr>
+      <th>Invoice Number</th>
+      <th>Submitted</th>
+      <th>Paid At</th>
+      <th>Amount</th>
+      <th>Purpose</th>
+      <th>Team</th>
+      <th>Payout Type</th>
+      <th>Status</th>
+      @if (showUserNameColumn) {
+        <th>User</th>
+      }
+      @if (showDuplicateIndicator) {
+        <th>Duplicate</th>
+      }
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (invoice of invoices; track invoice.id) {
+      <tr>
+        <td>{{ invoice.invoiceNumber }}</td>
+        <td>{{ invoice.createdAt | date: 'dd.MM.yyyy' }}</td>
+        <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'dd.MM.yyyy') : '—' }}</td>
+        <td>{{ invoice.amount }}</td>
+        <td>{{ invoice.purposeOfPayment }}</td>
+        <td>{{ invoice.team?.name ?? '—' }}</td>
+        <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+        <td>
+          <span [class]="'status ' + getStatusClass(invoice.status)">
+            {{ getTransactionStatusLabel(invoice.status) }}
+          </span>
+        </td>
+        @if (showUserNameColumn) {
+          <td>{{ invoice.user?.name ?? '—' }}</td>
+        }
+        @if (showDuplicateIndicator) {
+          <td>
+            @if (invoice.hasPotentialDuplicate) {
+              <button
+                type="button"
+                class="duplicate-badge"
+                title="Show possible duplicate invoices"
+                (click)="onOpenDuplicates(invoice)"
+              >
+                <span class="material-symbols-outlined">warning</span>
+                Possible
+              </button>
+            } @else {
+              <span class="duplicate-empty">-</span>
+            }
+          </td>
+        }
+        <td class="actions-col">
+          <button class="view-btn" (click)="onOpenDetail(invoice)">View</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="8 + (showUserNameColumn ? 1 : 0)">
+          No invoices found.
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

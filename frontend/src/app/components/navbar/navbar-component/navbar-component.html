@@ -34,6 +34,14 @@
           Home
         </a>
         <a
+          routerLink="/submit"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+          ><span class="material-symbols-outlined">upload_file</span>
+          Submit An Invoice
+        </a>
+        <a
           routerLink="/my-invoices"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
@@ -42,24 +50,20 @@
           My Invoices
         </a>
         <a
-          routerLink="/submit"
+          routerLink="/my-team-requests"
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
-          ><span class="material-symbols-outlined">upload_file</span>
-          Submit An Invoice
+          ><span class="material-symbols-outlined">receipt_long</span>
+          My Payment Requests
+          @if (teamRequestCount() > 0) {
+            <span class="nav-badge">{{ teamRequestCount() }}</span>
+          }
         </a>
       </div>
 
       @if (user?.role === role.ADMIN) {
         <div class="sidebar__admin">
-          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">description</span>
-            View Requests
-            @if (submittedCount() > 0) {
-              <span class="nav-badge">{{ submittedCount() }}</span>
-            }
-          </a>
           <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
             User Management</a
@@ -67,11 +71,29 @@
           <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
             ><span class="material-symbols-outlined">groups</span> Team Management</a
           >
-
           <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
             <span class="material-symbols-outlined">manage_accounts</span>
             Cost Centre Management</a
           >
+          <a routerLink="/create-payment-request" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">add_card</span>
+            Create Payment Request</a
+          >
+          <a routerLink="/season" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">calendar_month</span>
+            Season Management</a
+          >
+          <a routerLink="/payment-requests-by-team" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">receipt_long</span>
+            View Payment Requests</a
+          >
+          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            <span class="material-symbols-outlined">description</span>
+            View Submitted Invoices
+            @if (submittedCount() > 0) {
+              <span class="nav-badge">{{ submittedCount() }}</span>
+            }
+          </a>
         </div>
       }
 

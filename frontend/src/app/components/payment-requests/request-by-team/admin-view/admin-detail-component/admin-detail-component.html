@@ -1,0 +1,30 @@
+<app-team-request-detail-component
+  [request]="request"
+  [loading]="loading"
+  [showTeam]="true"
+  [showUser]="true"
+  (back)="onBack()"
+/>
+
+@if (!loading && request?.user?.email) {
+  <div class="notification-actions">
+    <button type="button" class="btn btn-secondary" (click)="openEmailModal()">
+      <span class="material-symbols-outlined">mail</span>
+      Send Email
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="openSlackModal()">
+      <span class="material-symbols-outlined">chat</span>
+      Send Slack
+    </button>
+  </div>
+}
+
+@if (modalType) {
+  <app-external-notification-component
+    [type]="modalType"
+    [recipientEmail]="notificationEmail"
+    [defaultSubject]="notificationSubject"
+    [defaultMessage]="notificationMessage"
+    (closeEvent)="modalType = null"
+  />
+}

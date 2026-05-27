@@ -54,7 +54,6 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 InvoiceNumber = "123",
 
                 User = new User { Id = 10, Name = "User1" },
-                CostCentre = new CostCentre { Id = 20, Name = "CC" },
                 Team = new Team { Id = 30, Name = "Team1" },
                 BankAccount = new BankAccount { Id = 40, Iban = "IBAN123" },
 
@@ -73,9 +72,6 @@ namespace PayTrack.Tests.UnitTests.Mapper
 
             dto.User.Should().NotBeNull();
             dto.User.Id.Should().Be(10);
-
-            dto.CostCentre.Should().NotBeNull();
-            dto.CostCentre.Id.Should().Be(20);
 
             dto.Team.Should().NotBeNull();
             dto.Team.Id.Should().Be(30);
@@ -97,7 +93,6 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 Amount = 50,
                 InvoiceNumber = "123",
                 User = new User(),
-                CostCentre = new CostCentre(),
                 Team = new Team(),
                 BankAccount = null,
                 StatusHistory = []
@@ -109,7 +104,6 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             dto.Should().NotBeNull();
             dto.User.Should().NotBeNull();
-            dto.CostCentre.Should().NotBeNull();
             dto.Team.Should().NotBeNull();
             dto.BankAccount.Should().BeNull();
 

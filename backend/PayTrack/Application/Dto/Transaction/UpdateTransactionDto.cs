@@ -22,5 +22,8 @@ namespace PayTrack.Application.Dto.Transaction
         string? PurposeOfPayment,
 
         // Optional:
-        DateTime? PaidAt);
+        DateTime? PaidAt,
+
+        // Optional:
+        int? BudgetId = null);
 }

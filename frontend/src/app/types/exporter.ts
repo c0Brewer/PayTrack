@@ -83,12 +83,20 @@ export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
   [TransactionStatus.Declined]: 'status-declined',
 };
 
+export const TEAM_REQUEST_ALLOWED_STATUSES: readonly TransactionStatus[] = [
+  TransactionStatus.Submitted,
+  TransactionStatus.Paid,
+];
+
 // Authentication
 export type GoogleAuthCallbackDto = components['schemas']['GoogleAuthCallbackDto'];
 export type GoogleAuthResponseDto = components['schemas']['GoogleAuthResponseDto'];
 
 // Cost Centre
 export type BudgetDto = components['schemas']['BudgetDto'];
+export type BudgetDtoPaginatedResponse = components['schemas']['BudgetDtoPaginatedResponse'];
+export type CreateBudgetRequestDto = components['schemas']['CreateBudgetRequestDto'];
+export type UpdateBudgetRequestDto = components['schemas']['UpdateBudgetRequestDto'];
 export type CostCentreDto = components['schemas']['CostCentreDto'];
 export type CostCentreDtoPaginatedResponse =
   components['schemas']['CostCentreDtoPaginatedResponse'];
@@ -99,7 +107,23 @@ export type UpsertBudgetEntryDto = components['schemas']['UpsertCostCentreBudget
 export type DeleteCostCentrePreviewDto = components['schemas']['DeleteCostCentrePreviewDto'];
 
 // Cost Centre Paths
+export type GetBudgetOptions = paths['/api/v1/budget']['get']['parameters']['query'];
 export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['parameters']['query'];
+
+// Season
+export type SeasonDto = components['schemas']['SeasonDto'];
+export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
+export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+// Payment request by team
+export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
+export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
+export type PaginatedPaymentRequestByTeamDto =
+  components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
+export type GetPaymentRequestsByTeamOptions =
+  paths['/api/v1/transaction/team']['get']['parameters']['query'];
+export type GetPaymentRequestsByTeamByIdOptions =
+  paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
+
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
