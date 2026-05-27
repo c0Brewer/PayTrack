@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DuplicatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../../../types/exporter';
+import {
+  DuplicatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
+} from '../../../../types/exporter';
 
 import { DuplicateListModalComponent } from './duplicate-list-modal-component';
 

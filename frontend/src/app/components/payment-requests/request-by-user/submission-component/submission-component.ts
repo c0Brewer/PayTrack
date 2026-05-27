@@ -21,12 +21,7 @@ import { DuplicateListModalComponent } from '../duplicate-list-modal-component/d
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    BoxComponent,
-    DuplicateListModalComponent,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, DuplicateListModalComponent],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })

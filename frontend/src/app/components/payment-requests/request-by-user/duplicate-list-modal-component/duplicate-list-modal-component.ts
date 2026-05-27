@@ -1,7 +1,10 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { DuplicatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../../../types/exporter';
+import {
+  DuplicatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
+} from '../../../../types/exporter';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 
 @Component({
