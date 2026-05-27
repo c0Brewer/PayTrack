@@ -3,7 +3,8 @@ using Microsoft.Extensions.Configuration;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Repositories.Implementation;
 using Microsoft.AspNetCore.Http;
-using System.Reflection;
+using Moq;
+using PayTrack.Data.Clients.Model;
 
 namespace PayTrack.Tests.UnitTests.Repositories
 {
@@ -64,6 +65,13 @@ namespace PayTrack.Tests.UnitTests.Repositories
             );
         }
 
+        private static FileRepository CreateRepository(
+            IConfiguration config,
+            Mock<IGoogleDriveArchiveClient>? googleDriveArchiveClientMock = null)
+        {
+            return new FileRepository(config, googleDriveArchiveClientMock?.Object ?? Mock.Of<IGoogleDriveArchiveClient>());
+        }
+
         // ----------------------------
         // SaveFile
         // ----------------------------
@@ -73,7 +81,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFile");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             var file = CreateMockFile([1, 2, 3], "test.pdf");
 
@@ -93,7 +101,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFileDriveArchive");
             var config = CreateConfig(folder, googleDriveEnabled: true, googleDriveRootFolderId: "root-folder-id");
-            var repo = new TrackingFileRepository(config);
+            var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
+            var repo = CreateRepository(config, googleDriveArchiveClientMock);
 
             var file = CreateMockFile([1, 2, 3], "receipt.pdf");
 
@@ -103,11 +112,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Assert
             result.Should().Be(Path.Combine(folder, "invoice_123.pdf"));
             File.Exists(result).Should().BeTrue();
-            repo.ArchiveCallCount.Should().Be(1);
-            repo.ArchivedLocalFilePath.Should().Be(result);
-            repo.ArchivedFileName.Should().Be("invoice_123.pdf");
-            repo.LocalFileExistedWhenArchived.Should().BeTrue();
-            repo.LocalFileContentWhenArchived.Should().Equal(1, 2, 3);
+            googleDriveArchiveClientMock.Verify(
+                client => client.ArchiveAsync(result, "invoice_123.pdf"),
+                Times.Once);
         }
 
         [Fact]
@@ -116,7 +123,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFileDriveDefaultDisabled");
             var config = CreateConfigWithoutGoogleDriveEnabled(folder);
-            var repo = new TrackingFileRepository(config);
+            var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
+            var repo = CreateRepository(config, googleDriveArchiveClientMock);
 
             var file = CreateMockFile([1, 2, 3], "test.pdf");
 
@@ -125,7 +133,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Assert
             File.Exists(result).Should().BeTrue();
-            repo.ArchiveCallCount.Should().Be(0);
+            googleDriveArchiveClientMock.Verify(
+                client => client.ArchiveAsync(It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
         }
 
         [Fact]
@@ -134,7 +144,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFileNull");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             // Act
             Func<Task> act = async () =>
@@ -152,7 +162,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFileEmpty");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             var file = CreateMockFile([]);
 
@@ -172,7 +182,11 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("SaveFileDriveMissingRootFolder");
             var config = CreateConfig(folder, googleDriveEnabled: true);
-            var repo = new FileRepository(config);
+            var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
+            googleDriveArchiveClientMock
+                .Setup(client => client.ArchiveAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InternalErrorException("Google Drive root folder id is not configured."));
+            var repo = CreateRepository(config, googleDriveArchiveClientMock);
 
             var file = CreateMockFile([1, 2, 3]);
 
@@ -186,136 +200,6 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 .WithMessage("Google Drive root folder id is not configured.");
         }
 
-        [Fact]
-        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyPathIsMissing()
-        {
-            // Arrange
-            var folder = CreateTempFolder("SaveFileDriveMissingKeyPath");
-            var config = CreateConfig(folder, googleDriveEnabled: true, googleDriveRootFolderId: "root-folder-id");
-            var repo = new FileRepository(config);
-
-            var file = CreateMockFile([1, 2, 3]);
-
-            // Act
-            Func<Task> act = async () =>
-                await repo.SaveFile(file, "invoice_123");
-
-            // Assert
-            await act.Should()
-                .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive service account key is not configured.");
-        }
-
-        [Fact]
-        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyFileDoesNotExist()
-        {
-            // Arrange
-            var folder = CreateTempFolder("SaveFileDriveMissingKeyFile");
-            var missingKeyFilePath = Path.Combine(folder, "missing-service-account.json");
-            var config = CreateConfig(
-                folder,
-                googleDriveEnabled: true,
-                googleDriveRootFolderId: "root-folder-id",
-                googleDriveServiceAccountKeyPath: missingKeyFilePath);
-            var repo = new FileRepository(config);
-
-            var file = CreateMockFile([1, 2, 3]);
-
-            // Act
-            Func<Task> act = async () =>
-                await repo.SaveFile(file, "invoice_123");
-
-            // Assert
-            await act.Should()
-                .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive service account key file could not be found.");
-        }
-
-        [Fact]
-        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyPathAndBase64AreConfigured()
-        {
-            // Arrange
-            var folder = CreateTempFolder("SaveFileDriveDuplicateKeySources");
-            var keyFilePath = Path.Combine(folder, "service-account.json");
-            var config = CreateConfig(
-                folder,
-                googleDriveEnabled: true,
-                googleDriveRootFolderId: "root-folder-id",
-                googleDriveServiceAccountKeyPath: keyFilePath,
-                googleDriveServiceAccountKeyBase64: "not-used");
-            var repo = new FileRepository(config);
-
-            var file = CreateMockFile([1, 2, 3]);
-
-            // Act
-            Func<Task> act = async () =>
-                await repo.SaveFile(file, "invoice_123");
-
-            // Assert
-            await act.Should()
-                .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive service account key path and base64 value cannot both be configured.");
-        }
-
-        [Fact]
-        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyBase64IsInvalid()
-        {
-            // Arrange
-            var folder = CreateTempFolder("SaveFileDriveInvalidKeyBase64");
-            var config = CreateConfig(
-                folder,
-                googleDriveEnabled: true,
-                googleDriveRootFolderId: "root-folder-id",
-                googleDriveServiceAccountKeyBase64: "not-valid-base64");
-            var repo = new FileRepository(config);
-
-            var file = CreateMockFile([1, 2, 3]);
-
-            // Act
-            Func<Task> act = async () =>
-                await repo.SaveFile(file, "invoice_123");
-
-            // Assert
-            await act.Should()
-                .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive service account key base64 value is invalid.*");
-        }
-
-        [Fact]
-        public void EscapeDriveQueryValue_ShouldEscapeBackslashesAndSingleQuotes()
-        {
-            // Arrange
-            var method = typeof(FileRepository).GetMethod(
-                "EscapeDriveQueryValue",
-                BindingFlags.NonPublic | BindingFlags.Static);
-
-            // Act
-            var result = method?.Invoke(null, ["folder\\team's invoices"]);
-
-            // Assert
-            result.Should().Be("folder\\\\team\\'s invoices");
-        }
-
-        [Theory]
-        [InlineData("invoice.pdf", "application/pdf")]
-        [InlineData("invoice.png", "image/png")]
-        [InlineData("invoice.jpg", "image/jpeg")]
-        [InlineData("invoice.jpeg", "image/jpeg")]
-        [InlineData("invoice.txt", "application/octet-stream")]
-        public void GetContentType_ShouldReturnExpectedContentType(string fileName, string expectedContentType)
-        {
-            // Arrange
-            var method = typeof(FileRepository).GetMethod(
-                "GetContentType",
-                BindingFlags.NonPublic | BindingFlags.Static);
-
-            // Act
-            var result = method?.Invoke(null, [fileName]);
-
-            // Assert
-            result.Should().Be(expectedContentType);
-        }
-
         // ----------------------------
         // GetByPath
         // ----------------------------
@@ -325,7 +209,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("GetFile");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             var filePath = Path.Combine(folder, "test.txt");
             var data = new byte[] { 1, 2, 3 };
@@ -345,7 +229,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("MissingFile");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             var fakePath = Path.Combine(folder, "missing.txt");
 
@@ -365,7 +249,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Arrange
             var folder = CreateTempFolder("UnsafePath");
             var config = CreateConfig(folder);
-            var repo = new FileRepository(config);
+            var repo = CreateRepository(config);
 
             const string outsidePath = "/etc/passwd";
 
@@ -379,26 +263,5 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 .WithMessage("Accessing unallowed path");
         }
 
-        private sealed class TrackingFileRepository(IConfiguration config) : FileRepository(config)
-        {
-            public int ArchiveCallCount { get; private set; }
-
-            public string? ArchivedLocalFilePath { get; private set; }
-
-            public string? ArchivedFileName { get; private set; }
-
-            public bool LocalFileExistedWhenArchived { get; private set; }
-
-            public byte[]? LocalFileContentWhenArchived { get; private set; }
-
-            protected override async Task UploadToGoogleDriveAsync(string localFilePath, string fileName)
-            {
-                this.ArchiveCallCount++;
-                this.ArchivedLocalFilePath = localFilePath;
-                this.ArchivedFileName = fileName;
-                this.LocalFileExistedWhenArchived = File.Exists(localFilePath);
-                this.LocalFileContentWhenArchived = await File.ReadAllBytesAsync(localFilePath);
-            }
-        }
     }
 }
