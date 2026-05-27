@@ -14,6 +14,8 @@ using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
+using PayTrack.Data.Clients.Implementation;
+using PayTrack.Data.Clients.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
@@ -42,6 +44,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IGoogleDriveArchiveClient, GoogleDriveArchiveClient>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
