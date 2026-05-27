@@ -120,7 +120,7 @@ namespace PayTrack.Application.Services.Implementation
 
             if (paymentRequestByUserId.HasValue)
             {
-                var sourcePaymentRequest = await this.repo.GetByIdAsync(paymentRequestByUserId.Value, null)
+                var sourcePaymentRequest = await this.repo.GetByIdAsync(paymentRequestByUserId.Value, new GetPaymentRequestByUserQueryById())
                     ?? throw new NotFoundException("PaymentRequestByUser could not be found");
 
                 if (!sourcePaymentRequest.PaidAt.HasValue)

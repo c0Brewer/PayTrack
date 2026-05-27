@@ -16,7 +16,6 @@ import {
   BankAccount,
 } from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
-import { ModalComponent } from '../../../general/modal-component/modal-component';
 import { DuplicateListModalComponent } from '../duplicate-list-modal-component/duplicate-list-modal-component';
 
 @Component({
@@ -26,7 +25,6 @@ import { DuplicateListModalComponent } from '../duplicate-list-modal-component/d
     CommonModule,
     ReactiveFormsModule,
     BoxComponent,
-    ModalComponent,
     DuplicateListModalComponent,
   ],
   templateUrl: './submission-component.html',
@@ -244,7 +242,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       comment: v.comment,
       payoutType: payoutType,
       bankAccountId: Number(v.bankAccountId),
-      receipt: '', // ignored — real file is passed separately below
+      receipt: '', // ignored - real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),
         amount: Number(v.amount),

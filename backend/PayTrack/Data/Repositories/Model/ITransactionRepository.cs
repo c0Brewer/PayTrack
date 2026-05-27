@@ -113,6 +113,13 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction);
 
         /// <summary>
+        /// Updates a PaymentRequestByTeam using the given input.
+        /// </summary>
+        /// <param name="transaction">Transaction object to update.</param>
+        /// <returns>Instance of created PaymentRequestByTeam object.</returns>
+        Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
+
+        /// <summary>
         /// Deletes a PaymentRequestByUser by id.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to delete.</param>

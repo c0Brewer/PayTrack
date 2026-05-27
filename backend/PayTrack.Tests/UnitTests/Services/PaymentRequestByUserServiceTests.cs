@@ -350,7 +350,7 @@ namespace PayTrack.Tests.UnitTests.Services
             };
 
             repoMock
-                .Setup(r => r.GetByIdAsync(7, null))
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(source);
             repoMock
                 .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "SRC", 7))
