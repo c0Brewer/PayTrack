@@ -60,7 +60,7 @@ namespace PayTrack.Data.Clients.Implementation
         /// <returns>The escaped query value.</returns>
         private static string EscapeDriveQueryValue(string value)
         {
-            return value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal);
+            return value.Replace("\\", @"\\", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal);
         }
 
         /// <summary>
