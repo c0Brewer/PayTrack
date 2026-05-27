@@ -9,13 +9,18 @@ import {
   PaymentRequestByUserDto,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
+import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
 import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
 import { InvoiceListComponent } from '../../general/list-component/list-component';
-import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
 
 @Component({
   selector: 'app-requests-component',
-  imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent, DuplicateListModalComponent],
+  imports: [
+    PaginationComponent,
+    InvoiceFilterComponent,
+    InvoiceListComponent,
+    DuplicateListModalComponent,
+  ],
   templateUrl: './admin-list-component.html',
   styleUrl: './admin-list-component.scss',
 })
