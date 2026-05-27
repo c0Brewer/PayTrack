@@ -2,8 +2,14 @@
 .dotnet-home/
 .vs/
 .idea
-/backend/PayTrack/uploads
+/backend/PayTrack/uploads/*
+!/backend/PayTrack/uploads/
+!/backend/PayTrack/uploads/presentation-invoices/
+!/backend/PayTrack/uploads/presentation-invoices/*
 /.idea/
 .dotnet-home/
 .vs/
 /.claude/
+
+
+AGENTS.md

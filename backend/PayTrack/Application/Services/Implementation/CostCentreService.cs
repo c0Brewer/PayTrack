@@ -38,6 +38,8 @@ namespace PayTrack.Application.Services.Implementation
             string? displayColor,
             IList<CreateCostCentreBudgetEntryDto>? budgetEntries)
         {
+            BudgetEntryValidation.EnsureValidEntries(budgetEntries);
+
             var costCentre = new CostCentre
             {
                 Name = name,
@@ -51,6 +53,8 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<CostCentre> UpdateAsync(int id, string? name = null, string? description = null, string? displayColor = null, IList<UpsertCostCentreBudgetEntryDto>? budgetsToUpsert = null, IList<int>? budgetIdsToDelete = null)
         {
+            BudgetEntryValidation.EnsureValidEntries(budgetsToUpsert);
+
             if (budgetsToUpsert is not null && budgetIdsToDelete is not null)
             {
                 var upsertIds = budgetsToUpsert.Where(e => e.Id > 0).Select(e => e.Id!.Value).ToHashSet();

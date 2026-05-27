@@ -173,4 +173,4 @@ In those projects you will need to create a new Access Key (Can be found inthe P
 in the root folder of the project (there is a env.example file which you can copy). Once this is all set up you can run
 "just sonar-backend" and "just sonar-frontend" which will run the sonarqube tool on the frontend and the backend.
 Inside the UI you can then see all the Issues it detected with your code and fix them. For the backend it additionally 
-runs all tests and outputs the test coverage and which files need more testing. Very useful
+runs all tests and outputs the test coverage and which files need more testing. Very useful!

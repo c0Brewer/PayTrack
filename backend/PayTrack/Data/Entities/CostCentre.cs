@@ -49,10 +49,5 @@ namespace PayTrack.Data.Entities
         /// Reference to linked Budgets.
         /// </summary>
         public ICollection<Budget> Budgets { get; set; } = [];
-
-        /// <summary>
-        /// Reference to linked Transactions.
-        /// </summary>
-        public ICollection<Transaction> Transactions { get; set; } = [];
     }
 }

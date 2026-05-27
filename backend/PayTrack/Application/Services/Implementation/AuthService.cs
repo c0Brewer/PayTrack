@@ -21,6 +21,8 @@ namespace PayTrack.Application.Services.Implementation
         IHttpClientFactory _httpClientFactory,
         IConfiguration _configuration) : IAuthService
     {
+        private const int DefaultGoogleClockSkewSeconds = 300;
+
         private readonly IJwtService jwtService = _jwtService;
         private readonly IUserService userService = _userService;
         private readonly IHttpContextAccessor httpContextAccessor = _httpContextAccessor;
@@ -108,11 +110,14 @@ namespace PayTrack.Application.Services.Implementation
         protected virtual async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
         {
             var clientId = this.GetRequiredGoogleConfig("ClientId");
+            var clockSkew = this.GetGoogleClockSkew();
             var payload = await GoogleJsonWebSignature.ValidateAsync(
                 idToken,
                 new GoogleJsonWebSignature.ValidationSettings
                 {
                     Audience = new[] { clientId },
+                    ExpirationTimeClockTolerance = clockSkew,
+                    IssuedAtClockTolerance = clockSkew,
                 });
 
             if (payload == null || string.IsNullOrEmpty(payload.Email))
@@ -121,6 +126,18 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return payload;
+        }
+
+        private TimeSpan GetGoogleClockSkew()
+        {
+            var value = this.configuration["Authentication:Google:ClockSkewSeconds"];
+
+            if (int.TryParse(value, out var parsedSeconds) && parsedSeconds >= 0)
+            {
+                return TimeSpan.FromSeconds(parsedSeconds);
+            }
+
+            return TimeSpan.FromSeconds(DefaultGoogleClockSkewSeconds);
         }
 
         private string GetRequiredGoogleConfig(string key)

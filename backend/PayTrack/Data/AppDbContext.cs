@@ -35,6 +35,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Budget> Budgets => this.Set<Budget>();
 
     /// <summary>
+    /// Database set for all Seasons.
+    /// </summary>
+    public DbSet<Season> Seasons => this.Set<Season>();
+
+    /// <summary>
     /// Database set for all BankAccounts.
     /// </summary>
     public DbSet<BankAccount> BankAccounts => this.Set<BankAccount>();
@@ -77,6 +82,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         // -------------------------------------------------------
         modelBuilder.Entity<Transaction>()
             .HasDiscriminator<string>("TransactionType")
+            .HasValue<Transaction>("Transaction")
             .HasValue<PaymentManual>("PaymentManual")
             .HasValue<PaymentRequestByUser>("PaymentRequestByUser")
             .HasValue<PaymentRequestByTeam>("PaymentRequestByTeam");
@@ -153,10 +159,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne(b => b.CostCentre)
                 .HasForeignKey(b => b.CostCentreId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
 
-            e.HasMany(c => c.Transactions)
-                .WithOne(tx => tx.CostCentre)
-                .HasForeignKey(tx => tx.CostCentreId)
+        // -------------------------------------------------------
+        // Season
+        // -------------------------------------------------------
+        modelBuilder.Entity<Season>(e =>
+        {
+            e.HasIndex(s => s.Name).IsUnique();
+
+            e.HasMany(s => s.Budgets)
+                .WithOne(b => b.Season)
+                .HasForeignKey(b => b.SeasonId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -167,8 +181,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(b => b.TargetAmount).HasColumnType("decimal(18,2)");
 
-            // Unique constraint: one budget per team+costcentre+period
-            e.HasIndex(b => new { b.TeamId, b.CostCentreId, b.PeriodStart, b.PeriodEnd })
+            e.HasMany(b => b.Transactions)
+                .WithOne(tx => tx.Budget)
+                .HasForeignKey(tx => tx.BudgetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Unique constraint: one budget per team+costcentre+season+period
+            e.HasIndex(b => new { b.TeamId, b.CostCentreId, b.SeasonId, b.PeriodStart, b.PeriodEnd })
                 .IsUnique();
         });
 

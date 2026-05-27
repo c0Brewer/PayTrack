@@ -1,0 +1,155 @@
+<div id="payment-request-page">
+  <h1>Create Payment Request</h1>
+  <p>Assign a payment request to a user on behalf of the finance team.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="row gx-4 gx-xl-5 gy-4 mt-1">
+
+      <!-- Left box: Payment Details -->
+      <div class="col-12 col-xl-6">
+        <app-box-component title="Payment Details" subtitle="Specify the amount, purpose and due date." size="medium">
+
+          <div class="row mb-3">
+            <div class="col-md-6 col-sm-12 input-wrapper">
+              <label for="amount">Amount (€) <span class="required">*</span></label><br />
+              <input
+                id="amount"
+                type="number"
+                formControlName="amount"
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                [class.is-invalid]="isInvalid('amount')"
+              />
+              <br />
+              @if (getError('amount')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>{{ getError('amount') }}
+                </span>
+              }
+            </div>
+
+            <div class="col-md-6 col-sm-12 input-wrapper">
+              <label for="dueDate">Due Date <span class="required">*</span></label><br />
+              <input
+                id="dueDate"
+                type="date"
+                formControlName="dueDate"
+                [class.is-invalid]="isInvalid('dueDate')"
+              />
+              <br />
+              @if (getError('dueDate')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>{{ getError('dueDate') }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 input-wrapper">
+              <label for="purposeOfPayment">Purpose of Payment <span class="required">*</span></label><br />
+              <input
+                id="purposeOfPayment"
+                type="text"
+                formControlName="purposeOfPayment"
+                placeholder="e.g. Software license renewal"
+                [class.is-invalid]="isInvalid('purposeOfPayment')"
+              />
+              <br />
+              @if (getError('purposeOfPayment')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>{{ getError('purposeOfPayment') }}
+                </span>
+              }
+            </div>
+          </div>
+
+        </app-box-component>
+      </div>
+
+      <!-- Right box: Assignment -->
+      <div class="col-12 col-xl-6">
+        <app-box-component title="Assignment" subtitle="Choose the user, team and cost centre." size="medium">
+
+          <!-- User search -->
+          <div class="row mb-3">
+            <div class="col-12 input-wrapper">
+              <label>Assign to User <span class="required">*</span></label><br />
+              <app-typeahead-select
+                [items]="allUsers"
+                placeholder="Search by name…"
+                [isInvalid]="isInvalid('userId')"
+                (itemSelected)="onUserSelected($event)"
+                (cleared)="onUserCleared()"
+              />
+              @if (isInvalid('userId')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>Please select a user.
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Team -->
+          <div class="row mb-3">
+            <div class="col-12 input-wrapper">
+              <label for="teamId">Team <span class="required">*</span></label><br />
+              <select id="teamId" formControlName="teamId" [class.is-invalid]="isInvalid('teamId')">
+                <option [ngValue]="null" disabled>Select team…</option>
+                @for (team of teams; track team.id) {
+                  <option [ngValue]="team.id">{{ team.name }}</option>
+                }
+              </select>
+              <br />
+              @if (getError('teamId')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>{{ getError('teamId') }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Cost Centre -->
+          <div class="row">
+            <div class="col-12 input-wrapper">
+              <label for="costCentreId">Cost Centre <span class="required">*</span></label><br />
+              <select id="costCentreId" formControlName="costCentreId" [class.is-invalid]="isInvalid('costCentreId')">
+                <option [ngValue]="null" disabled>Select cost centre…</option>
+                @for (cc of costCentres; track cc.id) {
+                  <option [ngValue]="cc.id">{{ cc.name }}</option>
+                }
+              </select>
+              <br />
+              @if (getError('costCentreId')) {
+                <span class="error-msg">
+                  <span class="material-symbols-outlined">error</span>{{ getError('costCentreId') }}
+                </span>
+              }
+            </div>
+          </div>
+
+        </app-box-component>
+      </div>
+    </div>
+
+    <div class="row gx-4 gx-xl-5 mt-1">
+      <div class="col-12">
+        <div class="form-actions">
+          <button type="submit" class="btn" [disabled]="isSubmitting">
+            @if (!isSubmitting) {
+              <span class="submit-button__content">
+                <span class="material-symbols-outlined">add_card</span>
+                Create Payment Request
+              </span>
+            }
+            @if (isSubmitting) {
+              <span>Submitting…</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>

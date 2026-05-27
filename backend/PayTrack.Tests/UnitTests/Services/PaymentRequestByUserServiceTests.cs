@@ -169,6 +169,124 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         // ----------------------------
+        // DUPLICATE CHECK
+        // ----------------------------
+        [Fact]
+        public async Task GetDuplicatePaymentRequestsByUserAsync_ShouldSortByScoreAndCreatedAt()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+
+            var duplicateCandidates = new List<PaymentRequestByUser>
+            {
+                new()
+                {
+                    Id = 1,
+                    UserId = 42,
+                    TeamId = 99,
+                    Amount = 100,
+                    InvoiceNumber = "INV-100",
+                    CreatedAt = new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 2,
+                    UserId = 1,
+                    TeamId = 99,
+                    Amount = 100,
+                    InvoiceNumber = "ANY-1",
+                    CreatedAt = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 3,
+                    UserId = 42,
+                    TeamId = 1,
+                    Amount = 100,
+                    InvoiceNumber = "ANY-2",
+                    CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new()
+                {
+                    Id = 4,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 50,
+                    InvoiceNumber = "OTHER",
+                    CreatedAt = new DateTime(2026, 1, 25, 0, 0, 0, DateTimeKind.Utc)
+                }
+            };
+
+            repoMock
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
+                .ReturnsAsync(duplicateCandidates);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
+
+            result.Should().HaveCount(3);
+            result[0].PaymentRequestByUser.Id.Should().Be(1);
+            result[0].Score.Should().Be(2);
+            result[0].IsAmountAndUserMatch.Should().BeTrue();
+            result[0].IsAmountAndTeamMatch.Should().BeTrue();
+
+            result[1].PaymentRequestByUser.Id.Should().Be(3);
+            result[1].Score.Should().Be(1);
+            result[1].IsAmountAndUserMatch.Should().BeTrue();
+
+            result[2].PaymentRequestByUser.Id.Should().Be(2);
+            result[2].Score.Should().Be(1);
+            result[2].IsAmountAndTeamMatch.Should().BeTrue();
+
+            repoMock.Verify(
+                r => r.GetPotentialDuplicatesAsync(42, 99, 100),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GetDuplicatePaymentRequestsByUserAsync_ShouldReturnAtMost10Results()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var fileMock = new Mock<IFileRepository>();
+            var bankMock = new Mock<IBankAccountService>();
+
+            var duplicateCandidates = Enumerable.Range(1, 12)
+                .Select(i => new PaymentRequestByUser
+                {
+                    Id = i,
+                    UserId = 42,
+                    TeamId = 99,
+                    Amount = 100,
+                    InvoiceNumber = "INV-100",
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-i),
+                })
+                .ToList();
+
+            repoMock
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100))
+                .ReturnsAsync(duplicateCandidates);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                fileMock.Object,
+                bankMock.Object);
+
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100);
+
+            result.Should().HaveCount(10);
+            result.Should().OnlyContain(match => match.Score >= 1);
+        }
+
+        // ----------------------------
         // UPDATE
         // ----------------------------
         [Fact]

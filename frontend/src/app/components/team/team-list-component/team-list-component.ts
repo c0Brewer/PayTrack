@@ -12,8 +12,10 @@ type TeamBudget = NonNullable<TeamDto['budgets']>[number];
 export class TeamListComponent {
   @Input() teams: TeamDto[] = [];
   @Input() costCentres: CostCentreDto[] = [];
+  @Input() activeStatusPendingIds: ReadonlySet<number> = new Set<number>();
 
   @Output() openEditTeam = new EventEmitter<TeamDto>();
+  @Output() toggleActive = new EventEmitter<TeamDto>();
 
   private readonly expandedBudgetTeamIds = new Set<number>();
 
@@ -45,6 +47,14 @@ export class TeamListComponent {
 
   getHiddenCurrentBudgetCount(team: TeamDto): number {
     return Math.max(this.getCurrentBudgets(team).length - 3, 0);
+  }
+
+  onToggleActive(user: TeamDto): void {
+    this.toggleActive.emit(user);
+  }
+
+  isActiveStatusPending(user: TeamDto): boolean {
+    return this.activeStatusPendingIds.has(user.id);
   }
 
   getBudgetDisplayValue(budget: TeamBudget): string {

@@ -38,11 +38,19 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
 
-            // TODO: This should be implemented in another ticket. This will be about the requests created by the finance team.
+            group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
+            group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
+            group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
+            group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin);
 
-            // group.MapGet("/team/", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
-            // group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
-            // group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync);
+            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
+
+            //Send the same information as in `create`, but without the file
+            //Return if it matches -> empty list
+            //If there are duplicates -> list of duplicates (maximum 10)
+            //Custom DTO for duplicates in `PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto`
+            //Invoice number, Amount (perhaps a fuzzy matcher)
         }
     }
 }

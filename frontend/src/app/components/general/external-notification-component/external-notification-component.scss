@@ -1,0 +1,58 @@
+@use 'variables' as v;
+
+label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: v.$size-m;
+  font-size: v.$font-s;
+  color: v.$text-color;
+
+  span {
+    margin-bottom: v.$size-xxs;
+  }
+}
+
+input,
+textarea {
+  background: v.$TUR-secondary-background;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.45rem;
+  color: v.$text-color;
+  font-size: v.$font-s;
+  padding: 0.5rem 0.8rem;
+
+  &:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
+  }
+}
+
+input {
+  min-height: 2.6rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.recipient-info {
+  display: flex;
+  align-items: center;
+  gap: v.$size-xs;
+  margin-bottom: v.$size-m;
+  font-size: v.$font-s;
+  color: v.$text-muted;
+}
+
+.recipient-icon {
+  font-size: 1.1rem;
+  color: v.$TUR-primary-orange;
+}
+
+.modal-actions {
+  margin-top: v.$size-l;
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$size-s;
+}

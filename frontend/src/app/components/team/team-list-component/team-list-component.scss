@@ -1,47 +1,5 @@
 @use 'variables' as v;
 
-.team-table {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: v.$font-s;
-  background: v.$background-light;
-  border-radius: v.$size-xs;
-  overflow: hidden;
-
-  thead {
-    background: v.$background-dark;
-
-    th {
-      text-align: left;
-      padding: v.$size-s;
-      font-weight: v.$font-semibold;
-      color: v.$text-light;
-      border-bottom: 1px solid v.$border-color;
-    }
-  }
-
-  tbody {
-    td {
-      padding: v.$size-s;
-      border-bottom: 1px solid v.$border-color;
-      vertical-align: middle;
-      word-break: break-word;
-    }
-
-    tr {
-      transition: background 0.15s ease;
-      margin-bottom: 1rem;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr:hover {
-      background: v.$gray-100;
-    }
-  }
 
   .name {
     font-weight: v.$font-medium;
@@ -63,24 +21,6 @@
     box-shadow:
       inset 0 0 0 1px rgba(v.$text-color, 0.14),
       0 2px 6px v.$shadow-color;
-  }
-
-  .status-badge {
-    display: inline-block;
-    padding: v.$size-xxs v.$size-s;
-    border-radius: v.$size-xs;
-    font-size: v.$font-xs;
-    font-weight: v.$font-medium;
-
-    &.active {
-      background: v.$success-color;
-      color: v.$background-light;
-    }
-
-    &:not(.active) {
-      background: v.$accent-color;
-      color: v.$background-light;
-    }
   }
 
   .description {
@@ -105,62 +45,9 @@
     width: 10%;
     white-space: nowrap;
   }
-}
+
 
 @media (max-width: 767.98px) {
-  .team-table {
-    background: transparent;
-    border-collapse: separate;
-    border-spacing: 0 v.$size-s;
-    table-layout: auto;
-
-    thead {
-      display: none;
-    }
-
-    tbody,
-    tr,
-    td {
-      display: block;
-      width: 100%;
-    }
-
-    tbody {
-      tr {
-        background: v.$background-light;
-        border: 1px solid v.$TUR-border-color;
-        border-radius: 12px;
-        box-shadow: 0 1px 2px v.$shadow-color;
-        overflow: hidden;
-      }
-
-      td {
-        align-items: flex-start;
-        border-bottom: 1px solid v.$border-color;
-        display: grid;
-        gap: v.$size-s;
-        grid-template-columns: minmax(7.5rem, 38%) minmax(0, 1fr);
-        padding: v.$size-xs v.$size-s;
-        text-align: right;
-        word-break: break-word;
-
-        &::before {
-          color: v.$text-muted;
-          content: attr(data-label);
-          font-weight: v.$font-semibold;
-          text-align: left;
-        }
-
-        &:last-child {
-          border-bottom: 0;
-        }
-      }
-
-      tr:hover {
-        background: v.$background-light;
-      }
-    }
-
     .name {
       align-items: center;
     }
@@ -179,16 +66,3 @@
       width: 100%;
     }
   }
-}
-
-@media (max-width: 420px) {
-  .team-table {
-    tbody {
-      td {
-        grid-template-columns: 1fr;
-        gap: v.$size-xxs;
-        text-align: left;
-      }
-    }
-  }
-}

@@ -14,6 +14,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 new Budget
                 {
                     Id = 1,
+                    Name = "First budget",
                     TeamId = 7,
                     CostCentreId = 11,
                     TargetAmount = 1000m,
@@ -23,6 +24,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
                 new Budget
                 {
                     Id = 2,
+                    Name = "Second budget",
                     TeamId = 7,
                     CostCentreId = 12,
                     TargetAmount = 2000m,

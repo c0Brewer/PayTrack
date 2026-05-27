@@ -1,0 +1,94 @@
+<div class="team-request-detail">
+  <button class="back-btn" (click)="back.emit()">
+    <span class="material-symbols-outlined">arrow_back</span> Back
+  </button>
+
+  @if (loading) {
+    <p>Loading...</p>
+  } @else if (request) {
+    <div class="detail-card">
+      <h2>Payment Request #{{ request.id }}</h2>
+
+      <table class="info-table">
+        <tbody>
+          <tr>
+            <th>Status</th>
+            <td>
+              <span [class]="'status ' + getStatusClass(request.status)">
+                {{ getStatusLabel(request.status) }}
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <th>Amount</th>
+            <td>{{ request.amount | currency: 'EUR' }}</td>
+          </tr>
+          <tr>
+            <th>Due Date</th>
+            <td>{{ request.dueDate ? (request.dueDate | date: 'mediumDate') : '—' }}</td>
+          </tr>
+          <tr>
+            <th>Purpose</th>
+            <td>{{ request.purposeOfPayment ?? '—' }}</td>
+          </tr>
+          @if (showTeam) {
+            <tr>
+              <th>Team</th>
+              <td>{{ request.team?.name ?? '—' }}</td>
+            </tr>
+          }
+          @if (showUser) {
+            <tr>
+              <th>User</th>
+              <td>{{ request.user?.name ?? '—' }}</td>
+            </tr>
+          }
+          <tr>
+            <th>Payment Reference</th>
+            <td>{{ request.paymentReference || '—' }}</td>
+          </tr>
+          <tr>
+            <th>Created At</th>
+            <td>{{ request.createdAt | date: 'mediumDate' }}</td>
+          </tr>
+          <tr>
+            <th>Paid At</th>
+            <td>{{ request.paidAt ? (request.paidAt | date: 'mediumDate') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if ((request.statusHistory?.length ?? 0) > 0) {
+        <h3>Status History</h3>
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>From</th>
+              <th>To</th>
+              <th>Changed At</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of request.statusHistory ?? []; track entry.changedAt) {
+              <tr>
+                <td>
+                  <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                    {{ getStatusLabel(entry.fromStatus) }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                    {{ getStatusLabel(entry.toStatus) }}
+                  </span>
+                </td>
+                <td>{{ entry.changedAt | date: 'medium' }}</td>
+                <td>{{ entry.comment }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>

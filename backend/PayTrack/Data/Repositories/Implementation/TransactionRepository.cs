@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
@@ -77,6 +78,29 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<(List<PaymentRequestByTeam> transaction, int totalCount)> GetAllAsync(GetPaymentRequestByTeamQuery? query = null)
+        {
+            IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
+
+            dbQuery = ApplyBasePreFilters(dbQuery, query);
+
+            if (query?.RequestById.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.RequestedById == query.RequestById.Value);
+            }
+
+            // Calculate total count before limit / offset
+            var totalCount = await dbQuery.CountAsync();
+
+            dbQuery = ApplyBasePostFilters(dbQuery, query);
+
+            // Could potentially add other ordering logic here as well
+            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        /// <inheritdoc/>
         public Task<Transaction?> GetByIdAsync(int id, GetTransactionQueryById? query = null)
         {
             throw new NotImplementedException();
@@ -86,11 +110,6 @@ namespace PayTrack.Data.Repositories.Implementation
         public async Task<PaymentRequestByUser?> GetByIdAsync(int id, GetPaymentRequestByUserQueryById? query = null)
         {
             IQueryable<PaymentRequestByUser> dbQuery = this.context.PaymentRequestsByUser.AsQueryable();
-
-            if (query?.IncludeCostCentre == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
-            }
 
             if (query?.IncludeUser == true)
             {
@@ -116,6 +135,31 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam?> GetByIdAsync(int id, GetPaymentRequestByTeamQueryById? query = null)
+        {
+            IQueryable<PaymentRequestByTeam> dbQuery = this.context.PaymentRequestsByTeam.AsQueryable();
+
+            if (query?.IncludeUser == true)
+            {
+                dbQuery = dbQuery.Include(t => t.User);
+            }
+
+            if (query?.IncludeTeam == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Team);
+            }
+
+            if (query?.IncludeStatusHistory == true)
+            {
+                dbQuery = dbQuery.Include(t => t.StatusHistory);
+            }
+
+            dbQuery = dbQuery.Include(t => t.RequestedBy);
+
+            return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        /// <inheritdoc/>
         public async Task<Transaction> AddAsync(Transaction transaction)
         {
             this.context.Transactions.Add(transaction);
@@ -123,7 +167,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
 
             return transaction;
@@ -141,10 +185,39 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
 
             return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> AddAsync(PaymentRequestByTeam transaction)
+        {
+            this.context.PaymentRequestsByTeam.Add(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount)
+        {
+            return await this.context.PaymentRequestsByUser
+                .AsNoTracking()
+                .Where(paymentRequestByUser =>
+                    (paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount) ||
+                    (paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount))
+                .Include(paymentRequestByUser => paymentRequestByUser.User)
+                .Include(paymentRequestByUser => paymentRequestByUser.Team)
+                .Include(paymentRequestByUser => paymentRequestByUser.Budget)
+                .Include(paymentRequestByUser => paymentRequestByUser.BankAccount)
+                .ToListAsync();
         }
 
         /// <inheritdoc/>
@@ -155,7 +228,21 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (res != 1)
             {
-                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} teams.");
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction)
+        {
+            this.context.PaymentRequestsByTeam.Update(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transaction.");
             }
 
             return transaction;
@@ -181,7 +268,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.PurposeOfPayment))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.PurposeOfPayment, $"%{query.PurposeOfPayment}%"));
+                var purposeLower = query.PurposeOfPayment.ToLower();
+                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(purposeLower));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.PaymentReference))
@@ -192,11 +280,6 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.Status.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.Status == query.Status.Value);
-            }
-
-            if (query?.CostCentreId.HasValue == true)
-            {
-                dbQuery = dbQuery.Where(t => t.CostCentreId == query.CostCentreId.Value);
             }
 
             if (query?.TeamId.HasValue == true)
@@ -233,6 +316,18 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.PaidAt < maxPaidAt);
             }
 
+            if (query?.MinDueDate.HasValue == true)
+            {
+                var minDueDate = DateTime.SpecifyKind(query.MinDueDate.Value, DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.DueDate >= minDueDate);
+            }
+
+            if (query?.MaxDueDate.HasValue == true)
+            {
+                var maxDueDate = DateTime.SpecifyKind(query.MaxDueDate.Value.Date.AddDays(1), DateTimeKind.Utc);
+                dbQuery = dbQuery.Where(t => t.DueDate < maxDueDate);
+            }
+
             return dbQuery;
         }
 
@@ -247,11 +342,6 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.Limit.HasValue == true)
             {
                 dbQuery = dbQuery.Take(query.Limit.Value);
-            }
-
-            if (query?.IncludeCostCentre.HasValue == true)
-            {
-                dbQuery = dbQuery.Include(t => t.CostCentre);
             }
 
             if (query?.IncludeTeam.HasValue == true)
