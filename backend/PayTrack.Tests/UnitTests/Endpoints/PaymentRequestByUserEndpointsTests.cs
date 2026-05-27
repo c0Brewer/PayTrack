@@ -168,7 +168,6 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent("50"), "Transaction.Amount");
             content.Add(new StringContent("TestPurpose"), "Transaction.PurposeOfPayment");
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
-            content.Add(new StringContent("0"), "Transaction.BudgetId");
 
             // -----------------------
             // ROOT DTO FIELDS
