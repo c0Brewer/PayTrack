@@ -2,11 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Clients.Model;
-using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Data.Repositories.Implementation
@@ -15,10 +13,11 @@ namespace PayTrack.Data.Repositories.Implementation
     public class FileRepository(
         IConfiguration _config,
         IGoogleDriveArchiveClient _googleDriveArchiveClient,
-        IUserRepository _userRepository,
         INotificationDispatchService _notificationDispatchService,
         ILogger<FileRepository> _logger) : IFileRepository
     {
+        private const string GoogleDriveArchiveFailureRecipient = "gitlab@racing.tuwien.ac.at";
+
         private readonly string fileUploadPath = _config["Data:FileUploadPath"] ?? throw new InternalErrorException("Could not load file upload path.");
         private readonly bool googleDriveEnabled = _config.GetValue("GoogleDrive:Enabled", false);
 
@@ -77,14 +76,14 @@ namespace PayTrack.Data.Repositories.Implementation
                         "Archiving invoice {FileName} to Google Drive failed after local save.",
                         safeFileName);
 
-                    await this.NotifyAdminsAboutArchiveFailureAsync(filePath, safeFileName, file.ContentType, exception);
+                    await this.NotifyAboutArchiveFailureAsync(filePath, safeFileName, file.ContentType, exception);
                 }
             }
 
             return filePath;
         }
 
-        private async Task NotifyAdminsAboutArchiveFailureAsync(
+        private async Task NotifyAboutArchiveFailureAsync(
             string localFilePath,
             string fileName,
             string contentType,
@@ -92,20 +91,6 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             try
             {
-                var (admins, _) = await _userRepository.GetAllAsync(new GetUserQuery
-                {
-                    Role = Role.Admin,
-                    IsActive = true,
-                });
-
-                if (admins.Count == 0)
-                {
-                    _logger.LogWarning(
-                        "Google Drive archiving failed for invoice {FileName}, but no active admins were found for email notification.",
-                        fileName);
-                    return;
-                }
-
                 var attachment = new EmailAttachment(
                     fileName,
                     await File.ReadAllBytesAsync(localFilePath),
@@ -122,27 +107,17 @@ namespace PayTrack.Data.Repositories.Implementation
                     The invoice is attached so it can be uploaded manually.
                     """;
 
-                foreach (var admin in admins)
-                {
-                    try
-                    {
-                        await _notificationDispatchService.SendEmailAsync(admin.Email, subject, body, attachments);
-                    }
-                    catch (Exception emailException)
-                    {
-                        _logger.LogError(
-                            emailException,
-                            "Sending Google Drive archive failure email for invoice {FileName} to admin {AdminEmail} failed.",
-                            fileName,
-                            admin.Email);
-                    }
-                }
+                await _notificationDispatchService.SendEmailAsync(
+                    GoogleDriveArchiveFailureRecipient,
+                    subject,
+                    body,
+                    attachments);
             }
             catch (Exception notificationException)
             {
                 _logger.LogError(
                     notificationException,
-                    "Notifying admins about Google Drive archive failure for invoice {FileName} failed.",
+                    "Sending Google Drive archive failure notification for invoice {FileName} failed.",
                     fileName);
             }
         }
