@@ -3,8 +3,13 @@ using Microsoft.Extensions.Configuration;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Repositories.Implementation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
+using PayTrack.Application.Dto.User;
+using PayTrack.Application.Services.Model;
 using PayTrack.Data.Clients.Model;
+using PayTrack.Data.Entities;
+using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Tests.UnitTests.Repositories
 {
@@ -56,20 +61,34 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
         private static IFormFile CreateMockFile(byte[] data, string fileName = "test.pdf")
         {
-            return new FormFile(
+            var formFile = new FormFile(
                 new MemoryStream(data),
                 0,
                 data.Length,
                 "file",
                 fileName
             );
+
+            formFile.Headers = new HeaderDictionary();
+            formFile.ContentType = fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+                ? "application/pdf"
+                : "application/octet-stream";
+
+            return formFile;
         }
 
         private static FileRepository CreateRepository(
             IConfiguration config,
-            Mock<IGoogleDriveArchiveClient>? googleDriveArchiveClientMock = null)
+            Mock<IGoogleDriveArchiveClient>? googleDriveArchiveClientMock = null,
+            Mock<IUserRepository>? userRepositoryMock = null,
+            Mock<INotificationDispatchService>? notificationDispatchServiceMock = null)
         {
-            return new FileRepository(config, googleDriveArchiveClientMock?.Object ?? Mock.Of<IGoogleDriveArchiveClient>());
+            return new FileRepository(
+                config,
+                googleDriveArchiveClientMock?.Object ?? Mock.Of<IGoogleDriveArchiveClient>(),
+                userRepositoryMock?.Object ?? Mock.Of<IUserRepository>(),
+                notificationDispatchServiceMock?.Object ?? Mock.Of<INotificationDispatchService>(),
+                Mock.Of<ILogger<FileRepository>>());
         }
 
         // ----------------------------
@@ -177,27 +196,140 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndRootFolderIdIsMissing()
+        public async Task SaveFile_ShouldReturnLocalPathAndNotifyAdmins_WhenGoogleDriveArchiveFails()
         {
             // Arrange
-            var folder = CreateTempFolder("SaveFileDriveMissingRootFolder");
+            var folder = CreateTempFolder("SaveFileDriveArchiveFails");
             var config = CreateConfig(folder, googleDriveEnabled: true);
             var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
             googleDriveArchiveClientMock
                 .Setup(client => client.ArchiveAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync(new InternalErrorException("Google Drive root folder id is not configured."));
-            var repo = CreateRepository(config, googleDriveArchiveClientMock);
+                .ThrowsAsync(new InvalidOperationException("Drive API unavailable"));
+            var userRepositoryMock = new Mock<IUserRepository>();
+            userRepositoryMock
+                .Setup(repo => repo.GetAllAsync(It.IsAny<GetUserQuery>()))
+                .ReturnsAsync((
+                    [
+                        new User { Email = "admin1@example.com", Role = Role.Admin, IsActive = true },
+                        new User { Email = "admin2@example.com", Role = Role.Admin, IsActive = true },
+                    ],
+                    2));
+            var notificationDispatchServiceMock = new Mock<INotificationDispatchService>();
+            var repo = CreateRepository(
+                config,
+                googleDriveArchiveClientMock,
+                userRepositoryMock,
+                notificationDispatchServiceMock);
 
             var file = CreateMockFile([1, 2, 3]);
 
             // Act
-            Func<Task> act = async () =>
-                await repo.SaveFile(file, "invoice_123");
+            var result = await repo.SaveFile(file, "invoice_123");
 
             // Assert
-            await act.Should()
-                .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive root folder id is not configured.");
+            result.Should().Be(Path.Combine(folder, "invoice_123.pdf"));
+            File.Exists(result).Should().BeTrue();
+            userRepositoryMock.Verify(
+                repo => repo.GetAllAsync(It.Is<GetUserQuery>(query =>
+                    query.Role == Role.Admin &&
+                    query.IsActive == true)),
+                Times.Once);
+            notificationDispatchServiceMock.Verify(
+                service => service.SendEmailAsync(
+                    "admin1@example.com",
+                    It.Is<string>(subject => subject.Contains("invoice_123.pdf", StringComparison.Ordinal)),
+                    It.Is<string>(body => body.Contains("Drive API unavailable", StringComparison.Ordinal)),
+                    It.Is<IReadOnlyCollection<EmailAttachment>>(attachments =>
+                        attachments.Count == 1 &&
+                        attachments.Single().FileName == "invoice_123.pdf" &&
+                        attachments.Single().Content.SequenceEqual(new byte[] { 1, 2, 3 }) &&
+                        attachments.Single().ContentType == "application/pdf")),
+                Times.Once);
+            notificationDispatchServiceMock.Verify(
+                service => service.SendEmailAsync(
+                    "admin2@example.com",
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<IReadOnlyCollection<EmailAttachment>>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldReturnLocalPath_WhenGoogleDriveArchiveAndAdminNotificationFail()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveArchiveAndNotificationFail");
+            var config = CreateConfig(folder, googleDriveEnabled: true);
+            var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
+            googleDriveArchiveClientMock
+                .Setup(client => client.ArchiveAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Drive API unavailable"));
+            var userRepositoryMock = new Mock<IUserRepository>();
+            userRepositoryMock
+                .Setup(repo => repo.GetAllAsync(It.IsAny<GetUserQuery>()))
+                .ThrowsAsync(new InvalidOperationException("Database unavailable"));
+            var repo = CreateRepository(
+                config,
+                googleDriveArchiveClientMock,
+                userRepositoryMock);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            var result = await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            result.Should().Be(Path.Combine(folder, "invoice_123.pdf"));
+            File.Exists(result).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldContinueNotifyingAdmins_WhenOneArchiveFailureEmailFails()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveArchiveEmailFails");
+            var config = CreateConfig(folder, googleDriveEnabled: true);
+            var googleDriveArchiveClientMock = new Mock<IGoogleDriveArchiveClient>();
+            googleDriveArchiveClientMock
+                .Setup(client => client.ArchiveAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Drive API unavailable"));
+            var userRepositoryMock = new Mock<IUserRepository>();
+            userRepositoryMock
+                .Setup(repo => repo.GetAllAsync(It.IsAny<GetUserQuery>()))
+                .ReturnsAsync((
+                    [
+                        new User { Email = "admin1@example.com", Role = Role.Admin, IsActive = true },
+                        new User { Email = "admin2@example.com", Role = Role.Admin, IsActive = true },
+                    ],
+                    2));
+            var notificationDispatchServiceMock = new Mock<INotificationDispatchService>();
+            notificationDispatchServiceMock
+                .Setup(service => service.SendEmailAsync(
+                    "admin1@example.com",
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<IReadOnlyCollection<EmailAttachment>>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP unavailable"));
+            var repo = CreateRepository(
+                config,
+                googleDriveArchiveClientMock,
+                userRepositoryMock,
+                notificationDispatchServiceMock);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            var result = await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            result.Should().Be(Path.Combine(folder, "invoice_123.pdf"));
+            notificationDispatchServiceMock.Verify(
+                service => service.SendEmailAsync(
+                    "admin2@example.com",
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<IReadOnlyCollection<EmailAttachment>>()),
+                Times.Once);
         }
 
         // ----------------------------
