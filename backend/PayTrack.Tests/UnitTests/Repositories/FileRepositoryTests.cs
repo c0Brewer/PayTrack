@@ -88,12 +88,35 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task SaveFile_ShouldSaveFileLocallyAndArchiveToGoogleDrive_WhenGoogleDriveIsEnabled()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveArchive");
+            var config = CreateConfig(folder, googleDriveEnabled: true, googleDriveRootFolderId: "root-folder-id");
+            var repo = new TrackingFileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3], "receipt.pdf");
+
+            // Act
+            var result = await repo.SaveFile(file, "../unsafe/invoice_123");
+
+            // Assert
+            result.Should().Be(Path.Combine(folder, "invoice_123.pdf"));
+            File.Exists(result).Should().BeTrue();
+            repo.ArchiveCallCount.Should().Be(1);
+            repo.ArchivedLocalFilePath.Should().Be(result);
+            repo.ArchivedFileName.Should().Be("invoice_123.pdf");
+            repo.LocalFileExistedWhenArchived.Should().BeTrue();
+            repo.LocalFileContentWhenArchived.Should().Equal(1, 2, 3);
+        }
+
+        [Fact]
         public async Task SaveFile_ShouldNotArchiveToGoogleDrive_WhenEnabledFlagIsMissing()
         {
             // Arrange
             var folder = CreateTempFolder("SaveFileDriveDefaultDisabled");
             var config = CreateConfigWithoutGoogleDriveEnabled(folder);
-            var repo = new FileRepository(config);
+            var repo = new TrackingFileRepository(config);
 
             var file = CreateMockFile([1, 2, 3], "test.pdf");
 
@@ -102,6 +125,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Assert
             File.Exists(result).Should().BeTrue();
+            repo.ArchiveCallCount.Should().Be(0);
         }
 
         [Fact]
@@ -353,6 +377,28 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await act.Should()
                 .ThrowAsync<InternalErrorException>()
                 .WithMessage("Accessing unallowed path");
+        }
+
+        private sealed class TrackingFileRepository(IConfiguration config) : FileRepository(config)
+        {
+            public int ArchiveCallCount { get; private set; }
+
+            public string? ArchivedLocalFilePath { get; private set; }
+
+            public string? ArchivedFileName { get; private set; }
+
+            public bool LocalFileExistedWhenArchived { get; private set; }
+
+            public byte[]? LocalFileContentWhenArchived { get; private set; }
+
+            protected override async Task UploadToGoogleDriveAsync(string localFilePath, string fileName)
+            {
+                this.ArchiveCallCount++;
+                this.ArchivedLocalFilePath = localFilePath;
+                this.ArchivedFileName = fileName;
+                this.LocalFileExistedWhenArchived = File.Exists(localFilePath);
+                this.LocalFileContentWhenArchived = await File.ReadAllBytesAsync(localFilePath);
+            }
         }
     }
 }

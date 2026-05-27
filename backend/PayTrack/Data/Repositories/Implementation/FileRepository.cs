@@ -72,6 +72,44 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <summary>
+        /// Uploads a locally stored invoice file to the configured Google Drive archive folder.
+        /// </summary>
+        /// <param name="localFilePath">The path of the locally stored file.</param>
+        /// <param name="fileName">The file name to use in Google Drive.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous upload operation.</returns>
+        protected virtual async Task UploadToGoogleDriveAsync(string localFilePath, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(this.googleDriveRootFolderId))
+            {
+                throw new InternalErrorException("Google Drive root folder id is not configured.");
+            }
+
+            using var driveService = this.CreateDriveService();
+            var now = DateTime.UtcNow;
+            var yearFolderId = await this.GetOrCreateFolderAsync(driveService, now.Year.ToString(CultureInfo.InvariantCulture), this.googleDriveRootFolderId);
+            var monthFolderId = await this.GetOrCreateFolderAsync(driveService, now.ToString("MMMM", CultureInfo.InvariantCulture), yearFolderId);
+
+            await using var stream = File.OpenRead(localFilePath);
+            var fileMetadata = new Google.Apis.Drive.v3.Data.File
+            {
+                Name = fileName,
+                Parents = [monthFolderId],
+            };
+
+            var request = driveService.Files.Create(fileMetadata, stream, GetContentType(fileName));
+            request.Fields = "id";
+            request.SupportsAllDrives = true;
+
+            var result = await request.UploadAsync();
+
+            if (result.Status != Google.Apis.Upload.UploadStatus.Completed)
+            {
+                var errorMessage = result.Exception?.Message ?? result.Status.ToString();
+                throw new InternalErrorException($"Uploading invoice to Google Drive failed: {errorMessage}");
+            }
+        }
+
+        /// <summary>
         /// Escapes special characters in a value used inside a Google Drive API query string.
         /// </summary>
         /// <param name="value">The raw query value.</param>
@@ -112,44 +150,6 @@ namespace PayTrack.Data.Repositories.Implementation
             catch (FormatException exception)
             {
                 throw new InternalErrorException($"{errorMessage} {exception.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Uploads a locally stored invoice file to the configured Google Drive archive folder.
-        /// </summary>
-        /// <param name="localFilePath">The path of the locally stored file.</param>
-        /// <param name="fileName">The file name to use in Google Drive.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous upload operation.</returns>
-        private async Task UploadToGoogleDriveAsync(string localFilePath, string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(this.googleDriveRootFolderId))
-            {
-                throw new InternalErrorException("Google Drive root folder id is not configured.");
-            }
-
-            using var driveService = this.CreateDriveService();
-            var now = DateTime.UtcNow;
-            var yearFolderId = await this.GetOrCreateFolderAsync(driveService, now.Year.ToString(CultureInfo.InvariantCulture), this.googleDriveRootFolderId);
-            var monthFolderId = await this.GetOrCreateFolderAsync(driveService, now.ToString("MMMM", CultureInfo.InvariantCulture), yearFolderId);
-
-            await using var stream = File.OpenRead(localFilePath);
-            var fileMetadata = new Google.Apis.Drive.v3.Data.File
-            {
-                Name = fileName,
-                Parents = [monthFolderId],
-            };
-
-            var request = driveService.Files.Create(fileMetadata, stream, GetContentType(fileName));
-            request.Fields = "id";
-            request.SupportsAllDrives = true;
-
-            var result = await request.UploadAsync();
-
-            if (result.Status != Google.Apis.Upload.UploadStatus.Completed)
-            {
-                var errorMessage = result.Exception?.Message ?? result.Status.ToString();
-                throw new InternalErrorException($"Uploading invoice to Google Drive failed: {errorMessage}");
             }
         }
 
