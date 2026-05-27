@@ -28,7 +28,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             string path,
             bool googleDriveEnabled = false,
             string? googleDriveRootFolderId = null,
-            string? googleDriveServiceAccountKeyPath = null)
+            string? googleDriveServiceAccountKeyPath = null,
+            string? googleDriveServiceAccountKeyBase64 = null)
         {
             return new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
@@ -36,7 +37,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
                     ["Data:FileUploadPath"] = path,
                     ["GoogleDrive:Enabled"] = googleDriveEnabled.ToString(),
                     ["GoogleDrive:RootFolderId"] = googleDriveRootFolderId,
-                    ["GoogleDrive:ServiceAccountKeyPath"] = googleDriveServiceAccountKeyPath
+                    ["GoogleDrive:ServiceAccountKeyPath"] = googleDriveServiceAccountKeyPath,
+                    ["GoogleDrive:ServiceAccountKeyBase64"] = googleDriveServiceAccountKeyBase64,
                 })
                 .Build();
         }
@@ -177,7 +179,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Assert
             await act.Should()
                 .ThrowAsync<InternalErrorException>()
-                .WithMessage("Google Drive service account key path is not configured.");
+                .WithMessage("Google Drive service account key is not configured.");
         }
 
         [Fact]
@@ -203,6 +205,56 @@ namespace PayTrack.Tests.UnitTests.Repositories
             await act.Should()
                 .ThrowAsync<InternalErrorException>()
                 .WithMessage("Google Drive service account key file could not be found.");
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyPathAndBase64AreConfigured()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveDuplicateKeySources");
+            var keyFilePath = Path.Combine(folder, "service-account.json");
+            var config = CreateConfig(
+                folder,
+                googleDriveEnabled: true,
+                googleDriveRootFolderId: "root-folder-id",
+                googleDriveServiceAccountKeyPath: keyFilePath,
+                googleDriveServiceAccountKeyBase64: "not-used");
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            Func<Task> act = async () =>
+                await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InternalErrorException>()
+                .WithMessage("Google Drive service account key path and base64 value cannot both be configured.");
+        }
+
+        [Fact]
+        public async Task SaveFile_ShouldThrow_WhenGoogleDriveIsEnabledAndServiceAccountKeyBase64IsInvalid()
+        {
+            // Arrange
+            var folder = CreateTempFolder("SaveFileDriveInvalidKeyBase64");
+            var config = CreateConfig(
+                folder,
+                googleDriveEnabled: true,
+                googleDriveRootFolderId: "root-folder-id",
+                googleDriveServiceAccountKeyBase64: "not-valid-base64");
+            var repo = new FileRepository(config);
+
+            var file = CreateMockFile([1, 2, 3]);
+
+            // Act
+            Func<Task> act = async () =>
+                await repo.SaveFile(file, "invoice_123");
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InternalErrorException>()
+                .WithMessage("Google Drive service account key base64 value is invalid.*");
         }
 
         [Fact]

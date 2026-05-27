@@ -195,20 +195,14 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
             case "GOOGLE_DRIVE_ENABLED":
                 values["GoogleDrive:Enabled"] = value;
                 break;
-            case "GOOGLE_DRIVE_AUTHENTICATION_MODE":
-                values["GoogleDrive:AuthenticationMode"] = value;
-                break;
             case "GOOGLE_DRIVE_ROOT_FOLDER_ID":
                 values["GoogleDrive:RootFolderId"] = value;
                 break;
             case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_PATH":
                 values["GoogleDrive:ServiceAccountKeyPath"] = value;
                 break;
-            case "GOOGLE_DRIVE_OAUTH_CLIENT_SECRETS_PATH":
-                values["GoogleDrive:OAuthClientSecretsPath"] = value;
-                break;
-            case "GOOGLE_DRIVE_OAUTH_TOKEN_STORE_PATH":
-                values["GoogleDrive:OAuthTokenStorePath"] = value;
+            case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
+                values["GoogleDrive:ServiceAccountKeyBase64"] = value;
                 break;
         }
     }
