@@ -9,19 +9,36 @@ namespace PayTrack.Application.Dto.Transaction
     /// <summary>
     /// Dto containing necessary information for creating a PaymentRequestByUser.
     /// </summary>
-    public sealed record class CreateTransactionDto(
-        [property: Required]
-        int TeamId,
+    public sealed class CreateTransactionDto
+    {
+        /// <summary>
+        /// Gets the id of the team this transaction belongs to.
+        /// </summary>
+        [Required]
+        public int TeamId { get; init; }
 
-        [property: Required]
-        decimal Amount,
+        /// <summary>
+        /// Gets the transaction amount.
+        /// </summary>
+        [Required]
+        public decimal Amount { get; init; }
 
-        [property: Required]
-        [property: MinLength(3)]
-        string PurposeOfPayment,
+        /// <summary>
+        /// Gets the purpose of payment.
+        /// </summary>
+        [Required]
+        [MinLength(3)]
+        public string PurposeOfPayment { get; init; } = string.Empty;
 
-        [property: Required]
-        DateTime PaidAt,
+        /// <summary>
+        /// Gets the date when the transaction was paid.
+        /// </summary>
+        [Required]
+        public DateTime PaidAt { get; init; }
 
-        int? BudgetId = null);
+        /// <summary>
+        /// Gets the optional budget id.
+        /// </summary>
+        public int? BudgetId { get; init; }
+    }
 }
