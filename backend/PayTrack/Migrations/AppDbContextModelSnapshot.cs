@@ -67,11 +67,23 @@ namespace PayTrack.Migrations
                     b.Property<int>("CostCentreId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<DateTime>("PeriodEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("PeriodStart")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SeasonId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TargetAmount")
                         .HasColumnType("decimal(18,2)");
@@ -83,7 +95,9 @@ namespace PayTrack.Migrations
 
                     b.HasIndex("CostCentreId");
 
-                    b.HasIndex("TeamId", "CostCentreId", "PeriodStart", "PeriodEnd")
+                    b.HasIndex("SeasonId");
+
+                    b.HasIndex("TeamId", "CostCentreId", "SeasonId", "PeriodStart", "PeriodEnd")
                         .IsUnique();
 
                     b.ToTable("Budgets");
@@ -119,6 +133,27 @@ namespace PayTrack.Migrations
                         .IsUnique();
 
                     b.ToTable("CostCentres");
+                });
+
+            modelBuilder.Entity("PayTrack.Data.Entities.Season", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Seasons");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Team", b =>
@@ -164,10 +199,13 @@ namespace PayTrack.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("CostCentreId")
+                    b.Property<int?>("BudgetId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("PaidAt")
@@ -204,7 +242,7 @@ namespace PayTrack.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CostCentreId");
+                    b.HasIndex("BudgetId");
 
                     b.HasIndex("TeamId");
 
@@ -378,6 +416,12 @@ namespace PayTrack.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("PayTrack.Data.Entities.Season", "Season")
+                        .WithMany("Budgets")
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
                         .WithMany("Budgets")
                         .HasForeignKey("TeamId")
@@ -386,14 +430,16 @@ namespace PayTrack.Migrations
 
                     b.Navigation("CostCentre");
 
+                    b.Navigation("Season");
+
                     b.Navigation("Team");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Transaction", b =>
                 {
-                    b.HasOne("PayTrack.Data.Entities.CostCentre", "CostCentre")
+                    b.HasOne("PayTrack.Data.Entities.Budget", "Budget")
                         .WithMany("Transactions")
-                        .HasForeignKey("CostCentreId")
+                        .HasForeignKey("BudgetId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("PayTrack.Data.Entities.Team", "Team")
@@ -408,7 +454,7 @@ namespace PayTrack.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CostCentre");
+                    b.Navigation("Budget");
 
                     b.Navigation("Team");
 
@@ -465,11 +511,19 @@ namespace PayTrack.Migrations
                     b.Navigation("BankAccount");
                 });
 
+            modelBuilder.Entity("PayTrack.Data.Entities.Budget", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
             modelBuilder.Entity("PayTrack.Data.Entities.CostCentre", b =>
                 {
                     b.Navigation("Budgets");
+                });
 
-                    b.Navigation("Transactions");
+            modelBuilder.Entity("PayTrack.Data.Entities.Season", b =>
+                {
+                    b.Navigation("Budgets");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Team", b =>

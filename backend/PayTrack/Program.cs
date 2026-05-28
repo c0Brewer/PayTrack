@@ -13,6 +13,7 @@ using PayTrack.Application.Dto.Health;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Implementation;
@@ -40,8 +41,18 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
+builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
+builder.Services.AddScoped<ISeasonService, SeasonService>();
+
+// Notification
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHttpClient<NotificationDispatchService>();
+builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -51,6 +62,7 @@ builder.Services.AddScoped<IFileRepository, FileRepository>();
 builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -165,6 +177,9 @@ apiV1.MapUserEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
+apiV1.MapBudgetEndpoints();
+apiV1.MapSeasonEndpoints();
+apiV1.MapNotificationEndpoints();
 
 if (hasFrontendBundle)
 {

@@ -1,0 +1,61 @@
+.season-management {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.season-management__header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.season-management__create {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(12rem, 24rem) auto;
+  max-width: 36rem;
+}
+
+.season-management__create label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.season-management__create input {
+  background-color: #f6f6f6;
+  border: 1px solid white;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+}
+
+.season-management__create button {
+  height: 2.5rem;
+}
+
+.season-table {
+  background: #fff;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.season-table th,
+.season-table td {
+  border-bottom: 1px solid #d1d5db;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.season-table th {
+  background: #e5e7eb;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .season-management__create {
+    grid-template-columns: 1fr;
+  }
+}

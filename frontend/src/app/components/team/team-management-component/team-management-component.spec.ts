@@ -7,8 +7,9 @@ import { vi } from 'vitest';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
 import { TeamService } from '../../../services/team/team-service';
-import { CostCentreDtoPaginatedResponse, TeamDto } from '../../../types/exporter';
+import { CostCentreDtoPaginatedResponse, SeasonDto, TeamDto } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { TeamEditModalComponent } from '../team-edit-modal-component/team-edit-modal-component';
 import { TeamFilterComponent } from '../team-filter-component/team-filter-component';
@@ -28,6 +29,9 @@ describe('TeamManagementComponent', () => {
   };
   let costCentreServiceMock: {
     getCostCentres: ReturnType<typeof vi.fn>;
+  };
+  let seasonServiceMock: {
+    getSeasons: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -78,6 +82,10 @@ describe('TeamManagementComponent', () => {
     hasNext: false,
     hasPrevious: false,
   };
+  const mockSeasons: SeasonDto[] = [
+    { id: 1, name: '2025', budgets: [] },
+    { id: 2, name: '2026', budgets: [] },
+  ];
 
   beforeEach(async () => {
     teamServiceMock = {
@@ -105,6 +113,9 @@ describe('TeamManagementComponent', () => {
     costCentreServiceMock = {
       getCostCentres: vi.fn().mockReturnValue(of(mockCostCentres)),
     };
+    seasonServiceMock = {
+      getSeasons: vi.fn().mockReturnValue(of(mockSeasons)),
+    };
 
     notificationServiceMock = {
       showError: vi.fn(),
@@ -119,6 +130,7 @@ describe('TeamManagementComponent', () => {
       imports: [TeamManagementComponent],
       providers: [
         { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: SeasonService, useValue: seasonServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -142,6 +154,8 @@ describe('TeamManagementComponent', () => {
       Limit: 1000,
       Offset: 0,
     });
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(component.seasons).toEqual(mockSeasons);
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,
       Description: undefined,
@@ -197,6 +211,16 @@ describe('TeamManagementComponent', () => {
     component.loadTeams();
 
     expect(notificationServiceMock.showError).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it('loadSeasons should surface service errors through the notification service', () => {
+    seasonServiceMock.getSeasons.mockReturnValueOnce(throwError(() => new Error('Season failed')));
+
+    component.loadSeasons();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not load seasons: Season failed',
+    );
   });
 
   it('updateFilterOptions should merge filters, reset the page, and reload the list', () => {
@@ -381,7 +405,10 @@ describe('TeamManagementComponent', () => {
       budgetsToUpsert: [
         {
           id: null,
+          name: 'New budget',
+          description: null,
           costCentreId: 2,
+          seasonId: 1,
           targetAmount: 500,
           periodStart: '2026-01-01',
           periodEnd: '2026-06-30',
@@ -394,10 +421,13 @@ describe('TeamManagementComponent', () => {
       expect.objectContaining({
         budgets: [
           {
+            name: 'New budget',
+            description: null,
             costCentreId: 2,
+            seasonId: 1,
             targetAmount: 500,
-            periodStart: '2026-01-01',
-            periodEnd: '2026-06-30',
+            periodStart: '2026-01-01T00:00:00.000Z',
+            periodEnd: '2026-06-30T00:00:00.000Z',
           },
         ],
       }),
@@ -410,7 +440,10 @@ describe('TeamManagementComponent', () => {
       budgetsToUpsert: [
         {
           id: 10,
+          name: 'Updated budget',
+          description: null,
           costCentreId: 2,
+          seasonId: 1,
           targetAmount: 500,
           periodStart: '2026-01-01',
           periodEnd: '2026-06-30',
@@ -425,10 +458,13 @@ describe('TeamManagementComponent', () => {
         budgetsToUpsert: [
           {
             id: 10,
+            name: 'Updated budget',
+            description: null,
             costCentreId: 2,
+            seasonId: 1,
             targetAmount: 500,
-            periodStart: '2026-01-01',
-            periodEnd: '2026-06-30',
+            periodStart: '2026-01-01T00:00:00.000Z',
+            periodEnd: '2026-06-30T00:00:00.000Z',
           },
         ],
         budgetIdsToDelete: [15],

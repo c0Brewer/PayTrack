@@ -1,0 +1,27 @@
+<div class="team-requests">
+  <h2>Payment Requests by Team</h2>
+
+  <app-team-request-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    [showCostCentreFilter]="false"
+    [showUserFilter]="true"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
+  ></app-team-request-filter-component>
+
+  <app-team-request-list-component
+    [requests]="requests"
+    [showUserColumn]="true"
+    (openDetail)="onOpenDetail($event)"
+  ></app-team-request-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

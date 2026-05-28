@@ -7,12 +7,18 @@ import { UnauthorizedComponent } from './components/general/unauthorized-compone
 import { HomeComponent } from './components/home/home-component/home-component';
 import { InitialLoginBankAccountComponent } from './components/inital-login-bank-account/initial-login-bank-account-component/initial-login-bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
+import { TeamRequestsComponent } from './components/payment-requests/request-by-team/admin-view/admin-list-component/admin-list-component';
+import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
+import { TeamRequestUserDetailComponent } from './components/payment-requests/request-by-team/user-view/user-detail-component/user-detail-component';
+import { TeamRequestUserListComponent } from './components/payment-requests/request-by-team/user-view/user-list-component/user-list-component';
+import { RequestDetailComponent } from './components/payment-requests/request-by-user/admin-view/admin-detail-component/admin-detail-component';
+import { RequestsComponent } from './components/payment-requests/request-by-user/admin-view/admin-list-component/admin-list-component';
+import { ReceiptSubmitComponent } from './components/payment-requests/request-by-user/submission-component/submission-component';
+import { MyInvoiceDetailComponent } from './components/payment-requests/request-by-user/user-view/user-detail-component/user-detail-component';
+import { MyInvoicesComponent } from './components/payment-requests/request-by-user/user-view/user-list-component/user-list-component';
+import { SeasonManagementComponent } from './components/season/season-management-component/season-management-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
-import { MyInvoiceDetailComponent } from './components/submission/my-invoice-detail-component/my-invoice-detail-component';
-import { MyInvoicesComponent } from './components/submission/my-invoices-component/my-invoices-component';
-import { ReceiptSubmitComponent } from './components/submission/receipt-submit-component/receipt-submit-component';
-import { RequestDetailComponent } from './components/submission/request-detail-component/request-detail-component';
-import { RequestsComponent } from './components/submission/requests-component/requests-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
@@ -91,6 +97,11 @@ export const routes: Routes = [
     component: CostCentreManagementComponent,
   },
   {
+    path: 'season',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: SeasonManagementComponent,
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     component: SettingsComponent,
@@ -99,6 +110,31 @@ export const routes: Routes = [
     path: 'cost-centre/:id',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: CostCentreDetailComponent,
+  },
+  {
+    path: 'create-payment-request',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: PaymentRequestByTeamComponent,
+  },
+  {
+    path: 'payment-requests-by-team',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamRequestsComponent,
+  },
+  {
+    path: 'payment-requests-by-team/:id',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamRequestAdminDetailComponent,
+  },
+  {
+    path: 'my-team-requests',
+    canActivate: [authGuard],
+    component: TeamRequestUserListComponent,
+  },
+  {
+    path: 'my-team-requests/:id',
+    canActivate: [authGuard],
+    component: TeamRequestUserDetailComponent,
   },
   {
     path: 'unauthorized',

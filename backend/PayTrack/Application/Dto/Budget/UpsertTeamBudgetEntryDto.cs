@@ -13,7 +13,16 @@ namespace PayTrack.Application.Dto.Budget
         int? Id,
 
         [property: Required]
+        [property: MinLength(3)]
+        string Name,
+
+        string? Description,
+
+        [property: Required]
         int CostCentreId,
+
+        [property: Required]
+        int SeasonId,
 
         [property: Required]
         [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]
@@ -23,5 +32,5 @@ namespace PayTrack.Application.Dto.Budget
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd);
+        DateTime PeriodEnd) : IBudgetEntryDto;
 }

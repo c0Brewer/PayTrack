@@ -20,11 +20,15 @@ const mockTeam: TeamDto = {
   budgets: [
     {
       id: 10,
+      name: 'Vehicle budget',
+      description: null,
       teamId: 1,
       costCentreId: 20,
+      seasonId: 1,
       targetAmount: 5000,
       periodStart: '2026-01-01T00:00:00Z',
       periodEnd: '2026-12-31T00:00:00Z',
+      transactionIds: [],
     },
   ],
 };

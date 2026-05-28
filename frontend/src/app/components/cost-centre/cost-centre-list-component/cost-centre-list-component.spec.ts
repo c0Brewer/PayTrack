@@ -9,19 +9,27 @@ import { CostCentreListComponent } from './cost-centre-list-component';
 const now = new Date();
 const activeBudget: BudgetDto = {
   id: 10,
+  name: 'Active budget',
+  description: null,
   teamId: 1,
   costCentreId: 1,
+  seasonId: 1,
   targetAmount: 500,
   periodStart: new Date(now.getFullYear() - 1, 0, 1).toISOString(),
   periodEnd: new Date(now.getFullYear() + 1, 11, 31).toISOString(),
+  transactionIds: [],
 };
 const expiredBudget: BudgetDto = {
   id: 11,
+  name: 'Expired budget',
+  description: null,
   teamId: 1,
   costCentreId: 1,
+  seasonId: 1,
   targetAmount: 500,
   periodStart: '2020-01-01T00:00:00Z',
   periodEnd: '2020-12-31T00:00:00Z',
+  transactionIds: [],
 };
 
 const mockCostCentres: CostCentreDto[] = [
