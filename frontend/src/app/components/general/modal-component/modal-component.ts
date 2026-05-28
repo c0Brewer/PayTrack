@@ -10,6 +10,7 @@ export class ModalComponent {
   @Input() visible = true;
   @Input() title: string = '';
   @Input() info: string = '';
+  @Input() icon?: string = '';
 
   @Output() closeEvent = new EventEmitter<void>();
 

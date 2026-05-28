@@ -1,3 +1,5 @@
+//AI helped with the test cases
+
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -142,7 +144,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int>()))
+                    It.IsAny<int?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -166,6 +168,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent("50"), "Transaction.Amount");
             content.Add(new StringContent("TestPurpose"), "Transaction.PurposeOfPayment");
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
+            content.Add(new StringContent("0"), "Transaction.BudgetId");
 
             // -----------------------
             // ROOT DTO FIELDS
@@ -184,6 +187,58 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
+        }
+
+        // ----------------------------
+        // DUPLICATE CHECK
+        // ----------------------------
+        [Fact]
+        public async Task GetDuplicatePaymentRequests_ReturnsOk()
+        {
+            // Arrange
+            var user = new User { Id = 123 };
+            var matches = new List<DuplicatePaymentRequestByUserMatch>
+            {
+                new(
+                    new PaymentRequestByUser
+                    {
+                        Id = 1,
+                        Amount = 100,
+                        InvoiceNumber = "INV-100",
+                        User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
+                        Team = new Team { Id = 99, Name = "Team A" }
+                    },
+                    2,
+                    true,
+                    true),
+            };
+
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(user);
+
+            _factory.ServiceMock
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100))
+                .ReturnsAsync(matches);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var dto = await response.Content.ReadFromJsonAsync<List<DuplicatePaymentRequestByUserDto>>();
+            dto.Should().NotBeNull();
+            dto.Should().HaveCount(1);
+            dto![0].PaymentRequestByUser.Id.Should().Be(1);
+            dto[0].Score.Should().Be(2);
+
+            _factory.ServiceMock.Verify(
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100),
+                Times.Once);
         }
 
         // ----------------------------
@@ -240,7 +295,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 Id = 1,
                 InvoiceNumber = "123",
                 Status = TransactionStatus.Approved,
-                CostCentreId = 5
+                BudgetId = 5
             };
 
             _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);

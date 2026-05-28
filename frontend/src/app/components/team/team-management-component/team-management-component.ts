@@ -3,6 +3,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { SeasonService } from '../../../services/season/season-service';
 import { TeamService } from '../../../services/team/team-service';
 import {
   CostCentreDto,
@@ -12,6 +13,8 @@ import {
   TeamDto,
   GetTeamOptions,
   UpdateTeamDto,
+  UpsertTeamBudgetEntryDto,
+  SeasonDto,
 } from '../../../types/exporter';
 import { TeamSaveEvent } from '../../../types/misc-types';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
@@ -41,13 +44,16 @@ import { TeamListComponent } from '../team-list-component/team-list-component';
 export class TeamManagementComponent {
   constructor(
     private readonly costCentreService: CostCentreService,
+    private readonly seasonService: SeasonService,
     private readonly teamService: TeamService,
     private readonly cdr: ChangeDetectorRef,
     private readonly notificationService: NotificationService,
   ) {}
 
   teams: TeamDto[] = [];
+  activeStatusPendingIds = new Set<number>();
   costCentres: CostCentreDto[] = [];
+  seasons: SeasonDto[] = [];
   editingTeam: TeamDto | null = null;
   deletingTeam: TeamDto | null = null;
   deleteImpact: DeleteTeamImpactDto | null = null;
@@ -64,6 +70,7 @@ export class TeamManagementComponent {
   filterOptions: NonNullable<GetTeamOptions> = {
     Name: undefined,
     Description: undefined,
+    IsActive: undefined,
     IncludeMembers: true,
     IncludeBudgets: true,
     Limit: this.limit,
@@ -72,6 +79,7 @@ export class TeamManagementComponent {
 
   ngOnInit(): void {
     this.loadCostCentres();
+    this.loadSeasons();
     this.loadTeams();
     this.loadTeamStats();
   }
@@ -112,10 +120,23 @@ export class TeamManagementComponent {
       });
   }
 
+  loadSeasons(): void {
+    this.seasonService.getSeasons().subscribe({
+      next: (seasons) => {
+        this.seasons = seasons;
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load seasons: ' + err.message);
+      },
+    });
+  }
+
   loadTeams(): void {
     const queryOptions: NonNullable<GetTeamOptions> = {
       Name: this.filterOptions?.Name ?? undefined,
       Description: this.filterOptions?.Description ?? undefined,
+      IsActive: this.filterOptions?.IsActive ?? undefined,
       IncludeMembers: true,
       IncludeBudgets: true,
       Limit: this.limit,
@@ -146,6 +167,7 @@ export class TeamManagementComponent {
     if (this.filterOptions && options) {
       this.filterOptions.Name = options.Name;
       this.filterOptions.Description = options.Description;
+      this.filterOptions.IsActive = options.IsActive;
       this.page = 0;
       this.loadTeams();
     }
@@ -255,15 +277,21 @@ export class TeamManagementComponent {
           budgetsToUpsert.length > 0
             ? budgetsToUpsert.map(
                 ({
+                  name,
+                  description,
                   costCentreId,
+                  seasonId,
                   targetAmount,
                   periodStart,
                   periodEnd,
                 }): CreateTeamBudgetEntryDto => ({
+                  name,
+                  description,
                   costCentreId,
+                  seasonId,
                   targetAmount,
-                  periodStart,
-                  periodEnd,
+                  periodStart: this.toApiDateTime(periodStart),
+                  periodEnd: this.toApiDateTime(periodEnd),
                 }),
               )
             : undefined,
@@ -287,7 +315,10 @@ export class TeamManagementComponent {
       name: team.name,
       description: team.description,
       displayColor: team.displayColor,
-      budgetsToUpsert: budgetsToUpsert.length > 0 ? budgetsToUpsert : undefined,
+      budgetsToUpsert:
+        budgetsToUpsert.length > 0
+          ? budgetsToUpsert.map((budget) => this.normalizeBudgetDates(budget))
+          : undefined,
       budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
     };
 
@@ -305,5 +336,64 @@ export class TeamManagementComponent {
 
   private getDefaultDisplayColor(): string {
     return '#2563eb';
+  }
+
+  private normalizeBudgetDates(budget: UpsertTeamBudgetEntryDto): UpsertTeamBudgetEntryDto {
+    return {
+      ...budget,
+      periodStart: this.toApiDateTime(budget.periodStart),
+      periodEnd: this.toApiDateTime(budget.periodEnd),
+    };
+  }
+
+  private toApiDateTime(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    return value;
+  }
+
+  private setActiveStatusPending(teamId: number, isPending: boolean): void {
+    const nextPendingIds = new Set(this.activeStatusPendingIds);
+
+    if (isPending) {
+      nextPendingIds.add(teamId);
+    } else {
+      nextPendingIds.delete(teamId);
+    }
+
+    this.activeStatusPendingIds = nextPendingIds;
+  }
+
+  toggleActive(team: TeamDto): void {
+    if (this.activeStatusPendingIds.has(team.id)) {
+      return;
+    }
+
+    const nextIsActive = !team.isActive;
+    const updateRequest: UpdateTeamDto = {
+      isActive: nextIsActive,
+    };
+
+    this.setActiveStatusPending(team.id, true);
+
+    this.teamService.updateTeam(team.id, updateRequest).subscribe({
+      next: () => {
+        this.notificationService.showSuccess(
+          'Successfully changed active status of user ' + team.name,
+        );
+        this.teams = this.teams.map((currentTeam) =>
+          currentTeam.id === team.id ? { ...currentTeam, isActive: nextIsActive } : currentTeam,
+        );
+        this.setActiveStatusPending(team.id, false);
+        this.cdr.markForCheck();
+      },
+      error: (error: Error) => {
+        this.setActiveStatusPending(team.id, false);
+        this.notificationService.showError('Could not update User: ' + error.message);
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

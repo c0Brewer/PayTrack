@@ -114,7 +114,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgets = new List<CreateCostCentreBudgetEntryDto>
             {
-                new(TeamId: 1, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Name: "Team budget", Description: null, TeamId: 1, SeasonId: 1, TargetAmount: 5000m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             repoMock.Setup(r => r.AddAsync(It.IsAny<CostCentre>(), budgets))
                     .ReturnsAsync((CostCentre c, IList<CreateCostCentreBudgetEntryDto>? _) => c);
@@ -125,6 +125,32 @@ namespace PayTrack.Tests.UnitTests.Services
             // Assert
             result.Should().NotBeNull();
             repoMock.Verify(r => r.AddAsync(It.IsAny<CostCentre>(), budgets), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WithBudgetPeriodEndBeforeStart_ShouldThrowInvalidStateException()
+        {
+            // Arrange
+            var budgets = new List<CreateCostCentreBudgetEntryDto>
+            {
+                new(
+                    Name: "Budget",
+                    Description: null,
+                    TeamId: 1,
+                    SeasonId: 1,
+                    TargetAmount: 5000m,
+                    PeriodStart: new DateTime(2026, 12, 31),
+                    PeriodEnd: new DateTime(2026, 1, 1)),
+            };
+
+            // Act
+            var act = async () => await service.CreateAsync("Aero", null, null, budgets);
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Period end must not be before period start.");
+            repoMock.Verify(r => r.AddAsync(It.IsAny<CostCentre>(), It.IsAny<IList<CreateCostCentreBudgetEntryDto>?>()), Times.Never);
         }
 
         [Fact]
@@ -197,7 +223,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Arrange
             var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
-                new(Id: 5, TeamId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Id: 5, Name: "Team budget", Description: null, TeamId: 1, SeasonId: 1, TargetAmount: 100m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             var budgetIdsToDelete = new List<int> { 5 };
 
@@ -210,12 +236,39 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task UpdateAsync_WithNegativeBudgetAmount_ShouldThrowInvalidStateException()
+        {
+            // Arrange
+            var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
+            {
+                new(
+                    Id: null,
+                    Name: "Budget",
+                    Description: null,
+                    TeamId: 1,
+                    SeasonId: 1,
+                    TargetAmount: -100m,
+                    PeriodStart: new DateTime(2026, 1, 1),
+                    PeriodEnd: new DateTime(2026, 12, 31)),
+            };
+
+            // Act
+            var act = async () => await service.UpdateAsync(1, null, null, null, budgetsToUpsert, null);
+
+            // Assert
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Target amount must be non-negative.");
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<IList<UpsertCostCentreBudgetEntryDto>?>(), It.IsAny<IList<int>?>()), Times.Never);
+        }
+
+        [Fact]
         public async Task UpdateAsync_WithBothListsPopulated_ShouldPassBothToRepo()
         {
             // Arrange
             var budgetsToUpsert = new List<UpsertCostCentreBudgetEntryDto>
             {
-                new(Id: null, TeamId: 2, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
+                new(Id: null, Name: "Team budget", Description: null, TeamId: 2, SeasonId: 1, TargetAmount: 500m, PeriodStart: new DateTime(2026, 1, 1), PeriodEnd: new DateTime(2026, 12, 31)),
             };
             var budgetIdsToDelete = new List<int> { 10 };
             var updated = new CostCentre { Id = 1, Name = "Aero" };

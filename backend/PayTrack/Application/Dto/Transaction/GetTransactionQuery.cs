@@ -42,11 +42,6 @@ namespace PayTrack.Application.Dto.Transaction
         public TransactionStatus? Status { get; init; }
 
         /// <summary>
-        /// Cost Centre to query.
-        /// </summary>
-        public int? CostCentreId { get; init; }
-
-        /// <summary>
         /// Team to query.
         /// </summary>
         public int? TeamId { get; init; }
@@ -77,6 +72,16 @@ namespace PayTrack.Application.Dto.Transaction
         public DateTime? MaxPaidAt { get; init; }
 
         /// <summary>
+        /// MinDueDate to query.
+        /// </summary>
+        public DateTime? MinDueDate { get; init; }
+
+        /// <summary>
+        /// MaxDueDate to query.
+        /// </summary>
+        public DateTime? MaxDueDate { get; init; }
+
+        /// <summary>
         /// Limit of query.
         /// </summary>
         public int? Limit { get; init; }
@@ -85,11 +90,6 @@ namespace PayTrack.Application.Dto.Transaction
         /// Offset of query.
         /// </summary>
         public int? Offset { get; init; }
-
-        /// <summary>
-        /// Whether to include the cost centre in the query.
-        /// </summary>
-        public bool? IncludeCostCentre { get; init; }
 
         /// <summary>
         /// Whether to include the team in the query.

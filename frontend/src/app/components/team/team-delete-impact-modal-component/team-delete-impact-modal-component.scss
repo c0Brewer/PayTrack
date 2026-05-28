@@ -23,13 +23,3 @@
   justify-content: flex-end;
   gap: v.$size-s;
 }
-
-.delete-confirm-btn {
-  background: v.$accent-color;
-  color: v.$background-light;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(v.$accent-color, 0.3);
-  }
-}

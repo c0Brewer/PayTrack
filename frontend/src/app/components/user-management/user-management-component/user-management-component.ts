@@ -7,12 +7,20 @@ import { UserService } from '../../../services/user/user-service';
 import { UserDto, GetUserOptions, UpdateUserDto, Role, TeamDto } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { ModalComponent } from '../../general/modal-component/modal-component';
+import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { UserFilterComponent } from '../user-filter-component/user-filter-component';
 import { UserListComponent } from '../user-list-component/user-list-component';
 
 @Component({
   selector: 'app-user-management-component',
-  imports: [FormsModule, StatBoxComponent, UserListComponent, UserFilterComponent, ModalComponent],
+  imports: [
+    FormsModule,
+    StatBoxComponent,
+    UserListComponent,
+    UserFilterComponent,
+    ModalComponent,
+    PaginationComponent,
+  ],
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.scss',
 })
@@ -35,6 +43,10 @@ export class UserManagementComponent implements OnInit {
   totalUserCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
+
+  readonly activeUserPlaceholderCount = 12;
+  readonly inactiveUserPlaceholderCount = 2;
+  readonly adminUserPlaceholderCount = 2;
 
   editingUser: UserDto | null = null;
   activeStatusPendingIds = new Set<number>();

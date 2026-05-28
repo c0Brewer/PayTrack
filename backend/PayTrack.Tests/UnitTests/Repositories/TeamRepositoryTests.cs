@@ -99,7 +99,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var teams = new List<Team>
             {
                 new() { Name = "Team1" },
-                new() { Name = "Team2" }
+                new() { Name = "Team2", IsActive = false }
             };
             context.Teams.AddRange(teams);
             await context.SaveChangesAsync();
@@ -114,6 +114,56 @@ namespace PayTrack.Tests.UnitTests.Repositories
             resultList.Should().ContainSingle(t => t.Name == "Team1");
             resultList.Should().ContainSingle(t => t.Name == "Team2");
             totalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldFilterTeamsByActiveStatus()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_FilterByActiveStatus");
+            context.Teams.AddRange(
+                new Team { Name = "Active Team", IsActive = true },
+                new Team { Name = "Inactive Team", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IsActive = true,
+            });
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Active Team");
+            resultList[0].IsActive.Should().BeTrue();
+            totalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldFilterTeamsByInactiveStatus()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllAsync_FilterByInactiveStatus");
+            context.Teams.AddRange(
+                new Team { Name = "Active Team", IsActive = true },
+                new Team { Name = "Inactive Team", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new TeamRepository(context);
+
+            // Act
+            var (resultList, totalCount) = await repo.GetAllAsync(new GetTeamQuery
+            {
+                IsActive = false,
+            });
+
+            // Assert
+            resultList.Should().ContainSingle();
+            resultList[0].Name.Should().Be("Inactive Team");
+            resultList[0].IsActive.Should().BeFalse();
+            totalCount.Should().Be(1);
         }
 
         [Fact]
@@ -164,6 +214,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Budgets.AddRange(
                 new Budget
                 {
+                    Name = "Past budget",
                     TeamId = teams[0].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -172,6 +223,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "Current budget",
                     TeamId = teams[1].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -180,6 +232,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "Future budget",
                     TeamId = teams[2].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 500m,
@@ -188,6 +241,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 },
                 new Budget
                 {
+                    Name = "High current budget",
                     TeamId = teams[3].Id,
                     CostCentreId = costCentre.Id,
                     TargetAmount = 1_000m,
@@ -259,6 +313,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Platform budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 2000m,
@@ -308,6 +363,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 900m,
@@ -367,6 +423,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 900m,
@@ -414,7 +471,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
 
             // Act
-            var result = await repo.UpdateAsync(team.Id, "After", "New", "#ffffff", null, null);
+            var result = await repo.UpdateAsync(team.Id, "After", "New", null, "#ffffff", null, null);
 
             // Assert
             result.Name.Should().Be("After");
@@ -437,6 +494,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var budgetToUpdate = new Budget
             {
+                Name = "Budget to update",
                 TeamId = team.Id,
                 CostCentreId = oldCostCentre.Id,
                 TargetAmount = 100m,
@@ -445,6 +503,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             };
             var budgetToDelete = new Budget
             {
+                Name = "Budget to delete",
                 TeamId = team.Id,
                 CostCentreId = oldCostCentre.Id,
                 TargetAmount = 200m,
@@ -465,10 +524,14 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 null,
                 null,
                 null,
+                null,
                 [
                     new UpsertTeamBudgetEntryDto(
                         budgetToUpdate.Id,
+                        "Updated budget",
+                        null,
                         newCostCentre.Id,
+                        1,
                         999m,
                         newStart,
                         newEnd),
@@ -516,20 +579,23 @@ namespace PayTrack.Tests.UnitTests.Repositories
             member.TeamId = team.Id;
             await context.SaveChangesAsync();
 
-            context.Budgets.Add(new Budget
+            var budget = new Budget
             {
+                Name = "Operations budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 500m,
                 PeriodStart = new DateTime(2026, 1, 1),
                 PeriodEnd = new DateTime(2026, 12, 31),
-            });
+            };
+            context.Budgets.Add(budget);
+            await context.SaveChangesAsync();
 
             context.PaymentRequestsByUser.Add(new PaymentRequestByUser
             {
                 UserId = requester.Id,
                 TeamId = team.Id,
-                CostCentreId = costCentre.Id,
+                BudgetId = budget.Id,
                 Amount = 75m,
                 PaymentDirection = PaymentDirection.Out,
                 PayoutType = PayoutType.User,
@@ -576,6 +642,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             context.Budgets.Add(new Budget
             {
+                Name = "Blocking budget",
                 TeamId = team.Id,
                 CostCentreId = costCentre.Id,
                 TargetAmount = 100m,
@@ -650,7 +717,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new TeamRepository(context);
             var teamToRename = await context.Teams.SingleAsync(t => t.Name == "Platform");
 
-            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null);
+            var act = async () => await repo.UpdateAsync(teamToRename.Id, "Finance", null, null, null, null, null);
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()

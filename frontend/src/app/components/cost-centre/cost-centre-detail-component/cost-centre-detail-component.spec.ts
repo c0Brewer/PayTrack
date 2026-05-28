@@ -12,11 +12,15 @@ import { CostCentreDetailComponent } from './cost-centre-detail-component';
 
 const mockBudget: BudgetDto = {
   id: 1,
+  name: 'Aero budget',
+  description: null,
   teamId: 2,
   costCentreId: 10,
+  seasonId: 1,
   targetAmount: 1500,
   periodStart: '2024-01-01T00:00:00Z',
   periodEnd: '2024-12-31T00:00:00Z',
+  transactionIds: [],
 };
 
 const mockCostCentre: CostCentreDto = {
@@ -123,12 +127,12 @@ describe('CostCentreDetailComponent', () => {
 
     it('should show the back button', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.back-btn')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.detail-shell__back')).not.toBeNull();
     });
 
     it('should show cost centre name in heading', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('h2')?.textContent).toContain('Aerodynamics');
+      expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Aerodynamics');
     });
 
     it('should show cost centre description', () => {
