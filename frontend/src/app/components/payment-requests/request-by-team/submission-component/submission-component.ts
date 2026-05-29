@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,12 +11,18 @@ import {
 } from '@angular/forms';
 import { Subject, map, takeUntil } from 'rxjs';
 
+import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
-import { CostCentreDto, CreatePaymentRequestByTeamDto, TeamDto } from '../../../../types/exporter';
+import {
+  BudgetDto,
+  CostCentreDto,
+  CreatePaymentRequestByTeamDto,
+  TeamDto,
+} from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
 import {
   TypeaheadItem,
@@ -52,6 +58,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   teams: TeamDto[] = [];
+  budgets: BudgetDto[] = [];
   costCentres: CostCentreDto[] = [];
   allUsers: TypeaheadItem[] = [];
   isSubmitting = false;
@@ -63,8 +70,10 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: FormBuilder,
+    private readonly cdr: ChangeDetectorRef,
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly teamService: TeamService,
+    private readonly budgetService: BudgetService,
     private readonly costCentreService: CostCentreService,
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
@@ -75,6 +84,16 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
     this.loadTeams();
     this.loadCostCentres();
     this.loadUsers();
+    this.form
+      .get('teamId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((teamId: number | null) => {
+        this.budgets = [];
+        this.form.get('budgetId')!.setValue(null);
+        if (teamId != null) {
+          this.loadBudgets(teamId);
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -88,7 +107,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
       teamId: [null, Validators.required],
-      costCentreId: [null, Validators.required],
+      budgetId: [null, Validators.required],
       dueDate: ['', [Validators.required, minDateValidator(new Date())]],
     });
   }
@@ -102,6 +121,25 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
           if (result.items != null) this.teams = result.items;
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
+      });
+  }
+
+  private loadBudgets(teamId: number): void {
+    this.budgetService
+      .getBudgets({ TeamId: teamId })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          const today = new Date();
+          this.budgets = (result.items ?? []).filter(
+            (b) =>
+              b.name.trim() !== '' &&
+              new Date(b.periodStart) <= today &&
+              new Date(b.periodEnd) >= today,
+          );
+          this.cdr.detectChanges();
+        },
+        error: () => this.notificationService.showError('Failed to load budgets.'),
       });
   }
 
@@ -134,6 +172,10 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load cost centres.'),
       });
+  }
+
+  getCostCentreName(costCentreId: number): string {
+    return this.costCentres.find((cc) => cc.id === costCentreId)?.name ?? '';
   }
 
   onOpenCsvPicker(): void {
@@ -192,10 +234,10 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         amount: Number(v.amount),
         purposeOfPayment: v.purposeOfPayment,
         paidAt: new Date(0).toISOString(),
+        budgetId: Number(v.budgetId),
       },
       userToAssignToId: Number(v.userId),
       dueDate: new Date(v.dueDate).toISOString(),
-      costCentreId: Number(v.costCentreId),
     };
 
     this.paymentRequestByTeamService

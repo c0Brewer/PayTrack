@@ -70,7 +70,7 @@
 
       <!-- Right box: Assignment -->
       <div class="col-12 col-xl-6">
-        <app-box-component title="Assignment" subtitle="Choose the user, team and cost centre." size="medium">
+        <app-box-component title="Assignment" subtitle="Choose the user, team and budget." size="medium">
 
           <!-- User search -->
           <div class="row mb-3">
@@ -110,20 +110,26 @@
             </div>
           </div>
 
-          <!-- Cost Centre -->
+          <!-- Budget -->
           <div class="row">
             <div class="col-12 input-wrapper">
-              <label for="costCentreId">Cost Centre <span class="required">*</span></label><br />
-              <select id="costCentreId" formControlName="costCentreId" [class.is-invalid]="isInvalid('costCentreId')">
-                <option [ngValue]="null" disabled>Select cost centre…</option>
-                @for (cc of costCentres; track cc.id) {
-                  <option [ngValue]="cc.id">{{ cc.name }}</option>
+              <label for="budgetId">Budget <span class="required">*</span></label><br />
+              <select id="budgetId" formControlName="budgetId" [class.is-invalid]="isInvalid('budgetId')" [attr.disabled]="form.get('teamId')?.value == null ? true : null">
+                @if (form.get('teamId')?.value == null) {
+                  <option [ngValue]="null" disabled>Select a team first…</option>
+                } @else if (budgets.length === 0) {
+                  <option [ngValue]="null" disabled>No active budgets for this team…</option>
+                } @else {
+                  <option [ngValue]="null" disabled>Select budget…</option>
+                }
+                @for (budget of budgets; track budget.id) {
+                  <option [ngValue]="budget.id">{{ budget.name }} ({{ getCostCentreName(budget.costCentreId) }})</option>
                 }
               </select>
               <br />
-              @if (getError('costCentreId')) {
+              @if (getError('budgetId')) {
                 <span class="error-msg">
-                  <span class="material-symbols-outlined">error</span>{{ getError('costCentreId') }}
+                  <span class="material-symbols-outlined">error</span>{{ getError('budgetId') }}
                 </span>
               }
             </div>
