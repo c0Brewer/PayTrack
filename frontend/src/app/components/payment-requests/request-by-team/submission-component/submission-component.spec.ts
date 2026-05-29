@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
+import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
@@ -15,6 +16,7 @@ describe('PaymentRequestByTeamComponent', () => {
   let fixture: ComponentFixture<PaymentRequestByTeamComponent>;
 
   const mockTeamService = { getTeams: vi.fn() };
+  const mockBudgetService = { getBudgets: vi.fn() };
   const mockCostCentreService = { getCostCentres: vi.fn() };
   const mockUserService = { getUser: vi.fn() };
   const mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
@@ -22,6 +24,7 @@ describe('PaymentRequestByTeamComponent', () => {
 
   beforeEach(async () => {
     mockTeamService.getTeams.mockReset().mockReturnValue(of({ items: [], totalCount: 0 }));
+    mockBudgetService.getBudgets.mockReset().mockReturnValue(of({ items: [], totalCount: 0 }));
     mockCostCentreService.getCostCentres
       .mockReset()
       .mockReturnValue(of({ items: [], totalCount: 0 }));
@@ -34,6 +37,7 @@ describe('PaymentRequestByTeamComponent', () => {
       imports: [PaymentRequestByTeamComponent, ReactiveFormsModule],
       providers: [
         { provide: TeamService, useValue: mockTeamService },
+        { provide: BudgetService, useValue: mockBudgetService },
         { provide: CostCentreService, useValue: mockCostCentreService },
         { provide: UserService, useValue: mockUserService },
         { provide: NotificationService, useValue: mockNotificationService },
@@ -259,7 +263,7 @@ describe('PaymentRequestByTeamComponent', () => {
       amount: 50,
       purposeOfPayment: 'Test payment',
       teamId: 1,
-      costCentreId: 1,
+      budgetId: 1,
       dueDate: tomorrow.toISOString().slice(0, 10),
     });
 
@@ -281,7 +285,7 @@ describe('PaymentRequestByTeamComponent', () => {
       amount: 50,
       purposeOfPayment: 'Test payment',
       teamId: 1,
-      costCentreId: 1,
+      budgetId: 1,
       dueDate: tomorrow.toISOString().slice(0, 10),
     });
 
@@ -292,6 +296,74 @@ describe('PaymentRequestByTeamComponent', () => {
 
     expect(mockNotificationService.showError).toHaveBeenCalledWith('Server error');
     expect(component.isSubmitting).toBe(false);
+  });
+
+  // -------------------------
+  // LOAD BUDGETS
+  // -------------------------
+  describe('loadBudgets', () => {
+    it('should load and filter to active named budgets when teamId changes', () => {
+      const today = new Date();
+      const past = new Date(today);
+      past.setDate(past.getDate() - 1);
+      const future = new Date(today);
+      future.setDate(future.getDate() + 1);
+      const farFuture = new Date(today);
+      farFuture.setDate(farFuture.getDate() + 7);
+
+      mockBudgetService.getBudgets.mockReturnValue(
+        of({
+          items: [
+            { id: 1, name: 'Active', costCentreId: 1, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: future.toISOString(), transactions: [] },
+            { id: 2, name: '', costCentreId: 1, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: future.toISOString(), transactions: [] },
+            { id: 3, name: 'Future Only', costCentreId: 1, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: farFuture.toISOString(), periodEnd: farFuture.toISOString(), transactions: [] },
+            { id: 4, name: 'Expired', costCentreId: 1, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: past.toISOString(), transactions: [] },
+          ],
+          totalCount: 4,
+        }),
+      );
+
+      component.form.get('teamId')!.setValue(1);
+      expect(mockBudgetService.getBudgets).toHaveBeenCalledWith({ TeamId: 1 });
+      expect(component.budgets).toHaveLength(1);
+      expect(component.budgets[0].name).toBe('Active');
+    });
+
+    it('should handle null items response without error', () => {
+      mockBudgetService.getBudgets.mockReturnValue(of({ items: null, totalCount: 0 }));
+      component.form.get('teamId')!.setValue(1);
+      expect(component.budgets).toEqual([]);
+    });
+
+    it('should clear budgets and not call getBudgets when teamId changes to null', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.budgets = [{ id: 1, name: 'Old' } as any];
+      component.form.get('teamId')!.setValue(null);
+      expect(component.budgets).toEqual([]);
+      expect(mockBudgetService.getBudgets).not.toHaveBeenCalled();
+    });
+
+    it('should show error when budget loading fails', () => {
+      mockBudgetService.getBudgets.mockReturnValue(throwError(() => new Error()));
+      component.form.get('teamId')!.setValue(1);
+      expect(mockNotificationService.showError).toHaveBeenCalledWith('Failed to load budgets.');
+    });
+  });
+
+  // -------------------------
+  // getCostCentreName
+  // -------------------------
+  describe('getCostCentreName', () => {
+    it('should return name when cost centre exists', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.costCentres = [{ id: 10, name: 'IT Equipment' } as any];
+      expect(component.getCostCentreName(10)).toBe('IT Equipment');
+    });
+
+    it('should return empty string when cost centre does not exist', () => {
+      component.costCentres = [];
+      expect(component.getCostCentreName(999)).toBe('');
+    });
   });
 
   // -------------------------
