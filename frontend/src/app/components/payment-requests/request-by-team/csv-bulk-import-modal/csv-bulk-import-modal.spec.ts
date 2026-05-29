@@ -471,10 +471,50 @@ describe('CsvBulkImportModalComponent', () => {
       mockBudgetService.getBudgets.mockReturnValue(
         of({
           items: [
-            { id: 1, name: 'Active', costCentreId: 10, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: future.toISOString(), transactions: [] },
-            { id: 2, name: '', costCentreId: 10, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: future.toISOString(), transactions: [] },
-            { id: 3, name: 'Future Only', costCentreId: 10, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: farFuture.toISOString(), periodEnd: farFuture.toISOString(), transactions: [] },
-            { id: 4, name: 'Expired', costCentreId: 10, teamId: 1, seasonId: 1, targetAmount: 100, periodStart: past.toISOString(), periodEnd: past.toISOString(), transactions: [] },
+            {
+              id: 1,
+              name: 'Active',
+              costCentreId: 10,
+              teamId: 1,
+              seasonId: 1,
+              targetAmount: 100,
+              periodStart: past.toISOString(),
+              periodEnd: future.toISOString(),
+              transactions: [],
+            },
+            {
+              id: 2,
+              name: '',
+              costCentreId: 10,
+              teamId: 1,
+              seasonId: 1,
+              targetAmount: 100,
+              periodStart: past.toISOString(),
+              periodEnd: future.toISOString(),
+              transactions: [],
+            },
+            {
+              id: 3,
+              name: 'Future Only',
+              costCentreId: 10,
+              teamId: 1,
+              seasonId: 1,
+              targetAmount: 100,
+              periodStart: farFuture.toISOString(),
+              periodEnd: farFuture.toISOString(),
+              transactions: [],
+            },
+            {
+              id: 4,
+              name: 'Expired',
+              costCentreId: 10,
+              teamId: 1,
+              seasonId: 1,
+              targetAmount: 100,
+              periodStart: past.toISOString(),
+              periodEnd: past.toISOString(),
+              transactions: [],
+            },
           ],
           totalCount: 4,
         }),
@@ -511,7 +551,14 @@ describe('CsvBulkImportModalComponent', () => {
       component.configForm.get('budgetId')!.setValue(null, { emitEvent: false });
       component.configForm.get('purposeOfPayment')!.setValue('Test', { emitEvent: false });
       component.configForm.get('dueDate')!.setValue('2099-01-01', { emitEvent: false });
-      const row = { rawName: 'Alice', amount: 10, userId: 100, displayName: 'Alice', isAutoMatched: true, status: 'pending' as const };
+      const row = {
+        rawName: 'Alice',
+        amount: 10,
+        userId: 100,
+        displayName: 'Alice',
+        isAutoMatched: true,
+        status: 'pending' as const,
+      };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload = (component as any).buildPayload(row);
       expect(payload.transaction.budgetId).toBeUndefined();
