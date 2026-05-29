@@ -144,15 +144,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             var requestDto = new CreatePaymentRequestByTeamDto(
-                new(
-                    TeamId: 123,
-                    Amount: 50,
-                    PurposeOfPayment: "test 123",
-                    PaidAt: DateTime.Today
-                ),
+                new()
+                {
+                    TeamId = 123,
+                    Amount = 50,
+                    PurposeOfPayment = "test 123",
+                    PaidAt = DateTime.Today,
+                },
                 UserToAssignToId: 0,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);
@@ -177,10 +177,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             var requestDto = new CreatePaymentRequestByTeamDto(
-                new(TeamId: 1, Amount: 50, PurposeOfPayment: "test", PaidAt: DateTime.Today),
+                new()
+                {
+                    TeamId = 1,
+                    Amount = 50,
+                    PurposeOfPayment = "test",
+                    PaidAt = DateTime.Today,
+                },
                 UserToAssignToId: 1,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);

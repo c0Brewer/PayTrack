@@ -22,7 +22,12 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
-import { CostCentreDto, CreatePaymentRequestByTeamDto, TeamDto } from '../../../../types/exporter';
+import {
+  BudgetDto,
+  CostCentreDto,
+  CreatePaymentRequestByTeamDto,
+  TeamDto,
+} from '../../../../types/exporter';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 import {
   TypeaheadItem,
@@ -72,11 +77,14 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   @Input({ required: true }) costCentres!: CostCentreDto[];
   /** Passed from parent — already loaded, no duplicate HTTP call needed. */
   @Input({ required: true }) allUsers!: TypeaheadItem[];
+  /** Active Income budgets pre-loaded by the parent — filtered by teamId locally. */
+  @Input({ required: true }) incomeBudgets!: BudgetDto[];
   @Output() closeEvent = new EventEmitter<void>();
 
   step: ImportStep = 'configure';
   configForm!: FormGroup;
 
+  budgets: BudgetDto[] = [];
   parsedRows: ParsedRow[] = [];
   previewRows: PreviewRow[] = [];
   unmatchedNames: string[] = [];
@@ -95,6 +103,17 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.buildConfigForm();
     this.parseCsvFile();
+    this.configForm
+      .get('teamId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((teamId: number | null) => {
+        this.budgets = [];
+        this.configForm.get('budgetId')!.setValue(null);
+        if (teamId != null) {
+          this.budgets = this.incomeBudgets.filter((b) => b.teamId === teamId);
+        }
+        this.cdr.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {
@@ -105,10 +124,14 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   private buildConfigForm(): void {
     this.configForm = this.fb.group({
       teamId: [null, Validators.required],
-      costCentreId: [null, Validators.required],
+      budgetId: [null, Validators.required],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
       dueDate: ['', [Validators.required, minDateValidator(new Date())]],
     });
+  }
+
+  getCostCentreName(costCentreId: number): string {
+    return this.costCentres.find((cc) => cc.id === costCentreId)?.name ?? '';
   }
 
   private parseCsvFile(): void {
@@ -214,6 +237,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
 
   onNextClicked(): void {
     this.configForm.markAllAsTouched();
+    if (!this.configForm.valid) return;
     this.buildPreviewRows();
 
     if (this.unmatchedNames.length > 0) {
@@ -243,6 +267,11 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   onUserAssigned(index: number, item: TypeaheadItem): void {
     this.previewRows[index].userId = item.id as number;
     this.previewRows[index].displayName = item.primaryText;
+  }
+
+  onUserCleared(index: number): void {
+    this.previewRows[index].userId = null;
+    this.previewRows[index].displayName = null;
   }
 
   get allRowsAssigned(): boolean {
@@ -295,7 +324,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   private buildPayload(row: PreviewRow): CreatePaymentRequestByTeamDto {
     const v = this.configForm.value as {
       teamId: string;
-      costCentreId: string | null;
+      budgetId: string | null;
       purposeOfPayment: string;
       dueDate: string;
     };
@@ -305,10 +334,10 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         amount: row.amount,
         purposeOfPayment: v.purposeOfPayment,
         paidAt: new Date(0).toISOString(),
+        budgetId: v.budgetId != null ? Number(v.budgetId) : undefined,
       },
       userToAssignToId: row.userId!,
       dueDate: new Date(v.dueDate).toISOString(),
-      costCentreId: v.costCentreId != null ? Number(v.costCentreId) : undefined,
     };
   }
 

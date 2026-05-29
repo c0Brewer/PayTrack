@@ -141,6 +141,7 @@ namespace PayTrack.Data.Repositories.Implementation
                             TargetAmount = entry.TargetAmount,
                             PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                             PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                            Type = entry.Type,
                         });
                     }
                     else
@@ -154,6 +155,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         existing.TargetAmount = entry.TargetAmount;
                         existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
                         existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);
+                        existing.Type = entry.Type;
                     }
                 }
             }

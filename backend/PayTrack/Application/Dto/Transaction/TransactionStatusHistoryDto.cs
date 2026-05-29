@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.Transaction
@@ -13,6 +14,8 @@ namespace PayTrack.Application.Dto.Transaction
     public sealed record class TransactionStatusHistoryDto(
             [property: Required]
             int ChangedById,
+
+            UserDto? ChangedBy,
 
             [property: Required]
             string? Comment,

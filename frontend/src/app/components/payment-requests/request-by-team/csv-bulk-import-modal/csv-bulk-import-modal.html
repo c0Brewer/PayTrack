@@ -12,7 +12,7 @@
       <span class="step-stepper__arrow">›</span>
       <button type="button" class="step-stepper__step"
               [class.active]="step === 'preview'"
-              [disabled]="parsedRows.length === 0"
+              [disabled]="parsedRows.length === 0 || configForm.invalid"
               (click)="onStepClicked(2)">
         <span class="step-num">2</span>
         Preview &amp; Assign
@@ -55,16 +55,22 @@
         </div>
 
         <div class="col-md-6 col-sm-12 input-wrapper">
-          <label for="csv-costCentreId">Cost Centre <span class="required">*</span></label><br />
-          <select id="csv-costCentreId" formControlName="costCentreId" [class.is-invalid]="isInvalid('costCentreId')">
-            <option [ngValue]="null" disabled>Select cost centre…</option>
-            @for (cc of costCentres; track cc.id) {
-              <option [ngValue]="cc.id">{{ cc.name }}</option>
+          <label for="csv-budgetId">Budget <span class="required">*</span></label><br />
+          <select id="csv-budgetId" formControlName="budgetId" [class.is-invalid]="isInvalid('budgetId')" [attr.disabled]="configForm.get('teamId')?.value == null ? true : null">
+            @if (configForm.get('teamId')?.value == null) {
+              <option [ngValue]="null" disabled>Select a team first…</option>
+            } @else if (budgets.length === 0) {
+              <option [ngValue]="null" disabled>No active budgets for this team…</option>
+            } @else {
+              <option [ngValue]="null" disabled>Select budget…</option>
+            }
+            @for (budget of budgets; track budget.id) {
+              <option [ngValue]="budget.id">{{ budget.name }} ({{ getCostCentreName(budget.costCentreId) }})</option>
             }
           </select><br />
-          @if (getError('costCentreId')) {
+          @if (getError('budgetId')) {
             <span class="error-msg">
-              <span class="material-symbols-outlined">error</span>{{ getError('costCentreId') }}
+              <span class="material-symbols-outlined">error</span>{{ getError('budgetId') }}
             </span>
           }
         </div>
@@ -181,6 +187,7 @@
                     [isInvalid]="row.userId === null"
                     [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName! } : null"
                     (itemSelected)="onUserAssigned(i, $event)"
+                    (cleared)="onUserCleared(i)"
                   />
                 }
               </td>
@@ -241,13 +248,15 @@
               <td>{{ row.displayName ?? row.rawName }}</td>
               <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
               <td class="status-cell">
-                @if (row.status === 'success') {
-                  <span class="material-symbols-outlined status-ok">check_circle</span>
-                }
-                @if (row.status === 'error') {
-                  <span class="material-symbols-outlined status-err">error</span>
-                  <span class="error-detail">{{ row.errorMessage }}</span>
-                }
+                <span class="status-content">
+                  @if (row.status === 'success') {
+                    <span class="material-symbols-outlined status-ok">check_circle</span>
+                  }
+                  @if (row.status === 'error') {
+                    <span class="material-symbols-outlined status-err">error</span>
+                    <span class="error-detail">{{ row.errorMessage }}</span>
+                  }
+                </span>
               </td>
             </tr>
           }

@@ -48,7 +48,8 @@ export class TeamDetailComponent implements OnInit {
     this.router.navigate(['/team']);
   }
 
-  formatBudgetAmount(amount: number): string {
+  formatBudgetAmount(amount: number | null | undefined): string {
+    if (amount == null) return '—';
     return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 

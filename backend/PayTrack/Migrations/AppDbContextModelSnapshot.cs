@@ -85,11 +85,18 @@ namespace PayTrack.Migrations
                     b.Property<int>("SeasonId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("TargetAmount")
+                    b.Property<decimal?>("TargetAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TeamId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Expense");
 
                     b.HasKey("Id");
 
@@ -203,6 +210,9 @@ namespace PayTrack.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinancePaidAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DueDate")

@@ -5,6 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { BudgetDto } from '../../../../types/exporter';
 
 import { CsvBulkImportModalComponent } from './csv-bulk-import-modal';
 
@@ -59,6 +60,7 @@ describe('CsvBulkImportModalComponent', () => {
     component.teams = MOCK_TEAMS;
     component.costCentres = MOCK_COST_CENTRES;
     component.allUsers = MOCK_USERS;
+    component.incomeBudgets = [];
 
     fixture.detectChanges();
   });
@@ -115,10 +117,7 @@ describe('CsvBulkImportModalComponent', () => {
     function setupPapaMock(rows: string[][]): void {
       (vi.spyOn(Papa, 'parse') as ReturnType<typeof vi.spyOn>).mockImplementation(
         (_file: unknown, config: Papa.ParseConfig) => {
-          config.complete?.(
-            { data: rows, errors: [], meta: {} as Papa.ParseMeta },
-            undefined,
-          );
+          config.complete?.({ data: rows, errors: [], meta: {} as Papa.ParseMeta }, undefined);
           return {} as Papa.Parser;
         },
       );
@@ -233,15 +232,15 @@ describe('CsvBulkImportModalComponent', () => {
     function fillValidForm(): void {
       component.configForm.setValue({
         teamId: 1,
-        costCentreId: 10,
+        budgetId: 10,
         purposeOfPayment: 'Test purpose',
         dueDate: TOMORROW,
       });
     }
 
-    it('onNextClicked with invalid form still advances to preview but marks form touched', () => {
+    it('onNextClicked with invalid form stays on configure step and marks form touched', () => {
       component.onNextClicked();
-      expect(component.step).toBe('preview');
+      expect(component.step).toBe('configure');
       expect(component.configForm.touched).toBe(true);
     });
 
@@ -347,7 +346,7 @@ describe('CsvBulkImportModalComponent', () => {
     function setupReadyToSubmit(): void {
       component.configForm.setValue({
         teamId: 1,
-        costCentreId: 10,
+        budgetId: 10,
         purposeOfPayment: 'Bulk test',
         dueDate: TOMORROW,
       });
@@ -440,6 +439,138 @@ describe('CsvBulkImportModalComponent', () => {
       ];
       expect(component.successCount).toBe(2);
       expect(component.failureCount).toBe(1);
+    });
+  });
+
+  // ─── getCostCentreName ───
+
+  describe('getCostCentreName', () => {
+    it('should return name when cost centre is found', () => {
+      expect(component.getCostCentreName(10)).toBe('CC Alpha');
+    });
+
+    it('should return empty string when cost centre is not found', () => {
+      expect(component.getCostCentreName(999)).toBe('');
+    });
+  });
+
+  // ─── BUDGET LOADING ───
+
+  describe('budget loading', () => {
+    it('should filter incomeBudgets by teamId when teamId changes', () => {
+      component.incomeBudgets = [
+        { id: 1, name: 'Budget A', teamId: 1 },
+        { id: 2, name: 'Budget B', teamId: 2 },
+        { id: 3, name: 'Budget C', teamId: 1 },
+      ] as unknown as BudgetDto[];
+
+      component.configForm.get('teamId')!.setValue(1);
+      expect(component.budgets).toHaveLength(2);
+      expect(component.budgets.map((b) => b.id)).toEqual([1, 3]);
+    });
+
+    it('should clear budgets when teamId changes to null', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.budgets = [{ id: 1, name: 'Old' } as any];
+      component.configForm.get('teamId')!.setValue(null);
+      expect(component.budgets).toEqual([]);
+    });
+
+    it('should show empty budgets when no incomeBudgets match the teamId', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.incomeBudgets = [{ id: 5, name: 'Other', teamId: 99 } as any];
+      component.configForm.get('teamId')!.setValue(1);
+      expect(component.budgets).toEqual([]);
+    });
+
+    it('buildPayload sets budgetId to undefined when form value is null', () => {
+      component.configForm.get('teamId')!.setValue(1, { emitEvent: false });
+      component.configForm.get('budgetId')!.setValue(null, { emitEvent: false });
+      component.configForm.get('purposeOfPayment')!.setValue('Test', { emitEvent: false });
+      component.configForm.get('dueDate')!.setValue('2099-01-01', { emitEvent: false });
+      const row = {
+        rawName: 'Alice',
+        amount: 10,
+        userId: 100,
+        displayName: 'Alice',
+        isAutoMatched: true,
+        status: 'pending' as const,
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload = (component as any).buildPayload(row);
+      expect(payload.transaction.budgetId).toBeUndefined();
+    });
+  });
+
+  // ─── getError ───
+
+  describe('getError', () => {
+    it('should return null for unknown field', () => {
+      expect(component.getError('nonExistentField')).toBeNull();
+    });
+
+    it('should return null when control is valid and touched', () => {
+      component.configForm.get('dueDate')!.setValue(TOMORROW);
+      component.configForm.get('dueDate')!.markAsTouched();
+      expect(component.getError('dueDate')).toBeNull();
+    });
+
+    it('should return null when invalid but not touched', () => {
+      expect(component.getError('teamId')).toBeNull();
+    });
+
+    it('should return required message', () => {
+      component.configForm.get('teamId')!.markAsTouched();
+      expect(component.getError('teamId')).toBe('This field is required.');
+    });
+
+    it('should return min message when min error is present', () => {
+      component.configForm.get('teamId')!.setErrors({ min: { min: 1 } });
+      component.configForm.get('teamId')!.markAsTouched();
+      expect(component.getError('teamId')).toBe('Minimum value is 1.');
+    });
+
+    it('should return maxlength message', () => {
+      component.configForm.get('purposeOfPayment')!.setValue('x'.repeat(256));
+      component.configForm.get('purposeOfPayment')!.markAsTouched();
+      expect(component.getError('purposeOfPayment')).toBe('Maximum length is 255 characters.');
+    });
+
+    it('should return minDate message for past due date', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      component.configForm.get('dueDate')!.setValue(yesterday.toISOString().slice(0, 10));
+      component.configForm.get('dueDate')!.markAsTouched();
+      expect(component.getError('dueDate')).toBe('Due date must be today or in the future.');
+    });
+
+    it('should return fallback message for unknown error', () => {
+      component.configForm.get('teamId')!.setErrors({ unknownError: true });
+      component.configForm.get('teamId')!.markAsTouched();
+      expect(component.getError('teamId')).toBe('Invalid value.');
+    });
+  });
+
+  // ─── isInvalid ───
+
+  describe('isInvalid', () => {
+    it('should return false for unknown field', () => {
+      expect(component.isInvalid('nonExistentField')).toBe(false);
+    });
+
+    it('should return false when invalid but not touched', () => {
+      expect(component.isInvalid('teamId')).toBe(false);
+    });
+
+    it('should return true when invalid and touched', () => {
+      component.configForm.get('teamId')!.markAsTouched();
+      expect(component.isInvalid('teamId')).toBe(true);
+    });
+
+    it('should return false when valid and touched', () => {
+      component.configForm.get('dueDate')!.setValue(TOMORROW);
+      component.configForm.get('dueDate')!.markAsTouched();
+      expect(component.isInvalid('dueDate')).toBe(false);
     });
   });
 

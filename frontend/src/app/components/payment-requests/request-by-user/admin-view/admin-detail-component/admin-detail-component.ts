@@ -1,9 +1,18 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../../../types/exporter';
+import {
+  ApprovePaymentRequestByUserDto,
+  CostCentreDto,
+  DeclinePaymentRequestByUserDto,
+  GetPaymentRequestsByUserByIdOptions,
+  MarkPaymentRequestByUserAsPaidDto,
+  PaymentRequestByUserDto,
+  RequestChangesPaymentRequestByUserDto,
+} from '../../../../../types/exporter';
 import { InvoiceDetailComponent } from '../../general/detail-component/detail-component';
 
 @Component({
@@ -13,8 +22,16 @@ import { InvoiceDetailComponent } from '../../general/detail-component/detail-co
   styleUrl: './admin-detail-component.scss',
 })
 export class RequestDetailComponent implements OnInit, OnDestroy {
+  private readonly invoiceIncludes: GetPaymentRequestsByUserByIdOptions = {
+    IncludeUser: true,
+    IncludeTeam: true,
+    IncludeBankAccount: true,
+    IncludeStatusHistory: true,
+  };
+
   constructor(
     private readonly service: PaymentRequestByUserService,
+    private readonly costCentreService: CostCentreService,
     private readonly notificationService: NotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -27,29 +44,25 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   receiptMimeType: string = '';
   isReceiptImage: boolean = false;
   loading: boolean = true;
+  markingPaid: boolean = false;
+  statusActionPending: string | null = null;
+  costCentres: CostCentreDto[] = [];
 
   ngOnInit(): void {
+    this.costCentreService.getCostCentres({ Limit: 100 }).subscribe({
+      next: (data) => {
+        this.costCentres = data.items?.filter((costCentre) => costCentre.isActive !== false) ?? [];
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load cost centres: ' + err.message);
+      },
+    });
+
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('id'));
 
-      this.service
-        .getPaymentRequestsByUserById(id, {
-          IncludeUser: true,
-          IncludeTeam: true,
-          IncludeBankAccount: true,
-          IncludeStatusHistory: true,
-        })
-        .subscribe({
-          next: (data) => {
-            this.invoice = data;
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: (err: Error) => {
-            this.notificationService.showError('Could not load invoice: ' + err.message);
-            this.loading = false;
-          },
-        });
+      this.loadInvoice(id);
 
       this.service.downloadReceipt(id).subscribe({
         next: (blob) => {
@@ -83,6 +96,82 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  onMarkPaid(markPaidRequest: MarkPaymentRequestByUserAsPaidDto): void {
+    if (!this.invoice || this.markingPaid) return;
+
+    this.markingPaid = true;
+    this.service.markPaymentRequestByUserAsPaid(this.invoice.id, markPaidRequest).subscribe({
+      next: () => {
+        this.loadInvoice(this.invoice!.id);
+        this.markingPaid = false;
+        this.notificationService.showSuccess('Invoice marked as paid');
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.markingPaid = false;
+        this.notificationService.showError('Could not mark invoice as paid: ' + err.message);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onApprove(approveRequest: ApprovePaymentRequestByUserDto): void {
+    this.runStatusAction('approve', 'Invoice approved', 'Could not approve invoice: ', () =>
+      this.service.approvePaymentRequestByUser(this.invoice!.id, approveRequest),
+    );
+  }
+
+  onDecline(declineRequest: DeclinePaymentRequestByUserDto): void {
+    this.runStatusAction('decline', 'Invoice declined', 'Could not decline invoice: ', () =>
+      this.service.declinePaymentRequestByUser(this.invoice!.id, declineRequest),
+    );
+  }
+
+  onRequestChanges(requestChangesRequest: RequestChangesPaymentRequestByUserDto): void {
+    this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
+      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, requestChangesRequest),
+    );
+  }
+
+  private runStatusAction(
+    action: string,
+    successMessage: string,
+    errorPrefix: string,
+    request: () => ReturnType<PaymentRequestByUserService['approvePaymentRequestByUser']>,
+  ): void {
+    if (!this.invoice || this.statusActionPending) return;
+
+    this.statusActionPending = action;
+    request().subscribe({
+      next: () => {
+        this.loadInvoice(this.invoice!.id);
+        this.statusActionPending = null;
+        this.notificationService.showSuccess(successMessage);
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.statusActionPending = null;
+        this.notificationService.showError(errorPrefix + err.message);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadInvoice(id: number): void {
+    this.service.getPaymentRequestsByUserById(id, this.invoiceIncludes).subscribe({
+      next: (data) => {
+        this.invoice = data;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load invoice: ' + err.message);
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private getExtensionFromMimeType(mimeType: string): string {
