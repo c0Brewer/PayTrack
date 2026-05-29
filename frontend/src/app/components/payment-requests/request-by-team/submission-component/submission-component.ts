@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -100,9 +93,8 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         this.budgets = [];
         this.form.get('budgetId')!.setValue(null);
         if (teamId != null) {
-          this.budgets = this.allIncomeBudgets.filter((b) => b.teamId === teamId);
+          this.loadBudgets(teamId);
         }
-        this.cdr.detectChanges();
       });
   }
 
@@ -142,6 +134,25 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => this.notificationService.showError('Failed to load teams and budgets.'),
+      });
+  }
+
+  private loadBudgets(teamId: number): void {
+    this.budgetService
+      .getBudgets({ TeamId: teamId })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          const today = new Date();
+          this.budgets = (result.items ?? []).filter(
+            (b) =>
+              b.name.trim() !== '' &&
+              new Date(b.periodStart) <= today &&
+              new Date(b.periodEnd) >= today,
+          );
+          this.cdr.detectChanges();
+        },
+        error: () => this.notificationService.showError('Failed to load budgets.'),
       });
   }
 
