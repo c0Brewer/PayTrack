@@ -96,6 +96,11 @@ namespace PayTrack.Data.Entities
         public DateTime? PaidAt { get; set; }
 
         /// <summary>
+        /// Timestamp of when finance completed the reimbursement.
+        /// </summary>
+        public DateTime? FinancePaidAt { get; set; }
+
+        /// <summary>
         /// Requested payment due date set by the finance team.
         /// </summary>
         public DateTime? DueDate { get; set; }

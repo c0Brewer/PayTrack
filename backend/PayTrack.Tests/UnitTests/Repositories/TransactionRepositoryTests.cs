@@ -126,6 +126,34 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetAllTransactions_FilterByDecimalAmount_ShouldReturnMatchingData()
+        {
+            await using var context = GetInMemoryDbContext("FilterByDecimalAmount");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.Transactions.AddRange(
+                new PaymentRequestByUser { Id = 1, Amount = 105.30m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "1" },
+                new PaymentRequestByUser { Id = 2, Amount = 105.40m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "2" },
+                new PaymentRequestByUser { Id = 3, Amount = 105.50m, UserId = 1, TeamId = 1, CreatedAt = DateTime.UtcNow, InvoiceNumber = "3" });
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (transactions, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
+            {
+                MinAmount = 105.4m,
+                MaxAmount = 105.4m,
+            });
+
+            totalCount.Should().Be(1);
+            transactions.Should().ContainSingle(t => t.Id == 2);
+        }
+
+        [Fact]
         public async Task GetAllTransactions_FilterByMinPaidAt_ShouldExcludeUnpaidAndEarlier()
         {
             await using var context = GetInMemoryDbContext("FilterByMinPaidAt");
@@ -390,6 +418,47 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.Should().NotBeNull();
             result!.BankAccount.Should().NotBeNull();
             result.BankAccount!.Iban.Should().Be("AT611904300234573201");
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ShouldIncludeStatusHistoryChangedBy_WhenRequested()
+        {
+            await using var context = GetInMemoryDbContext("GetByIdAsync_WithStatusHistoryChangedBy");
+
+            context.User.Add(new User
+            {
+                Id = 7,
+                Email = "finance@example.com",
+                Name = "Finance User",
+            });
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "INV-1",
+                CreatedAt = DateTime.UtcNow,
+                StatusHistory =
+                [
+                    new TransactionStatusHistory
+                    {
+                        ChangedById = 7,
+                        Comment = "approved",
+                        FromStatus = TransactionStatus.Submitted,
+                        ToStatus = TransactionStatus.Approved,
+                        ChangedAt = DateTime.UtcNow,
+                    },
+                ],
+            });
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var result = await repo.GetByIdAsync(1, new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true });
+
+            result.Should().NotBeNull();
+            result!.StatusHistory.Should().ContainSingle();
+            result.StatusHistory.Single().ChangedBy.Should().NotBeNull();
+            result.StatusHistory.Single().ChangedBy.Name.Should().Be("Finance User");
         }
 
         // ----------------------------

@@ -1,11 +1,17 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import {
+  ApprovePaymentRequestByUserDto,
+  CostCentreDto,
+  DeclinePaymentRequestByUserDto,
+  MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
   PayoutType,
   PayoutTypeLabels,
+  RequestChangesPaymentRequestByUserDto,
   TransactionStatus,
   TransactionStatusCssClass,
   TransactionStatusLabels,
@@ -13,7 +19,7 @@ import {
 
 @Component({
   selector: 'app-invoice-detail-component',
-  imports: [CurrencyPipe, DatePipe],
+  imports: [CurrencyPipe, DatePipe, FormsModule],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })
@@ -24,11 +30,29 @@ export class InvoiceDetailComponent {
   @Input() isReceiptImage: boolean = false;
   @Input() hasReceipt: boolean = false;
   @Input() loading: boolean = false;
+  @Input() canMarkPaid: boolean = false;
+  @Input() markingPaid: boolean = false;
+  @Input() canManageStatus: boolean = false;
+  @Input() statusActionPending: string | null = null;
+  @Input() costCentres: CostCentreDto[] = [];
   @Output() downloadReceipt = new EventEmitter<void>();
+  @Output() approve = new EventEmitter<ApprovePaymentRequestByUserDto>();
+  @Output() decline = new EventEmitter<DeclinePaymentRequestByUserDto>();
+  @Output() requestChanges = new EventEmitter<RequestChangesPaymentRequestByUserDto>();
+  @Output() markPaid = new EventEmitter<MarkPaymentRequestByUserAsPaidDto>();
   @Output() back = new EventEmitter<void>();
 
   TransactionStatusLabels = TransactionStatusLabels;
   PayoutTypeLabels = PayoutTypeLabels;
+  TransactionStatus = TransactionStatus;
+  paymentReference: string = '';
+  paymentPurpose: string = '';
+  paymentDate: string = new Date().toISOString().split('T')[0];
+  maxPaymentDate: string = new Date().toISOString().split('T')[0];
+  approvalCostCentreId: number | null = null;
+  approvalReason: string = '';
+  declineReason: string = '';
+  changeRequestReason: string = '';
 
   constructor(private readonly sanitizer: DomSanitizer) {}
 
@@ -46,5 +70,60 @@ export class InvoiceDetailComponent {
 
   getPayoutTypeLabel(type: PayoutType): string {
     return PayoutTypeLabels[type] ?? 'Unknown';
+  }
+
+  canApprove(status: TransactionStatus): boolean {
+    return status === TransactionStatus.Submitted || status === TransactionStatus.Review;
+  }
+
+  canRequestChanges(status: TransactionStatus): boolean {
+    return status === TransactionStatus.Submitted || status === TransactionStatus.Review;
+  }
+
+  canDecline(status: TransactionStatus): boolean {
+    return status !== TransactionStatus.Paid && status !== TransactionStatus.Declined;
+  }
+
+  onApprove(): void {
+    if (!this.approvalCostCentreId) {
+      return;
+    }
+
+    this.approve.emit({
+      costCentreId: this.approvalCostCentreId,
+      reason: this.approvalReason.trim() || null,
+    });
+  }
+
+  onDecline(): void {
+    if (!this.declineReason.trim()) {
+      return;
+    }
+
+    this.decline.emit({
+      reason: this.declineReason.trim(),
+    });
+  }
+
+  onRequestChanges(): void {
+    if (!this.changeRequestReason.trim()) {
+      return;
+    }
+
+    this.requestChanges.emit({
+      reason: this.changeRequestReason.trim(),
+    });
+  }
+
+  onMarkPaid(): void {
+    if (!this.paymentReference.trim() || !this.paymentPurpose.trim() || !this.paymentDate) {
+      return;
+    }
+
+    this.markPaid.emit({
+      paymentReference: this.paymentReference.trim(),
+      purposeOfPayment: this.paymentPurpose.trim(),
+      paymentDate: new Date(this.paymentDate).toISOString(),
+    });
   }
 }

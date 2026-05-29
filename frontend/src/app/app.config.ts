@@ -6,7 +6,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
@@ -24,7 +24,8 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideAppInitializer(() => {
       const authService = inject(AuthService);
-      return initClientInterceptors(() => authService.logout());
+      const router = inject(Router);
+      return initClientInterceptors(() => authService.logout(), router);
     }),
   ],
 };
