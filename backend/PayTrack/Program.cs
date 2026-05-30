@@ -223,9 +223,6 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
             case "GOOGLE_CLIENT_SECRET":
                 values["Authentication:Google:ClientSecret"] = value;
                 break;
-            case "GOOGLE_DRIVE_ENABLED":
-                values["GoogleDrive:Enabled"] = value;
-                break;
             case "GOOGLE_DRIVE_ROOT_FOLDER_ID":
                 values["GoogleDrive:RootFolderId"] = value;
                 break;
