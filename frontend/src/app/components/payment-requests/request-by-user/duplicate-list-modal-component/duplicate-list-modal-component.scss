@@ -103,20 +103,43 @@
 
 .duplicate-modal__cancel,
 .duplicate-modal__submit {
+  align-items: center;
   border-radius: v.$size-xs;
   cursor: pointer;
+  display: inline-flex;
   font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+  justify-content: center;
+  min-height: 3.25rem;
   padding: v.$size-xs v.$size-m;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
 }
 
 .duplicate-modal__cancel {
   background: v.$background-light;
   border: 1px solid v.$border-color;
   color: v.$text-muted;
+
+  &:hover {
+    border-color: v.$TUR-primary-orange;
+    color: v.$TUR-primary-orange;
+  }
 }
 
 .duplicate-modal__submit {
-  background: v.$primary-color;
-  border: 1px solid v.$primary-color;
-  color: v.$text-light;
+  background: v.$TUR-primary-orange;
+  border: 1px solid v.$TUR-primary-orange;
+  color: #fff;
+
+  &:hover {
+    background: #f3852d;
+    border-color: #f3852d;
+    box-shadow: 0 0.35rem 0.9rem rgb(235 106 0 / 22%);
+    color: #fff;
+    transform: translateY(-1px);
+  }
 }

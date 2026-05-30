@@ -63,7 +63,7 @@ describe('InvoiceListComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.duplicate-badge')?.textContent).toContain('Possible');
+    expect(compiled.querySelector('.duplicate-badge')?.textContent).toContain('Duplicates');
   });
 
   it('should return correct text for getPayoutTypeLabel', () => {

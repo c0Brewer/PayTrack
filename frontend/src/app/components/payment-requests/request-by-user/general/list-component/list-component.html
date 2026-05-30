@@ -43,11 +43,12 @@
               <button
                 type="button"
                 class="duplicate-badge"
-                title="Show possible duplicate invoices"
+                title="Potential duplicates found"
+                aria-label="Show potential duplicate invoices"
                 (click)="onOpenDuplicates(invoice)"
               >
-                <span class="material-symbols-outlined">warning</span>
-                Possible
+                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                Duplicates
               </button>
             } @else {
               <span class="duplicate-empty">-</span>
