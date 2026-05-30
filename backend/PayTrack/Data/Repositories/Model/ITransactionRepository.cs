@@ -109,5 +109,12 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="transaction">Transaction object to update.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
+
+        /// <summary>
+        /// Persists a new TransactionStatusHistory entry.
+        /// </summary>
+        /// <param name="history">The history entry to persist.</param>
+        /// <returns>The persisted TransactionStatusHistory entry.</returns>
+        Task<TransactionStatusHistory> AddStatusHistoryAsync(TransactionStatusHistory history);
     }
 }

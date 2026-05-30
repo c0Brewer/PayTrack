@@ -6,17 +6,55 @@
   (back)="onBack()"
 />
 
-@if (!loading && request?.user?.email) {
-  <div class="notification-actions">
-    <button type="button" class="btn btn-secondary" (click)="openEmailModal()">
-      <span class="material-symbols-outlined">mail</span>
-      Send Email
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="openSlackModal()">
-      <span class="material-symbols-outlined">chat</span>
-      Send Slack
-    </button>
+@if (!loading && request) {
+  <div class="actions-container">
+    <div class="actions-card">
+      <h2>Actions</h2>
+
+      @if (request.status === transactionStatus.Paid) {
+        <p class="actions-done">Status is set to "Paid", no more actions required.</p>
+      } @else {
+        <div class="actions-buttons">
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!canMarkAsPaid"
+            (click)="openMarkAsPaidModal()"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            Mark as Paid
+          </button>
+
+          @if (request.user?.email) {
+            <button type="button" class="btn btn-secondary" (click)="openEmailModal()">
+              <span class="material-symbols-outlined">mail</span>
+              Send Email
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="openSlackModal()">
+              <span class="material-symbols-outlined">chat</span>
+              Send Slack
+            </button>
+          }
+        </div>
+      }
+    </div>
   </div>
+}
+
+@if (showMarkAsPaidModal) {
+  <app-modal-component title="Mark as Paid" icon="payments" (closeEvent)="cancelMarkAsPaid()">
+    <p>Are you sure you want to mark this payment request as <strong>Paid</strong>?</p>
+    <label>
+      Reason / Comment
+      <textarea [(ngModel)]="markAsPaidComment" rows="3"></textarea>
+    </label>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelMarkAsPaid()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="markAsPaidLoading" (click)="confirmMarkAsPaid()">
+        {{ markAsPaidLoading ? 'Processing…' : 'Confirm' }}
+      </button>
+    </div>
+  </app-modal-component>
 }
 
 @if (modalType) {

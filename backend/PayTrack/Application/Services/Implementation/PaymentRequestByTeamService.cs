@@ -120,6 +120,35 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById())
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (transaction.Status is TransactionStatus.Paid or TransactionStatus.Declined)
+            {
+                throw new InvalidStateException(
+                    $"Cannot mark a transaction as Paid when its current status is {transaction.Status}.");
+            }
+
+            var fromStatus = transaction.Status;
+            transaction.Status = TransactionStatus.Paid;
+            transaction.PaidAt = DateTime.UtcNow;
+            await this.repo.UpdateAsync(transaction);
+
+            await this.repo.AddStatusHistoryAsync(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = adminUserId,
+                FromStatus = fromStatus,
+                ToStatus = TransactionStatus.Paid,
+                Comment = comment,
+            });
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
         public bool ValidateQuery(GetPaymentRequestByTeamQuery query, User currentUser)
         {
             return currentUser.Role switch

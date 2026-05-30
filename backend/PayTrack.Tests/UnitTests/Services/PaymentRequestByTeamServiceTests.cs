@@ -448,6 +448,95 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         // ----------------------------
+        // MARK AS PAID
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ShouldThrow_WhenTransactionNotFound()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync((PaymentRequestByTeam?)null);
+
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+
+            Func<Task> act = async () => await service.MarkAsPaidAsync(1, 99, null);
+
+            await act.Should().ThrowAsync<NotFoundException>().WithMessage("Transaction not found");
+        }
+
+        [Theory]
+        [InlineData(TransactionStatus.Paid)]
+        [InlineData(TransactionStatus.Declined)]
+        public async Task MarkAsPaid_ShouldThrow_WhenStatusIsPaidOrDeclined(TransactionStatus status)
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam { Id = 1, Status = status };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+
+            Func<Task> act = async () => await service.MarkAsPaidAsync(1, 99, null);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
+        }
+
+        [Theory]
+        [InlineData(TransactionStatus.Submitted)]
+        [InlineData(TransactionStatus.ChangesRequested)]
+        [InlineData(TransactionStatus.Approved)]
+        public async Task MarkAsPaid_ShouldUpdateStatusAndCreateHistory_WhenStatusIsAllowed(TransactionStatus fromStatus)
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam { Id = 5, Status = fromStatus };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
+                .ReturnsAsync((PaymentRequestByTeam p) => p);
+
+            repoMock
+                .Setup(r => r.AddStatusHistoryAsync(It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((TransactionStatusHistory h) => h);
+
+            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+
+            var result = await service.MarkAsPaidAsync(5, 42, "my comment");
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+            result.PaidAt.Should().NotBeNull();
+
+            repoMock.Verify(r => r.UpdateAsync(It.Is<PaymentRequestByTeam>(p =>
+                p.Status == TransactionStatus.Paid &&
+                p.PaidAt != null)), Times.Once);
+
+            repoMock.Verify(r => r.AddStatusHistoryAsync(It.Is<TransactionStatusHistory>(h =>
+                h.TransactionId == 5 &&
+                h.ChangedById == 42 &&
+                h.FromStatus == fromStatus &&
+                h.ToStatus == TransactionStatus.Paid &&
+                h.Comment == "my comment")), Times.Once);
+        }
+
+        // ----------------------------
         // VALIDATE QUERY
         // ----------------------------
         [Theory]
