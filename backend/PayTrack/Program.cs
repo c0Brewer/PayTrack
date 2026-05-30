@@ -226,9 +226,6 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
             case "GOOGLE_DRIVE_ROOT_FOLDER_ID":
                 values["GoogleDrive:RootFolderId"] = value;
                 break;
-            case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_PATH":
-                values["GoogleDrive:ServiceAccountKeyPath"] = value;
-                break;
             case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
                 values["GoogleDrive:ServiceAccountKeyBase64"] = value;
                 break;

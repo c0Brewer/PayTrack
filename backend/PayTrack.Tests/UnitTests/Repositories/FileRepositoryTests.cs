@@ -31,7 +31,6 @@ namespace PayTrack.Tests.UnitTests.Repositories
             string path,
             bool googleDriveEnabled = false,
             string? googleDriveRootFolderId = null,
-            string? googleDriveServiceAccountKeyPath = null,
             string? googleDriveServiceAccountKeyBase64 = null)
         {
             return new ConfigurationBuilder()
@@ -40,7 +39,6 @@ namespace PayTrack.Tests.UnitTests.Repositories
                     ["Data:FileUploadPath"] = path,
                     ["GoogleDrive:Enabled"] = googleDriveEnabled.ToString(),
                     ["GoogleDrive:RootFolderId"] = googleDriveRootFolderId,
-                    ["GoogleDrive:ServiceAccountKeyPath"] = googleDriveServiceAccountKeyPath,
                     ["GoogleDrive:ServiceAccountKeyBase64"] = googleDriveServiceAccountKeyBase64,
                 })
                 .Build();

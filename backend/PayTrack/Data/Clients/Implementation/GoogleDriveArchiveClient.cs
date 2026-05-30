@@ -17,7 +17,6 @@ namespace PayTrack.Data.Clients.Implementation
     public class GoogleDriveArchiveClient(IConfiguration _config) : IGoogleDriveArchiveClient
     {
         private readonly string? googleDriveRootFolderId = _config["GoogleDrive:RootFolderId"];
-        private readonly string? googleDriveServiceAccountKeyPath = _config["GoogleDrive:ServiceAccountKeyPath"];
         private readonly string? googleDriveServiceAccountKeyBase64 = _config["GoogleDrive:ServiceAccountKeyBase64"];
 
         /// <inheritdoc/>
@@ -103,45 +102,21 @@ namespace PayTrack.Data.Clients.Implementation
         /// <returns>An authenticated <see cref="DriveService"/> instance.</returns>
         private DriveService CreateDriveService()
         {
-            GoogleCredential credential;
             var serviceAccountKeyBase64 = this.googleDriveServiceAccountKeyBase64;
-            var serviceAccountKeyPath = this.googleDriveServiceAccountKeyPath;
-            var hasServiceAccountKeyBase64 = !string.IsNullOrWhiteSpace(serviceAccountKeyBase64);
-            var hasServiceAccountKeyPath = !string.IsNullOrWhiteSpace(serviceAccountKeyPath);
 
-            if (hasServiceAccountKeyBase64 && hasServiceAccountKeyPath)
+            if (string.IsNullOrWhiteSpace(serviceAccountKeyBase64))
             {
-                throw new InternalErrorException("Google Drive service account key path and base64 value cannot both be configured.");
+                throw new InternalErrorException("Google Drive service account key is not configured.");
             }
 
-            if (hasServiceAccountKeyBase64)
-            {
-                using var stream = CreateStreamFromBase64(
-                    serviceAccountKeyBase64!,
-                    "Google Drive service account key base64 value is invalid.");
+            using var stream = CreateStreamFromBase64(
+                serviceAccountKeyBase64,
+                "Google Drive service account key base64 value is invalid.");
 
-                credential = CredentialFactory
-                    .FromStream<ServiceAccountCredential>(stream)
-                    .ToGoogleCredential()
-                    .CreateScoped(DriveService.Scope.Drive);
-            }
-            else
-            {
-                if (!hasServiceAccountKeyPath)
-                {
-                    throw new InternalErrorException("Google Drive service account key is not configured.");
-                }
-
-                if (!File.Exists(serviceAccountKeyPath))
-                {
-                    throw new InternalErrorException("Google Drive service account key file could not be found.");
-                }
-
-                credential = CredentialFactory
-                    .FromFile<ServiceAccountCredential>(serviceAccountKeyPath)
-                    .ToGoogleCredential()
-                    .CreateScoped(DriveService.Scope.Drive);
-            }
+            var credential = CredentialFactory
+                .FromStream<ServiceAccountCredential>(stream)
+                .ToGoogleCredential()
+                .CreateScoped(DriveService.Scope.Drive);
 
             return new DriveService(new BaseClientService.Initializer
             {
