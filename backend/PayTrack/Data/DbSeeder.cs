@@ -401,6 +401,19 @@ public static class DbSeeder
             4);
         await AddPresenterInvoiceIfMissingAsync(
             db,
+            "INV-PRES-SUPPLIER-PNG-001-2",
+            presenterUser,
+            null,
+            electronicsTeam,
+            736.42m,
+            "Test Duplicate",
+            "External supplier should be paid directly.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.External,
+            TransactionStatus.Paid,
+            4);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
             "INV-PRES-SELF-JPG-001",
             presenterUser,
             presenterBankAccount,
