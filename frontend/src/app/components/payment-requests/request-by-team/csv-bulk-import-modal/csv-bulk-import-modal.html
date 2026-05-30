@@ -187,6 +187,7 @@
                     [isInvalid]="row.userId === null"
                     [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName! } : null"
                     (itemSelected)="onUserAssigned(i, $event)"
+                    (cleared)="onUserCleared(i)"
                   />
                 }
               </td>
@@ -247,13 +248,15 @@
               <td>{{ row.displayName ?? row.rawName }}</td>
               <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
               <td class="status-cell">
-                @if (row.status === 'success') {
-                  <span class="material-symbols-outlined status-ok">check_circle</span>
-                }
-                @if (row.status === 'error') {
-                  <span class="material-symbols-outlined status-err">error</span>
-                  <span class="error-detail">{{ row.errorMessage }}</span>
-                }
+                <span class="status-content">
+                  @if (row.status === 'success') {
+                    <span class="material-symbols-outlined status-ok">check_circle</span>
+                  }
+                  @if (row.status === 'error') {
+                    <span class="material-symbols-outlined status-err">error</span>
+                    <span class="error-detail">{{ row.errorMessage }}</span>
+                  }
+                </span>
               </td>
             </tr>
           }

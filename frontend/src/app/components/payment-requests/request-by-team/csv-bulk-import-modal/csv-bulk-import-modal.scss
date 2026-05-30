@@ -182,9 +182,9 @@
   }
 }
 
-.status-cell {
+.status-content {
   align-items: center;
-  display: flex;
+  display: inline-flex;
   gap: 0.3rem;
   white-space: nowrap;
 }

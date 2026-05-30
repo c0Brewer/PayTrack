@@ -286,6 +286,11 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     this.previewRows[index].displayName = item.primaryText;
   }
 
+  onUserCleared(index: number): void {
+    this.previewRows[index].userId = null;
+    this.previewRows[index].displayName = null;
+  }
+
   get allRowsAssigned(): boolean {
     return this.previewRows.every((r) => r.userId !== null);
   }
