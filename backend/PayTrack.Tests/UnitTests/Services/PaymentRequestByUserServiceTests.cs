@@ -487,7 +487,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 teamMock.Object,
                 fileMock.Object,
-                bankMock.Object);
+                bankMock.Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
 
             var result = await service.GetDuplicatePaymentRequestsByUserAsync(1, 2, 3, DateTime.UtcNow, null, 7);
 
@@ -504,7 +506,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
 
             await service.DeletePaymentRequestByUserAsync(5);
 
@@ -520,7 +524,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
 
             Func<Task> act = async () => await service.DeletePaymentRequestByUserAsync(5);
 
@@ -535,7 +541,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
-                new Mock<IBankAccountService>().Object);
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
 
             await service.DismissDuplicatePaymentRequestByUserAsync(1, 2);
 
