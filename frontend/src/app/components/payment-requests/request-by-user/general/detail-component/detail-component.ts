@@ -17,6 +17,11 @@ import {
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
 
+export type ChangeRequestContactMethod = 'none' | 'email' | 'slack';
+export type RequestChangesSubmission = RequestChangesPaymentRequestByUserDto & {
+  contactMethod: ChangeRequestContactMethod;
+};
+
 @Component({
   selector: 'app-invoice-detail-component',
   imports: [CurrencyPipe, DatePipe, FormsModule],
@@ -38,7 +43,7 @@ export class InvoiceDetailComponent {
   @Output() downloadReceipt = new EventEmitter<void>();
   @Output() approve = new EventEmitter<ApprovePaymentRequestByUserDto>();
   @Output() decline = new EventEmitter<DeclinePaymentRequestByUserDto>();
-  @Output() requestChanges = new EventEmitter<RequestChangesPaymentRequestByUserDto>();
+  @Output() requestChanges = new EventEmitter<RequestChangesSubmission>();
   @Output() markPaid = new EventEmitter<MarkPaymentRequestByUserAsPaidDto>();
   @Output() back = new EventEmitter<void>();
 
@@ -53,6 +58,7 @@ export class InvoiceDetailComponent {
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
+  changeRequestContactMethod: ChangeRequestContactMethod = 'none';
 
   constructor(private readonly sanitizer: DomSanitizer) {}
 
@@ -112,6 +118,7 @@ export class InvoiceDetailComponent {
 
     this.requestChanges.emit({
       reason: this.changeRequestReason.trim(),
+      contactMethod: this.changeRequestContactMethod,
     });
   }
 

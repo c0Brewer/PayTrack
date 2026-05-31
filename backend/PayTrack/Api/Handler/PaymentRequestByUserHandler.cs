@@ -265,6 +265,29 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Undoes the latest status change for a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UndoLastPaymentRequestByUserStatusChangeAsync(
+            [FromRoute] int id,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.UndoLastStatusChangeAsync(
+                id,
+                currentUser.Id);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
         /// Returns the receipt file for a PaymentRequestByUser, only if the current user has access to it.
         /// </summary>
         /// <param name="id">id.</param>

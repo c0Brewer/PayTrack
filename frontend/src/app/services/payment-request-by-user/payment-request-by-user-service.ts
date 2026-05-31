@@ -31,6 +31,11 @@ export class PaymentRequestByUserService {
       : '/api/v1/transaction/user';
   }
 
+  private getUndoStatusChangeUrl(id: number): string {
+    const path = `/api/v1/transaction/user/${id}/undo-status-change`;
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   public getPaymentRequestsByUser(
     queryOptions: GetPaymentRequestsByUserOptions,
   ): Observable<PaginatedPaymentRequestByUserDto> {
@@ -232,6 +237,23 @@ export class PaymentRequestByUserService {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
       });
+
+    return from(promise);
+  }
+
+  public undoLastStatusChange(id: number): Observable<PaymentRequestByUserDto> {
+    const promise = fetch(this.getUndoStatusChangeUrl(id), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.json() as Promise<PaymentRequestByUserDto>;
+    });
 
     return from(promise);
   }

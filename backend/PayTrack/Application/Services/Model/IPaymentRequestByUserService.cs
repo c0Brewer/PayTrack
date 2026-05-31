@@ -142,6 +142,16 @@ namespace PayTrack.Application.Services.Model
             string reason);
 
         /// <summary>
+        /// Undoes the latest status change and stores a compensating status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to update.</param>
+        /// <param name="changedById">Id of the user who undid the status change.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> UndoLastStatusChangeAsync(
+            int id,
+            int changedById);
+
+        /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.
         /// </summary>
         /// <param name="query">The query submitted by the client.</param>

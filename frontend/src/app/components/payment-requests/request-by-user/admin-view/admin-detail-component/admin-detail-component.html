@@ -17,3 +17,28 @@
   (markPaid)="onMarkPaid($event)"
   (back)="onBack()"
 />
+
+@if (canUndoLastStatusChange) {
+  <div class="undo-status-action">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="undoingStatusChange"
+      (click)="onUndoStatusChange()"
+    >
+      <span class="material-symbols-outlined">undo</span>
+      {{ undoingStatusChange ? 'Undoing...' : 'Undo last status change' }}
+    </button>
+  </div>
+}
+
+@if (modalType) {
+  <app-external-notification-component
+    [type]="modalType"
+    [recipientEmail]="notificationEmail"
+    [defaultSubject]="notificationSubject"
+    [defaultMessage]="notificationMessage"
+    (sentEvent)="onNotificationSent()"
+    (closeEvent)="onNotificationModalClosed()"
+  />
+}

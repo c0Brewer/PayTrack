@@ -24,7 +24,7 @@ describe('InvoiceDetailComponent', () => {
     createdAt: '2026-01-01T00:00:00Z',
     paidAt: null,
     bankAccount: { iban: 'AT611904300234573201' },
-    user: { name: 'Alice' },
+    user: { name: 'Alice', email: 'alice@example.com' },
     statusHistory: [],
   } as unknown as PaymentRequestByUserDto;
 
@@ -212,7 +212,24 @@ describe('InvoiceDetailComponent', () => {
 
     component.onRequestChanges();
 
-    expect(emitted).toHaveBeenCalledWith({ reason: 'upload clearer receipt' });
+    expect(emitted).toHaveBeenCalledWith({
+      reason: 'upload clearer receipt',
+      contactMethod: 'none',
+    });
+  });
+
+  it('should emit request changes with selected email contact method', () => {
+    const emitted = vi.fn();
+    component.requestChanges.subscribe(emitted);
+    component.changeRequestReason = ' upload clearer receipt ';
+    component.changeRequestContactMethod = 'email';
+
+    component.onRequestChanges();
+
+    expect(emitted).toHaveBeenCalledWith({
+      reason: 'upload clearer receipt',
+      contactMethod: 'email',
+    });
   });
 
   it('should not emit request changes without reason', () => {
@@ -265,6 +282,41 @@ describe('InvoiceDetailComponent', () => {
     expect(fixture.nativeElement.querySelector('.approve-btn')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.request-changes-btn')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
+  });
+
+  it('should render contact method selection for request changes', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector(
+      'select[name="changeRequestContactMethod"]',
+    ) as HTMLSelectElement;
+    expect(select).not.toBeNull();
+    expect(select.textContent).toContain('Email');
+    expect(select.textContent).toContain('Slack');
+  });
+
+  it('should disable notification contact options when the invoice user has no email', () => {
+    component.invoice = {
+      ...mockInvoice,
+      user: { name: 'Alice' },
+    } as unknown as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canManageStatus = true;
+
+    fixture.detectChanges();
+
+    const emailOption = fixture.nativeElement.querySelector(
+      'option[value="email"]',
+    ) as HTMLOptionElement;
+    const slackOption = fixture.nativeElement.querySelector(
+      'option[value="slack"]',
+    ) as HTMLOptionElement;
+    expect(emailOption.disabled).toBe(true);
+    expect(slackOption.disabled).toBe(true);
   });
 
   it('should hide status admin controls when management is disabled', () => {

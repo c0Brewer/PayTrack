@@ -324,6 +324,26 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> UndoLastStatusChangeAsync(
+            int id,
+            int changedById)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var latestStatusChange = transaction.StatusHistory
+                .OrderByDescending(entry => entry.ChangedAt)
+                .FirstOrDefault(entry => entry.ToStatus == transaction.Status)
+                ?? throw new InvalidStateException("No status change can be undone");
+
+            UndoStatusChange(transaction, latestStatusChange.FromStatus, changedById);
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
         public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
@@ -416,6 +436,36 @@ namespace PayTrack.Application.Services.Implementation
                 ToStatus = toStatus,
                 ChangedAt = DateTime.UtcNow,
                 Comment = comment,
+            });
+        }
+
+        private static void UndoStatusChange(
+            PaymentRequestByUser transaction,
+            TransactionStatus restoredStatus,
+            int changedById)
+        {
+            var previousStatus = transaction.Status;
+            transaction.Status = restoredStatus;
+
+            if (previousStatus == TransactionStatus.Approved)
+            {
+                transaction.BudgetId = null;
+            }
+
+            if (previousStatus == TransactionStatus.Paid)
+            {
+                transaction.FinancePaidAt = null;
+                transaction.PaymentReference = string.Empty;
+            }
+
+            transaction.StatusHistory.Add(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = changedById,
+                FromStatus = previousStatus,
+                ToStatus = restoredStatus,
+                ChangedAt = DateTime.UtcNow,
+                Comment = "Undo status change",
             });
         }
 

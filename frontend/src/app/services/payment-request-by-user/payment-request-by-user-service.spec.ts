@@ -366,6 +366,42 @@ describe('PaymentRequestByUserService', () => {
     expect(result).toEqual(apiResponse);
   });
 
+  it('should undo last status change via fetch', async () => {
+    const apiResponse = { id: 1 } as PaymentRequestByUserDto;
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    const result = await firstValueFrom(service.undoLastStatusChange(1));
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/1/undo-status-change', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/1/undo-status-change';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should throw API detail when undo last status change fails', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ detail: 'nothing to undo' }),
+    });
+
+    await expect(firstValueFrom(service.undoLastStatusChange(1))).rejects.toThrow(
+      'nothing to undo',
+    );
+  });
+
   it('should throw API detail for status update failures', async () => {
     vi.spyOn(client, 'POST').mockResolvedValue({
       data: null,

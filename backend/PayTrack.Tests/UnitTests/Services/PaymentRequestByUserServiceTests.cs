@@ -940,6 +940,131 @@ namespace PayTrack.Tests.UnitTests.Services
                 .WithMessage("Cannot change invoice status from Paid to Declined");
         }
 
+        [Fact]
+        public async Task UndoLastStatusChange_ShouldRestorePreviousStatusAndStoreHistory()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var changedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Declined,
+                StatusHistory =
+                [
+                    new TransactionStatusHistory
+                    {
+                        TransactionId = 1,
+                        FromStatus = TransactionStatus.Approved,
+                        ToStatus = TransactionStatus.Declined,
+                        ChangedById = 7,
+                        ChangedAt = changedAt,
+                        Comment = "duplicate invoice"
+                    }
+                ]
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            var result = await service.UndoLastStatusChangeAsync(1, 42);
+
+            result.Status.Should().Be(TransactionStatus.Approved);
+            result.StatusHistory.Should().HaveCount(2);
+            result.StatusHistory.Last().FromStatus.Should().Be(TransactionStatus.Declined);
+            result.StatusHistory.Last().ToStatus.Should().Be(TransactionStatus.Approved);
+            result.StatusHistory.Last().ChangedById.Should().Be(42);
+            result.StatusHistory.Last().Comment.Should().Be("Undo status change");
+        }
+
+        [Fact]
+        public async Task UndoLastStatusChange_ShouldClearFinancePaymentData_WhenPaidIsUndone()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Paid,
+                PaymentReference = "REF-123",
+                FinancePaidAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc),
+                StatusHistory =
+                [
+                    new TransactionStatusHistory
+                    {
+                        TransactionId = 1,
+                        FromStatus = TransactionStatus.Approved,
+                        ToStatus = TransactionStatus.Paid,
+                        ChangedById = 7,
+                        ChangedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                        Comment = "Payment reference: REF-123"
+                    }
+                ]
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
+                .ReturnsAsync((PaymentRequestByUser p) => p);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            var result = await service.UndoLastStatusChangeAsync(1, 42);
+
+            result.Status.Should().Be(TransactionStatus.Approved);
+            result.PaymentReference.Should().BeEmpty();
+            result.FinancePaidAt.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task UndoLastStatusChange_ShouldThrow_WhenNoMatchingHistoryExists()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(new PaymentRequestByUser
+                {
+                    Id = 1,
+                    InvoiceNumber = "123",
+                    Status = TransactionStatus.Submitted,
+                    StatusHistory = []
+                });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            Func<Task> act = async () => await service.UndoLastStatusChangeAsync(1, 42);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("No status change can be undone");
+        }
+
         // ----------------------------
         // GET RECEIPT
         // ----------------------------

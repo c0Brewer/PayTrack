@@ -419,6 +419,35 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.Status.Should().Be(TransactionStatus.ChangesRequested);
         }
 
+        [Fact]
+        public async Task UndoStatusChange_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Submitted
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.UndoLastStatusChangeAsync(1, adminUser.Id))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PostAsync("api/v1/transaction/user/1/undo-status-change", null);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Submitted);
+        }
+
         // ----------------------------
         // FILE
         // ----------------------------

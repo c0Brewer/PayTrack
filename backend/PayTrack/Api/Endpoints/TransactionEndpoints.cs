@@ -48,6 +48,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPost("/user/{id:int}/request-changes", PaymentRequestByUserHandler.RequestChangesPaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
 
+            group.MapPost("/user/{id:int}/undo-status-change", PaymentRequestByUserHandler.UndoLastPaymentRequestByUserStatusChangeAsync)
+                .RequireRole(Role.Admin);
+
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
 
             group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);

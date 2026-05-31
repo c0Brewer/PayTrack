@@ -4,9 +4,10 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { ExternalNotificationService } from '../../../../../services/external-notification/external-notification-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../../../types/exporter';
+import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { RequestDetailComponent } from './admin-detail-component';
 
@@ -21,6 +22,7 @@ describe('RequestDetailComponent', () => {
     approvePaymentRequestByUser: vi.fn(),
     declinePaymentRequestByUser: vi.fn(),
     requestChangesForPaymentRequestByUser: vi.fn(),
+    undoLastStatusChange: vi.fn(),
   };
 
   const costCentreServiceMock = {
@@ -30,6 +32,11 @@ describe('RequestDetailComponent', () => {
   const notificationMock = {
     showError: vi.fn(),
     showSuccess: vi.fn(),
+  };
+
+  const externalNotificationMock = {
+    sendEmail: vi.fn(),
+    sendSlack: vi.fn(),
   };
 
   const routerMock = {
@@ -56,7 +63,7 @@ describe('RequestDetailComponent', () => {
     createdAt: '2026-01-01T00:00:00Z',
     paidAt: null,
     bankAccount: { iban: 'AT611904300234573201' },
-    user: { firstName: 'Bob', lastName: 'Admin' },
+    user: { id: 8, name: 'Bob Admin', email: 'bob@example.com' },
     statusHistory: [],
   } as unknown as PaymentRequestByUserDto;
 
@@ -71,6 +78,7 @@ describe('RequestDetailComponent', () => {
       providers: [
         { provide: PaymentRequestByUserService, useValue: serviceMock },
         { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: ExternalNotificationService, useValue: externalNotificationMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
@@ -351,5 +359,152 @@ describe('RequestDetailComponent', () => {
   it('onBack navigates to /requests', () => {
     component.onBack();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/requests']);
+  });
+
+  it('returns the invoice user email for notifications', () => {
+    component.invoice = mockInvoice;
+    expect(component.notificationEmail).toBe('bob@example.com');
+  });
+
+  it('returns a changes requested subject containing the invoice number', () => {
+    component.invoice = mockInvoice;
+    expect(component.notificationSubject).toContain('INV-007');
+  });
+
+  it('returns an email notification message with invoice context and latest change reason', () => {
+    component.invoice = {
+      ...mockInvoice,
+      statusHistory: [
+        {
+          fromStatus: TransactionStatus.Submitted,
+          toStatus: TransactionStatus.ChangesRequested,
+          changedAt: '2026-01-02T00:00:00Z',
+          changedById: 1,
+          comment: 'Please upload a clearer receipt',
+        },
+      ],
+    } as unknown as PaymentRequestByUserDto;
+    component.modalType = 'email';
+
+    const message = component.notificationMessage;
+
+    expect(message).toContain('Bob Admin');
+    expect(message).toContain('INV-007');
+    expect(message).toContain('Please upload a clearer receipt');
+  });
+
+  it('returns a slack notification message with invoice context', () => {
+    component.invoice = mockInvoice;
+    component.modalType = 'slack';
+
+    const message = component.notificationMessage;
+
+    expect(message).toContain('INV-007');
+    expect(message).toContain('100');
+  });
+
+  it('opens the email notification modal before request changes when email is selected', () => {
+    component.invoice = mockInvoice;
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
+    expect(component.modalType).toBe('email');
+    expect(component.pendingChangeRequest).toEqual({
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.notificationMessage).toContain('Please upload a clearer receipt');
+  });
+
+  it('requests changes after the selected notification was sent', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: TransactionStatus.ChangesRequested,
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+    component.onNotificationSent();
+
+    expect(serviceMock.requestChangesForPaymentRequestByUser).toHaveBeenCalledWith(7, {
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.modalType).toBeNull();
+    expect(component.pendingChangeRequest).toBeNull();
+  });
+
+  it('opens the slack notification modal before request changes when slack is selected', () => {
+    component.invoice = mockInvoice;
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'slack',
+    });
+
+    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
+    expect(component.modalType).toBe('slack');
+  });
+
+  it('clears pending request when the notification modal is closed', () => {
+    component.invoice = mockInvoice;
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    component.onNotificationModalClosed();
+
+    expect(component.modalType).toBeNull();
+    expect(component.pendingChangeRequest).toBeNull();
+    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
+  });
+
+  it('does not open a notification modal after request changes succeeds without contact', () => {
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'none',
+    });
+
+    expect(component.modalType).toBeNull();
+  });
+
+  it('shows undo button after a status action succeeds', () => {
+    component.invoice = mockInvoice;
+    serviceMock.declinePaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
+    component.onDecline({ reason: 'duplicate' });
+
+    expect(component.canUndoLastStatusChange).toBe(true);
+  });
+
+  it('undoes the last status change and reloads the invoice', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Submitted,
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    component.canUndoLastStatusChange = true;
+    serviceMock.undoLastStatusChange.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onUndoStatusChange();
+
+    expect(serviceMock.undoLastStatusChange).toHaveBeenCalledWith(7);
+    expect(component.invoice).toEqual(reloadedInvoice);
+    expect(component.canUndoLastStatusChange).toBe(false);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Status change undone');
   });
 });

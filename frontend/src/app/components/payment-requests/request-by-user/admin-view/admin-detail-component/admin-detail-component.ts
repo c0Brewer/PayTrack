@@ -12,12 +12,18 @@ import {
   MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
   RequestChangesPaymentRequestByUserDto,
+  TransactionStatus,
 } from '../../../../../types/exporter';
-import { InvoiceDetailComponent } from '../../general/detail-component/detail-component';
+import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
+import {
+  ChangeRequestContactMethod,
+  InvoiceDetailComponent,
+  RequestChangesSubmission,
+} from '../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-request-detail-component',
-  imports: [InvoiceDetailComponent],
+  imports: [InvoiceDetailComponent, ExternalNotificationComponent],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })
@@ -47,6 +53,11 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   markingPaid: boolean = false;
   statusActionPending: string | null = null;
   costCentres: CostCentreDto[] = [];
+  modalType: 'email' | 'slack' | null = null;
+  changeRequestNotificationReason: string | null = null;
+  pendingChangeRequest: RequestChangesPaymentRequestByUserDto | null = null;
+  undoingStatusChange: boolean = false;
+  canUndoLastStatusChange: boolean = false;
 
   ngOnInit(): void {
     this.costCentreService.getCostCentres({ Limit: 100 }).subscribe({
@@ -106,6 +117,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.loadInvoice(this.invoice!.id);
         this.markingPaid = false;
+        this.canUndoLastStatusChange = true;
         this.notificationService.showSuccess('Invoice marked as paid');
         this.cdr.detectChanges();
       },
@@ -129,9 +141,89 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  onRequestChanges(requestChangesRequest: RequestChangesPaymentRequestByUserDto): void {
+  onRequestChanges(requestChangesRequest: RequestChangesSubmission): void {
+    const { contactMethod, ...request } = requestChangesRequest;
+
+    if (contactMethod !== 'none') {
+      this.openChangeRequestNotification(contactMethod, request);
+      return;
+    }
+
     this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
-      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, requestChangesRequest),
+      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
+    );
+  }
+
+  onNotificationSent(): void {
+    if (!this.pendingChangeRequest) return;
+
+    const request = this.pendingChangeRequest;
+    this.pendingChangeRequest = null;
+    this.modalType = null;
+    this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
+      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
+    );
+  }
+
+  onNotificationModalClosed(): void {
+    this.modalType = null;
+    this.pendingChangeRequest = null;
+    this.changeRequestNotificationReason = null;
+  }
+
+  onUndoStatusChange(): void {
+    if (!this.invoice || this.undoingStatusChange) return;
+
+    this.undoingStatusChange = true;
+    this.service.undoLastStatusChange(this.invoice.id).subscribe({
+      next: () => {
+        this.loadInvoice(this.invoice!.id);
+        this.undoingStatusChange = false;
+        this.canUndoLastStatusChange = false;
+        this.notificationService.showSuccess('Status change undone');
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.undoingStatusChange = false;
+        this.notificationService.showError('Could not undo status change: ' + err.message);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  get notificationEmail(): string {
+    return this.invoice?.user?.email ?? '';
+  }
+
+  get notificationSubject(): string {
+    return `Changes requested for invoice ${this.invoice?.invoiceNumber ?? ''}`.trim();
+  }
+
+  get notificationMessage(): string {
+    if (!this.invoice) return '';
+
+    const name = this.invoice.user?.name ?? 'User';
+    const invoiceNumber = this.invoice.invoiceNumber;
+    const amount = this.invoice.amount.toLocaleString('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+    });
+    const reason = this.changeRequestNotificationReason ?? this.latestChangeRequestReason;
+
+    if (this.modalType === 'email') {
+      return (
+        `Dear ${name},\n\n` +
+        `Changes were requested for invoice ${invoiceNumber} (${amount}).\n` +
+        (reason ? `Reason: ${reason}\n` : '') +
+        `Please review and update the invoice at your earliest convenience.\n\n` +
+        `Best regards,\nPayTrack`
+      );
+    }
+
+    return (
+      `Changes were requested for invoice ${invoiceNumber} (${amount}). ` +
+      (reason ? `Reason: ${reason} ` : '') +
+      `Please review and update the invoice.`
     );
   }
 
@@ -140,6 +232,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     successMessage: string,
     errorPrefix: string,
     request: () => ReturnType<PaymentRequestByUserService['approvePaymentRequestByUser']>,
+    afterSuccess?: () => void,
   ): void {
     if (!this.invoice || this.statusActionPending) return;
 
@@ -148,7 +241,9 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.loadInvoice(this.invoice!.id);
         this.statusActionPending = null;
+        this.canUndoLastStatusChange = true;
         this.notificationService.showSuccess(successMessage);
+        afterSuccess?.();
         this.cdr.detectChanges();
       },
       error: (err: Error) => {
@@ -181,6 +276,26 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
       'application/pdf': '.pdf',
     };
     return map[mimeType] ?? '';
+  }
+
+  private get latestChangeRequestReason(): string | null {
+    const history = this.invoice?.statusHistory ?? [];
+    const latestEntry = [...history]
+      .reverse()
+      .find(
+        (entry) => entry.toStatus === TransactionStatus.ChangesRequested && !!entry.comment?.trim(),
+      );
+
+    return latestEntry?.comment?.trim() ?? null;
+  }
+
+  private openChangeRequestNotification(
+    contactMethod: Exclude<ChangeRequestContactMethod, 'none'>,
+    request: RequestChangesPaymentRequestByUserDto,
+  ): void {
+    this.pendingChangeRequest = request;
+    this.changeRequestNotificationReason = request.reason?.trim() || null;
+    this.modalType = contactMethod;
   }
 
   onBack(): void {

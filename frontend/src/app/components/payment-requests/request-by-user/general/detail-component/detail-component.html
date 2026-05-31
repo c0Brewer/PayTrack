@@ -117,6 +117,14 @@
                   required
                 ></textarea>
               </label>
+              <label>
+                <span>Contact User</span>
+                <select name="changeRequestContactMethod" [(ngModel)]="changeRequestContactMethod">
+                  <option value="none">Do not contact</option>
+                  <option value="email" [disabled]="!invoice.user?.email">Email</option>
+                  <option value="slack" [disabled]="!invoice.user?.email">Slack</option>
+                </select>
+              </label>
               <button
                 class="request-changes-btn"
                 type="submit"
