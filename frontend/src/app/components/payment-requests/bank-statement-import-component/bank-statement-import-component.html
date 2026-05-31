@@ -102,7 +102,7 @@
               <span class="text-xs text-slate-400">{{
                 formatDate(result.entry?.booking)
                 }}</span>
-              <span class="text-xs font-medium text-slate-600">{{
+              <span class="text-xs font-medium text-slate-600"> {{
                 formatAmount(result.entry)
                 }}</span>
 
@@ -129,7 +129,7 @@
               <span>"{{ result.entry?.receiverReference }}"</span>
               }
               @if (result.hasMatch && result.matchedTransaction && !result.skipped) {
-              <span>→ Transaction #{{ result.matchedTransaction.id }}</span>
+              <span>TransactionId: #{{ result.matchedTransaction.id }}</span>
               }
             </div>
 

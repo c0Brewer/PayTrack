@@ -130,6 +130,7 @@ export class BankStatementImportComponent {
         this.results.set(enriched);
         this.isLoading.set(false);
         this.phase.set('review');
+        console.log(enriched);
       },
       error: (err: Error) => {
         this.notificationService.showError(err.message);
