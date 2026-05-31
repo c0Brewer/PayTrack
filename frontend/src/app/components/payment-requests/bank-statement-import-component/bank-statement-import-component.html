@@ -1,0 +1,281 @@
+<div class="min-h-screen bg-slate-50 p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-2xl font-semibold text-slate-800 tracking-tight">Bank Statement Import</h1>
+      <p class="text-slate-500 text-sm mt-1">
+        Upload your bank export and reconcile it with your invoices.
+      </p>
+
+      <!-- Step indicator -->
+      <div class="flex items-center gap-3 mt-5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors"
+            [class]="
+              phase() === 'upload' ? 'bg-indigo-600 text-white' : 'bg-emerald-500 text-white'
+            ">
+            @if (phase() === 'upload') {
+            <span>1</span>
+            }
+            @if (phase() === 'review') {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            }
+          </div>
+          <span class="text-sm font-medium"
+            [class]="phase() === 'upload' ? 'text-indigo-600' : 'text-slate-400'">Upload</span>
+        </div>
+        <div class="flex-1 h-px bg-slate-200 max-w-12"></div>
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors"
+            [class]="
+              phase() === 'review' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'
+            ">
+            2
+          </div>
+          <span class="text-sm font-medium" [class]="phase() === 'review' ? 'text-indigo-600' : 'text-slate-400'">Review
+            & Confirm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 1: UPLOAD ───────────────────────────────────────────────── -->
+    @if (phase() === 'upload') {
+    <div>
+      <!-- Drop zone -->
+      <div class="relative border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer" [class]="
+            isDragging()
+              ? 'border-indigo-400 bg-indigo-50'
+              : selectedFileName()
+                ? 'border-emerald-400 bg-emerald-50'
+                : 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-indigo-50/40'
+          " (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
+        (click)="fileInput.click()">
+        <input #fileInput type="file" accept=".json" class="hidden" (change)="onFileSelected($event)" />
+
+        <div class="flex flex-col items-center justify-center py-14 px-6 text-center">
+          <!-- Icon -->
+          @if (!selectedFileName()) {
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+          </div>
+          }
+          @if (selectedFileName()) {
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          }
+
+          @if (!selectedFileName()) {
+          <p class="text-slate-600 font-medium">Drop your bank statement here</p>
+          }
+          @if (!selectedFileName()) {
+          <p class="text-slate-400 text-sm mt-1">or click to browse — JSON format only</p>
+          }
+
+          @if (selectedFileName()) {
+          <p class="text-slate-700 font-medium">
+            {{ selectedFileName() }}
+          </p>
+          }
+          @if (selectedFileName()) {
+          <p class="text-emerald-600 text-sm mt-1">
+            {{ parsedEntries().length }} entr{{ parsedEntries().length === 1 ? 'y' : 'ies' }}
+            ready to analyse
+          </p>
+          }
+          @if (selectedFileName()) {
+          <button type="button" class="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
+            (click)="$event.stopPropagation(); reset()">
+            Remove file
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="mt-5 flex justify-end">
+        <button type="button" [disabled]="!parsedEntries().length || isLoading()"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          (click)="submitForMatching()">
+          @if (isLoading()) {
+          <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          }
+          <span>{{ isLoading() ? 'Analysing…' : 'Find Matches' }}</span>
+          @if (!isLoading()) {
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+          }
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- ── PHASE 2: REVIEW ───────────────────────────────────────────────── -->
+    @if (phase() === 'review') {
+    <div>
+      <!-- Summary row -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Matched</p>
+          <p class="text-2xl font-semibold text-emerald-600">{{ matchedCount() }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Skipped</p>
+          <p class="text-2xl font-semibold text-slate-500">{{ skippedCount() }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">No Match</p>
+          <p class="text-2xl font-semibold text-amber-500">{{ unmatchedCount() }}</p>
+        </div>
+      </div>
+
+      <!-- Results list -->
+      <div class="space-y-3">
+        @for (result of results(); track result) {
+        <div class="bg-white border rounded-xl p-4 transition-all duration-150" [class]="
+                result.skipped
+                  ? 'border-slate-200 opacity-50'
+                  : result.hasMatch
+                    ? 'border-emerald-200'
+                    : 'border-amber-200'
+              ">
+          <div class="flex items-start gap-4">
+            <!-- Status icon -->
+            <div class="shrink-0 mt-0.5">
+              @if (result.skipped) {
+              <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+              </div>
+              }
+              @if (!result.skipped && result.hasMatch) {
+              <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              }
+              @if (!result.skipped && !result.hasMatch) {
+              <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01" />
+                </svg>
+              </div>
+              }
+            </div>
+
+            <!-- Entry details -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-medium text-slate-800 text-sm truncate">
+                  {{ result.entry?.partnerName || '—' }}
+                </span>
+                <span class="text-xs text-slate-400">{{
+                  formatDate(result.entry?.booking)
+                  }}</span>
+                @if (result.hasMatch && !result.skipped) {
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="scoreColor(result.matchScore)">
+                  {{ scoreLabel(result.matchScore) }} match ({{ result.matchScore }})
+                </span>
+                }
+                @if (!result.hasMatch && !result.skipped) {
+                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                  No match found
+                </span>
+                }
+                @if (result.skipped) {
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">
+                  Skipped
+                </span>
+                }
+              </div>
+
+              <div class="mt-1.5 flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                <span>{{ formatAmount(result.entry) }}</span>
+                @if (result.entry?.partnerAccount?.iban) {
+                <span class="font-mono">
+                  {{ result.entry?.partnerAccount?.iban }}
+                </span>
+                }
+                @if (result.entry?.receiverReference) {
+                <span class="italic truncate max-w-xs">
+                  "{{ result.entry?.receiverReference }}"
+                </span>
+                }
+              </div>
+
+              <!-- Matched transaction info -->
+              @if (result.hasMatch && result.matchedTransaction && !result.skipped) {
+              <div class="mt-2.5 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 text-xs text-emerald-700">
+                <span class="font-medium">Matched transaction #{{ result.matchedTransaction.id }}</span>
+                <span class="text-emerald-500 ml-2">— will be updated on confirm</span>
+              </div>
+              }
+            </div>
+
+            <!-- Skip toggle -->
+            <button type="button" class="shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors font-medium"
+              [class]="
+                    result.skipped
+                      ? 'border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
+                      : 'border-slate-200 text-slate-500 bg-white hover:border-slate-300 hover:text-slate-700'
+                  " (click)="toggleSkip(result._entryId)">
+              {{ result.skipped ? 'Undo skip' : 'Skip' }}
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-6 flex items-center justify-between">
+        <button type="button" class="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1.5"
+          (click)="reset()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Start over
+        </button>
+
+        <button type="button" [disabled]="isLoading() || matchedCount() === 0"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          (click)="confirmUpdates()">
+          @if (isLoading()) {
+          <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          }
+          <span>{{
+            isLoading()
+            ? 'Updating…'
+            : 'Confirm ' + matchedCount() + ' Update' + (matchedCount() === 1 ? '' : 's')
+            }}</span>
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
