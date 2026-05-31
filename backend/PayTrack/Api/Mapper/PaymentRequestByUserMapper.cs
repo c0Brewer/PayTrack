@@ -65,6 +65,7 @@ namespace PayTrack.Api.Mapper
                 statusHistory,
                 paymentRequestByUser.CreatedAt,
                 paymentRequestByUser.PaidAt,
+                paymentRequestByUser.FinancePaidAt,
                 paymentRequestByUser.InvoiceNumber,
                 paymentRequestByUser.Comment,
                 paymentRequestByUser.PayoutType,

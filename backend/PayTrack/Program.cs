@@ -15,6 +15,8 @@ using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Application.Settings;
 using PayTrack.Data;
+using PayTrack.Data.Clients.Implementation;
+using PayTrack.Data.Clients.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
@@ -44,6 +46,7 @@ builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserSer
 builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IGoogleDriveArchiveClient, GoogleDriveArchiveClient>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
 
@@ -149,6 +152,7 @@ if (app.Environment.IsDevelopment())
 app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -157,7 +161,6 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseCors("frontend");
 app.MapHealthEndpoints();
 
 if (hasFrontendBundle)
@@ -212,13 +215,17 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
         var key = line[..separatorIndex].Trim();
         var value = line[(separatorIndex + 1)..].Trim().Trim('"');
 
-        if (key == "GOOGLE_CLIENT_ID")
+        switch (key)
         {
-            values["Authentication:Google:ClientId"] = value;
-        }
-        else if (key == "GOOGLE_CLIENT_SECRET")
-        {
-            values["Authentication:Google:ClientSecret"] = value;
+            case "GOOGLE_CLIENT_ID":
+                values["Authentication:Google:ClientId"] = value;
+                break;
+            case "GOOGLE_CLIENT_SECRET":
+                values["Authentication:Google:ClientSecret"] = value;
+                break;
+            case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
+                values["GoogleDrive:ServiceAccountKeyBase64"] = value;
+                break;
         }
     }
 

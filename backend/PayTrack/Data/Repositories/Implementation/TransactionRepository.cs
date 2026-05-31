@@ -125,7 +125,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeStatusHistory == true)
             {
-                dbQuery = dbQuery.Include(t => t.StatusHistory);
+                dbQuery = dbQuery.Include(t => t.StatusHistory)
+                    .ThenInclude(h => h.ChangedBy);
             }
 
             if (query?.IncludeBankAccount == true)
@@ -255,7 +256,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.PaymentRequestsByUser.Update(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
             }
@@ -436,7 +437,8 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeStatusHistory.HasValue == true)
             {
-                dbQuery = dbQuery.Include(t => t.StatusHistory);
+                dbQuery = dbQuery.Include(t => t.StatusHistory)
+                    .ThenInclude(h => h.ChangedBy);
             }
 
             dbQuery = dbQuery.Include(t => t.User);
