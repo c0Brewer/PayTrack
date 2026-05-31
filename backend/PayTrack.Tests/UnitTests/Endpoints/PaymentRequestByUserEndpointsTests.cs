@@ -210,10 +210,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
                         Team = new Team { Id = 99, Name = "Team A" }
                     },
-                    160,
-                    true,
-                    true,
-                    true),
+                    150,
+                    ["invoiceNumber", "amount", "payday", "user", "team"]),
             };
 
             _factory.AuthServiceMock
@@ -243,8 +241,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto.Should().NotBeNull();
             dto.Should().HaveCount(1);
             dto![0].PaymentRequestByUser.Id.Should().Be(1);
-            dto[0].Score.Should().Be(160);
-            dto[0].IsInvoiceNumberMatch.Should().BeTrue();
+            dto[0].Score.Should().Be(150);
+            dto[0].MatchedFields.Should().Contain("invoiceNumber");
 
             _factory.ServiceMock.Verify(
                 s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7),

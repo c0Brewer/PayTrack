@@ -12,7 +12,5 @@ namespace PayTrack.Application.Services.Model
     public sealed record class DuplicatePaymentRequestByUserMatch(
         PaymentRequestByUser PaymentRequestByUser,
         int Score,
-        bool IsAmountAndUserMatch,
-        bool IsInvoiceNumberMatch,
-        bool IsAmountAndTeamMatch);
+        List<string> MatchedFields);
 }

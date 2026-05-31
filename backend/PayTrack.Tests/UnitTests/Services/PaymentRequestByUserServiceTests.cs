@@ -7,6 +7,7 @@ using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
+using PayTrack.Data.Helpers;
 using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Tests.UnitTests.Services
@@ -268,23 +269,20 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Should().HaveCount(4);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(160);
-            result[0].IsAmountAndUserMatch.Should().BeTrue();
-            result[0].IsInvoiceNumberMatch.Should().BeTrue();
-            result[0].IsAmountAndTeamMatch.Should().BeTrue();
+            result[0].Score.Should().Be(150);
+            result[0].MatchedFields.Should().Equal("invoiceNumber", "amount", "payday", "user", "team");
 
-            result[1].PaymentRequestByUser.Id.Should().Be(3);
-            result[1].Score.Should().Be(70);
-            result[1].IsAmountAndUserMatch.Should().BeTrue();
-            result[1].IsInvoiceNumberMatch.Should().BeFalse();
+            result[1].PaymentRequestByUser.Id.Should().Be(6);
+            result[1].Score.Should().Be(65);
+            result[1].MatchedFields.Should().Equal("similarInvoiceNumber", "amount");
 
-            result[2].PaymentRequestByUser.Id.Should().Be(6);
-            result[2].Score.Should().Be(65);
-            result[2].IsInvoiceNumberMatch.Should().BeFalse();
+            result[2].PaymentRequestByUser.Id.Should().Be(3);
+            result[2].Score.Should().Be(60);
+            result[2].MatchedFields.Should().Equal("amount", "payday", "user");
 
             result[3].PaymentRequestByUser.Id.Should().Be(2);
             result[3].Score.Should().Be(60);
-            result[3].IsAmountAndTeamMatch.Should().BeTrue();
+            result[3].MatchedFields.Should().Equal("amount", "payday", "team");
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 4);
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 5);
 

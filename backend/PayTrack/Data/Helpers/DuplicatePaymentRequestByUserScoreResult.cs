@@ -8,12 +8,8 @@ namespace PayTrack.Data.Helpers
     /// Result of weighted scoring for a potential duplicate PaymentRequestByUser.
     /// </summary>
     /// <param name="Score">Weighted duplicate score.</param>
-    /// <param name="IsAmountAndUserMatch">Whether amount, payday, and user match exactly.</param>
-    /// <param name="IsInvoiceNumberMatch">Whether invoice number matches exactly after normalization.</param>
-    /// <param name="IsAmountAndTeamMatch">Whether amount, payday, and team match exactly.</param>
+    /// <param name="MatchedFields">Fields that contributed to the duplicate match.</param>
     public sealed record class DuplicatePaymentRequestByUserScoreResult(
         int Score,
-        bool IsAmountAndUserMatch,
-        bool IsInvoiceNumberMatch,
-        bool IsAmountAndTeamMatch);
+        List<string> MatchedFields);
 }

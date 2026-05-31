@@ -320,9 +320,7 @@ namespace PayTrack.Application.Services.Implementation
             return new DuplicatePaymentRequestByUserMatch(
                 paymentRequestByUser,
                 duplicateScore.Score,
-                duplicateScore.IsAmountAndUserMatch,
-                duplicateScore.IsInvoiceNumberMatch,
-                duplicateScore.IsAmountAndTeamMatch);
+                duplicateScore.MatchedFields);
         }
     }
 }

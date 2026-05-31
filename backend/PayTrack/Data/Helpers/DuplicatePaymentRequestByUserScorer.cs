@@ -21,9 +21,7 @@ namespace PayTrack.Data.Helpers
         private const int SameAmountScore = 30;
         private const int SamePaydayScore = 20;
         private const int SameUserScore = 10;
-        private const int SameTeamScore = 5;
-        private const int AmountPaydayUserBonusScore = 10;
-        private const int AmountPaydayTeamBonusScore = 5;
+        private const int SameTeamScore = 10;
 
         /// <summary>
         /// Calculates a weighted duplicate score.
@@ -34,7 +32,7 @@ namespace PayTrack.Data.Helpers
         /// <param name="amount">Source amount.</param>
         /// <param name="paidAt">Source payday.</param>
         /// <param name="invoiceNumber">Source invoice number.</param>
-        /// <returns>Weighted score and exact match flags.</returns>
+        /// <returns>Weighted score and matched fields.</returns>
         public static DuplicatePaymentRequestByUserScoreResult Calculate(
             PaymentRequestByUser candidate,
             int userId,
@@ -49,55 +47,48 @@ namespace PayTrack.Data.Helpers
             bool isSameTeam = candidate.TeamId == teamId;
             bool isInvoiceNumberMatch = IsSameInvoiceNumber(candidate.InvoiceNumber, invoiceNumber);
             bool isSimilarInvoiceNumber = !isInvoiceNumberMatch && IsSimilarInvoiceNumber(candidate.InvoiceNumber, invoiceNumber);
-            bool isAmountAndUserMatch = isSameAmount && isSamePayday && isSameUser;
-            bool isAmountAndTeamMatch = isSameAmount && isSamePayday && isSameTeam;
 
             int score = 0;
+            var matchedFields = new List<string>();
 
             if (isInvoiceNumberMatch)
             {
                 score += ExactInvoiceNumberScore;
+                matchedFields.Add("invoiceNumber");
             }
             else if (isSimilarInvoiceNumber)
             {
                 score += SimilarInvoiceNumberScore;
+                matchedFields.Add("similarInvoiceNumber");
             }
 
             if (isSameAmount)
             {
                 score += SameAmountScore;
+                matchedFields.Add("amount");
             }
 
             if (isSamePayday)
             {
                 score += SamePaydayScore;
+                matchedFields.Add("payday");
             }
 
             if (isSameUser)
             {
                 score += SameUserScore;
+                matchedFields.Add("user");
             }
 
             if (isSameTeam)
             {
                 score += SameTeamScore;
-            }
-
-            if (isAmountAndUserMatch)
-            {
-                score += AmountPaydayUserBonusScore;
-            }
-
-            if (isAmountAndTeamMatch)
-            {
-                score += AmountPaydayTeamBonusScore;
+                matchedFields.Add("team");
             }
 
             return new DuplicatePaymentRequestByUserScoreResult(
                 score,
-                isAmountAndUserMatch,
-                isInvoiceNumberMatch,
-                isAmountAndTeamMatch);
+                matchedFields);
         }
 
         private static bool IsSameInvoiceNumber(string candidateInvoiceNumber, string? invoiceNumber)
