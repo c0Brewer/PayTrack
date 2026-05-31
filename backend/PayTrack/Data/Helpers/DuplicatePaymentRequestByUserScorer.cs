@@ -4,7 +4,7 @@
 
 using PayTrack.Data.Entities;
 
-namespace PayTrack.Data.Repositories.Model
+namespace PayTrack.Data.Helpers
 {
     /// <summary>
     /// Calculates weighted scores for potential duplicate PaymentRequestByUser entries.

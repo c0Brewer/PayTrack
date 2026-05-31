@@ -2,7 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-namespace PayTrack.Data.Repositories.Model
+namespace PayTrack.Data.Helpers
 {
     /// <summary>
     /// Result of weighted scoring for a potential duplicate PaymentRequestByUser.
