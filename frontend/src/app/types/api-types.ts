@@ -1664,6 +1664,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transaction/user/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    TeamId: number;
+                    Amount: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transaction/team": {
         parameters: {
             query?: never;
@@ -1853,24 +1900,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/transaction/user/duplicate": {
+    "/api/v1/transaction/bank-statement-matches": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: {
+        get?: never;
+        put: {
             parameters: {
-                query: {
-                    TeamId: number;
-                    Amount: number;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BankStatementUpdateRequestDto"][];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
@@ -1878,7 +1927,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
+                        "application/json": components["schemas"]["TransactionDto"][];
                     };
                 };
                 /** @description Bad Request */
@@ -1892,8 +1941,39 @@ export interface paths {
                 };
             };
         };
-        put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BankStatementEntryDto"][];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BankStatementMatchResponseDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2055,6 +2135,40 @@ export interface components {
             accountHolder: string;
             iban: string;
             bic: string;
+        };
+        BankStatementAccountDto: {
+            iban?: string | null;
+            bic?: string | null;
+        };
+        BankStatementAmountDto: {
+            /** Format: double */
+            value?: number;
+            currency?: string | null;
+        };
+        BankStatementEntryDto: {
+            /** Format: date-time */
+            booking?: string;
+            partnerName?: string | null;
+            partnerAccount?: components["schemas"]["BankStatementAccountDto"];
+            amount?: components["schemas"]["BankStatementAmountDto"];
+            receiverReference?: string | null;
+            reference?: string | null;
+        };
+        BankStatementMatchResponseDto: {
+            results?: components["schemas"]["BankStatementMatchResultDto"][] | null;
+        };
+        BankStatementMatchResultDto: {
+            entry?: components["schemas"]["BankStatementEntryDto"];
+            hasMatch?: boolean;
+            matchedTransaction?: components["schemas"]["TransactionDto"];
+            /** Format: int32 */
+            matchScore?: number;
+        };
+        BankStatementUpdateRequestDto: {
+            entryId?: string | null;
+            /** Format: int32 */
+            matchedTransactionId?: number | null;
+            skipped?: boolean;
         };
         BudgetDto: {
             /** Format: int32 */
@@ -2365,6 +2479,21 @@ export interface components {
             offset: number;
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
+        };
+        TransactionDto: {
+            /** Format: int32 */
+            userId: number;
+            /** Format: int32 */
+            teamId: number;
+            /** Format: double */
+            amount: number;
+            purposeOfPayment: string;
+            paymentReference?: string | null;
+            status: components["schemas"]["TransactionStatus"];
+            /** Format: int32 */
+            budgetId?: number | null;
+            /** Format: date-time */
+            paidAt: string;
         };
         /**
          * Format: int32
