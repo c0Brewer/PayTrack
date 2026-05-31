@@ -221,6 +221,20 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<Transaction> UpdateAsync(Transaction transaction)
+        {
+            this.context.Transactions.Update(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
         public async Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction)
         {
             this.context.PaymentRequestsByUser.Update(transaction);

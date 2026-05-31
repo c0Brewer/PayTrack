@@ -27,6 +27,9 @@ namespace PayTrack.Api.Endpoints
                 .WithTags(GroupName)
                 .RequireAuthorization();
 
+            /*
+             * PaymentRequest by USER
+             */
             group.MapGet("/user", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
 
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
@@ -37,20 +40,22 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin);
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
+            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
 
+            /*
+             * PaymentRequest by TEAM
+             */
             group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
             group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
             group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync)
                 .RequireRole(Role.Admin);
 
-            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
-
-            //Send the same information as in `create`, but without the file
-            //Return if it matches -> empty list
-            //If there are duplicates -> list of duplicates (maximum 10)
-            //Custom DTO for duplicates in `PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto`
-            //Invoice number, Amount (perhaps a fuzzy matcher)
+            /*
+             * Bankstatement Matching
+             */
+            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches);
+            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches);
         }
     }
 }

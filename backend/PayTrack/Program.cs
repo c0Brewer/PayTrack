@@ -56,6 +56,7 @@ builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slac
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();

@@ -101,6 +101,13 @@ namespace PayTrack.Data.Repositories.Model
         /// </summary>
         /// <param name="transaction">Transaction object to update.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
+        Task<Transaction> UpdateAsync(Transaction transaction);
+
+        /// <summary>
+        /// Updates a PaymentRequestByUser using the given input.
+        /// </summary>
+        /// <param name="transaction">Transaction object to update.</param>
+        /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction);
 
         /// <summary>
