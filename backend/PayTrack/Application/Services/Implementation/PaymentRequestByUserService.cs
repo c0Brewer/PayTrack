@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -11,7 +12,13 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByUserService(ITransactionRepository repo, ITeamService _teamService, IFileRepository _fileRepo, IBankAccountService _bankAccountService) : IPaymentRequestByUserService
+    public class PaymentRequestByUserService(
+        ITransactionRepository repo,
+        ITeamService _teamService,
+        IFileRepository _fileRepo,
+        IBankAccountService _bankAccountService,
+        ICostCentreService _costCentreService,
+        IBudgetService _budgetService) : IPaymentRequestByUserService
     {
         private const int DuplicateMatchThreshold = 1;
         private const int MaxDuplicateResults = 10;
@@ -23,6 +30,8 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IFileRepository fileRepo = _fileRepo;
         private readonly ITeamService teamService = _teamService;
         private readonly IBankAccountService bankAccountService = _bankAccountService;
+        private readonly ICostCentreService costCentreService = _costCentreService;
+        private readonly IBudgetService budgetService = _budgetService;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -190,6 +199,131 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> MarkPaymentRequestByUserAsPaidAsync(
+            int id,
+            int changedById,
+            string paymentReference,
+            string purposeOfPayment,
+            DateTime paymentDate)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (string.IsNullOrWhiteSpace(paymentReference))
+            {
+                throw new InvalidStateException("Payment reference is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(purposeOfPayment))
+            {
+                throw new InvalidStateException("Purpose of payment is required");
+            }
+
+            if (paymentDate.Date > DateTime.Today)
+            {
+                throw new InvalidStateException("Payment date cannot be in the future!");
+            }
+
+            var normalizedPaymentDate = DateTime.SpecifyKind(paymentDate, DateTimeKind.Utc);
+
+            transaction.PaymentReference = paymentReference.Trim();
+            transaction.PurposeOfPayment = purposeOfPayment.Trim();
+            transaction.FinancePaidAt = normalizedPaymentDate;
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Paid,
+                changedById,
+                $"Payment reference: {transaction.PaymentReference}");
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            int costCentreId,
+            string? reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (costCentreId <= 0)
+            {
+                throw new InvalidStateException("Cost centre is required");
+            }
+
+            var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
+                ?? throw new NotFoundException("Cost centre not found");
+
+            var (budgets, _) = await this.budgetService.GetBudgetsAsync(new GetBudgetQuery
+            {
+                TeamId = transaction.TeamId,
+                CostCentreId = costCentre.Id,
+                Limit = 1,
+            });
+            var budget = budgets.FirstOrDefault()
+                ?? throw new NotFoundException("Budget for cost centre and team not found");
+
+            transaction.BudgetId = budget.Id;
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Approved,
+                changedById,
+                NormalizeOptionalReason(reason));
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> DeclinePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Declined,
+                changedById,
+                normalizedReason);
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> RequestChangesPaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.ChangesRequested,
+                changedById,
+                normalizedReason);
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
         public async Task<(byte[] content, string contentType)> GetReceiptForPaymentRequestByUserByIdAsync(int id)
         {
             var paymentRequest = await this.GetPaymentRequestByUserByIdAsync(id);
@@ -235,6 +369,69 @@ namespace PayTrack.Application.Services.Implementation
 
                 _ => false
             };
+        }
+
+        private static bool IsStatusTransitionAllowed(TransactionStatus fromStatus, TransactionStatus toStatus)
+        {
+            if (fromStatus == toStatus)
+            {
+                return false;
+            }
+
+            if (toStatus == TransactionStatus.Declined)
+            {
+                return fromStatus != TransactionStatus.Paid;
+            }
+
+            return (fromStatus, toStatus) switch
+            {
+                (TransactionStatus.Submitted, TransactionStatus.Approved) => true,
+                (TransactionStatus.Submitted, TransactionStatus.ChangesRequested) => true,
+                (TransactionStatus.ChangesRequested, TransactionStatus.Review) => true,
+                (TransactionStatus.Review, TransactionStatus.ChangesRequested) => true,
+                (TransactionStatus.Review, TransactionStatus.Approved) => true,
+                (TransactionStatus.Approved, TransactionStatus.Paid) => true,
+                _ => false,
+            };
+        }
+
+        private static void AddStatusHistory(
+            PaymentRequestByUser transaction,
+            TransactionStatus toStatus,
+            int changedById,
+            string? comment)
+        {
+            if (!IsStatusTransitionAllowed(transaction.Status, toStatus))
+            {
+                throw new InvalidStateException($"Cannot change invoice status from {transaction.Status} to {toStatus}");
+            }
+
+            var previousStatus = transaction.Status;
+            transaction.Status = toStatus;
+            transaction.StatusHistory.Add(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = changedById,
+                FromStatus = previousStatus,
+                ToStatus = toStatus,
+                ChangedAt = DateTime.UtcNow,
+                Comment = comment,
+            });
+        }
+
+        private static string NormalizeRequiredReason(string reason, string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                throw new InvalidStateException(errorMessage);
+            }
+
+            return reason.Trim();
+        }
+
+        private static string? NormalizeOptionalReason(string? reason)
+        {
+            return string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         }
 
         private static string GetContentTypeFromPath(string filePath)

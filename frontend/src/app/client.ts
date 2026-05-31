@@ -1,4 +1,3 @@
-import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import createClient from 'openapi-fetch';
 
@@ -32,7 +31,7 @@ client.use({
 });
 
 // Called once from app.config.ts — wires logout into the middleware
-export function initClientInterceptors(logout: () => void): void {
+export function initClientInterceptors(logout: () => void, router: Router): void {
   client.use({
     onRequest({ request }) {
       if (isPublicRoute(request.url)) return request; // skip check entirely
@@ -60,7 +59,6 @@ export function initClientInterceptors(logout: () => void): void {
       }
 
       if (response.status === 403 && !isPublicRoute(response.url)) {
-        const router = inject(Router);
         router.navigate(['/unauthorized']);
       }
 

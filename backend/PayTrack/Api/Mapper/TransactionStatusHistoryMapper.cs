@@ -21,6 +21,7 @@ namespace PayTrack.Api.Mapper
         {
             return new TransactionStatusHistoryDto(
                 transactionStatusHistory.ChangedById,
+                transactionStatusHistory.ChangedBy != null ? UserMapper.ToDto(transactionStatusHistory.ChangedBy) : null,
                 transactionStatusHistory.Comment,
                 transactionStatusHistory.FromStatus,
                 transactionStatusHistory.ToStatus,

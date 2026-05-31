@@ -152,6 +152,7 @@ if (app.Environment.IsDevelopment())
 app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -160,7 +161,6 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseCors("frontend");
 app.MapHealthEndpoints();
 
 if (hasFrontendBundle)
