@@ -40,7 +40,6 @@
           </div>
 
           <div class="duplicate-list__meta">
-            <span>Score: {{ duplicate.score }}</span>
             @for (field of duplicate.matchedFields; track field) {
               <span class="duplicate-list__match">{{ getMatchedFieldLabel(field) }}</span>
             }

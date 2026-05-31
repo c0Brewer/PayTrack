@@ -44,7 +44,7 @@ describe('DuplicateListModalComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('INV-2');
     expect(compiled.textContent).toContain('Finance');
-    expect(compiled.textContent).toContain('Score: 150');
+    expect(compiled.textContent).not.toContain('Score:');
     expect(compiled.textContent).toContain('Invoice number');
     expect(compiled.textContent).toContain('Amount');
   });
@@ -76,6 +76,7 @@ describe('DuplicateListModalComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Submit Regardless');
+    expect(compiled.textContent).not.toContain('Score:');
     expect(compiled.textContent).not.toContain('Dismiss warning');
     expect(compiled.textContent).not.toContain('Delete invoice');
   });
