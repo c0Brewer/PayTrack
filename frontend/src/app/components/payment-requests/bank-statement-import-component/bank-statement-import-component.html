@@ -29,9 +29,7 @@
         <span class="material-symbols-outlined text-emerald-500 mb-3" style="font-size: 36px">task_alt</span>
         <p class="text-slate-700 font-medium text-sm">{{ selectedFileName() }}</p>
         <p class="text-emerald-600 text-xs mt-1">
-          {{ parsedEntries().length }} entr{{
-          parsedEntries().length === 1 ? 'y' : 'ies'
-          }}
+          {{ parsedEntries().length }} entr{{ parsedEntries().length === 1 ? 'y' : 'ies' }}
           ready to analyse
         </p>
         <button type="button" class="mt-2 text-xs text-slate-400 hover:text-slate-600 underline"
@@ -110,7 +108,9 @@
 
               @if (result.hasMatch && !result.skipped) {
               <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="scoreColor(result.matchScore)">
-                Matching Confidence: {{ scoreLabel(result.matchScore) }} ({{ result.matchScore }})
+                Matching Confidence: {{ scoreLabel(result.matchScore) }} ({{
+                result.matchScore
+                }})
               </span>
               }
               @if (!result.hasMatch && !result.skipped) {
@@ -143,14 +143,16 @@
           </div>
 
           <!-- Skip toggle -->
+          @if (result.hasMatch) {
           <button type="button" class="shrink-0 text-xs px-2.5 py-1 rounded-lg border transition-colors font-medium"
             [class]="
-                  result.skipped
-                    ? 'border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
-                    : 'border-slate-200 text-slate-500 bg-white hover:border-slate-300 hover:text-slate-700'
-                " (click)="toggleSkip(result._entryId)">
+                    result.skipped
+                      ? 'border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
+                      : 'border-slate-200 text-slate-500 bg-white hover:border-slate-300 hover:text-slate-700'
+                  " (click)="toggleSkip(result._entryId)">
             {{ result.skipped ? 'Undo' : 'Skip' }}
           </button>
+          }
         </div>
       </div>
       }
