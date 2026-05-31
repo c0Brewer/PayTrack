@@ -41,9 +41,7 @@
     </div>
 
     <div class="mt-4 flex justify-end">
-      <button type="button" [disabled]="!parsedEntries().length || isLoading()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-        (click)="submitForMatching()">
+      <button type="button" [disabled]="!parsedEntries().length || isLoading()" class=" result.skipped ? btn btn-primary w-50 : btn btn-secondary w-50" (click)="submitForMatching()">
         @if (isLoading()) {
         <span class="material-symbols-outlined animate-spin" style="font-size: 16px">progress_activity</span>
         Analysing…
@@ -144,12 +142,7 @@
 
           <!-- Skip toggle -->
           @if (result.hasMatch) {
-          <button type="button" class="shrink-0 text-xs px-2.5 py-1 rounded-lg border transition-colors font-medium"
-            [class]="
-                    result.skipped
-                      ? 'border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
-                      : 'border-slate-200 text-slate-500 bg-white hover:border-slate-300 hover:text-slate-700'
-                  " (click)="toggleSkip(result._entryId)">
+          <button type="button" class=" result.skipped ? btn btn-primary w-50 : btn btn-secondary w-50" (click)="toggleSkip(result._entryId)">
             {{ result.skipped ? 'Undo' : 'Skip' }}
           </button>
           }
@@ -160,22 +153,19 @@
 
     <!-- Actions -->
     <div class="mt-5 flex items-center justify-between">
-      <button type="button" class="text-sm text-slate-500 hover:text-slate-700 inline-flex items-center gap-1"
-        (click)="reset()">
-        <span class="material-symbols-outlined" style="font-size: 16px">arrow_back</span>
-        Start over
-      </button>
-
-      <button type="button" [disabled]="isLoading() || matchedCount() === 0"
-        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-        (click)="confirmUpdates()">
+      <div class="col-12 col-sm-auto order-2 order-sm-1">
+        <button type="button" class="btn btn-secondary w-50" (click)="reset()">
+          Start over
+        </button>
+        <button type="button" [disabled]="isLoading() || matchedCount() === 0" class="btn btn-primary w-50" (click)="confirmUpdates()">
         @if (isLoading()) {
         <span class="material-symbols-outlined animate-spin" style="font-size: 16px">progress_activity</span>
         Updating…
         } @else {
         Confirm {{ matchedCount() }} Update{{ matchedCount() === 1 ? '' : 's' }}
         }
-      </button>
+        </button>
+      </div>
     </div>
     }
   </div>
