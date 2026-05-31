@@ -191,10 +191,8 @@ describe('PaymentRequestByUserService', () => {
           user: { id: 10, name: 'Alex' },
           team: { id: 20, name: 'Core Team' },
         },
-        score: 160,
-        isAmountAndUserMatch: true,
-        isInvoiceNumberMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
     ];
 

@@ -138,16 +138,12 @@ describe('RequestsComponent', () => {
     const duplicate = {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
       score: 60,
-      isAmountAndUserMatch: false,
-      isInvoiceNumberMatch: false,
-      isAmountAndTeamMatch: true,
+      matchedFields: ['amount', 'payday', 'team'],
     };
     const selfMatch = {
       paymentRequestByUser: { id: 1, invoiceNumber: 'INV-1' },
-      score: 140,
-      isAmountAndUserMatch: false,
-      isInvoiceNumberMatch: true,
-      isAmountAndTeamMatch: true,
+      score: 150,
+      matchedFields: ['invoiceNumber', 'amount', 'payday', 'team'],
     };
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(
       of([selfMatch, duplicate]),
@@ -197,9 +193,7 @@ describe('RequestsComponent', () => {
     const duplicate = {
       paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
       score: 60,
-      isAmountAndUserMatch: false,
-      isInvoiceNumberMatch: false,
-      isAmountAndTeamMatch: true,
+      matchedFields: ['amount', 'payday', 'team'],
     } as DuplicatePaymentRequestByUserDto;
     component.duplicateCandidates = [duplicate];
 

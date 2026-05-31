@@ -302,10 +302,8 @@ describe('ReceiptSubmitComponent', () => {
             user: { id: 11, name: 'Alex' },
             team: { id: 21, name: 'Core Team' },
           },
-          score: 160,
-          isAmountAndUserMatch: true,
-          isInvoiceNumberMatch: true,
-          isAmountAndTeamMatch: true,
+          score: 150,
+          matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
         },
       ]),
     );
@@ -357,10 +355,8 @@ describe('ReceiptSubmitComponent', () => {
           user: { id: 11, name: 'Alex' },
           team: { id: 21, name: 'Core Team' },
         },
-        score: 160,
-        isAmountAndUserMatch: true,
-        isInvoiceNumberMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
