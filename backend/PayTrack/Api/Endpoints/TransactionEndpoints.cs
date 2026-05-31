@@ -60,7 +60,7 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin);
 
             group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
-            
+
             group.MapPost("/user/{id:int}/duplicate/{duplicateId:int}/dismiss", PaymentRequestByUserHandler.DismissDuplicatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
         }
