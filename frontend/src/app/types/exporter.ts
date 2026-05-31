@@ -128,3 +128,10 @@ export type GetPaymentRequestsByTeamByIdOptions =
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
 export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];
+
+// Bank Statement Matching
+export type BankStatementEntryDto = components['schemas']['BankStatementEntryDto'];
+export type BankStatementMatchResponseDto = components['schemas']['BankStatementMatchResponseDto'];
+export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
+export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];
+export type TransactionDto = components['schemas']['TransactionDto'];

@@ -6,7 +6,10 @@ import {
   BankStatementEntryDto,
   BankStatementMatchResultDto,
   BankStatementUpdateRequestDto,
+  TransactionStatus,
+  TransactionStatusLabels,
 } from '../../../types/exporter';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
 
 type Phase = 'upload' | 'review';
 
@@ -22,7 +25,7 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [],
+  imports: [BoxComponent],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
@@ -30,7 +33,7 @@ export class BankStatementImportComponent {
   constructor(
     private readonly bankStatementService: BankStatementService,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   // ── state ──────────────────────────────────────────────────────────────────
   phase = signal<Phase>('upload');
@@ -102,12 +105,12 @@ export class BankStatementImportComponent {
         : undefined,
       amount: r.amount
         ? {
-          value:
-            r.amount.precision != null && r.amount.value != null
-              ? r.amount.value / Math.pow(10, r.amount.precision)
-              : r.amount.value,
-          currency: r.amount.currency,
-        }
+            value:
+              r.amount.precision != null && r.amount.value != null
+                ? r.amount.value / Math.pow(10, r.amount.precision)
+                : r.amount.value,
+            currency: r.amount.currency,
+          }
         : undefined,
       receiverReference: r.receiverReference,
       reference: r.reference,
@@ -190,7 +193,7 @@ export class BankStatementImportComponent {
     this.bankStatementService.applyUpdates(updates).subscribe({
       next: (updated) => {
         this.notificationService.showSuccess(
-          'Bank statement import successful. Updated transactions:' + updated,
+          'Bank statement import successful. Updated transactions:' + updated.length,
         );
         this.isLoading.set(false);
         this.reset();
@@ -208,5 +211,9 @@ export class BankStatementImportComponent {
     this.parsedEntries.set([]);
     this.results.set([]);
     this.isLoading.set(false);
+  }
+
+  getStatusLabel(status: TransactionStatus): string {
+    return TransactionStatusLabels[status] ?? 'Unknown';
   }
 }

@@ -13,6 +13,12 @@ namespace PayTrack.Application.Dto.Transaction
     public sealed class TransactionDto
     {
         /// <summary>
+        /// Id of transaction.
+        /// </summary>
+        [Required]
+        public int Id { get; set; }
+
+        /// <summary>
         /// Foreign key on User.
         /// </summary>
         [Required]

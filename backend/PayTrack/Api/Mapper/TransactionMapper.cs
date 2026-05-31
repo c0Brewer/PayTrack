@@ -21,6 +21,7 @@ namespace PayTrack.Api.Mapper
         {
             return new TransactionDto
             {
+                Id = transaction.Id,
                 UserId = transaction.Id,
                 TeamId = transaction.TeamId,
                 Amount = transaction.Amount,

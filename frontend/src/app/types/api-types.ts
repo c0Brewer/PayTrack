@@ -2482,6 +2482,8 @@ export interface components {
         };
         TransactionDto: {
             /** Format: int32 */
+            id: number;
+            /** Format: int32 */
             userId: number;
             /** Format: int32 */
             teamId: number;
