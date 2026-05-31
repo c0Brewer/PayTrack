@@ -2233,9 +2233,7 @@ export interface components {
             paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
             /** Format: int32 */
             score: number;
-            isAmountAndUserMatch: boolean;
-            isInvoiceNumberMatch: boolean;
-            isAmountAndTeamMatch: boolean;
+            matchedFields: string[];
         };
         GoogleAuthCallbackDto: {
             code: string;

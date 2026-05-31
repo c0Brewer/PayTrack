@@ -54,4 +54,23 @@ export class DuplicateListModalComponent {
   getDuplicateTeamName(duplicate: DuplicatePaymentRequestByUserDto): string {
     return duplicate.paymentRequestByUser.team?.name ?? 'Unknown team';
   }
+
+  getMatchedFieldLabel(field: string): string {
+    switch (field) {
+      case 'invoiceNumber':
+        return 'Invoice number';
+      case 'similarInvoiceNumber':
+        return 'Similar invoice number';
+      case 'amount':
+        return 'Amount';
+      case 'payday':
+        return 'Payday';
+      case 'user':
+        return 'User';
+      case 'team':
+        return 'Team';
+      default:
+        return field;
+    }
+  }
 }

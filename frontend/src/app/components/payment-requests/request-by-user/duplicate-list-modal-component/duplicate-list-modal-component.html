@@ -40,9 +40,10 @@
           </div>
 
           <div class="duplicate-list__meta">
-            <span [class.duplicate-list__match]="duplicate.isInvoiceNumberMatch">Invoice number</span>
-            <span [class.duplicate-list__match]="duplicate.isAmountAndUserMatch">Amount + Payday + User</span>
-            <span [class.duplicate-list__match]="duplicate.isAmountAndTeamMatch">Amount + Payday + Team</span>
+            <span>Score: {{ duplicate.score }}</span>
+            @for (field of duplicate.matchedFields; track field) {
+              <span class="duplicate-list__match">{{ getMatchedFieldLabel(field) }}</span>
+            }
           </div>
 
           @if (mode === 'review') {
