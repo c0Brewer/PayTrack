@@ -229,6 +229,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByTeamDto>();
             result.Should().NotBeNull();
             result!.Id.Should().Be(7);
+
+            _factory.ServiceMock.Verify(
+                s => s.MarkAsPaidAsync(7, 1, "Payment manually approved and processed."),
+                Times.Once);
         }
 
         [Fact]

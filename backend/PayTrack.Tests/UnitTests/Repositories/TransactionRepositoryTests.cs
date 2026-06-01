@@ -767,6 +767,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var db = context.TransactionStatusHistories.First();
             db.TransactionId.Should().Be(1);
+            db.ChangedById.Should().Be(1);
             db.FromStatus.Should().Be(TransactionStatus.Submitted);
             db.ToStatus.Should().Be(TransactionStatus.Paid);
             db.Comment.Should().Be("test comment");
