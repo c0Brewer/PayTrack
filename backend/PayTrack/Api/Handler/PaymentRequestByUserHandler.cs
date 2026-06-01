@@ -87,6 +87,10 @@ namespace PayTrack.Api.Handler
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
+            var comment = string.IsNullOrWhiteSpace(createPaymentRequestByUserDto.Comment)
+                ? null
+                : createPaymentRequestByUserDto.Comment.Trim();
+
             var createdPaymentRequestByUser = await paymentRequestByUserService.CreatePaymentRequestByUserAsync(
                     user.Id,
                     createPaymentRequestByUserDto.Transaction.TeamId,
@@ -95,7 +99,7 @@ namespace PayTrack.Api.Handler
                     createPaymentRequestByUserDto.Receipt,
                     createPaymentRequestByUserDto.Transaction.PaidAt,
                     createPaymentRequestByUserDto.InvoiceNumber,
-                    createPaymentRequestByUserDto.Comment,
+                    comment,
                     createPaymentRequestByUserDto.PayoutType,
                     createPaymentRequestByUserDto.BankAccountId);
 
