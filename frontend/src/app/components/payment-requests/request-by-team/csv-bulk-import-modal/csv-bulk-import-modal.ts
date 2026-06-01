@@ -20,7 +20,6 @@ import {
 import Papa from 'papaparse';
 import { Subject, takeUntil } from 'rxjs';
 
-import { BudgetService } from '../../../../services/budget/budget-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
@@ -98,7 +97,6 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
-    private readonly budgetService: BudgetService,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -112,8 +110,9 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         this.budgets = [];
         this.configForm.get('budgetId')!.setValue(null);
         if (teamId != null) {
-          this.loadBudgets(teamId);
+          this.budgets = this.incomeBudgets.filter((b) => b.teamId === teamId);
         }
+        this.cdr.detectChanges();
       });
   }
 
@@ -129,25 +128,6 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
       dueDate: ['', [Validators.required, minDateValidator(new Date())]],
     });
-  }
-
-  private loadBudgets(teamId: number): void {
-    this.budgetService
-      .getBudgets({ TeamId: teamId })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          const today = new Date();
-          this.budgets = (result.items ?? []).filter(
-            (b) =>
-              b.name.trim() !== '' &&
-              new Date(b.periodStart) <= today &&
-              new Date(b.periodEnd) >= today,
-          );
-          this.cdr.detectChanges();
-        },
-        error: () => this.notificationService.showError('Failed to load budgets.'),
-      });
   }
 
   getCostCentreName(costCentreId: number): string {
