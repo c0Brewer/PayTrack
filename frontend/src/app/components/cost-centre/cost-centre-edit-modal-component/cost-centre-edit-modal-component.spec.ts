@@ -221,4 +221,130 @@ describe('CostCentreEditModalComponent', () => {
     expect(component.getSeasonName(1)).toBe('2025');
     expect(component.getSeasonName(99)).toBe('Season #99');
   });
+
+  it('isCreating should be true when id is -1 and false otherwise', () => {
+    expect(component.isCreating).toBe(true);
+    component.costCentre = { ...component.costCentre, id: 5 };
+    expect(component.isCreating).toBe(false);
+  });
+
+  describe('hasChanged', () => {
+    it('should return false when originalCostCentre is null', () => {
+      component.originalCostCentre = null;
+      expect(component.hasChanged()).toBe(false);
+    });
+
+    it('should return true when name has changed', () => {
+      component.costCentre = { ...component.costCentre, id: 1, name: 'New Name' };
+      component.ngOnChanges();
+      component.costCentre.name = 'Changed Name';
+      expect(component.hasChanged()).toBe(true);
+    });
+
+    it('should return false when nothing has changed', () => {
+      component.costCentre = { ...component.costCentre, id: 1, name: 'Same' };
+      component.ngOnChanges();
+      expect(component.hasChanged()).toBe(false);
+    });
+
+    it('should return true when newBudgets has entries', () => {
+      component.costCentre = { ...component.costCentre, id: 1 };
+      component.ngOnChanges();
+
+      component.newBudgets = [
+        {
+          id: null,
+          name: 'B',
+          description: null,
+          teamId: 1,
+          seasonId: 1,
+          targetAmount: 0,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+        },
+      ];
+      expect(component.hasChanged()).toBe(true);
+    });
+  });
+
+  describe('onSave', () => {
+    it('should call onClose when not creating and nothing has changed', () => {
+      const closeSpy = vi.spyOn(component, 'onClose');
+      component.costCentre = { ...component.costCentre, id: 1, name: 'Unchanged' };
+      component.ngOnChanges();
+      component.onSave();
+      expect(closeSpy).toHaveBeenCalled();
+    });
+
+    it('should emit saveEvent when creating (id === -1)', () => {
+      const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+      component.costCentre = { ...component.costCentre, id: -1 };
+      component.onSave();
+      expect(emitSpy).toHaveBeenCalledWith({
+        costCentre: component.costCentre,
+        budgetsToUpsert: [],
+        budgetIdsToDelete: [],
+      });
+    });
+
+    it('should emit saveEvent with correct budgets when not creating but changed', () => {
+      const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+      component.costCentre = { ...component.costCentre, id: 2, name: 'CC' };
+      component.ngOnChanges();
+      component.costCentre.name = 'CC Updated';
+      component.onSave();
+      expect(emitSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('onClose should emit closeEvent', () => {
+    const spy = vi.spyOn(component.closeEvent, 'emit');
+    component.onClose();
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('toggleBudgetDeletion should flip markedForDeletion', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const budget: any = { markedForDeletion: false };
+    component.toggleBudgetDeletion(budget);
+    expect(budget.markedForDeletion).toBe(true);
+    component.toggleBudgetDeletion(budget);
+    expect(budget.markedForDeletion).toBe(false);
+  });
+
+  it('removeNewBudget should remove the budget at the given index', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component.newBudgets = [{ id: null, name: 'A' } as any, { id: null, name: 'B' } as any];
+    component.removeNewBudget(0);
+    expect(component.newBudgets).toHaveLength(1);
+    expect(component.newBudgets[0].name).toBe('B');
+  });
+
+  describe('isTeamActive', () => {
+    it('should return true for an active team', () => {
+      component.teams = [{ id: 1, isActive: true } as unknown as TeamDto];
+      expect(component.isTeamActive(1)).toBe(true);
+    });
+
+    it('should return false for an inactive team', () => {
+      component.teams = [{ id: 2, isActive: false } as unknown as TeamDto];
+      expect(component.isTeamActive(2)).toBe(false);
+    });
+
+    it('should return true when team is not found (treat as active)', () => {
+      component.teams = [];
+      expect(component.isTeamActive(999)).toBe(true);
+    });
+  });
+
+  it('getBudgetFieldError teamId should return inactive team error for inactive team', () => {
+    component.teams = [{ id: 2, isActive: false } as unknown as TeamDto];
+    component.newBudgetDraft = { ...component.newBudgetDraft, teamId: 2 };
+    expect(component.getBudgetFieldError('teamId')).toBe('Select an active team.');
+  });
+
+  it('onBudgetFieldBlur should mark the field as touched', () => {
+    component.onBudgetFieldBlur('name');
+    expect(component.touchedBudgetFields['name']).toBe(true);
+  });
 });

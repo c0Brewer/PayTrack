@@ -377,6 +377,36 @@ describe('PaymentRequestByTeamComponent', () => {
   });
 
   // -------------------------
+  // CSV IMPORT
+  // -------------------------
+  describe('CSV import modal', () => {
+    it('onCsvFileInputChange should set csvImportFile and open modal when a file is selected', () => {
+      const mockFile = new File([''], 'test.csv', { type: 'text/csv' });
+      const mockInput = { files: [mockFile], value: '' } as unknown as HTMLInputElement;
+      const event = { target: mockInput } as unknown as Event;
+      component.onCsvFileInputChange(event);
+      expect(component.csvImportFile).toBe(mockFile);
+      expect(component.isCsvModalOpen).toBe(true);
+    });
+
+    it('onCsvFileInputChange should do nothing when no file is selected', () => {
+      const mockInput = { files: [] } as unknown as HTMLInputElement;
+      const event = { target: mockInput } as unknown as Event;
+      component.onCsvFileInputChange(event);
+      expect(component.csvImportFile).toBeNull();
+      expect(component.isCsvModalOpen).toBe(false);
+    });
+
+    it('onCsvModalClose should close the modal and clear csvImportFile', () => {
+      component.csvImportFile = new File([''], 'test.csv');
+      component.isCsvModalOpen = true;
+      component.onCsvModalClose();
+      expect(component.isCsvModalOpen).toBe(false);
+      expect(component.csvImportFile).toBeNull();
+    });
+  });
+
+  // -------------------------
   // DESTROY
   // -------------------------
   it('ngOnDestroy should not throw', () => {
