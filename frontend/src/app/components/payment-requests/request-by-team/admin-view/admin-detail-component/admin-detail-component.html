@@ -46,7 +46,7 @@
     <p>Are you sure you want to mark this payment request as <strong>Paid</strong>?</p>
     <label>
       Reason / Comment
-      <textarea [(ngModel)]="markAsPaidComment" rows="3"></textarea>
+      <textarea [(ngModel)]="markAsPaidComment" rows="3" maxlength="1000"></textarea>
     </label>
     <div class="modal-actions">
       <button type="button" class="btn btn-secondary" (click)="cancelMarkAsPaid()">Cancel</button>
