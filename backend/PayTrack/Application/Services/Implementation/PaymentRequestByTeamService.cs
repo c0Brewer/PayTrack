@@ -134,18 +134,17 @@ namespace PayTrack.Application.Services.Implementation
             var fromStatus = transaction.Status;
             transaction.Status = TransactionStatus.Paid;
             transaction.PaidAt = DateTime.UtcNow;
-            await this.repo.UpdateAsync(transaction);
 
-            await this.repo.AddStatusHistoryAsync(new TransactionStatusHistory
-            {
-                TransactionId = transaction.Id,
-                ChangedById = adminUserId,
-                FromStatus = fromStatus,
-                ToStatus = TransactionStatus.Paid,
-                Comment = comment,
-            });
-
-            return transaction;
+            return await this.repo.UpdateAndAddStatusHistoryAsync(
+                transaction,
+                new TransactionStatusHistory
+                {
+                    TransactionId = transaction.Id,
+                    ChangedById = adminUserId,
+                    FromStatus = fromStatus,
+                    ToStatus = TransactionStatus.Paid,
+                    Comment = comment,
+                });
         }
 
         /// <inheritdoc/>

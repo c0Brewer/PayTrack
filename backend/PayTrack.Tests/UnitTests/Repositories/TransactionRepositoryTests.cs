@@ -792,6 +792,74 @@ namespace PayTrack.Tests.UnitTests.Repositories
             ex.Message.Should().Contain("TransactionStatusHistory");
         }
 
+        // ----------------------------
+        // UPDATE AND ADD STATUS HISTORY
+        // ----------------------------
+        [Fact]
+        public async Task UpdateAndAddStatusHistoryAsync_ShouldPersistBothAtomically()
+        {
+            await using var context = GetInMemoryDbContext("UpdateAndAddStatusHistory");
+
+            context.User.Add(new User { Id = 1, Email = "a@a.com", Name = "A" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+            context.PaymentRequestsByTeam.Add(new PaymentRequestByTeam
+            {
+                Id = 1,
+                UserId = 1,
+                TeamId = 1,
+                Status = TransactionStatus.Submitted,
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var transaction = await context.PaymentRequestsByTeam.FindAsync(1);
+            transaction!.Status = TransactionStatus.Paid;
+            transaction.PaidAt = DateTime.UtcNow;
+
+            var history = new TransactionStatusHistory
+            {
+                TransactionId = 1,
+                ChangedById = 1,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Paid,
+                Comment = "approved",
+            };
+
+            var result = await repo.UpdateAndAddStatusHistoryAsync(transaction, history);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+
+            var dbTransaction = await context.PaymentRequestsByTeam.FindAsync(1);
+            dbTransaction!.Status.Should().Be(TransactionStatus.Paid);
+
+            var dbHistory = context.TransactionStatusHistories.First();
+            dbHistory.FromStatus.Should().Be(TransactionStatus.Submitted);
+            dbHistory.ToStatus.Should().Be(TransactionStatus.Paid);
+            dbHistory.Comment.Should().Be("approved");
+        }
+
+        [Fact]
+        public async Task UpdateAndAddStatusHistoryAsync_ShouldThrow_WhenSaveFails()
+        {
+            var context = new FailingDbContext("FailUpdateAndAddStatusHistory");
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var transaction = new PaymentRequestByTeam { Id = 1, Status = TransactionStatus.Paid };
+            var history = new TransactionStatusHistory
+            {
+                TransactionId = 1,
+                ChangedById = 1,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Paid,
+            };
+
+            async Task act() => await repo.UpdateAndAddStatusHistoryAsync(transaction, history);
+
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
+            ex.Message.Should().Contain("status history");
+        }
+
         [Fact]
         public async Task GetByIdAsyncTeam_ShouldIncludeNavigationProperties_WhenRequested()
         {

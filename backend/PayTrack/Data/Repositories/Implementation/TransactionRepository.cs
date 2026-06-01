@@ -263,6 +263,21 @@ namespace PayTrack.Data.Repositories.Implementation
             return history;
         }
 
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history)
+        {
+            this.context.PaymentRequestsByTeam.Update(transaction);
+            this.context.TransactionStatusHistories.Add(history);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 2)
+            {
+                throw new InternalErrorException($"Updating transaction and saving status history did not end as expected. Saved {res} entries.");
+            }
+
+            return transaction;
+        }
+
         private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {

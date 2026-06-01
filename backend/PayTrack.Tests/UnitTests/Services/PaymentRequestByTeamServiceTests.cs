@@ -510,12 +510,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ReturnsAsync(entity);
 
             repoMock
-                .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
-                .ReturnsAsync((PaymentRequestByTeam p) => p);
-
-            repoMock
-                .Setup(r => r.AddStatusHistoryAsync(It.IsAny<TransactionStatusHistory>()))
-                .ReturnsAsync((TransactionStatusHistory h) => h);
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
 
             var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
 
@@ -524,16 +520,16 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Status.Should().Be(TransactionStatus.Paid);
             result.PaidAt.Should().NotBeNull();
 
-            repoMock.Verify(r => r.UpdateAsync(It.Is<PaymentRequestByTeam>(p =>
-                p.Status == TransactionStatus.Paid &&
-                p.PaidAt != null)), Times.Once);
-
-            repoMock.Verify(r => r.AddStatusHistoryAsync(It.Is<TransactionStatusHistory>(h =>
-                h.TransactionId == 5 &&
-                h.ChangedById == 42 &&
-                h.FromStatus == fromStatus &&
-                h.ToStatus == TransactionStatus.Paid &&
-                h.Comment == "my comment")), Times.Once);
+            repoMock.Verify(r => r.UpdateAndAddStatusHistoryAsync(
+                It.Is<PaymentRequestByTeam>(p =>
+                    p.Status == TransactionStatus.Paid &&
+                    p.PaidAt != null),
+                It.Is<TransactionStatusHistory>(h =>
+                    h.TransactionId == 5 &&
+                    h.ChangedById == 42 &&
+                    h.FromStatus == fromStatus &&
+                    h.ToStatus == TransactionStatus.Paid &&
+                    h.Comment == "my comment")), Times.Once);
         }
 
         // ----------------------------
