@@ -28,6 +28,7 @@ const mockTeam: TeamDto = {
       targetAmount: 5000,
       periodStart: '2026-01-01T00:00:00Z',
       periodEnd: '2026-12-31T00:00:00Z',
+      type: 0,
       transactionIds: [],
     },
   ],

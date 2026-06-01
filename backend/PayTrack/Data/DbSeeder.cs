@@ -300,6 +300,27 @@ public static class DbSeeder
         await AddBudgetIfMissingAsync("Charger", db, marketingTeam, electronicsCostCentre, 4500m, currentSeason);
         await AddBudgetIfMissingAsync("Iron Parts", db, legacyCombustionTeam, legacyToolingCostCentre, 1200m, currentSeason);
 
+        var sponsoringCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Sponsoring");
+        if (sponsoringCostCentre is null)
+        {
+            sponsoringCostCentre = new CostCentre
+            {
+                Name = "Sponsoring",
+                Description = "Sponsorship income and partner contributions.",
+                DisplayColor = "#F59E0B",
+                IsActive = true,
+            };
+
+            db.CostCentres.Add(sponsoringCostCentre);
+        }
+
+        var chassisIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, chassisTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var electronicsIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, electronicsTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var suspensionIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, suspensionTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var powertrainIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, powertrainTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var batteryIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, batteryTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var operationsIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, operationsTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+
         await AddPresenterInvoicesIfUserExistsAsync(
             db,
             chassisTeam,
@@ -315,35 +336,41 @@ public static class DbSeeder
             batteryTeam,
             powertrainTeam,
             operationsTeam,
-            manufacturingCostCentre,
-            electronicsCostCentre,
-            compositesCostCentre);
+            chassisIncomeBudget,
+            electronicsIncomeBudget,
+            suspensionIncomeBudget,
+            powertrainIncomeBudget,
+            batteryIncomeBudget,
+            operationsIncomeBudget);
 
         await db.SaveChangesAsync();
     }
 
-    private static async Task AddBudgetIfMissingAsync(
+    private static async Task<Budget> AddBudgetIfMissingAsync(
         string name,
         AppDbContext db,
         Team team,
         CostCentre costCentre,
-        decimal targetAmount,
-        Season season)
+        decimal? targetAmount,
+        Season season,
+        BudgetType type = BudgetType.Expense)
     {
         var budgetStart = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var budgetEnd = new DateTime(DateTime.UtcNow.Year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
-        if (await db.Budgets.AnyAsync(b =>
+        var existing = await db.Budgets.FirstOrDefaultAsync(b =>
                 b.Team == team &&
                 b.CostCentre == costCentre &&
                 b.Season == season &&
                 b.PeriodStart == budgetStart &&
-                b.PeriodEnd == budgetEnd))
+                b.PeriodEnd == budgetEnd);
+
+        if (existing is not null)
         {
-            return;
+            return existing;
         }
 
-        db.Budgets.Add(new Budget
+        var budget = new Budget
         {
             Name = name,
             Team = team,
@@ -352,7 +379,10 @@ public static class DbSeeder
             PeriodStart = budgetStart,
             PeriodEnd = budgetEnd,
             Season = season,
-        });
+            Type = type,
+        };
+        db.Budgets.Add(budget);
+        return budget;
     }
 
     private static async Task AddPresenterInvoicesIfUserExistsAsync(
@@ -581,9 +611,12 @@ public static class DbSeeder
         Team batteryTeam,
         Team powertrainTeam,
         Team operationsTeam,
-        CostCentre manufacturingCostCentre,
-        CostCentre electronicsCostCentre,
-        CostCentre compositesCostCentre)
+        Budget chassisIncomeBudget,
+        Budget electronicsIncomeBudget,
+        Budget suspensionIncomeBudget,
+        Budget powertrainIncomeBudget,
+        Budget batteryIncomeBudget,
+        Budget operationsIncomeBudget)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -599,7 +632,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             chassisTeam,
-            manufacturingCostCentre.Budgets.FirstOrDefault(),
+            chassisIncomeBudget,
             150.00m,
             "Workshop tool deposit – spring season",
             TransactionStatus.Submitted,
@@ -611,7 +644,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             electronicsTeam,
-            electronicsCostCentre.Budgets.FirstOrDefault(),
+            electronicsIncomeBudget,
             320.50m,
             "CAN bus hardware contribution",
             TransactionStatus.Submitted,
@@ -623,7 +656,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             suspensionTeam,
-            compositesCostCentre.Budgets.FirstOrDefault(),
+            suspensionIncomeBudget,
             89.00m,
             "Damper test rig maintenance fee",
             TransactionStatus.Submitted,
@@ -635,7 +668,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             powertrainTeam,
-            manufacturingCostCentre.Budgets.FirstOrDefault(),
+            powertrainIncomeBudget,
             2800.00m,
             "Engine testbench booking – Q2",
             TransactionStatus.Paid,
@@ -647,7 +680,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             operationsTeam,
-            null,
+            operationsIncomeBudget,
             45.00m,
             "Event transport cost share – FSAE Austria",
             TransactionStatus.Paid,
@@ -659,7 +692,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             batteryTeam,
-            electronicsCostCentre.Budgets.FirstOrDefault(),
+            batteryIncomeBudget,
             560.00m,
             "High-voltage safety training fee",
             TransactionStatus.Submitted,

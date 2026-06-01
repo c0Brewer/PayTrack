@@ -39,6 +39,7 @@ namespace PayTrack.Api.Mapper
                 budget.TargetAmount,
                 budget.PeriodStart,
                 budget.PeriodEnd,
+                budget.Type,
                 [.. budget.Transactions.Select(t => t.Id)]);
         }
     }

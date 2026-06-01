@@ -16,7 +16,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Subject, map, takeUntil } from 'rxjs';
+import { Subject, forkJoin, map, takeUntil } from 'rxjs';
 
 import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
@@ -26,6 +26,7 @@ import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
 import {
   BudgetDto,
+  BudgetType,
   CostCentreDto,
   CreatePaymentRequestByTeamDto,
   TeamDto,
@@ -66,6 +67,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   teams: TeamDto[] = [];
   budgets: BudgetDto[] = [];
+  allIncomeBudgets: BudgetDto[] = [];
   costCentres: CostCentreDto[] = [];
   allUsers: TypeaheadItem[] = [];
   isSubmitting = false;
@@ -88,7 +90,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
-    this.loadTeams();
+    this.loadData();
     this.loadCostCentres();
     this.loadUsers();
     this.form
@@ -98,8 +100,9 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         this.budgets = [];
         this.form.get('budgetId')!.setValue(null);
         if (teamId != null) {
-          this.loadBudgets(teamId);
+          this.budgets = this.allIncomeBudgets.filter((b) => b.teamId === teamId);
         }
+        this.cdr.detectChanges();
       });
   }
 
@@ -119,34 +122,26 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadTeams(): void {
-    this.teamService
-      .getTeams({})
+  private loadData(): void {
+    forkJoin([
+      this.teamService.getTeams({}),
+      this.budgetService.getBudgets({ Type: BudgetType.Income, Limit: 10000 }),
+    ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
-          if (result.items != null) this.teams = result.items;
-        },
-        error: () => this.notificationService.showError('Failed to load teams.'),
-      });
-  }
-
-  private loadBudgets(teamId: number): void {
-    this.budgetService
-      .getBudgets({ TeamId: teamId })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
+        next: ([teamsRes, budgetsRes]) => {
           const today = new Date();
-          this.budgets = (result.items ?? []).filter(
+          this.allIncomeBudgets = (budgetsRes.items ?? []).filter(
             (b) =>
               b.name.trim() !== '' &&
               new Date(b.periodStart) <= today &&
               new Date(b.periodEnd) >= today,
           );
+          const incomeTeamIds = new Set(this.allIncomeBudgets.map((b) => b.teamId));
+          this.teams = (teamsRes.items ?? []).filter((t) => incomeTeamIds.has(t.id));
           this.cdr.detectChanges();
         },
-        error: () => this.notificationService.showError('Failed to load budgets.'),
+        error: () => this.notificationService.showError('Failed to load teams and budgets.'),
       });
   }
 

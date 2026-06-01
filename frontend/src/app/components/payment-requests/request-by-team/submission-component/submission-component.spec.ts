@@ -8,6 +8,7 @@ import { NotificationService } from '../../../../services/notification/notificat
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
+import { BudgetDto } from '../../../../types/exporter';
 
 import { PaymentRequestByTeamComponent } from './submission-component';
 
@@ -62,26 +63,57 @@ describe('PaymentRequestByTeamComponent', () => {
   });
 
   // -------------------------
-  // LOAD TEAMS
+  // LOAD DATA (teams + income budgets via forkJoin)
   // -------------------------
-  it('should populate teams on load', () => {
+  it('should populate teams that have matching income budgets on load', () => {
+    const past = new Date();
+    past.setDate(past.getDate() - 1);
+    const future = new Date();
+    future.setDate(future.getDate() + 1);
     mockTeamService.getTeams.mockReturnValue(
-      of({ items: [{ id: 1, name: 'Team A' }], totalCount: 1 }),
+      of({
+        items: [
+          { id: 1, name: 'Team A' },
+          { id: 2, name: 'Team B' },
+        ],
+        totalCount: 2,
+      }),
+    );
+    mockBudgetService.getBudgets.mockReturnValue(
+      of({
+        items: [
+          {
+            id: 10,
+            name: 'Budget',
+            teamId: 1,
+            periodStart: past.toISOString(),
+            periodEnd: future.toISOString(),
+          },
+        ],
+        totalCount: 1,
+      }),
     );
     component.ngOnInit();
     expect(component.teams).toHaveLength(1);
+    expect(component.teams[0].name).toBe('Team A');
+    expect(component.allIncomeBudgets).toHaveLength(1);
   });
 
-  it('should not overwrite teams when items is null', () => {
-    mockTeamService.getTeams.mockReturnValue(of({ items: null, totalCount: 0 }));
+  it('should show no teams when no income budgets exist', () => {
+    mockTeamService.getTeams.mockReturnValue(
+      of({ items: [{ id: 1, name: 'Team A' }], totalCount: 1 }),
+    );
+    mockBudgetService.getBudgets.mockReturnValue(of({ items: [], totalCount: 0 }));
     component.ngOnInit();
     expect(component.teams).toEqual([]);
   });
 
-  it('should show error when teams fail to load', () => {
+  it('should show error when loadData fails', () => {
     mockTeamService.getTeams.mockReturnValue(throwError(() => new Error()));
     component.ngOnInit();
-    expect(mockNotificationService.showError).toHaveBeenCalledWith('Failed to load teams.');
+    expect(mockNotificationService.showError).toHaveBeenCalledWith(
+      'Failed to load teams and budgets.',
+    );
   });
 
   // -------------------------
@@ -299,94 +331,32 @@ describe('PaymentRequestByTeamComponent', () => {
   });
 
   // -------------------------
-  // LOAD BUDGETS
+  // BUDGET FILTERING (local, from allIncomeBudgets)
   // -------------------------
-  describe('loadBudgets', () => {
-    it('should load and filter to active named budgets when teamId changes', () => {
-      const today = new Date();
-      const past = new Date(today);
-      past.setDate(past.getDate() - 1);
-      const future = new Date(today);
-      future.setDate(future.getDate() + 1);
-      const farFuture = new Date(today);
-      farFuture.setDate(farFuture.getDate() + 7);
-
-      mockBudgetService.getBudgets.mockReturnValue(
-        of({
-          items: [
-            {
-              id: 1,
-              name: 'Active',
-              costCentreId: 1,
-              teamId: 1,
-              seasonId: 1,
-              targetAmount: 100,
-              periodStart: past.toISOString(),
-              periodEnd: future.toISOString(),
-              transactions: [],
-            },
-            {
-              id: 2,
-              name: '',
-              costCentreId: 1,
-              teamId: 1,
-              seasonId: 1,
-              targetAmount: 100,
-              periodStart: past.toISOString(),
-              periodEnd: future.toISOString(),
-              transactions: [],
-            },
-            {
-              id: 3,
-              name: 'Future Only',
-              costCentreId: 1,
-              teamId: 1,
-              seasonId: 1,
-              targetAmount: 100,
-              periodStart: farFuture.toISOString(),
-              periodEnd: farFuture.toISOString(),
-              transactions: [],
-            },
-            {
-              id: 4,
-              name: 'Expired',
-              costCentreId: 1,
-              teamId: 1,
-              seasonId: 1,
-              targetAmount: 100,
-              periodStart: past.toISOString(),
-              periodEnd: past.toISOString(),
-              transactions: [],
-            },
-          ],
-          totalCount: 4,
-        }),
-      );
-
+  describe('budget filtering on teamId change', () => {
+    it('should filter allIncomeBudgets by teamId', () => {
+      component.allIncomeBudgets = [
+        { id: 1, name: 'Budget A', teamId: 1 },
+        { id: 2, name: 'Budget B', teamId: 2 },
+        { id: 3, name: 'Budget C', teamId: 1 },
+      ] as unknown as BudgetDto[];
       component.form.get('teamId')!.setValue(1);
-      expect(mockBudgetService.getBudgets).toHaveBeenCalledWith({ TeamId: 1 });
-      expect(component.budgets).toHaveLength(1);
-      expect(component.budgets[0].name).toBe('Active');
+      expect(component.budgets).toHaveLength(2);
+      expect(component.budgets.map((b) => b.id)).toEqual([1, 3]);
     });
 
-    it('should handle null items response without error', () => {
-      mockBudgetService.getBudgets.mockReturnValue(of({ items: null, totalCount: 0 }));
-      component.form.get('teamId')!.setValue(1);
-      expect(component.budgets).toEqual([]);
-    });
-
-    it('should clear budgets and not call getBudgets when teamId changes to null', () => {
+    it('should clear budgets when teamId changes to null', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       component.budgets = [{ id: 1, name: 'Old' } as any];
       component.form.get('teamId')!.setValue(null);
       expect(component.budgets).toEqual([]);
-      expect(mockBudgetService.getBudgets).not.toHaveBeenCalled();
     });
 
-    it('should show error when budget loading fails', () => {
-      mockBudgetService.getBudgets.mockReturnValue(throwError(() => new Error()));
+    it('should show empty budgets when no allIncomeBudgets match teamId', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.allIncomeBudgets = [{ id: 5, name: 'Other', teamId: 99 } as any];
       component.form.get('teamId')!.setValue(1);
-      expect(mockNotificationService.showError).toHaveBeenCalledWith('Failed to load budgets.');
+      expect(component.budgets).toEqual([]);
     });
   });
 

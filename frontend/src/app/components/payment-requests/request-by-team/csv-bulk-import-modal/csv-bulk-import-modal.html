@@ -12,7 +12,7 @@
       <span class="step-stepper__arrow">›</span>
       <button type="button" class="step-stepper__step"
               [class.active]="step === 'preview'"
-              [disabled]="parsedRows.length === 0"
+              [disabled]="parsedRows.length === 0 || configForm.invalid"
               (click)="onStepClicked(2)">
         <span class="step-num">2</span>
         Preview &amp; Assign

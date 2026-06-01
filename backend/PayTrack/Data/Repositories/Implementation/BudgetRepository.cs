@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Exceptions;
+using PayTrack.Application.Services.Implementation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -64,6 +65,12 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(b => b.PeriodEnd <= query.PeriodEnd.Value);
             }
 
+            // Filter by Type
+            if (query?.Type.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(b => b.Type == query.Type.Value);
+            }
+
             var totalCount = await dbQuery.CountAsync();
 
             dbQuery = dbQuery.OrderByDescending(b => b.PeriodStart);
@@ -93,7 +100,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Budget> AddAsync(string name, string? description, int teamId, int costCentreId, int seasonId, decimal targetAmount, DateTime periodStart, DateTime periodEnd)
+        public async Task<Budget> AddAsync(string name, string? description, int teamId, int costCentreId, int seasonId, decimal? targetAmount, DateTime periodStart, DateTime periodEnd, BudgetType type = BudgetType.Expense)
         {
             var budget = new Budget
             {
@@ -105,6 +112,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 TargetAmount = targetAmount,
                 PeriodStart = periodStart,
                 PeriodEnd = periodEnd,
+                Type = type,
             };
 
             this.context.Budgets.Add(budget);
@@ -132,6 +140,7 @@ namespace PayTrack.Data.Repositories.Implementation
                     TargetAmount = entry.TargetAmount,
                     PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                     PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                    Type = entry.Type,
                 });
             }
 
@@ -139,7 +148,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Budget> UpdateAsync(int id, string? name = null, string? description = null, int? teamId = null, int? costCentreId = null, int? seasonId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null)
+        public async Task<Budget> UpdateAsync(int id, string? name = null, string? description = null, int? teamId = null, int? costCentreId = null, int? seasonId = null, decimal? targetAmount = null, DateTime? periodStart = null, DateTime? periodEnd = null, BudgetType? type = null)
         {
             var budget = await this.context.Budgets
                 .Include(b => b.Transactions)
@@ -185,6 +194,13 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 budget.PeriodEnd = periodEnd.Value;
             }
+
+            if (type.HasValue)
+            {
+                budget.Type = type.Value;
+            }
+
+            BudgetEntryValidation.EnsureValid(budget.TargetAmount, budget.Type, budget.PeriodStart, budget.PeriodEnd);
 
             int res = await this.context.SaveChangesAsync();
             if (res != 1)

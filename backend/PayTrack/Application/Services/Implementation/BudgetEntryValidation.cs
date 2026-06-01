@@ -4,6 +4,7 @@
 
 using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Exceptions;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Implementation
 {
@@ -19,14 +20,30 @@ namespace PayTrack.Application.Services.Implementation
         /// <summary>
         /// Ensures a budget entry satisfies service-level business rules.
         /// </summary>
-        /// <param name="targetAmount">Target budget amount.</param>
+        /// <param name="targetAmount">Target budget amount. Required for Expense; must be null for Income.</param>
+        /// <param name="type">Budget type.</param>
         /// <param name="periodStart">Budget period start.</param>
         /// <param name="periodEnd">Budget period end.</param>
-        public static void EnsureValid(decimal targetAmount, DateTime periodStart, DateTime periodEnd)
+        public static void EnsureValid(decimal? targetAmount, BudgetType type, DateTime periodStart, DateTime periodEnd)
         {
-            if (targetAmount < 0)
+            if (type == BudgetType.Expense)
             {
-                throw new InvalidStateException(TargetAmountMustBeNonNegative);
+                if (targetAmount is null)
+                {
+                    throw new InvalidStateException("Target amount is required for Expense budgets.");
+                }
+
+                if (targetAmount < 0)
+                {
+                    throw new InvalidStateException(TargetAmountMustBeNonNegative);
+                }
+            }
+            else
+            {
+                if (targetAmount is not null)
+                {
+                    throw new InvalidStateException("Target amount must not be provided for Income budgets.");
+                }
             }
 
             if (periodEnd < periodStart)
@@ -50,7 +67,7 @@ namespace PayTrack.Application.Services.Implementation
 
             foreach (var entry in budgetEntries)
             {
-                EnsureValid(entry.TargetAmount, entry.PeriodStart, entry.PeriodEnd);
+                EnsureValid(entry.TargetAmount, entry.Type, entry.PeriodStart, entry.PeriodEnd);
             }
         }
     }

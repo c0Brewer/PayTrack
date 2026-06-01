@@ -41,6 +41,7 @@ describe('TeamListComponent', () => {
           targetAmount: 3000,
           periodStart: buildBudgetDate(-120, 'start'),
           periodEnd: buildBudgetDate(-60, 'end'),
+          type: 0,
           transactionIds: [],
         },
         {
@@ -53,6 +54,7 @@ describe('TeamListComponent', () => {
           targetAmount: 5000,
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
+          type: 0,
           transactionIds: [],
         },
         {
@@ -65,6 +67,7 @@ describe('TeamListComponent', () => {
           targetAmount: 6000,
           periodStart: buildBudgetDate(-20, 'start'),
           periodEnd: buildBudgetDate(20, 'end'),
+          type: 0,
           transactionIds: [],
         },
         {
@@ -77,6 +80,7 @@ describe('TeamListComponent', () => {
           targetAmount: 7000,
           periodStart: buildBudgetDate(-10, 'start'),
           periodEnd: buildBudgetDate(10, 'end'),
+          type: 0,
           transactionIds: [],
         },
         {
@@ -89,6 +93,7 @@ describe('TeamListComponent', () => {
           targetAmount: 8000,
           periodStart: buildBudgetDate(-5, 'start'),
           periodEnd: buildBudgetDate(5, 'end'),
+          type: 0,
           transactionIds: [],
         },
       ],
@@ -157,6 +162,7 @@ describe('TeamListComponent', () => {
         targetAmount: 7000,
         periodStart: buildBudgetDate(60, 'start'),
         periodEnd: buildBudgetDate(120, 'end'),
+        type: 0,
         transactionIds: [],
       },
     ],

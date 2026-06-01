@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import {
   BudgetDto,
+  BudgetType,
   CostCentreDto,
   SeasonDto,
   TeamDto,
@@ -17,10 +18,11 @@ interface WorkingBudget {
   name: string;
   seasonId: number;
   costCentreId: number;
-  targetAmount: number;
+  targetAmount: number | null;
   periodStart: string;
   periodEnd: string;
   markedForDeletion: boolean;
+  type: BudgetType;
 }
 
 type BudgetField =
@@ -46,6 +48,7 @@ const budgetFields: readonly BudgetField[] = [
   styleUrl: './team-edit-modal-component.scss',
 })
 export class TeamEditModalComponent implements OnChanges {
+  protected readonly BudgetType = BudgetType;
   readonly defaultColor = '#2563eb';
   readonly minNameLength = 3;
   readonly minDescriptionLength = 3;
@@ -127,10 +130,11 @@ export class TeamEditModalComponent implements OnChanges {
         name: budget.name,
         seasonId: budget.seasonId,
         costCentreId: budget.costCentreId,
-        targetAmount: budget.targetAmount,
+        targetAmount: budget.targetAmount ?? null,
         periodStart: budget.periodStart,
         periodEnd: budget.periodEnd,
         markedForDeletion: false,
+        type: (budget.type as BudgetType) ?? BudgetType.Expense,
       }));
       this.newBudgets = [];
       this.newBudgetDraft = this.emptyDraft();
@@ -257,6 +261,10 @@ export class TeamEditModalComponent implements OnChanges {
 
         return '';
       case 'targetAmount':
+        if (this.newBudgetDraft.type === BudgetType.Income) {
+          return '';
+        }
+
         if (
           this.newBudgetDraft.targetAmount === null ||
           this.newBudgetDraft.targetAmount === undefined ||
@@ -311,7 +319,8 @@ export class TeamEditModalComponent implements OnChanges {
     return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
   }
 
-  formatBudgetAmount(amount: number): string {
+  formatBudgetAmount(amount: number | null | undefined): string {
+    if (amount == null) return '—';
     return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
@@ -396,9 +405,10 @@ export class TeamEditModalComponent implements OnChanges {
       description: null,
       costCentreId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: BudgetType.Expense,
     };
   }
 }
