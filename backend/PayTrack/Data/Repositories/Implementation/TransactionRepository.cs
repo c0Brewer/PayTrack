@@ -278,6 +278,22 @@ namespace PayTrack.Data.Repositories.Implementation
             return transaction;
         }
 
+        /// <inheritdoc/>
+        public async Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate)
+        {
+            var dueDateUtc = DateTime.SpecifyKind(dueDate.Date, DateTimeKind.Utc);
+            var nextDay = dueDateUtc.AddDays(1);
+
+            return await this.context.PaymentRequestsByTeam
+                .Where(t =>
+                    t.DueDate >= dueDateUtc &&
+                    t.DueDate < nextDay &&
+                    t.Status != TransactionStatus.Paid &&
+                    t.Status != TransactionStatus.Declined)
+                .Include(t => t.User)
+                .ToListAsync();
+        }
+
         private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {

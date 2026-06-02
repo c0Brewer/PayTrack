@@ -11,7 +11,13 @@ using PayTrack.Data.Repositories.Model;
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService, IUserService _userService, IBudgetService _budgetService) : IPaymentRequestByTeamService
+    public class PaymentRequestByTeamService(
+        ITransactionRepository repo,
+        ITeamService _teamService,
+        IUserService _userService,
+        IBudgetService _budgetService,
+        INotificationDispatchService _notifications,
+        ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
     {
         /// <summary>
         /// Repository for PaymentRequestByTeams.
@@ -20,6 +26,8 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITeamService teamService = _teamService;
         private readonly IUserService userService = _userService;
         private readonly IBudgetService budgetService = _budgetService;
+        private readonly INotificationDispatchService notifications = _notifications;
+        private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByTeam> paymentRequestByTeam, int totalCount)> GetAllAsync(
@@ -79,7 +87,28 @@ namespace PayTrack.Application.Services.Implementation
                 RequestedById = creatingUser.Id,
             };
 
-            return await this.repo.AddAsync(paymentRequest);
+            var created = await this.repo.AddAsync(paymentRequest);
+
+            try
+            {
+                var subject = $"New Payment Request: {purposeOfPayment}";
+                var body =
+                    $"Dear {userToAssignTo.Name},\n\n" +
+                    $"A new payment request has been created for you.\n\n" +
+                    $"Amount: {amount:C2}\n" +
+                    $"Purpose: {purposeOfPayment}\n" +
+                    $"Due Date: {dueDate:yyyy-MM-dd}\n\n" +
+                    $"Please ensure payment is made before the due date.\n\n" +
+                    $"PayTrack";
+
+                await this.notifications.SendEmailAsync(userToAssignTo.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Failed to send new-payment-request email to {Email}.", userToAssignTo.Email);
+            }
+
+            return created;
         }
 
         /// <inheritdoc/>
@@ -122,7 +151,7 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment)
         {
-            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById())
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById { IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (transaction.Status is TransactionStatus.Paid or TransactionStatus.Declined)
@@ -135,7 +164,7 @@ namespace PayTrack.Application.Services.Implementation
             transaction.Status = TransactionStatus.Paid;
             transaction.PaidAt = DateTime.UtcNow;
 
-            return await this.repo.UpdateAndAddStatusHistoryAsync(
+            var result = await this.repo.UpdateAndAddStatusHistoryAsync(
                 transaction,
                 new TransactionStatusHistory
                 {
@@ -145,6 +174,27 @@ namespace PayTrack.Application.Services.Implementation
                     ToStatus = TransactionStatus.Paid,
                     Comment = comment,
                 });
+
+            try
+            {
+                var subject = $"Payment Confirmed: {transaction.PurposeOfPayment}";
+                var body =
+                    $"Dear {transaction.User.Name},\n\n" +
+                    $"Your payment has been marked as paid.\n\n" +
+                    $"Amount: {transaction.Amount:C2}\n" +
+                    $"Purpose: {transaction.PurposeOfPayment}\n" +
+                    $"Paid on: {transaction.PaidAt:yyyy-MM-dd}\n\n" +
+                    $"Thank you,\n" +
+                    $"PayTrack";
+
+                await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Failed to send payment-confirmed email to {Email}.", transaction.User.Email);
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

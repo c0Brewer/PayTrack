@@ -901,5 +901,67 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.RequestedBy.Should().NotBeNull();
             result.RequestedBy!.Id.Should().Be(2);
         }
+
+        // ----------------------------
+        // GET DUE REMINDERS
+        // ----------------------------
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldReturnMatchingEntries()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_Match");
+
+            context.User.Add(new User { Id = 1, Email = "a@test.com", Name = "Alice" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            var targetDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = targetDate, Status = TransactionStatus.Submitted },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, DueDate = targetDate.AddDays(1), Status = TransactionStatus.Submitted },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, DueDate = targetDate, Status = TransactionStatus.Paid },
+                new PaymentRequestByTeam { Id = 4, UserId = 1, TeamId = 1, Amount = 400, DueDate = targetDate, Status = TransactionStatus.Declined });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(targetDate);
+
+            results.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldIncludeUser()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_IncludeUser");
+
+            context.User.Add(new User { Id = 1, Email = "a@test.com", Name = "Alice" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            var targetDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.Add(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = targetDate, Status = TransactionStatus.Submitted });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(targetDate);
+
+            results.Should().ContainSingle();
+            results[0].User.Should().NotBeNull();
+            results[0].User.Email.Should().Be("a@test.com");
+        }
+
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldReturnEmpty_WhenNoneDue()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_Empty");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(DateTime.UtcNow.Date.AddDays(7));
+
+            results.Should().BeEmpty();
+        }
     }
 }
