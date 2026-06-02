@@ -1,10 +1,32 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
+
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
+import { NotificationService } from '../../../services/notification/notification-service';
+import { CostCentreDto } from '../../../types/exporter';
 
 import { CostCentreEditModalComponent } from './cost-centre-edit-modal-component';
 
 describe('CostCentreEditModalComponent', () => {
   let component: CostCentreEditModalComponent;
   let fixture: ComponentFixture<CostCentreEditModalComponent>;
+  let costCentreServiceMock: {
+    createCostCentre: ReturnType<typeof vi.fn>;
+    updateCostCentre: ReturnType<typeof vi.fn>;
+  };
+  let notificationServiceMock: {
+    showError: ReturnType<typeof vi.fn>;
+    showSuccess: ReturnType<typeof vi.fn>;
+  };
+
+  const mockCostCentre: CostCentreDto = {
+    id: 1,
+    name: 'Aerodynamics',
+    description: 'Aero costs',
+    displayColor: '#FF5733',
+    budgets: [],
+    isActive: true,
+  };
 
   function clickAddBudgetButton(): void {
     const addButton = fixture.nativeElement.querySelector(
@@ -15,8 +37,21 @@ describe('CostCentreEditModalComponent', () => {
   }
 
   beforeEach(async () => {
+    costCentreServiceMock = {
+      createCostCentre: vi.fn().mockReturnValue(of(mockCostCentre)),
+      updateCostCentre: vi.fn().mockReturnValue(of(mockCostCentre)),
+    };
+    notificationServiceMock = {
+      showError: vi.fn(),
+      showSuccess: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [CostCentreEditModalComponent],
+      providers: [
+        { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CostCentreEditModalComponent);
@@ -138,5 +173,116 @@ describe('CostCentreEditModalComponent', () => {
       'Period end must not be before period start.',
     );
     expect(dateInputs[1].classList).toContain('input-error');
+  });
+
+  it('should create a cost centre with season budget data and normalized dates', () => {
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+    component.costCentre = {
+      id: -1,
+      name: 'New CC',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    };
+    component.ngOnChanges();
+    component.newBudgets = [
+      {
+        id: null,
+        name: 'Budget',
+        description: null,
+        teamId: 1,
+        seasonId: 2,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+      },
+    ];
+
+    component.onSave();
+
+    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith({
+      name: 'New CC',
+      description: undefined,
+      displayColor: undefined,
+      budgets: [
+        {
+          name: 'Budget',
+          description: null,
+          teamId: 1,
+          seasonId: 2,
+          targetAmount: 500,
+          periodStart: '2026-01-01T00:00:00.000Z',
+          periodEnd: '2026-12-31T00:00:00.000Z',
+        },
+      ],
+    });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Cost centre created successfully',
+    );
+    expect(emitSpy).toHaveBeenCalled();
+  });
+
+  it('should update a cost centre with season budget data and normalized dates', () => {
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+    component.costCentre = mockCostCentre;
+    component.ngOnChanges();
+    component.newBudgets = [
+      {
+        id: 10,
+        name: 'Updated budget',
+        description: null,
+        teamId: 1,
+        seasonId: 2,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+      },
+    ];
+
+    component.onSave();
+
+    expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        budgetsToUpsert: [
+          {
+            id: null,
+            name: 'Updated budget',
+            description: null,
+            teamId: 1,
+            seasonId: 2,
+            targetAmount: 500,
+            periodStart: '2026-01-01T00:00:00.000Z',
+            periodEnd: '2026-12-31T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Cost centre updated successfully',
+    );
+    expect(emitSpy).toHaveBeenCalled();
+  });
+
+  it('should show an error when saving fails', () => {
+    costCentreServiceMock.createCostCentre.mockReturnValueOnce(
+      throwError(() => new Error('Create failed')),
+    );
+    component.costCentre = {
+      id: -1,
+      name: 'New CC',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    };
+    component.ngOnChanges();
+
+    component.onSave();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not create cost centre: Create failed',
+    );
   });
 });

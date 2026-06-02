@@ -2,11 +2,15 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
+import { NotificationService } from '../../../services/notification/notification-service';
 import {
   BudgetDto,
   CostCentreDto,
+  CreateCostCentreRequestDto,
   SeasonDto,
   TeamDto,
+  UpdateCostCentreRequestDto,
   UpsertBudgetEntryDto,
 } from '../../../types/exporter';
 import { CostCentreSaveEvent } from '../../../types/misc-types';
@@ -40,6 +44,11 @@ const budgetFields: readonly BudgetField[] = [
   styleUrl: './cost-centre-edit-modal-component.scss',
 })
 export class CostCentreEditModalComponent implements OnChanges {
+  constructor(
+    private readonly costCentreService: CostCentreService,
+    private readonly notificationService: NotificationService,
+  ) {}
+
   @Input() costCentre: CostCentreDto = {
     id: -1,
     name: '',
@@ -51,7 +60,7 @@ export class CostCentreEditModalComponent implements OnChanges {
   @Input() teams: TeamDto[] = [];
   @Input() seasons: SeasonDto[] = [];
 
-  @Output() saveEvent = new EventEmitter<CostCentreSaveEvent>();
+  @Output() saveEvent = new EventEmitter<void>();
   @Output() closeEvent = new EventEmitter<void>();
 
   originalCostCentre: CostCentreDto | null = null;
@@ -145,7 +154,7 @@ export class CostCentreEditModalComponent implements OnChanges {
       id: null,
     }));
 
-    this.saveEvent.emit({ costCentre: this.costCentre, budgetsToUpsert, budgetIdsToDelete });
+    this.save({ costCentre: this.costCentre, budgetsToUpsert, budgetIdsToDelete });
   }
 
   onClose(): void {
@@ -216,6 +225,95 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   private isBudgetDraftInvalid(): boolean {
     return budgetFields.some((field) => this.getBudgetFieldError(field).length > 0);
+  }
+
+  private save(event: CostCentreSaveEvent): void {
+    const { costCentre, budgetsToUpsert, budgetIdsToDelete } = event;
+
+    if (costCentre.id === -1) {
+      this.createCostCentre(costCentre, budgetsToUpsert);
+      return;
+    }
+
+    this.updateCostCentre(costCentre, budgetsToUpsert, budgetIdsToDelete);
+  }
+
+  private createCostCentre(
+    costCentre: CostCentreDto,
+    budgetsToUpsert: UpsertBudgetEntryDto[],
+  ): void {
+    const request: CreateCostCentreRequestDto = {
+      name: costCentre.name,
+      description: costCentre.description ?? undefined,
+      displayColor: costCentre.displayColor ?? undefined,
+      budgets:
+        budgetsToUpsert.length > 0
+          ? budgetsToUpsert.map(
+              ({ name, description, teamId, seasonId, targetAmount, periodStart, periodEnd }) => ({
+                name,
+                description,
+                teamId,
+                seasonId,
+                targetAmount,
+                periodStart: this.toApiDateTime(periodStart),
+                periodEnd: this.toApiDateTime(periodEnd),
+              }),
+            )
+          : undefined,
+    };
+
+    this.costCentreService.createCostCentre(request).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Cost centre created successfully');
+        this.saveEvent.emit();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not create cost centre: ' + err.message);
+      },
+    });
+  }
+
+  private updateCostCentre(
+    costCentre: CostCentreDto,
+    budgetsToUpsert: UpsertBudgetEntryDto[],
+    budgetIdsToDelete: number[],
+  ): void {
+    const request: UpdateCostCentreRequestDto = {
+      name: costCentre.name,
+      description: costCentre.description ?? undefined,
+      displayColor: costCentre.displayColor ?? undefined,
+      budgetsToUpsert:
+        budgetsToUpsert.length > 0
+          ? budgetsToUpsert.map((budget) => this.normalizeBudgetDates(budget))
+          : undefined,
+      budgetIdsToDelete: budgetIdsToDelete.length > 0 ? budgetIdsToDelete : undefined,
+    };
+
+    this.costCentreService.updateCostCentre(costCentre.id, request).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Cost centre updated successfully');
+        this.saveEvent.emit();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not update cost centre: ' + err.message);
+      },
+    });
+  }
+
+  private normalizeBudgetDates(budget: UpsertBudgetEntryDto): UpsertBudgetEntryDto {
+    return {
+      ...budget,
+      periodStart: this.toApiDateTime(budget.periodStart),
+      periodEnd: this.toApiDateTime(budget.periodEnd),
+    };
+  }
+
+  private toApiDateTime(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    return value;
   }
 
   private emptyBudgetTouchedFields(): Record<BudgetField, boolean> {
