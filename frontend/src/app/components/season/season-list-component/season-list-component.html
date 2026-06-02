@@ -1,0 +1,20 @@
+<table class="season-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Budgets</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (season of seasons; track season.id) {
+      <tr>
+        <td>{{ season.name }}</td>
+        <td>{{ season.budgets?.length ?? 0 }}</td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="2">No seasons found.</td>
+      </tr>
+    }
+  </tbody>
+</table>

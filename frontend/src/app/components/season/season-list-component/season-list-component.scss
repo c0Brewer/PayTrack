@@ -1,0 +1,17 @@
+.season-table {
+  background: #fff;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.season-table th,
+.season-table td {
+  border-bottom: 1px solid #d1d5db;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.season-table th {
+  background: #e5e7eb;
+  font-weight: 600;
+}

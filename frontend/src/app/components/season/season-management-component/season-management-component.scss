@@ -36,24 +36,6 @@
   height: 2.5rem;
 }
 
-.season-table {
-  background: #fff;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.season-table th,
-.season-table td {
-  border-bottom: 1px solid #d1d5db;
-  padding: 0.85rem 1rem;
-  text-align: left;
-}
-
-.season-table th {
-  background: #e5e7eb;
-  font-weight: 600;
-}
-
 @media (max-width: 640px) {
   .season-management__create {
     grid-template-columns: 1fr;

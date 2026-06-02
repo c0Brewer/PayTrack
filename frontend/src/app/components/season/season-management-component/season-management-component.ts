@@ -1,13 +1,14 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { SeasonService } from '../../../services/season/season-service';
 import { SeasonDto } from '../../../types/exporter';
+import { SeasonFormComponent } from '../season-form-component/season-form-component';
+import { SeasonListComponent } from '../season-list-component/season-list-component';
 
 @Component({
   selector: 'app-season-management-component',
-  imports: [FormsModule],
+  imports: [SeasonFormComponent, SeasonListComponent],
   templateUrl: './season-management-component.html',
   styleUrl: './season-management-component.scss',
 })
@@ -19,7 +20,6 @@ export class SeasonManagementComponent implements OnInit {
   ) {}
 
   seasons: SeasonDto[] = [];
-  newSeasonName = '';
 
   ngOnInit(): void {
     this.loadSeasons();
@@ -37,16 +37,10 @@ export class SeasonManagementComponent implements OnInit {
     });
   }
 
-  createSeason(): void {
-    const name = this.newSeasonName.trim();
-    if (!name) {
-      return;
-    }
-
+  createSeason(name: string): void {
     this.seasonService.createSeason({ name }).subscribe({
       next: () => {
         this.notificationService.showSuccess('Season created successfully');
-        this.newSeasonName = '';
         this.loadSeasons();
       },
       error: (err: Error) => {
