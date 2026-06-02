@@ -212,10 +212,13 @@ body {
 }
 
 .actions-col {
+  text-align: right;
+
   .action-buttons {
     display: inline-flex;
     flex-wrap: wrap;
     gap: v.$size-xs;
+    justify-content: flex-end;
   }
 
   .btn + .btn,
@@ -239,6 +242,10 @@ body {
   overflow: hidden;
   table-layout: fixed;
   width: 100%;
+
+  .actions-col {
+    text-align: right;
+  }
 
   thead {
     background: v.$background-dark;
@@ -403,6 +410,7 @@ body {
 .icon-hover-btn {
   display: inline-flex;
   align-items: center;
+  flex-direction: row-reverse;
   gap: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -416,7 +424,7 @@ body {
 .icon-hover-btn .btn-text {
   max-width: 0;
   opacity: 0;
-  transform: translateX(-6px);
+  transform: translateX(6px);
   overflow: hidden;
   transition:
     max-width 0.25s ease,

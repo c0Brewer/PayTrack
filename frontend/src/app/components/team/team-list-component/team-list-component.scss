@@ -42,7 +42,7 @@
   }
 
   .actions-col {
-    text-align: left;
+    text-align: right;
     width: 10%;
     white-space: nowrap;
   }
@@ -61,6 +61,7 @@
     .description-col,
     .members-col,
     .budget-col,
+    .status-col,
     .actions-col {
       text-align: right;
       white-space: normal;
