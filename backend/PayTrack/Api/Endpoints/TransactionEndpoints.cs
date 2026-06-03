@@ -29,6 +29,9 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/user", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
 
+            group.MapGet("/export", TransactionHandler.ExportFinancialDataAsync)
+                .RequireRole(Role.Admin);
+
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
 
             group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery(); // Needed because of the way the file upload works. This is intentional
