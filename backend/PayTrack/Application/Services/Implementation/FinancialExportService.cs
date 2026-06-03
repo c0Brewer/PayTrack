@@ -1,5 +1,3 @@
-//AI helped with PDF and CSV generation
-
 // <copyright file="FinancialExportService.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
@@ -12,6 +10,7 @@ using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
+// AI helped with PDF and CSV generation.
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>

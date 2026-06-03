@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Application.Dto.Transaction;
+using PayTrack.Application.Services.Model;
 
 namespace PayTrack.Api.Handler
 {
@@ -16,12 +17,19 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Exports financial transaction data.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         /// <param name="query">Query object including all export filter options.</param>
-        public static Task<StatusCodeHttpResult> ExportFinancialDataAsync(
-            [AsParameters] GetTransactionQuery query)
+        /// <param name="financialExportService">Dependency-Injected financial export service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<FileContentHttpResult, BadRequest<ProblemDetails>, ProblemHttpResult>> ExportFinancialDataAsync(
+            [AsParameters] GetTransactionQuery query,
+            IFinancialExportService financialExportService)
         {
-            return Task.FromResult(TypedResults.StatusCode(StatusCodes.Status501NotImplemented));
+            var exportResult = await financialExportService.ExportFinancialDataAsync(query);
+
+            return TypedResults.File(
+                exportResult.Content,
+                exportResult.ContentType,
+                exportResult.FileName);
         }
     }
 }
