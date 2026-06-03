@@ -5,6 +5,15 @@
     margin: 0 0 v.$size-s;
   }
 
+  h4 {
+    margin: v.$size-m 0 v.$size-s;
+    font-size: v.$font-s;
+    font-weight: v.$font-semibold;
+    color: v.$text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
   .info-table {
     border-collapse: collapse;
     font-size: v.$font-s;

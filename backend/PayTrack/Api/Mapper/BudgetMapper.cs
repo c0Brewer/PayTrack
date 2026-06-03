@@ -33,11 +33,23 @@ namespace PayTrack.Api.Mapper
         {
             var paidTransactions = budget.Transactions.Where(t => t.Status == Paid);
             var approvedTransactions = budget.Transactions.Where(t => t.Status == Approved);
+            decimal paidAmount = 0;
+            decimal approvedAmount = 0;
 
-            var paidAmount = paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
-                           - paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
-            var approvedAmount = approvedTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
-                               - approvedTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
+            if (budget.Type == BudgetType.Expense) 
+            {
+                paidAmount = paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
+                               - paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
+                approvedAmount = approvedTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
+                                   - approvedTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
+            }
+            else if (budget.Type == BudgetType.Income)
+            {
+                paidAmount = paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount)
+                               - paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount);
+                approvedAmount = approvedTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount)
+                                   - approvedTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount);
+            }
 
             return new BudgetDto(
                 budget.Id,

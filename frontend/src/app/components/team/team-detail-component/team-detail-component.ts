@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { BudgetDto, CostCentreDto, TeamDto } from '../../../types/exporter';
+import { BudgetDto, BudgetType, CostCentreDto, TeamDto } from '../../../types/exporter';
 import { DetailComponent } from '../../general/detail-component/detail-component';
 
 @Component({
@@ -26,6 +26,14 @@ export class TeamDetailComponent implements OnInit {
 
   team: TeamDto | null = null;
   costCentres: CostCentreDto[] = [];
+
+  get expenseBudgets(): BudgetDto[] {
+    return (this.team?.budgets ?? []).filter((b) => b.type === BudgetType.Expense);
+  }
+
+  get incomeBudgets(): BudgetDto[] {
+    return (this.team?.budgets ?? []).filter((b) => b.type === BudgetType.Income);
+  }
 
   ngOnInit(): void {
     this.loadCostCentres();
