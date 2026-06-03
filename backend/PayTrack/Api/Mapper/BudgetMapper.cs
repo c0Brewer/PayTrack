@@ -36,7 +36,7 @@ namespace PayTrack.Api.Mapper
             decimal paidAmount = 0;
             decimal approvedAmount = 0;
 
-            if (budget.Type == BudgetType.Expense) 
+            if (budget.Type == BudgetType.Expense)
             {
                 paidAmount = paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
                                - paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
