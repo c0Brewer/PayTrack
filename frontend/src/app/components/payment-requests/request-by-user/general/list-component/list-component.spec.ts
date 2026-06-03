@@ -73,7 +73,7 @@ describe('InvoiceListComponent', () => {
 
   it('should return correct text for getTransactionStatusLabel', () => {
     expect(component.getTransactionStatusLabel(0)).toBe('Submitted');
-    expect(component.getTransactionStatusLabel(1)).toBe('Changes requested');
+    expect(component.getTransactionStatusLabel(1)).toBe('Changes Requested');
     expect(component.getTransactionStatusLabel(2)).toBe('Approved');
     expect(component.getTransactionStatusLabel(3)).toBe('Paid');
     expect(component.getTransactionStatusLabel(4)).toBe('Declined');

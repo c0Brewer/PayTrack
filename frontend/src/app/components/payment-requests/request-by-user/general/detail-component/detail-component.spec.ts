@@ -140,7 +140,7 @@ describe('InvoiceDetailComponent', () => {
 
   it('should return correct status labels', () => {
     expect(component.getStatusLabel(TransactionStatus.Submitted)).toBe('Submitted');
-    expect(component.getStatusLabel(TransactionStatus.ChangesRequested)).toBe('Changes requested');
+    expect(component.getStatusLabel(TransactionStatus.ChangesRequested)).toBe('Changes Requested');
     expect(component.getStatusLabel(TransactionStatus.Approved)).toBe('Approved');
     expect(component.getStatusLabel(TransactionStatus.Paid)).toBe('Paid');
     expect(component.getStatusLabel(TransactionStatus.Declined)).toBe('Declined');
