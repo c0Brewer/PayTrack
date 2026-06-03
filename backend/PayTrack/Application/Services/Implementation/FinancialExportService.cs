@@ -1,4 +1,4 @@
-//AI helped with the some functions
+//AI helped with PDF and CSV generation
 
 // <copyright file="FinancialExportService.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
