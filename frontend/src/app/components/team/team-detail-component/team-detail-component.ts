@@ -69,7 +69,11 @@ export class TeamDetailComponent implements OnInit {
     return totalPercent - this.getPaidPercent(budget);
   }
 
-  isOverBudget(budget: { paidAmount: number; approvedAmount: number; targetAmount: number }): boolean {
+  isOverBudget(budget: {
+    paidAmount: number;
+    approvedAmount: number;
+    targetAmount: number;
+  }): boolean {
     return budget.paidAmount + budget.approvedAmount > budget.targetAmount;
   }
 

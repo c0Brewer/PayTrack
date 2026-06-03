@@ -42,6 +42,8 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-120, 'start'),
           periodEnd: buildBudgetDate(-60, 'end'),
           transactionIds: [],
+          paidAmount: 1000,
+          approvedAmount: 500,
         },
         {
           id: 2,
@@ -54,6 +56,8 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-30, 'start'),
           periodEnd: buildBudgetDate(30, 'end'),
           transactionIds: [],
+          paidAmount: 1000,
+          approvedAmount: 1500,
         },
         {
           id: 4,
@@ -66,6 +70,8 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-20, 'start'),
           periodEnd: buildBudgetDate(20, 'end'),
           transactionIds: [],
+          paidAmount: 2000,
+          approvedAmount: 1500,
         },
         {
           id: 5,
@@ -78,6 +84,8 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-10, 'start'),
           periodEnd: buildBudgetDate(10, 'end'),
           transactionIds: [],
+          paidAmount: 3000,
+          approvedAmount: 1500,
         },
         {
           id: 6,
@@ -90,6 +98,8 @@ describe('TeamListComponent', () => {
           periodStart: buildBudgetDate(-5, 'start'),
           periodEnd: buildBudgetDate(5, 'end'),
           transactionIds: [],
+          paidAmount: 3000,
+          approvedAmount: 2500,
         },
       ],
     },
@@ -158,6 +168,8 @@ describe('TeamListComponent', () => {
         periodStart: buildBudgetDate(60, 'start'),
         periodEnd: buildBudgetDate(120, 'end'),
         transactionIds: [],
+        paidAmount: 0,
+        approvedAmount: 0,
       },
     ],
   };
