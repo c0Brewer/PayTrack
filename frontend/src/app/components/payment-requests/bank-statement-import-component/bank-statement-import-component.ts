@@ -10,6 +10,7 @@ import {
   TransactionStatusLabels,
 } from '../../../types/exporter';
 import { BoxComponent } from '../../general/boxes/box-component/box-component';
+import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 
 type Phase = 'upload' | 'review';
 
@@ -25,7 +26,7 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [BoxComponent],
+  imports: [BoxComponent, StatBoxComponent],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
@@ -177,10 +178,10 @@ export class BankStatementImportComponent {
   }
 
   scoreColor(score: number | undefined): string {
-    if (score == null) return 'bg-slate-100 text-slate-500';
-    if (score >= 80) return 'bg-emerald-100 text-emerald-700';
-    if (score >= 50) return 'bg-amber-100 text-amber-700';
-    return 'bg-red-100 text-red-600';
+    if (score == null) return 'confidence-badge confidence-badge--none';
+    if (score >= 80) return 'confidence-badge confidence-badge--high';
+    if (score >= 50) return 'confidence-badge confidence-badge--medium';
+    return 'confidence-badge confidence-badge--low';
   }
 
   confirmUpdates(): void {
@@ -216,5 +217,14 @@ export class BankStatementImportComponent {
 
   getStatusLabel(status: TransactionStatus): string {
     return TransactionStatusLabels[status] ?? 'Unknown';
+  }
+
+  formatIban(value: string): string {
+    return value
+      .replaceAll(' ', '')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
   }
 }

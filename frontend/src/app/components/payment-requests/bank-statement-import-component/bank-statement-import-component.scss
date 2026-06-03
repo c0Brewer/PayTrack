@@ -1,0 +1,290 @@
+@use 'variables' as v;
+
+// ── Upload zone ───────────────────────────────────────────────────────────────
+
+.upload-zone {
+  border: 2px dashed v.$TUR-border-color;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(v.$TUR-primary-orange, 0.03);
+    border-color: v.$TUR-primary-orange;
+  }
+
+  &--dragging {
+    background-color: rgba(v.$TUR-primary-orange, 0.05);
+    border-color: v.$TUR-primary-orange;
+  }
+
+  &--selected {
+    background-color: rgba(v.$success-color, 0.04);
+    border-color: v.$success-color;
+  }
+}
+
+.upload-zone__content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem v.$size-m;
+  text-align: center;
+}
+
+.upload-zone__icon {
+  align-items: center;
+  background: rgba(v.$TUR-primary-orange, 0.08);
+  border-radius: 50%;
+  display: flex;
+  height: 3.5rem;
+  justify-content: center;
+  margin-bottom: v.$size-s;
+  width: 3.5rem;
+
+  .material-symbols-outlined {
+    color: v.$TUR-primary-orange;
+    font-size: 1.75rem;
+  }
+
+  &--success {
+    background: rgba(v.$success-color, 0.08);
+
+    .material-symbols-outlined {
+      color: v.$success-color;
+    }
+  }
+}
+
+.upload-zone__title {
+  color: v.$text-color;
+  font-size: v.$font-xs;
+  font-weight: v.$font-semibold;
+  margin: 0;
+}
+
+.upload-zone__subtitle {
+  color: v.$text-muted;
+  font-size: v.$font-xxs;
+  margin: v.$size-xxxs 0 0;
+}
+
+.upload-zone__remove {
+  background: none;
+  border: none;
+  color: v.$text-muted;
+  cursor: pointer;
+  font-size: v.$font-xxs;
+  margin-top: v.$size-xxs;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: v.$text-color;
+  }
+}
+
+.upload-zone__file-input {
+  display: none;
+}
+
+// ── Actions row (upload phase) ────────────────────────────────────────────────
+
+.import-actions-upload {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: v.$size-s;
+}
+
+// ── Summary cards (review phase) ──────────────────────────────────────────────
+
+.summary-grid {
+  display: grid;
+  gap: v.$size-xs;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: v.$size-m;
+}
+
+.summary-card {
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  padding: v.$size-xs v.$size-s;
+
+  &__label {
+    color: v.$text-muted;
+    font-size: v.$font-xxxs;
+    font-weight: v.$font-semibold;
+    letter-spacing: 0.05em;
+    margin: 0 0 v.$size-xxxs;
+    text-transform: uppercase;
+  }
+
+  &__value {
+    font-size: v.$font-l;
+    font-weight: v.$font-semibold;
+    margin: 0;
+
+    &--matched { color: v.$success-color; }
+    &--skipped { color: v.$text-muted; }
+    &--unmatched { color: v.$warning-color; }
+  }
+}
+
+// ── Result list ───────────────────────────────────────────────────────────────
+
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+}
+
+.result-item {
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-left: 3px solid v.$TUR-border-color;
+  border-radius: 12px;
+  padding: v.$size-xs v.$size-s;
+  transition: opacity 0.15s ease;
+
+  &--matched {
+    border-left-color: v.$success-color;
+  }
+
+  &--unmatched {
+    border-left-color: v.$warning-color;
+  }
+
+  &--skipped {
+    border-left-color: v.$gray-300;
+    opacity: 0.55;
+  }
+}
+
+.result-item__layout {
+  align-items: center;
+  display: flex;
+  gap: v.$size-s;
+}
+
+.result-item__icon {
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+
+    &.icon--matched { color: v.$success-color; }
+    &.icon--unmatched { color: v.$warning-color; }
+    &.icon--skipped { color: v.$gray-400; }
+  }
+}
+
+.result-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-item__row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xxs;
+}
+
+.result-item__name {
+  color: v.$text-color;
+  font-size: v.$font-xs;
+  font-weight: v.$font-semibold;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-item__meta {
+  color: v.$text-muted;
+  font-size: v.$font-xxs;
+}
+
+.result-item__amount {
+  color: v.$text-light;
+  font-size: v.$font-xxs;
+  font-weight: v.$font-medium;
+}
+
+.result-item__sub {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-s;
+  margin-top: 0.15rem;
+}
+
+.result-item__update {
+  color: v.$success-color;
+  font-size: v.$font-xxs;
+  margin: 0.15rem 0 0;
+}
+
+// ── Confidence badge ──────────────────────────────────────────────────────────
+
+.confidence-badge {
+  border-radius: 999px;
+  font-size: v.$font-xxs;
+  font-weight: v.$font-semibold;
+  padding: 0.2rem 0.6rem;
+
+  &--high {
+    background: #ecfdf5;
+    color: #047857;
+  }
+
+  &--medium {
+    background: #fffbeb;
+    color: #92400e;
+  }
+
+  &--low {
+    background: #fff1f2;
+    color: #be123c;
+  }
+
+  &--none {
+    background: v.$gray-100;
+    color: v.$text-muted;
+  }
+
+  &--no-match {
+    background: #fffbeb;
+    color: v.$warning-dark;
+  }
+
+  &--skipped {
+    background: v.$gray-100;
+    color: v.$text-muted;
+  }
+}
+
+// ── Review actions row ────────────────────────────────────────────────────────
+
+.import-actions-review {
+  display: flex;
+  gap: v.$size-xxs;
+  margin-top: v.$size-m;
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.icon--spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
