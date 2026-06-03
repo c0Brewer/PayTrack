@@ -48,6 +48,23 @@ namespace PayTrack.Tests.UnitTests.Services
             emailMock.Verify(s => s.SendAsync("user@example.com", "My Subject", "My Body"), Times.Once);
         }
 
+        [Fact]
+        public async Task SendEmailAsync_WithAttachments_DelegatesToEmailSenderWithAttachments()
+        {
+            var emailMock = new Mock<IEmailSender>();
+            var service = BuildService(emailMock, new SequentialHttpHandler());
+            var attachments = new[]
+            {
+                new EmailAttachment("invoice.pdf", [1, 2, 3], "application/pdf"),
+            };
+
+            await service.SendEmailAsync("user@example.com", "My Subject", "My Body", attachments);
+
+            emailMock.Verify(
+                s => s.SendAsync("user@example.com", "My Subject", "My Body", attachments),
+                Times.Once);
+        }
+
         // ── SendSlackAsync ────────────────────────────────────────────────────
 
         [Fact]

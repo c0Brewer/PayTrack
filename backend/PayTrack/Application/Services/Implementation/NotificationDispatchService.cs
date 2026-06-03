@@ -27,6 +27,12 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task SendEmailAsync(string recipientEmail, string subject, string body, IReadOnlyCollection<EmailAttachment> attachments)
+        {
+            await this.emailSender.SendAsync(recipientEmail, subject, body, attachments);
+        }
+
+        /// <inheritdoc/>
         public async Task SendSlackAsync(string recipientEmail, string message)
         {
             var slackUserId = await this.LookupSlackUserIdAsync(recipientEmail);

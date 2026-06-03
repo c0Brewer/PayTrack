@@ -10,8 +10,22 @@
   <app-invoice-list-component
     [invoices]="invoices"
     [showUserNameColumn]="true"
+    [showDuplicateIndicator]="true"
     (openDetail)="onOpenDetail($event)"
+    (openDuplicates)="onOpenDuplicates($event)"
   ></app-invoice-list-component>
+
+  <app-duplicate-list-modal-component
+    [visible]="isDuplicateModalOpen"
+    [loading]="isDuplicateModalLoading"
+    [actionInvoiceId]="duplicateActionInvoiceId"
+    [sourceInvoice]="selectedDuplicateInvoice"
+    [duplicates]="duplicateCandidates"
+    (closeModal)="onCloseDuplicateModal()"
+    (openDetail)="onOpenDuplicateDetail($event)"
+    (deleteInvoice)="onDeleteDuplicateInvoice($event)"
+    (dismissDuplicate)="onDismissDuplicate($event)"
+  ></app-duplicate-list-modal-component>
 
   <app-pagination-component
     [hasNext]="hasNext"

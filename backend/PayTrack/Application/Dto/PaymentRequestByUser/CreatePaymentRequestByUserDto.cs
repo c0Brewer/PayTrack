@@ -4,6 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Transaction;
+using PayTrack.Application.Validation;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.PaymentRequestByUser
@@ -26,11 +27,12 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [MinLength(3)]
         public string InvoiceNumber { get; init; } = string.Empty;
 
+
         /// <summary>
         /// Gets an optional comment for the invoice.
         /// </summary>
-        [MinLength(3)]
-        public string? Comment { get; init; }
+        [OptionalMinLength(3)]
+        public string? Comment { get; init; } = string.Empty;
 
         /// <summary>
         /// Gets the uploaded receipt file.

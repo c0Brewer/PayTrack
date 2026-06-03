@@ -47,20 +47,53 @@
     white-space: nowrap;
   }
 
-  .view-btn {
+  .view-btn,
+  .duplicate-badge {
+    align-items: center;
+    display: inline-flex;
+    gap: v.$size-xxs;
+    justify-content: center;
     padding: v.$size-xxs v.$size-s;
     border: 1px solid v.$border-color;
     background: v.$background-light;
     font-size: v.$font-xs;
     border-radius: v.$size-xs;
+    color: v.$text-color;
     cursor: pointer;
+    line-height: 1.2;
+    min-height: 1.75rem;
+    white-space: nowrap;
     transition:
       transform 0.1s ease,
-      box-shadow 0.1s ease;
+      box-shadow 0.1s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
 
     &:hover {
       transform: translateY(-1px);
       box-shadow: 0 2px 6px v.$shadow-color;
     }
+  }
+
+  .duplicate-badge {
+    border-color: v.$TUR-primary-orange;
+    color: v.$TUR-primary-orange;
+    font-weight: v.$font-semibold;
+
+    &:hover {
+      background: v.$TUR-primary-orange;
+      border-color: v.$TUR-primary-orange;
+      color: v.$text-light;
+    }
+
+    .material-symbols-outlined {
+      font-size: 1rem;
+      line-height: 1;
+    }
+  }
+
+  .duplicate-empty {
+    color: v.$text-muted;
   }
 }

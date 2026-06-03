@@ -12,32 +12,32 @@ namespace PayTrack.Application.Dto.Transaction
     public sealed class CreateTransactionDto
     {
         /// <summary>
-        /// Gets the id of the team this transaction belongs to.
+        /// Id of the team the transaction belongs to.
         /// </summary>
         [Required]
         public int TeamId { get; init; }
 
         /// <summary>
-        /// Gets the transaction amount.
+        /// Amount of the transaction.
         /// </summary>
         [Required]
         public decimal Amount { get; init; }
 
         /// <summary>
-        /// Gets the purpose of payment.
+        /// Purpose of payment.
         /// </summary>
         [Required]
         [MinLength(3)]
         public string PurposeOfPayment { get; init; } = string.Empty;
 
         /// <summary>
-        /// Gets the date when the transaction was paid.
+        /// Date the transaction was paid.
         /// </summary>
         [Required]
         public DateTime PaidAt { get; init; }
 
         /// <summary>
-        /// Gets the optional budget id.
+        /// Optional budget id assigned to the transaction.
         /// </summary>
         public int? BudgetId { get; init; }
     }

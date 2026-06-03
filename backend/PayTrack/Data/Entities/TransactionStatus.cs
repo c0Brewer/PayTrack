@@ -12,26 +12,31 @@ namespace PayTrack.Data.Entities
         /// <summary>
         /// The request has been submitted but not yet processed in any way.
         /// </summary>
-        Submitted,
+        Submitted = 0,
 
         /// <summary>
         /// There have been changes requested by the Finance Team
         /// </summary>
-        ChangesRequested,
+        ChangesRequested = 1,
 
         /// <summary>
         /// The request has been approved
         /// </summary>
-        Approved,
+        Approved = 2,
 
         /// <summary>
         /// The money has been paid.
         /// </summary>
-        Paid,
+        Paid = 3,
 
         /// <summary>
         /// The request has been declined.
         /// </summary>
-        Declined,
+        Declined = 4,
+
+        /// <summary>
+        /// The request is back in review after requested changes were submitted.
+        /// </summary>
+        Review = 5,
     }
 }

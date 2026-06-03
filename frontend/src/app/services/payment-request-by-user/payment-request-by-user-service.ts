@@ -4,14 +4,18 @@ import { from, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { client } from '../../client';
 import {
+  ApprovePaymentRequestByUserDto,
   CreatePaymentRequestByUserDto,
+  DeclinePaymentRequestByUserDto,
   DuplicatePaymentRequestByUserDto,
   GetDuplicatePaymentRequestsByUserOptions,
   GetPaymentRequestsByUserByIdOptions,
   GetPaymentRequestsByUserOptions,
+  MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
   PayoutType,
+  RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
@@ -22,10 +26,12 @@ import { AuthService } from '../auth/auth-service';
 export class PaymentRequestByUserService {
   constructor(private readonly authService: AuthService) {}
 
+  private getApiUrl(path: string): string {
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   private getUploadUrl(): string {
-    return environment.apiBaseUrl
-      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
-      : '/api/v1/transaction/user';
+    return this.getApiUrl('/api/v1/transaction/user');
   }
 
   public getPaymentRequestsByUser(
@@ -107,7 +113,7 @@ export class PaymentRequestByUserService {
   }
 
   public getDuplicatePaymentRequestsByUser(
-    queryOptions: GetDuplicatePaymentRequestsByUserOptions,
+    queryOptions: GetDuplicatePaymentRequestsByUserOptions & { PaymentRequestByUserId?: number },
   ): Observable<DuplicatePaymentRequestByUserDto[]> {
     const promise = client
       .GET('/api/v1/transaction/user/duplicate', {
@@ -130,6 +136,46 @@ export class PaymentRequestByUserService {
     return from(promise);
   }
 
+  public deletePaymentRequestByUser(id: number): Observable<void> {
+    const promise = fetch(this.getApiUrl(`/api/v1/transaction/user/${id}`), {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
+
+    return from(promise);
+  }
+
+  public dismissDuplicatePaymentRequestByUser(
+    paymentRequestByUserId: number,
+    duplicatePaymentRequestByUserId: number,
+  ): Observable<void> {
+    const promise = fetch(
+      this.getApiUrl(
+        `/api/v1/transaction/user/${paymentRequestByUserId}/duplicate/${duplicatePaymentRequestByUserId}/dismiss`,
+      ),
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
+
+    return from(promise);
+  }
+
   public updatePaymentRequestByUser(
     id: number,
     updateRequest: UpdatePaymentRequestByUserDto,
@@ -142,6 +188,90 @@ export class PaymentRequestByUserService {
           },
         },
         body: updateRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public markPaymentRequestByUserAsPaid(
+    id: number,
+    markPaidRequest: MarkPaymentRequestByUserAsPaidDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/mark-paid', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: markPaidRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public approvePaymentRequestByUser(
+    id: number,
+    approveRequest: ApprovePaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/approve', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: approveRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public declinePaymentRequestByUser(
+    id: number,
+    declineRequest: DeclinePaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/decline', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: declineRequest,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public requestChangesForPaymentRequestByUser(
+    id: number,
+    requestChangesRequest: RequestChangesPaymentRequestByUserDto,
+  ): Observable<PaymentRequestByUserDto> {
+    const promise = client
+      .POST('/api/v1/transaction/user/{id}/request-changes', {
+        params: {
+          path: {
+            id: id,
+          },
+        },
+        body: requestChangesRequest,
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
