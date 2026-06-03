@@ -1621,6 +1621,243 @@ export interface paths {
             };
         };
         post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/mark-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MarkPaymentRequestByUserAsPaidDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ApprovePaymentRequestByUserDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DeclinePaymentRequestByUserDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RequestChangesPaymentRequestByUserDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentRequestByUserDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1676,6 +1913,9 @@ export interface paths {
                 query: {
                     TeamId: number;
                     Amount: number;
+                    PaidAt: string;
+                    InvoiceNumber?: string;
+                    PaymentRequestByUserId?: number;
                 };
                 header?: never;
                 path?: never;
@@ -1705,6 +1945,60 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/duplicate/{duplicateId}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    duplicateId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2129,6 +2423,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ApprovePaymentRequestByUserDto: {
+            /** Format: int32 */
+            costCentreId: number;
+            reason?: string | null;
+        };
         BankAccountDto: {
             /** Format: int32 */
             id: number;
@@ -2314,6 +2613,9 @@ export interface components {
             /** Format: int32 */
             budgetId?: number | null;
         };
+        DeclinePaymentRequestByUserDto: {
+            reason: string;
+        };
         DeleteCostCentrePreviewDto: {
             costCentreName: string;
             /** Format: int32 */
@@ -2343,14 +2645,19 @@ export interface components {
             paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
             /** Format: int32 */
             score: number;
-            isAmountAndUserMatch: boolean;
-            isAmountAndTeamMatch: boolean;
+            matchedFields: string[];
         };
         GoogleAuthCallbackDto: {
             code: string;
         };
         GoogleAuthResponseDto: {
             jwtToken: string;
+        };
+        MarkPaymentRequestByUserAsPaidDto: {
+            paymentReference: string;
+            purposeOfPayment: string;
+            /** Format: date-time */
+            paymentDate: string;
         };
         /**
          * Format: int32
@@ -2406,9 +2713,12 @@ export interface components {
             createdAt?: string | null;
             /** Format: date-time */
             paidAt?: string | null;
+            /** Format: date-time */
+            financePaidAt?: string | null;
             invoiceNumber: string;
             comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
+            hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {
@@ -2436,6 +2746,9 @@ export interface components {
             instance?: string | null;
         } & {
             [key: string]: unknown;
+        };
+        RequestChangesPaymentRequestByUserDto: {
+            reason: string;
         };
         /**
          * Format: int32
@@ -2501,10 +2814,11 @@ export interface components {
          * Format: int32
          * @enum {integer}
          */
-        TransactionStatus: 0 | 1 | 2 | 3 | 4;
+        TransactionStatus: 0 | 1 | 2 | 3 | 4 | 5;
         TransactionStatusHistoryDto: {
             /** Format: int32 */
             changedById: number;
+            changedBy?: components["schemas"]["UserDto"];
             comment: string;
             fromStatus: components["schemas"]["TransactionStatus"];
             toStatus: components["schemas"]["TransactionStatus"];
