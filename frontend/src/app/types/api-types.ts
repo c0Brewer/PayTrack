@@ -2164,7 +2164,7 @@ export interface components {
             receipt: string;
             payoutType: components["schemas"]["PayoutType"];
             /** Format: int32 */
-            bankAccountId: number;
+            bankAccountId?: number | null;
         };
         CreateSeasonRequestDto: {
             name: string;
