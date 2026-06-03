@@ -8,6 +8,7 @@ using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
+using PayTrack.Data.Helpers;
 using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Data.Repositories.Implementation
@@ -73,6 +74,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             // Could potentially add other ordering logic here as well
             var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            await this.SetPotentialDuplicateFlagsAsync(items);
 
             return (items, totalCount);
         }
@@ -207,13 +209,40 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount)
+        public async Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(
+            int userId,
+            int teamId,
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber = null,
+            int? paymentRequestByUserId = null)
         {
-            return await this.context.PaymentRequestsByUser
+            var paidAtDayStart = DateTime.SpecifyKind(paidAt.Date, DateTimeKind.Utc);
+            var paidAtDayEnd = paidAtDayStart.AddDays(1);
+            var hasInvoiceNumber = !string.IsNullOrWhiteSpace(invoiceNumber);
+            var normalizedInvoiceNumber = invoiceNumber?.Trim().ToUpperInvariant();
+
+            var query = this.context.PaymentRequestsByUser
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
-                    (paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount) ||
-                    (paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount))
+                    paymentRequestByUser.PaidAt.HasValue &&
+                    (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
+                        && (paymentRequestByUser.Amount == amount
+                            || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
+                    || (hasInvoiceNumber
+                        && paymentRequestByUser.InvoiceNumber != null
+                        && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)));
+
+            if (paymentRequestByUserId.HasValue)
+            {
+                var dismissedDuplicateIds = await this.GetDismissedDuplicateIdsAsync(paymentRequestByUserId.Value);
+
+                query = query.Where(paymentRequestByUser =>
+                    paymentRequestByUser.Id != paymentRequestByUserId.Value &&
+                    !dismissedDuplicateIds.Contains(paymentRequestByUser.Id));
+            }
+
+            return await query
                 .Include(paymentRequestByUser => paymentRequestByUser.User)
                 .Include(paymentRequestByUser => paymentRequestByUser.Team)
                 .Include(paymentRequestByUser => paymentRequestByUser.Budget)
@@ -247,6 +276,62 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeletePaymentRequestByUserAsync(int id)
+        {
+            var transaction = await this.context.PaymentRequestsByUser.FindAsync(id);
+
+            if (transaction is null)
+            {
+                return false;
+            }
+
+            this.context.PaymentRequestsByUser.Remove(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res < 1)
+            {
+                throw new InternalErrorException($"Deleting Transaction did not end as expected. Deleted {res} transactions.");
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public async Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
+        {
+            var (firstId, secondId) = NormalizeDuplicatePair(paymentRequestByUserId, duplicatePaymentRequestByUserId);
+
+            var existingDismissal = await this.context.DismissedDuplicatePaymentRequestsByUser
+                .AnyAsync(d => d.FirstPaymentRequestByUserId == firstId && d.SecondPaymentRequestByUserId == secondId);
+
+            if (existingDismissal)
+            {
+                return;
+            }
+
+            var existingPaymentRequestCount = await this.context.PaymentRequestsByUser
+                .CountAsync(paymentRequestByUser => paymentRequestByUser.Id == firstId || paymentRequestByUser.Id == secondId);
+
+            if (existingPaymentRequestCount != 2)
+            {
+                throw new NotFoundException("PaymentRequestByUser could not be found");
+            }
+
+            this.context.DismissedDuplicatePaymentRequestsByUser.Add(new DismissedDuplicatePaymentRequestByUser
+            {
+                FirstPaymentRequestByUserId = firstId,
+                SecondPaymentRequestByUserId = secondId,
+            });
+
+            int res = await this.context.SaveChangesAsync();
+
+            if (res != 1)
+            {
+                throw new InternalErrorException($"Dismissing duplicate warning did not end as expected. Saved {res} entries.");
+            }
         }
 
         private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
@@ -359,6 +444,133 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = dbQuery.Include(t => t.User);
 
             return dbQuery;
+        }
+
+        private static (int FirstId, int SecondId) NormalizeDuplicatePair(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
+        {
+            return paymentRequestByUserId < duplicatePaymentRequestByUserId
+                ? (paymentRequestByUserId, duplicatePaymentRequestByUserId)
+                : (duplicatePaymentRequestByUserId, paymentRequestByUserId);
+        }
+
+        private static string CreateDuplicatePairKey(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
+        {
+            var (firstId, secondId) = NormalizeDuplicatePair(paymentRequestByUserId, duplicatePaymentRequestByUserId);
+            return $"{firstId}:{secondId}";
+        }
+
+        private async Task SetPotentialDuplicateFlagsAsync(List<PaymentRequestByUser> paymentRequests)
+        {
+            var keys = paymentRequests
+                .Where(paymentRequestByUser => paymentRequestByUser.PaidAt.HasValue)
+                .Select(paymentRequestByUser => new
+                {
+                    paymentRequestByUser.Id,
+                    paymentRequestByUser.UserId,
+                    paymentRequestByUser.TeamId,
+                    paymentRequestByUser.Amount,
+                    PaidAtDay = paymentRequestByUser.PaidAt!.Value.Date,
+                    paymentRequestByUser.InvoiceNumber,
+                })
+                .ToList();
+
+            if (keys.Count == 0)
+            {
+                return;
+            }
+
+            var amounts = keys.Select(key => key.Amount).Distinct().ToList();
+            var userIds = keys.Select(key => key.UserId).Distinct().ToList();
+            var teamIds = keys.Select(key => key.TeamId).Distinct().ToList();
+            var invoiceNumbers = keys
+                .Select(key => key.InvoiceNumber)
+                .Where(invoiceNumber => !string.IsNullOrWhiteSpace(invoiceNumber))
+                .Select(invoiceNumber => invoiceNumber.Trim().ToUpperInvariant())
+                .Distinct()
+                .ToList();
+            var minPaidAtDay = DateTime.SpecifyKind(keys.Min(key => key.PaidAtDay), DateTimeKind.Utc);
+            var maxPaidAtDayEnd = DateTime.SpecifyKind(keys.Max(key => key.PaidAtDay).AddDays(1), DateTimeKind.Utc);
+
+            var candidates = await this.context.PaymentRequestsByUser
+                .AsNoTracking()
+                .Where(paymentRequestByUser =>
+                    paymentRequestByUser.PaidAt.HasValue &&
+                    (((userIds.Contains(paymentRequestByUser.UserId) || teamIds.Contains(paymentRequestByUser.TeamId))
+                        && (amounts.Contains(paymentRequestByUser.Amount)
+                            || (paymentRequestByUser.PaidAt >= minPaidAtDay && paymentRequestByUser.PaidAt < maxPaidAtDayEnd)))
+                    || (paymentRequestByUser.InvoiceNumber != null
+                        && invoiceNumbers.Contains(paymentRequestByUser.InvoiceNumber.Trim().ToUpper()))))
+                .Select(paymentRequestByUser => new
+                {
+                    paymentRequestByUser.Id,
+                    paymentRequestByUser.UserId,
+                    paymentRequestByUser.TeamId,
+                    paymentRequestByUser.Amount,
+                    paymentRequestByUser.PaidAt,
+                    paymentRequestByUser.InvoiceNumber,
+                })
+                .ToListAsync();
+
+            var relevantPaymentRequestIds = keys
+                .Select(key => key.Id)
+                .Concat(candidates.Select(candidate => candidate.Id))
+                .Distinct()
+                .ToList();
+
+            var dismissedPairs = await this.context.DismissedDuplicatePaymentRequestsByUser
+                .AsNoTracking()
+                .Where(d =>
+                    relevantPaymentRequestIds.Contains(d.FirstPaymentRequestByUserId) ||
+                    relevantPaymentRequestIds.Contains(d.SecondPaymentRequestByUserId))
+                .Select(d => new
+                {
+                    d.FirstPaymentRequestByUserId,
+                    d.SecondPaymentRequestByUserId,
+                })
+                .ToListAsync();
+
+            var dismissedPairKeys = dismissedPairs
+                .Select(d => CreateDuplicatePairKey(d.FirstPaymentRequestByUserId, d.SecondPaymentRequestByUserId))
+                .ToHashSet();
+
+            var duplicateIds = keys
+                .Where(key => candidates.Any(candidate =>
+                    candidate.Id != key.Id &&
+                    !dismissedPairKeys.Contains(CreateDuplicatePairKey(key.Id, candidate.Id)) &&
+                    DuplicatePaymentRequestByUserScorer.Calculate(
+                        new PaymentRequestByUser
+                        {
+                            UserId = candidate.UserId,
+                            TeamId = candidate.TeamId,
+                            Amount = candidate.Amount,
+                            PaidAt = candidate.PaidAt,
+                            InvoiceNumber = candidate.InvoiceNumber,
+                        },
+                        key.UserId,
+                        key.TeamId,
+                        key.Amount,
+                        key.PaidAtDay,
+                        key.InvoiceNumber).Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold))
+                .Select(key => key.Id)
+                .ToHashSet();
+
+            foreach (var paymentRequest in paymentRequests)
+            {
+                paymentRequest.HasPotentialDuplicate = duplicateIds.Contains(paymentRequest.Id);
+            }
+        }
+
+        private async Task<List<int>> GetDismissedDuplicateIdsAsync(int paymentRequestByUserId)
+        {
+            return await this.context.DismissedDuplicatePaymentRequestsByUser
+                .AsNoTracking()
+                .Where(d =>
+                    d.FirstPaymentRequestByUserId == paymentRequestByUserId ||
+                    d.SecondPaymentRequestByUserId == paymentRequestByUserId)
+                .Select(d => d.FirstPaymentRequestByUserId == paymentRequestByUserId
+                    ? d.SecondPaymentRequestByUserId
+                    : d.FirstPaymentRequestByUserId)
+                .ToListAsync();
         }
     }
 }

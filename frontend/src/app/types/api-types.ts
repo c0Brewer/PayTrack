@@ -2066,6 +2066,10 @@ export interface paths {
                 query: {
                     TeamId: number;
                     Amount: number;
+                    /** Format: date-time */
+                    PaidAt: string;
+                    InvoiceNumber?: string | null;
+                    PaymentRequestByUserId?: number;
                 };
                 header?: never;
                 path?: never;
@@ -2281,6 +2285,10 @@ export interface components {
             periodEnd: string;
             type: components["schemas"]["BudgetType"];
             transactionIds: number[];
+            /** Format: double */
+            paidAmount: number;
+            /** Format: double */
+            approvedAmount: number;
         };
         BudgetDtoPaginatedResponse: {
             items: components["schemas"]["BudgetDto"][] | null;
@@ -2442,8 +2450,7 @@ export interface components {
             paymentRequestByUser: components["schemas"]["PaymentRequestByUserDto"];
             /** Format: int32 */
             score: number;
-            isAmountAndUserMatch: boolean;
-            isAmountAndTeamMatch: boolean;
+            matchedFields: string[];
         };
         GoogleAuthCallbackDto: {
             code: string;
@@ -2519,6 +2526,7 @@ export interface components {
             invoiceNumber: string;
             comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
+            hasPotentialDuplicate: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {

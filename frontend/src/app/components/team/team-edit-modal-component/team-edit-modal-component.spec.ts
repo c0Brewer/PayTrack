@@ -248,6 +248,8 @@ describe('TeamEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -426,6 +428,8 @@ describe('TeamEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };

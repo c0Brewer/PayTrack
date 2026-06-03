@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
-using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.Budget
 {
@@ -40,5 +39,11 @@ namespace PayTrack.Application.Dto.Budget
         BudgetType Type,
 
         [property: Required]
-        IList<int> TransactionIds);
+        IList<int> TransactionIds,
+
+        [property: Required]
+        decimal PaidAmount,
+
+        [property: Required]
+        decimal ApprovedAmount);
 }

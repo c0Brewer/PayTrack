@@ -56,5 +56,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [property: Required]
         PayoutType PayoutType,
 
+        bool HasPotentialDuplicate,
+
         BankAccountDto? BankAccount);
 }
