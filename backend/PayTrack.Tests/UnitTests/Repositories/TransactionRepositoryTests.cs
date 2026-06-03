@@ -750,6 +750,88 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.Should().HaveCount(2);
         }
 
+        [Fact]
+        public async Task GetAllTransactions_ShouldFilterByCostCentre()
+        {
+            await using var context = GetInMemoryDbContext("FilterByCostCentre");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+            context.Seasons.Add(new Season
+            {
+                Id = 1,
+                Name = "2026",
+            });
+            context.CostCentres.AddRange(
+                new CostCentre { Id = 1, Name = "Engine" },
+                new CostCentre { Id = 2, Name = "Chassis" });
+            context.Budgets.AddRange(
+                new Budget
+                {
+                    Id = 1,
+                    Name = "Engine Budget",
+                    TeamId = 1,
+                    CostCentreId = 1,
+                    SeasonId = 1,
+                    TargetAmount = 1000,
+                    PeriodStart = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    PeriodEnd = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+                },
+                new Budget
+                {
+                    Id = 2,
+                    Name = "Chassis Budget",
+                    TeamId = 1,
+                    CostCentreId = 2,
+                    SeasonId = 1,
+                    TargetAmount = 1000,
+                    PeriodStart = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    PeriodEnd = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+                });
+            context.Transactions.AddRange(
+                new PaymentRequestByUser
+                {
+                    Id = 1,
+                    UserId = 1,
+                    TeamId = 1,
+                    BudgetId = 1,
+                    Amount = 100,
+                    InvoiceNumber = "INV-1",
+                },
+                new PaymentRequestByUser
+                {
+                    Id = 2,
+                    UserId = 1,
+                    TeamId = 1,
+                    BudgetId = 2,
+                    Amount = 200,
+                    InvoiceNumber = "INV-2",
+                },
+                new PaymentRequestByUser
+                {
+                    Id = 3,
+                    UserId = 1,
+                    TeamId = 1,
+                    BudgetId = null,
+                    Amount = 300,
+                    InvoiceNumber = "INV-3",
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (result, count) = await repo.GetAllAsync(new Application.Dto.Transaction.GetTransactionQuery
+            {
+                CostCentreId = 1,
+                IncludeBudget = true,
+            });
+
+            count.Should().Be(1);
+            result.Should().ContainSingle(t => t.Id == 1);
+            result.Single().Budget.Should().NotBeNull();
+            result.Single().Budget!.CostCentre.Name.Should().Be("Engine");
+        }
+
         // ----------------------------
         // ADD PaymentRequestByTeam
         // ----------------------------
