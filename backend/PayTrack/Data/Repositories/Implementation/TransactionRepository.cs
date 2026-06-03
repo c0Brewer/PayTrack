@@ -373,6 +373,11 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.TeamId == query.TeamId.Value);
             }
 
+            if (query?.CostCentreId.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.Budget != null && t.Budget.CostCentreId == query.CostCentreId.Value);
+            }
+
             if (query?.PaymentDirection.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.PaymentDirection == query.PaymentDirection.Value);
