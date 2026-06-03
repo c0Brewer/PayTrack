@@ -33,7 +33,8 @@ namespace PayTrack.Application.Validation
 
             if (value is not string text)
             {
-                return false;
+                throw new InvalidOperationException(
+                    $"{nameof(OptionalMinLengthAttribute)} can only validate string values, but received {value.GetType().Name}.");
             }
 
             var trimmedText = text.Trim();
