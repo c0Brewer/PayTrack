@@ -18,6 +18,8 @@ const activeBudget: BudgetDto = {
   periodStart: new Date(now.getFullYear() - 1, 0, 1).toISOString(),
   periodEnd: new Date(now.getFullYear() + 1, 11, 31).toISOString(),
   transactionIds: [],
+  paidAmount: 0,
+  approvedAmount: 0,
 };
 const expiredBudget: BudgetDto = {
   id: 11,
@@ -30,6 +32,8 @@ const expiredBudget: BudgetDto = {
   periodStart: '2020-01-01T00:00:00Z',
   periodEnd: '2020-12-31T00:00:00Z',
   transactionIds: [],
+  paidAmount: 0,
+  approvedAmount: 0,
 };
 
 const mockCostCentres: CostCentreDto[] = [

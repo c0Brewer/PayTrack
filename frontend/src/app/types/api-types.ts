@@ -2283,6 +2283,10 @@ export interface components {
             /** Format: date-time */
             periodEnd: string;
             transactionIds: number[];
+            /** Format: double */
+            paidAmount: number;
+            /** Format: double */
+            approvedAmount: number;
         };
         BudgetDtoPaginatedResponse: {
             items: components["schemas"]["BudgetDto"][] | null;

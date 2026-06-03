@@ -102,7 +102,7 @@ namespace PayTrack.Data.Repositories.Implementation
             // Check if budget should be included
             if (query?.IncludeBudgets == true)
             {
-                dbQuery = dbQuery.Include(t => t.Budgets);
+                dbQuery = dbQuery.Include(t => t.Budgets).ThenInclude(b => b.Transactions);
             }
 
             // Filter by Budget
@@ -187,7 +187,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeBudgets == true)
             {
-                dbQuery = dbQuery.Include(t => t.Budgets);
+                dbQuery = dbQuery.Include(t => t.Budgets).ThenInclude(b => b.Transactions);
             }
 
             if (query?.IncludeMembers == true)

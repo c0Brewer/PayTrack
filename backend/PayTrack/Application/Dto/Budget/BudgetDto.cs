@@ -37,5 +37,11 @@ namespace PayTrack.Application.Dto.Budget
         DateTime PeriodEnd,
 
         [property: Required]
-        IList<int> TransactionIds);
+        IList<int> TransactionIds,
+
+        [property: Required]
+        decimal PaidAmount,
+
+        [property: Required]
+        decimal ApprovedAmount);
 }
