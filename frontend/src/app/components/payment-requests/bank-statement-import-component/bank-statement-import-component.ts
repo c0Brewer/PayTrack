@@ -44,7 +44,9 @@ export class BankStatementImportComponent {
   parsedEntries = signal<BankStatementEntryDto[]>([]);
 
   /** Working copy of match results; extended with local state flags */
-  results = signal<(BankStatementMatchResultDto & { skipped: boolean; expanded: boolean; _entryId: string })[]>([]);
+  results = signal<
+    (BankStatementMatchResultDto & { skipped: boolean; expanded: boolean; _entryId: string })[]
+  >([]);
 
   // ── computed helpers ───────────────────────────────────────────────────────
   matchedCount = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped).length);
@@ -131,7 +133,6 @@ export class BankStatementImportComponent {
         this.results.set(enriched);
         this.isLoading.set(false);
         this.phase.set('review');
-        console.log(enriched);
       },
       error: (err: Error) => {
         this.notificationService.showError(err.message);
