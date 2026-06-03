@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
+import { BudgetType, CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
 
 import { TeamEditModalComponent } from './team-edit-modal-component';
 
@@ -246,7 +246,10 @@ describe('TeamEditModalComponent', () => {
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -316,9 +319,10 @@ describe('TeamEditModalComponent', () => {
       description: null,
       costCentreId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: 0,
     });
 
     component.removeNewBudget(0);
@@ -422,7 +426,10 @@ describe('TeamEditModalComponent', () => {
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -504,5 +511,25 @@ describe('TeamEditModalComponent', () => {
     ).find((option) => option.textContent?.trim() === '2026');
 
     expect(seasonOption).toBeTruthy();
+  });
+
+  it('getBudgetFieldError should skip amount validation for Income budgets', () => {
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Merch sales',
+      costCentreId: 1,
+      seasonId: 1,
+      targetAmount: null,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      type: BudgetType.Income,
+    };
+
+    expect(component.getBudgetFieldError('targetAmount')).toBe('');
+  });
+
+  it('formatBudgetAmount should return dash for null and formatted number otherwise', () => {
+    expect(component.formatBudgetAmount(null)).toBe('—');
+    expect(component.formatBudgetAmount(2500)).toBe('2.500');
   });
 });

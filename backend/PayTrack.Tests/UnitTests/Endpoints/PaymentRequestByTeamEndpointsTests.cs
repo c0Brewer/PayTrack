@@ -152,8 +152,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     PaidAt = DateTime.Today,
                 },
                 UserToAssignToId: 0,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);
@@ -186,8 +185,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     PaidAt = DateTime.Today,
                 },
                 UserToAssignToId: 1,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);

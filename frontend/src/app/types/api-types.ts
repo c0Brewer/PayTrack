@@ -361,6 +361,7 @@ export interface paths {
                     PeriodEnd?: string;
                     Limit?: number;
                     Offset?: number;
+                    Type?: components["schemas"]["BudgetType"];
                 };
                 header?: never;
                 path?: never;
@@ -2481,12 +2482,17 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type: components["schemas"]["BudgetType"];
             transactionIds: number[];
+            /** Format: double */
+            paidAmount: number;
+            /** Format: double */
+            approvedAmount: number;
         };
         BudgetDtoPaginatedResponse: {
             items: components["schemas"]["BudgetDto"][] | null;
@@ -2499,6 +2505,11 @@ export interface components {
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        BudgetType: 0 | 1;
         CostCentreDto: {
             /** Format: int32 */
             id: number;
@@ -2534,11 +2545,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateCostCentreBudgetEntryDto: {
             name: string;
@@ -2548,11 +2560,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateCostCentreRequestDto: {
             name: string;
@@ -2566,8 +2579,6 @@ export interface components {
             userToAssignToId: number;
             /** Format: date-time */
             dueDate: string;
-            /** Format: int32 */
-            costCentreId?: number | null;
         };
         CreatePaymentRequestByUserDto: {
             transaction: components["schemas"]["CreateTransactionDto"];
@@ -2590,11 +2601,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateTeamRequestDto: {
             name: string;
@@ -2845,6 +2857,7 @@ export interface components {
             periodStart?: string | null;
             /** Format: date-time */
             periodEnd?: string | null;
+            type?: components["schemas"]["BudgetType"];
         };
         UpdateCostCentreRequestDto: {
             name?: string | null;
@@ -2903,11 +2916,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         UpsertTeamBudgetEntryDto: {
             /** Format: int32 */
@@ -2919,11 +2933,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         UserDto: {
             /** Format: int32 */

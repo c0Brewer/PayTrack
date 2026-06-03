@@ -40,7 +40,8 @@
             "security": {
               "allowedHosts": []
             },
-            "ssr": false
+            "ssr": false,
+            "allowedCommonJsDependencies": ["papaparse"]
           },
           "configurations": {
             "production": {

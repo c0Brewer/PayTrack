@@ -78,9 +78,10 @@ namespace PayTrack.Tests.UnitTests.Services
                     2,
                     3,
                     4,
-                    1000,
+                    (decimal?)1000,
                     It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodStart.Date),
-                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodEnd.Date)))
+                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodEnd.Date),
+                    BudgetType.Expense))
                 .ReturnsAsync(created);
 
             // Act
@@ -121,10 +122,88 @@ namespace PayTrack.Tests.UnitTests.Services
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<decimal>(),
+                    It.IsAny<decimal?>(),
                     It.IsAny<DateTime>(),
-                    It.IsAny<DateTime>()),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<BudgetType>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateBudgetAsync_Income_ShouldSucceed_WhenTargetAmountIsNull()
+        {
+            // Arrange
+            var periodStart = new DateTime(2026, 1, 1);
+            var periodEnd = new DateTime(2026, 12, 31);
+            var created = new Budget { Id = 2, Name = "Income budget", Type = BudgetType.Income };
+
+            this.repoMock
+                .Setup(r => r.AddAsync(
+                    "Income budget",
+                    null,
+                    1,
+                    2,
+                    3,
+                    (decimal?)null,
+                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc),
+                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc),
+                    BudgetType.Income))
+                .ReturnsAsync(created);
+
+            // Act
+            var result = await this.service.CreateBudgetAsync(
+                "Income budget",
+                null,
+                1,
+                2,
+                3,
+                null,
+                periodStart,
+                periodEnd,
+                BudgetType.Income);
+
+            // Assert
+            result.Should().BeSameAs(created);
+        }
+
+        [Fact]
+        public async Task CreateBudgetAsync_Income_ShouldThrow_WhenTargetAmountIsProvided()
+        {
+            // Act
+            var act = () => this.service.CreateBudgetAsync(
+                "Income budget",
+                null,
+                1,
+                2,
+                3,
+                500,
+                new DateTime(2026, 1, 1),
+                new DateTime(2026, 12, 31),
+                BudgetType.Income);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidStateException>()
+                .WithMessage("*Income*");
+        }
+
+        [Fact]
+        public async Task CreateBudgetAsync_Expense_ShouldThrow_WhenTargetAmountIsNull()
+        {
+            // Act
+            var act = () => this.service.CreateBudgetAsync(
+                "Expense budget",
+                null,
+                1,
+                2,
+                3,
+                null,
+                new DateTime(2026, 1, 1),
+                new DateTime(2026, 12, 31),
+                BudgetType.Expense);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidStateException>()
+                .WithMessage("*Expense*");
         }
 
         [Fact]
@@ -143,9 +222,10 @@ namespace PayTrack.Tests.UnitTests.Services
                     2,
                     3,
                     4,
-                    500,
+                    (decimal?)500,
                     It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodStart.Date),
-                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodEnd.Date)))
+                    It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodEnd.Date),
+                    It.IsAny<BudgetType?>()))
                 .ReturnsAsync(updated);
 
             // Act
@@ -181,6 +261,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     null,
                     null,
                     It.Is<DateTime>(d => d.Kind == DateTimeKind.Utc && d.Date == periodStart.Date),
+                    null,
                     null))
                 .ReturnsAsync(updated);
 
@@ -212,7 +293,8 @@ namespace PayTrack.Tests.UnitTests.Services
                     It.IsAny<int?>(),
                     It.IsAny<decimal?>(),
                     It.IsAny<DateTime?>(),
-                    It.IsAny<DateTime?>()),
+                    It.IsAny<DateTime?>(),
+                    It.IsAny<BudgetType?>()),
                 Times.Never);
         }
 

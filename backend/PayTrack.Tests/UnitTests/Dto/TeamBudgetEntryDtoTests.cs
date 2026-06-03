@@ -1,5 +1,6 @@
 using FluentAssertions;
 using PayTrack.Application.Dto.Budget;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Dto
 {
@@ -19,6 +20,19 @@ namespace PayTrack.Tests.UnitTests.Dto
             dto.TargetAmount.Should().Be(250m);
             dto.PeriodStart.Should().Be(periodStart);
             dto.PeriodEnd.Should().Be(periodEnd);
+            dto.Type.Should().Be(BudgetType.Expense);
+        }
+
+        [Fact]
+        public void CreateTeamBudgetEntryDto_Income_ShouldExposeNullTargetAmount()
+        {
+            var periodStart = new DateTime(2026, 1, 1);
+            var periodEnd = new DateTime(2026, 12, 31);
+
+            var dto = new CreateTeamBudgetEntryDto("Merch sales", null, 12, 3, null, periodStart, periodEnd, BudgetType.Income);
+
+            dto.TargetAmount.Should().BeNull();
+            dto.Type.Should().Be(BudgetType.Income);
         }
 
         [Fact]
@@ -36,6 +50,7 @@ namespace PayTrack.Tests.UnitTests.Dto
             dto.TargetAmount.Should().Be(500m);
             dto.PeriodStart.Should().Be(periodStart);
             dto.PeriodEnd.Should().Be(periodEnd);
+            dto.Type.Should().Be(BudgetType.Expense);
         }
     }
 }

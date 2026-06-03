@@ -4,6 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Transaction;
+using PayTrack.Application.Validation;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.PaymentRequestByUser
@@ -19,7 +20,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [property: MinLength(3)]
         string InvoiceNumber,
 
-        [property: MinLength(3)]
+        [property: OptionalMinLength(3)]
         string? Comment,
 
         [property: Required]

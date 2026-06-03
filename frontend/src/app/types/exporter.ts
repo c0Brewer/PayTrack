@@ -55,6 +55,11 @@ export enum PayoutType {
   External = 1,
 }
 
+export enum BudgetType {
+  Expense = 0,
+  Income = 1,
+}
+
 export const PayoutTypeLabels: Record<PayoutType, string> = {
   [PayoutType.User]: 'Pay to User',
   [PayoutType.External]: 'Pay to Supplier',

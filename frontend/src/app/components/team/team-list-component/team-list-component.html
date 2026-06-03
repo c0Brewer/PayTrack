@@ -42,6 +42,10 @@
           </button>
         </td>
         <td class="actions-col" data-label="Actions">
+          <a class="btn btn-secondary" [routerLink]="['/team', team.id]">
+            <span class="material-symbols-outlined">bar_chart</span>
+            Details
+          </a>
           <button type="button" class="btn btn-secondary" (click)="onOpenEditTeam(team)">
             <span class="material-symbols-outlined">edit</span>
             Edit

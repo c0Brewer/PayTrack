@@ -42,6 +42,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         TargetAmount = entry.TargetAmount,
                         PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                         PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                        Type = entry.Type,
                     });
                 }
             }
@@ -102,7 +103,7 @@ namespace PayTrack.Data.Repositories.Implementation
             // Check if budget should be included
             if (query?.IncludeBudgets == true)
             {
-                dbQuery = dbQuery.Include(t => t.Budgets);
+                dbQuery = dbQuery.Include(t => t.Budgets).ThenInclude(b => b.Transactions);
             }
 
             // Filter by Budget
@@ -187,7 +188,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (query?.IncludeBudgets == true)
             {
-                dbQuery = dbQuery.Include(t => t.Budgets);
+                dbQuery = dbQuery.Include(t => t.Budgets).ThenInclude(b => b.Transactions);
             }
 
             if (query?.IncludeMembers == true)
@@ -271,6 +272,7 @@ namespace PayTrack.Data.Repositories.Implementation
                             TargetAmount = entry.TargetAmount,
                             PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                             PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                            Type = entry.Type,
                         });
                     }
                     else
@@ -284,6 +286,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         existing.TargetAmount = entry.TargetAmount;
                         existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
                         existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);
+                        existing.Type = entry.Type;
                     }
 
                     hasChanges = true;

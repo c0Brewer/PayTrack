@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { CostCentreDto, TeamDto } from '../../../types/exporter';
 
@@ -6,6 +7,7 @@ type TeamBudget = NonNullable<TeamDto['budgets']>[number];
 
 @Component({
   selector: 'app-team-list-component',
+  imports: [RouterLink],
   templateUrl: './team-list-component.html',
   styleUrl: './team-list-component.scss',
 })
@@ -58,10 +60,13 @@ export class TeamListComponent {
   }
 
   getBudgetDisplayValue(budget: TeamBudget): string {
-    return `${this.getCostCentreName(budget.costCentreId)}: ${this.formatBudgetAmount(budget.targetAmount)} €`;
+    const amount = this.formatBudgetAmount(budget.targetAmount);
+    const suffix = budget.targetAmount != null ? ' €' : '';
+    return `${this.getCostCentreName(budget.costCentreId)}: ${amount}${suffix}`;
   }
 
-  formatBudgetAmount(amount: number): string {
+  formatBudgetAmount(amount: number | null | undefined): string {
+    if (amount == null) return '—';
     return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
