@@ -20,6 +20,7 @@ const mockBudget: BudgetDto = {
   targetAmount: 1500,
   periodStart: '2024-01-01T00:00:00Z',
   periodEnd: '2024-12-31T00:00:00Z',
+  type: 0,
   transactionIds: [],
   paidAmount: 0,
   approvedAmount: 0,

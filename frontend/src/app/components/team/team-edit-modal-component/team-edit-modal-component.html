@@ -104,6 +104,16 @@
               <span class="field-error">{{ getBudgetFieldError('name') }}</span>
             }
           </label>
+          <label class="col-12 col-sm-4 mb-0">
+            Type
+            <select
+              class="form-select"
+              [(ngModel)]="newBudgetDraft.type"
+            >
+              <option [ngValue]="BudgetType.Expense">Expense</option>
+              <option [ngValue]="BudgetType.Income">Income</option>
+            </select>
+          </label>
           <label class="col-12 col-sm-8 mb-0">
             Cost Centre
             <select
@@ -123,20 +133,22 @@
               <span class="field-error">{{ getBudgetFieldError('costCentreId') }}</span>
             }
           </label>
-          <label class="col-12 col-sm-4 mb-0">
-            Amount (€)
-            <input
-              type="number"
-              class="form-control"
-              [(ngModel)]="newBudgetDraft.targetAmount"
-              [class.input-error]="hasBudgetFieldError('targetAmount')"
-              (blur)="onBudgetFieldBlur('targetAmount')"
-              placeholder="0.00"
-            />
-            @if (hasBudgetFieldError('targetAmount')) {
-              <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
-            }
-          </label>
+          @if (newBudgetDraft.type !== BudgetType.Income) {
+            <label class="col-12 col-sm-4 mb-0">
+              Amount (€)
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="newBudgetDraft.targetAmount"
+                [class.input-error]="hasBudgetFieldError('targetAmount')"
+                (blur)="onBudgetFieldBlur('targetAmount')"
+                placeholder="0.00"
+              />
+              @if (hasBudgetFieldError('targetAmount')) {
+                <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+              }
+            </label>
+          }
           <label class="col-12 col-sm-12 mb-0">
             Season
             <select
@@ -203,7 +215,12 @@
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
                   <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
-                  <span class="badge text-bg-light border mt-1">Existing</span>
+                  <div class="d-flex gap-1 mt-1">
+                    <span class="badge text-bg-light border">Existing</span>
+                    <span class="badge" [class.text-bg-secondary]="budget.type === BudgetType.Expense" [class.text-bg-success]="budget.type === BudgetType.Income">
+                      {{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -221,7 +238,7 @@
               <div class="budget-card__details mt-3">
                 <div>
                   <span>Amount</span>
-                  <strong>{{ formatBudgetAmount(budget.targetAmount) }} €</strong>
+                  <strong>{{ formatBudgetAmount(budget.targetAmount) }}{{ budget.targetAmount != null ? ' €' : '' }}</strong>
                 </div>
                 <div>
                   <span>Start</span>
@@ -240,7 +257,12 @@
               <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                 <div>
                   <div class="fw-semibold">{{ getCostCentreName(budget.costCentreId) + " - " + budget.name }}</div>
-                  <span class="badge text-bg-primary mt-1">New</span>
+                  <div class="d-flex gap-1 mt-1">
+                    <span class="badge text-bg-primary">New</span>
+                    <span class="badge" [class.text-bg-secondary]="budget.type === BudgetType.Expense" [class.text-bg-success]="budget.type === BudgetType.Income">
+                      {{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -254,7 +276,7 @@
               <div class="budget-card__details mt-3">
                 <div>
                   <span>Amount</span>
-                  <strong>{{ formatBudgetAmount(budget.targetAmount) }} €</strong>
+                  <strong>{{ formatBudgetAmount(budget.targetAmount) }}{{ budget.targetAmount != null ? ' €' : '' }}</strong>
                 </div>
                 <div>
                   <span>Start</span>

@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.Budget
 {
@@ -27,14 +28,16 @@ namespace PayTrack.Application.Dto.Budget
         [property: Required]
         int SeasonId,
 
-        [property: Required]
-        decimal TargetAmount,
+        decimal? TargetAmount,
 
         [property: Required]
         DateTime PeriodStart,
 
         [property: Required]
         DateTime PeriodEnd,
+
+        [property: Required]
+        BudgetType Type,
 
         [property: Required]
         IList<int> TransactionIds,

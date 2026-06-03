@@ -361,6 +361,7 @@ export interface paths {
                     PeriodEnd?: string;
                     Limit?: number;
                     Offset?: number;
+                    Type?: components["schemas"]["BudgetType"];
                 };
                 header?: never;
                 path?: never;
@@ -1621,7 +1622,44 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -2065,9 +2103,8 @@ export interface paths {
                 query: {
                     TeamId: number;
                     Amount: number;
-                    /** Format: date-time */
                     PaidAt: string;
-                    InvoiceNumber?: string | null;
+                    InvoiceNumber?: string;
                     PaymentRequestByUserId?: number;
                 };
                 header?: never;
@@ -2098,6 +2135,60 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/duplicate/{duplicateId}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    duplicateId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2277,11 +2368,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type: components["schemas"]["BudgetType"];
             transactionIds: number[];
             /** Format: double */
             paidAmount: number;
@@ -2299,6 +2391,11 @@ export interface components {
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        BudgetType: 0 | 1;
         CostCentreDto: {
             /** Format: int32 */
             id: number;
@@ -2334,11 +2431,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateCostCentreBudgetEntryDto: {
             name: string;
@@ -2348,11 +2446,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateCostCentreRequestDto: {
             name: string;
@@ -2366,8 +2465,6 @@ export interface components {
             userToAssignToId: number;
             /** Format: date-time */
             dueDate: string;
-            /** Format: int32 */
-            costCentreId?: number | null;
         };
         CreatePaymentRequestByUserDto: {
             transaction: components["schemas"]["CreateTransactionDto"];
@@ -2390,11 +2487,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         CreateTeamRequestDto: {
             name: string;
@@ -2412,6 +2510,9 @@ export interface components {
             paidAt: string;
             /** Format: int32 */
             budgetId?: number | null;
+        };
+        DeclinePaymentRequestByUserDto: {
+            reason: string;
         };
         DeleteCostCentrePreviewDto: {
             costCentreName: string;
@@ -2450,20 +2551,17 @@ export interface components {
         GoogleAuthResponseDto: {
             jwtToken: string;
         };
-        /**
-         * Format: int32
-         * @enum {integer}
-         */
-        PaymentDirection: 0 | 1;
         MarkPaymentRequestByUserAsPaidDto: {
             paymentReference: string;
             purposeOfPayment: string;
             /** Format: date-time */
             paymentDate: string;
         };
-        DeclinePaymentRequestByUserDto: {
-            reason: string;
-        };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        PaymentDirection: 0 | 1;
         PaymentRequestByTeamDto: {
             /** Format: int32 */
             id: number;
@@ -2518,7 +2616,7 @@ export interface components {
             invoiceNumber: string;
             comment?: string | null;
             payoutType: components["schemas"]["PayoutType"];
-            hasPotentialDuplicate: boolean;
+            hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
         };
         PaymentRequestByUserDtoPaginatedResponse: {
@@ -2628,6 +2726,7 @@ export interface components {
             periodStart?: string | null;
             /** Format: date-time */
             periodEnd?: string | null;
+            type?: components["schemas"]["BudgetType"];
         };
         UpdateCostCentreRequestDto: {
             name?: string | null;
@@ -2686,11 +2785,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         UpsertTeamBudgetEntryDto: {
             /** Format: int32 */
@@ -2702,11 +2802,12 @@ export interface components {
             /** Format: int32 */
             seasonId: number;
             /** Format: double */
-            targetAmount: number;
+            targetAmount?: number | null;
             /** Format: date-time */
             periodStart: string;
             /** Format: date-time */
             periodEnd: string;
+            type?: components["schemas"]["BudgetType"];
         };
         UserDto: {
             /** Format: int32 */

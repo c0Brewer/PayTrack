@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,19 +16,27 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Subject, map, takeUntil } from 'rxjs';
+import { Subject, forkJoin, map, takeUntil } from 'rxjs';
 
+import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
-import { CostCentreDto, CreatePaymentRequestByTeamDto, TeamDto } from '../../../../types/exporter';
+import {
+  BudgetDto,
+  BudgetType,
+  CostCentreDto,
+  CreatePaymentRequestByTeamDto,
+  TeamDto,
+} from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
 import {
   TypeaheadItem,
   TypeaheadSelectComponent,
 } from '../../../general/typeahead-select-component/typeahead-select-component';
+import { CsvBulkImportModalComponent } from '../csv-bulk-import-modal/csv-bulk-import-modal';
 
 function minDateValidator(min: Date): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -35,25 +50,39 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-payment-request-by-team-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BoxComponent, TypeaheadSelectComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    BoxComponent,
+    TypeaheadSelectComponent,
+    CsvBulkImportModalComponent,
+  ],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })
 export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
   @ViewChild(TypeaheadSelectComponent) private readonly typeaheadRef!: TypeaheadSelectComponent;
+  @ViewChild('csvFileInput') private readonly csvFileInputRef!: ElementRef<HTMLInputElement>;
 
   form!: FormGroup;
   teams: TeamDto[] = [];
+  budgets: BudgetDto[] = [];
+  allIncomeBudgets: BudgetDto[] = [];
   costCentres: CostCentreDto[] = [];
   allUsers: TypeaheadItem[] = [];
   isSubmitting = false;
+
+  isCsvModalOpen = false;
+  csvImportFile: File | null = null;
 
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly fb: FormBuilder,
+    private readonly cdr: ChangeDetectorRef,
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly teamService: TeamService,
+    private readonly budgetService: BudgetService,
     private readonly costCentreService: CostCentreService,
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
@@ -61,9 +90,20 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
-    this.loadTeams();
+    this.loadData();
     this.loadCostCentres();
     this.loadUsers();
+    this.form
+      .get('teamId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((teamId: number | null) => {
+        this.budgets = [];
+        this.form.get('budgetId')!.setValue(null);
+        if (teamId != null) {
+          this.budgets = this.allIncomeBudgets.filter((b) => b.teamId === teamId);
+        }
+        this.cdr.detectChanges();
+      });
   }
 
   ngOnDestroy(): void {
@@ -77,20 +117,31 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
       teamId: [null, Validators.required],
-      costCentreId: [null, Validators.required],
+      budgetId: [null, Validators.required],
       dueDate: ['', [Validators.required, minDateValidator(new Date())]],
     });
   }
 
-  private loadTeams(): void {
-    this.teamService
-      .getTeams({ IsActive: true })
+  private loadData(): void {
+    forkJoin([
+      this.teamService.getTeams({ IsActive: true }),
+      this.budgetService.getBudgets({ Type: BudgetType.Income, Limit: 10000 }),
+    ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
-          if (result.items != null) this.teams = result.items;
+        next: ([teamsRes, budgetsRes]) => {
+          const today = new Date();
+          this.allIncomeBudgets = (budgetsRes.items ?? []).filter(
+            (b) =>
+              b.name.trim() !== '' &&
+              new Date(b.periodStart) <= today &&
+              new Date(b.periodEnd) >= today,
+          );
+          const incomeTeamIds = new Set(this.allIncomeBudgets.map((b) => b.teamId));
+          this.teams = (teamsRes.items ?? []).filter((t) => incomeTeamIds.has(t.id));
+          this.cdr.detectChanges();
         },
-        error: () => this.notificationService.showError('Failed to load teams.'),
+        error: () => this.notificationService.showError('Failed to load teams and budgets.'),
       });
   }
 
@@ -123,6 +174,27 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load cost centres.'),
       });
+  }
+
+  getCostCentreName(costCentreId: number): string {
+    return this.costCentres.find((cc) => cc.id === costCentreId)?.name ?? '';
+  }
+
+  onOpenCsvPicker(): void {
+    this.csvFileInputRef.nativeElement.click();
+  }
+
+  onCsvFileInputChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    this.csvImportFile = file;
+    this.isCsvModalOpen = true;
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  onCsvModalClose(): void {
+    this.isCsvModalOpen = false;
+    this.csvImportFile = null;
   }
 
   onUserSelected(item: TypeaheadItem): void {
@@ -164,10 +236,10 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
         amount: Number(v.amount),
         purposeOfPayment: v.purposeOfPayment,
         paidAt: new Date(0).toISOString(),
+        budgetId: Number(v.budgetId),
       },
       userToAssignToId: Number(v.userId),
       dueDate: new Date(v.dueDate).toISOString(),
-      costCentreId: Number(v.costCentreId),
     };
 
     this.paymentRequestByTeamService

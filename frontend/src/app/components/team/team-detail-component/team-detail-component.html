@@ -38,11 +38,12 @@
 
       <h3>Budgets ({{ (team.budgets ?? []).length }})</h3>
 
-      @if ((team.budgets ?? []).length === 0) {
-        <p class="no-budgets">No budgets assigned.</p>
+      <h4>Expense Budgets ({{ expenseBudgets.length }})</h4>
+      @if (expenseBudgets.length === 0) {
+        <p class="no-budgets">None assigned.</p>
       } @else {
         <div class="budget-list">
-          @for (budget of team.budgets ?? []; track budget.id) {
+          @for (budget of expenseBudgets; track budget.id) {
             <div class="budget-card" [class.budget-card--over]="isOverBudget(budget)">
               <div class="budget-card__header">
                 <span class="budget-card__name">{{ budget.name }}</span>
@@ -80,6 +81,38 @@
                 @if (isOverBudget(budget)) {
                   <span class="budget-card__over-label">Over budget</span>
                 }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <h4>Income Budgets ({{ incomeBudgets.length }})</h4>
+      @if (incomeBudgets.length === 0) {
+        <p class="no-budgets">None assigned.</p>
+      } @else {
+        <div class="budget-list">
+          @for (budget of incomeBudgets; track budget.id) {
+            <div class="budget-card">
+              <div class="budget-card__header">
+                <span class="budget-card__name">{{ budget.name }}</span>
+                <a class="budget-card__cost-centre" [routerLink]="['/cost-centre', budget.costCentreId]">
+                  {{ getCostCentreName(budget.costCentreId) }}
+                </a>
+                <span class="budget-card__period">
+                  {{ budget.periodStart | slice: 0 : 10 }} – {{ budget.periodEnd | slice: 0 : 10 }}
+                </span>
+              </div>
+
+              <div class="budget-card__amounts">
+                <span class="budget-card__paid-label">
+                  <span class="budget-card__dot budget-card__dot--paid"></span>
+                  Paid: {{ formatBudgetAmount(budget.paidAmount) }}
+                </span>
+                <span class="budget-card__approved-label">
+                  <span class="budget-card__dot budget-card__dot--approved"></span>
+                  Approved: {{ formatBudgetAmount(budget.approvedAmount) }}
+                </span>
               </div>
             </div>
           }
