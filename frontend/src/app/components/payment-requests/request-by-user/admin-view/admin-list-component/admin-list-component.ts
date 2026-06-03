@@ -1,6 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import {
+  FinancialExportFormat,
+  FinancialExportService,
+} from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
@@ -27,6 +31,7 @@ import { InvoiceListComponent } from '../../general/list-component/list-componen
 export class RequestsComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
+    private readonly financialExportService: FinancialExportService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -51,6 +56,7 @@ export class RequestsComponent implements OnInit {
   isDuplicateModalOpen: boolean = false;
   isDuplicateModalLoading: boolean = false;
   duplicateActionInvoiceId: number | null = null;
+  isExporting: boolean = false;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -86,6 +92,32 @@ export class RequestsComponent implements OnInit {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadInvoices();
+  }
+
+  exportFinancialData(format: FinancialExportFormat): void {
+    this.isExporting = true;
+
+    this.financialExportService
+      .downloadFinancialData(
+        {
+          ...this.filterOptions,
+          Limit: undefined,
+          Offset: undefined,
+        },
+        format,
+      )
+      .subscribe({
+        next: () => {
+          this.isExporting = false;
+          this.notificationService.showSuccess('Financial export downloaded.');
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.isExporting = false;
+          this.notificationService.showError(err.message ?? 'Financial export failed.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {

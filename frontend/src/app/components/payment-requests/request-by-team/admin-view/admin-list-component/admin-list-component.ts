@@ -1,6 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import {
+  FinancialExportFormat,
+  FinancialExportService,
+} from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
@@ -10,7 +14,10 @@ import {
   TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
+import {
+  TeamRequestFilterComponent,
+  TeamRequestFilterOptions,
+} from '../../general/filter-component/filter-component';
 import { TeamRequestListComponent } from '../../general/list-component/list-component';
 
 @Component({
@@ -22,6 +29,7 @@ import { TeamRequestListComponent } from '../../general/list-component/list-comp
 export class TeamRequestsComponent implements OnInit {
   constructor(
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
+    private readonly financialExportService: FinancialExportService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -37,9 +45,10 @@ export class TeamRequestsComponent implements OnInit {
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
-  filterOptions: GetPaymentRequestsByTeamOptions = {
+  filterOptions: TeamRequestFilterOptions = {
     IncludeTeam: true,
   };
+  isExporting: boolean = false;
 
   ngOnInit(): void {
     this.loadRequests();
@@ -73,7 +82,7 @@ export class TeamRequestsComponent implements OnInit {
     });
   }
 
-  updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
+  updateFilterOptions(options: TeamRequestFilterOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadRequests();
@@ -83,6 +92,32 @@ export class TeamRequestsComponent implements OnInit {
     this.limit = newLimit;
     this.page = 0;
     this.loadRequests();
+  }
+
+  exportFinancialData(format: FinancialExportFormat): void {
+    this.isExporting = true;
+
+    this.financialExportService
+      .downloadFinancialData(
+        {
+          ...this.filterOptions,
+          Limit: undefined,
+          Offset: undefined,
+        },
+        format,
+      )
+      .subscribe({
+        next: () => {
+          this.isExporting = false;
+          this.notificationService.showSuccess('Financial export downloaded.');
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.isExporting = false;
+          this.notificationService.showError(err.message ?? 'Financial export failed.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   onOpenDetail(request: PaymentRequestByTeamDto): void {

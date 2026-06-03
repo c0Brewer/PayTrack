@@ -15,6 +15,10 @@ import {
   UserDto,
 } from '../../../../../types/exporter';
 
+export type TeamRequestFilterOptions = GetPaymentRequestsByTeamOptions & {
+  CostCentreId?: number;
+};
+
 @Component({
   selector: 'app-team-request-filter-component',
   imports: [FormsModule],
@@ -29,7 +33,7 @@ export class TeamRequestFilterComponent implements OnInit {
   @Input() showCostCentreFilter: boolean = true;
   @Input() showUserFilter: boolean = true;
 
-  @Output() updateFilter = new EventEmitter<GetPaymentRequestsByTeamOptions>();
+  @Output() updateFilter = new EventEmitter<TeamRequestFilterOptions>();
   @Output() limitChange = new EventEmitter<number>();
 
   teams: TeamDto[] = [];
@@ -144,7 +148,7 @@ export class TeamRequestFilterComponent implements OnInit {
     this.updateFilter.emit(this.getFilterOptions());
   }
 
-  getFilterOptions(): GetPaymentRequestsByTeamOptions {
+  getFilterOptions(): TeamRequestFilterOptions {
     return {
       PurposeOfPayment: this.filterPurpose || undefined,
       MinAmount: this.filterMinAmount ? Number(this.filterMinAmount) : undefined,
@@ -153,6 +157,7 @@ export class TeamRequestFilterComponent implements OnInit {
       MaxDueDate: this.filterMaxDueDate || undefined,
       Status: this.filterStatus,
       TeamId: this.filterTeamId,
+      CostCentreId: this.filterCostCentreId,
       UserId: this.filterUserId,
       Limit: undefined,
       Offset: undefined,

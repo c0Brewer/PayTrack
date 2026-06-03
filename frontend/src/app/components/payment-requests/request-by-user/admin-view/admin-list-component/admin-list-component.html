@@ -1,5 +1,16 @@
 <div class="requests">
-  <h2>Requests</h2>
+  <div class="list-header">
+    <h2>Requests</h2>
+
+    <div class="export-actions">
+      <button type="button" [disabled]="isExporting" (click)="exportFinancialData('Csv')">
+        Export CSV
+      </button>
+      <button type="button" [disabled]="isExporting" (click)="exportFinancialData('Pdf')">
+        Export PDF
+      </button>
+    </div>
+  </div>
 
   <app-invoice-filter-component
     [limitSelection]="limitSelection"
