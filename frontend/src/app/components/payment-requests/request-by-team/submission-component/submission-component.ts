@@ -124,7 +124,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   private loadData(): void {
     forkJoin([
-      this.teamService.getTeams({}),
+      this.teamService.getTeams({ IsActive: true }),
       this.budgetService.getBudgets({ Type: BudgetType.Income, Limit: 10000 }),
     ])
       .pipe(takeUntil(this.destroy$))

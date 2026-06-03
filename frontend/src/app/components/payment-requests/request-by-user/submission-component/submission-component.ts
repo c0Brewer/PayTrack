@@ -105,7 +105,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   private loadTeams(): void {
     this.teamService
-      .getTeams({})
+      .getTeams({ IsActive: true })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (teams) => {
