@@ -302,9 +302,8 @@ describe('ReceiptSubmitComponent', () => {
             user: { id: 11, name: 'Alex' },
             team: { id: 21, name: 'Core Team' },
           },
-          score: 2,
-          isAmountAndUserMatch: true,
-          isAmountAndTeamMatch: true,
+          score: 150,
+          matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
         },
       ]),
     );
@@ -313,6 +312,12 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledOnce();
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
+      TeamId: 1,
+      Amount: 100,
+      PaidAt: '2025-01-01T00:00:00.000Z',
+      InvoiceNumber: 'INV-1',
+    });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
     expect(component.isDuplicateModalOpen).toBe(true);
     expect(component.pendingSubmissionPayload).not.toBeNull();
@@ -350,9 +355,8 @@ describe('ReceiptSubmitComponent', () => {
           user: { id: 11, name: 'Alex' },
           team: { id: 21, name: 'Core Team' },
         },
-        score: 2,
-        isAmountAndUserMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;

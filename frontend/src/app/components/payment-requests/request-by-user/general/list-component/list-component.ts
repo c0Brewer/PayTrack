@@ -19,11 +19,17 @@ import {
 export class InvoiceListComponent {
   @Input() invoices: PaymentRequestByUserDto[] = [];
   @Input() showUserNameColumn: boolean = false;
+  @Input() showDuplicateIndicator: boolean = false;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
+  @Output() openDuplicates = new EventEmitter<PaymentRequestByUserDto>();
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.openDetail.emit(invoice);
+  }
+
+  onOpenDuplicates(invoice: PaymentRequestByUserDto): void {
+    this.openDuplicates.emit(invoice);
   }
 
   getPayoutTypeLabel(type: PayoutType): string {

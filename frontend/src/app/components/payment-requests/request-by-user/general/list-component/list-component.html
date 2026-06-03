@@ -12,6 +12,9 @@
       @if (showUserNameColumn) {
         <th>User</th>
       }
+      @if (showDuplicateIndicator) {
+        <th>Duplicate</th>
+      }
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -33,6 +36,24 @@
         </td>
         @if (showUserNameColumn) {
           <td>{{ invoice.user?.name ?? '—' }}</td>
+        }
+        @if (showDuplicateIndicator) {
+          <td>
+            @if (invoice.hasPotentialDuplicate) {
+              <button
+                type="button"
+                class="duplicate-badge"
+                title="Potential duplicates found"
+                aria-label="Show potential duplicate invoices"
+                (click)="onOpenDuplicates(invoice)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                Duplicates
+              </button>
+            } @else {
+              <span class="duplicate-empty">-</span>
+            }
+          </td>
         }
         <td class="actions-col">
           <button class="view-btn" (click)="onOpenDetail(invoice)">View</button>

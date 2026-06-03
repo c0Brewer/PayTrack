@@ -196,6 +196,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             var user = new User { Id = 123 };
+            var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
             var matches = new List<DuplicatePaymentRequestByUserMatch>
             {
                 new(
@@ -204,27 +205,33 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                         Id = 1,
                         Amount = 100,
                         InvoiceNumber = "INV-100",
+                        PaidAt = paidAt,
                         User = new User { Id = 123, Name = "Test User", Email = "test@paytrack.dev" },
                         Team = new Team { Id = 99, Name = "Team A" }
                     },
-                    2,
-                    true,
-                    true),
+                    150,
+                    ["invoiceNumber", "amount", "payday", "user", "team"]),
             };
 
             _factory.AuthServiceMock
                 .Setup(a => a.GetCurrentUser())
                 .ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(s => s.GetPaymentRequestByUserByIdAsync(7, null))
+                .ReturnsAsync(new PaymentRequestByUser { Id = 7, UserId = user.Id, InvoiceNumber = "SRC" });
+            _factory.ServiceMock
+                .Setup(s => s.ValidateAccessToInvoice(It.IsAny<PaymentRequestByUser>(), user))
+                .Returns(true);
 
             _factory.ServiceMock
-                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100))
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7))
                 .ReturnsAsync(matches);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
-            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100");
+            var response = await client.GetAsync("api/v1/transaction/user/duplicate?TeamId=99&Amount=100&PaidAt=2026-01-05T00:00:00.0000000Z&InvoiceNumber=INV-100&PaymentRequestByUserId=7");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -233,10 +240,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto.Should().NotBeNull();
             dto.Should().HaveCount(1);
             dto![0].PaymentRequestByUser.Id.Should().Be(1);
-            dto[0].Score.Should().Be(2);
+            dto[0].Score.Should().Be(150);
+            dto[0].MatchedFields.Should().Contain("invoiceNumber");
 
             _factory.ServiceMock.Verify(
-                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100),
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7),
                 Times.Once);
         }
 
@@ -282,6 +290,165 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result!.Amount.Should().Be(999);
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequest_ReturnsNoContent()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.DeleteAsync("api/v1/transaction/user/1");
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            _factory.ServiceMock.Verify(s => s.DeletePaymentRequestByUserAsync(1), Times.Once);
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequest_ReturnsNoContent()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/duplicate/2/dismiss", null);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            _factory.ServiceMock.Verify(s => s.DismissDuplicatePaymentRequestByUserAsync(1, 2), Times.Once);
+        }
+
+        [Fact]
+        public async Task Approve_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Approved,
+                BudgetId = 5
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "ok"))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            var dto = new ApprovePaymentRequestByUserDto(5, "ok");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/approve", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Approved);
+        }
+
+        [Fact]
+        public async Task MarkPaid_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var paymentDate = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc);
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Paid,
+                PaymentReference = "REF-123",
+                PurposeOfPayment = "Supplier payout",
+                FinancePaidAt = paymentDate,
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.MarkPaymentRequestByUserAsPaidAsync(
+                    1,
+                    adminUser.Id,
+                    "REF-123",
+                    "Supplier payout",
+                    paymentDate))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            var dto = new MarkPaymentRequestByUserAsPaidDto(
+                "REF-123",
+                "Supplier payout",
+                paymentDate);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/mark-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Paid);
+            result.PaymentReference.Should().Be("REF-123");
+            result.FinancePaidAt.Should().Be(paymentDate);
+        }
+
+        [Fact]
+        public async Task Decline_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Declined
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.DeclinePaymentRequestByUserAsync(1, adminUser.Id, "duplicate"))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            var dto = new DeclinePaymentRequestByUserDto("duplicate");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/decline", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Declined);
+        }
+
+        [Fact]
+        public async Task RequestChanges_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.ChangesRequested
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.RequestChangesPaymentRequestByUserAsync(1, adminUser.Id, "missing receipt"))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            var dto = new RequestChangesPaymentRequestByUserDto("missing receipt");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/request-changes", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.ChangesRequested);
         }
 
         // ----------------------------

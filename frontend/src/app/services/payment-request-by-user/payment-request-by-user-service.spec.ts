@@ -25,6 +25,10 @@ describe('PaymentRequestByUserService', () => {
     service = TestBed.inject(PaymentRequestByUserService);
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   // -----------------------
   // CREATE
   // -----------------------
@@ -191,9 +195,8 @@ describe('PaymentRequestByUserService', () => {
           user: { id: 10, name: 'Alex' },
           team: { id: 20, name: 'Core Team' },
         },
-        score: 2,
-        isAmountAndUserMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
     ];
 
@@ -204,7 +207,7 @@ describe('PaymentRequestByUserService', () => {
     } as any);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = { TeamId: 1, Amount: 100 } as any;
+    const query = { TeamId: 1, Amount: 100, PaidAt: '2025-01-01T00:00:00.000Z' } as any;
     const result = await firstValueFrom(service.getDuplicatePaymentRequestsByUser(query));
 
     expect(client.GET).toHaveBeenCalledWith('/api/v1/transaction/user/duplicate', {
@@ -241,6 +244,50 @@ describe('PaymentRequestByUserService', () => {
         service.getDuplicatePaymentRequestsByUser({} as any),
       ),
     ).rejects.toThrow('Unexpected Error');
+  });
+
+  it('should delete payment request via fetch', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+
+    await firstValueFrom(service.deletePaymentRequestByUser(5));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/5', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/5';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+  });
+
+  it('should dismiss duplicate warning via fetch', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+
+    await firstValueFrom(service.dismissDuplicatePaymentRequestByUser(1, 2));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/1/duplicate/2/dismiss', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/1/duplicate/2/dismiss';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
   });
 
   // -----------------------
@@ -280,5 +327,115 @@ describe('PaymentRequestByUserService', () => {
     await expect(firstValueFrom(service.updatePaymentRequestByUser(1, {} as any))).rejects.toThrow(
       'update failed',
     );
+  });
+
+  it('should mark payment request as paid', async () => {
+    const apiResponse = { id: 1, paymentReference: 'REF-1' } as PaymentRequestByUserDto;
+    const request = {
+      paymentReference: 'REF-1',
+      purposeOfPayment: 'Supplier payout',
+      paymentDate: '2026-02-03T00:00:00.000Z',
+    };
+
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: apiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await firstValueFrom(service.markPaymentRequestByUserAsPaid(1, request));
+
+    expect(client.POST).toHaveBeenCalledWith('/api/v1/transaction/user/{id}/mark-paid', {
+      params: { path: { id: 1 } },
+      body: request,
+    });
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should approve payment request', async () => {
+    const apiResponse = { id: 1 } as PaymentRequestByUserDto;
+    const request = { costCentreId: 5, reason: 'ok' };
+
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: apiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await firstValueFrom(service.approvePaymentRequestByUser(1, request));
+
+    expect(client.POST).toHaveBeenCalledWith('/api/v1/transaction/user/{id}/approve', {
+      params: { path: { id: 1 } },
+      body: request,
+    });
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should decline payment request', async () => {
+    const apiResponse = { id: 1 } as PaymentRequestByUserDto;
+    const request = { reason: 'duplicate' };
+
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: apiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await firstValueFrom(service.declinePaymentRequestByUser(1, request));
+
+    expect(client.POST).toHaveBeenCalledWith('/api/v1/transaction/user/{id}/decline', {
+      params: { path: { id: 1 } },
+      body: request,
+    });
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should request changes for payment request', async () => {
+    const apiResponse = { id: 1 } as PaymentRequestByUserDto;
+    const request = { reason: 'missing receipt' };
+
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: apiResponse,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await firstValueFrom(service.requestChangesForPaymentRequestByUser(1, request));
+
+    expect(client.POST).toHaveBeenCalledWith('/api/v1/transaction/user/{id}/request-changes', {
+      params: { path: { id: 1 } },
+      body: request,
+    });
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should throw API detail for status update failures', async () => {
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: null,
+      error: { detail: 'invalid status' },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await expect(
+      firstValueFrom(service.declinePaymentRequestByUser(1, { reason: 'duplicate' })),
+    ).rejects.toThrow('invalid status');
+  });
+
+  it('should download receipt as blob', async () => {
+    const receipt = new Blob(['receipt'], { type: 'application/pdf' });
+
+    vi.spyOn(client, 'GET').mockResolvedValue({
+      data: receipt,
+      error: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const result = await firstValueFrom(service.downloadReceipt(1));
+
+    expect(client.GET).toHaveBeenCalledWith('/api/v1/transaction/user/{id}/receipt', {
+      params: { path: { id: 1 } },
+      parseAs: 'blob',
+    });
+    expect(result).toBe(receipt);
   });
 });

@@ -48,5 +48,11 @@ namespace PayTrack.Data.Entities
         /// </summary>
         [ForeignKey(nameof(BankAccountId))]
         public BankAccount? BankAccount { get; set; }
+
+        /// <summary>
+        /// Indicates whether another payment request matches duplicate criteria.
+        /// </summary>
+        [NotMapped]
+        public bool HasPotentialDuplicate { get; set; }
     }
 }
