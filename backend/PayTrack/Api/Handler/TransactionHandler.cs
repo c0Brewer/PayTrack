@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using PayTrack.Application.Dto.Transaction;
 
 namespace PayTrack.Api.Handler
 {
@@ -15,7 +17,9 @@ namespace PayTrack.Api.Handler
         /// Exports financial transaction data.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static Task<StatusCodeHttpResult> ExportFinancialDataAsync()
+        /// <param name="query">Query object including all export filter options.</param>
+        public static Task<StatusCodeHttpResult> ExportFinancialDataAsync(
+            [AsParameters] GetTransactionQuery query)
         {
             return Task.FromResult(TypedResults.StatusCode(StatusCodes.Status501NotImplemented));
         }

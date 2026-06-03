@@ -47,6 +47,11 @@ namespace PayTrack.Application.Dto.Transaction
         public int? TeamId { get; init; }
 
         /// <summary>
+        /// Cost centre to query.
+        /// </summary>
+        public int? CostCentreId { get; init; }
+
+        /// <summary>
         /// PaymentDirection to query.
         /// </summary>
         public PaymentDirection? PaymentDirection { get; init; }
@@ -100,5 +105,10 @@ namespace PayTrack.Application.Dto.Transaction
         /// Whether to load the status history in the query.
         /// </summary>
         public bool? IncludeStatusHistory { get; init; }
+
+        /// <summary>
+        /// Requested financial export format.
+        /// </summary>
+        public FinancialExportFormat? Format { get; init; }
     }
 }
