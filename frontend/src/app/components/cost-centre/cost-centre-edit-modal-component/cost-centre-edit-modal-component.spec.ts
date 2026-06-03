@@ -162,6 +162,8 @@ describe('CostCentreEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 500,
+          approvedAmount: 200,
         },
       ],
     };
