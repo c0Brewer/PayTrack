@@ -27,7 +27,6 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [MinLength(3)]
         public string InvoiceNumber { get; init; } = string.Empty;
 
-
         /// <summary>
         /// Gets an optional comment for the invoice.
         /// </summary>
