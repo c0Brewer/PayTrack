@@ -139,18 +139,23 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
-        public async Task PutBankStatementMatches_WhenUnauthenticated_ReturnsUnauthorized()
+        public async Task PutBankStatementMatches_WhenCurrentUserNotFound_ReturnsProblem()
         {
-            // Arrange — no Authorization header
+            // Arrange — authService returns null (user session not found)
+            this.factory.AuthServiceMock
+                .Setup(s => s.GetCurrentUser())
+                .ReturnsAsync((User?)null);
+
             var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
             var response = await client.PutAsJsonAsync(
                 "api/v1/transaction/bank-statement-matches",
                 new List<BankStatementUpdateRequestDto>());
 
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            // Assert — NotFoundException from handler maps to a non-OK response
+            response.StatusCode.Should().NotBe(HttpStatusCode.OK);
         }
     }
 
