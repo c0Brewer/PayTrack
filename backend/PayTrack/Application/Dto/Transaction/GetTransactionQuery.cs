@@ -107,6 +107,11 @@ namespace PayTrack.Application.Dto.Transaction
         public bool? IncludeStatusHistory { get; init; }
 
         /// <summary>
+        /// Whether to include the budget and cost centre in the query.
+        /// </summary>
+        public bool? IncludeBudget { get; init; }
+
+        /// <summary>
         /// Requested financial export format.
         /// </summary>
         public FinancialExportFormat? Format { get; init; }

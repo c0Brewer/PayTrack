@@ -446,6 +446,12 @@ namespace PayTrack.Data.Repositories.Implementation
                     .ThenInclude(h => h.ChangedBy);
             }
 
+            if (query?.IncludeBudget == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Budget)
+                    .ThenInclude(b => b!.CostCentre);
+            }
+
             dbQuery = dbQuery.Include(t => t.User);
 
             return dbQuery;
