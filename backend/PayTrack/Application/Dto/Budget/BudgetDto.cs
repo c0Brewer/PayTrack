@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.Budget
 {
