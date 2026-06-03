@@ -4,6 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Budget;
+using PayTrack.Application.Validation;
 
 namespace PayTrack.Application.Dto.Team
 {
@@ -15,7 +16,7 @@ namespace PayTrack.Application.Dto.Team
         [property: MinLength(3)]
         string Name,
 
-        [property: MinLength(2)]
+        [property: OptionalMinLength(2)]
         string? Description,
 
         [property: MaxLength(7)]

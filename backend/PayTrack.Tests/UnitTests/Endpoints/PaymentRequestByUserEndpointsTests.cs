@@ -188,6 +188,94 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result.Id.Should().Be(1);
         }
 
+        [Fact]
+        public async Task Create_ReturnsOk_WhenCommentIsEmpty()
+        {
+            // Arrange
+            _factory.ServiceMock.Reset();
+            _factory.AuthServiceMock.Reset();
+
+            var user = new User { Id = 123 };
+            var created = new PaymentRequestByUser
+            {
+                Id = 1,
+                Amount = 50,
+                InvoiceNumber = "123"
+            };
+
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(user);
+
+            _factory.ServiceMock
+                .Setup(s => s.CreatePaymentRequestByUserAsync(
+                    user.Id,
+                    It.IsAny<int>(),
+                    It.IsAny<decimal>(),
+                    It.IsAny<string>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<string>(),
+                    It.Is<string?>(comment => comment == null),
+                    It.IsAny<PayoutType>(),
+                    It.IsAny<int?>()))
+                .ReturnsAsync(created);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent([1, 2, 3]);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+            content.Add(fileContent, "Receipt", "test.pdf");
+            content.Add(new StringContent("0"), "Transaction.TeamId");
+            content.Add(new StringContent("50"), "Transaction.Amount");
+            content.Add(new StringContent("TestPurpose"), "Transaction.PurposeOfPayment");
+            content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
+            content.Add(new StringContent("123"), "InvoiceNumber");
+            content.Add(new StringContent(string.Empty), "Comment");
+            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent("0"), "BankAccountId");
+
+            // Act
+            var response = await client.PostAsync("api/v1/transaction/user", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task Create_ReturnsBadRequest_WhenCommentIsShort()
+        {
+            // Arrange
+            _factory.ServiceMock.Reset();
+            _factory.AuthServiceMock.Reset();
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent([1, 2, 3]);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+            content.Add(fileContent, "Receipt", "test.pdf");
+            content.Add(new StringContent("0"), "Transaction.TeamId");
+            content.Add(new StringContent("50"), "Transaction.Amount");
+            content.Add(new StringContent("TestPurpose"), "Transaction.PurposeOfPayment");
+            content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
+            content.Add(new StringContent("123"), "InvoiceNumber");
+            content.Add(new StringContent("ab"), "Comment");
+            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent("0"), "BankAccountId");
+
+            // Act
+            var response = await client.PostAsync("api/v1/transaction/user", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
         // ----------------------------
         // DUPLICATE CHECK
         // ----------------------------
