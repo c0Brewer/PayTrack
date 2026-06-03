@@ -113,3 +113,95 @@ export class MyComponent {
 **Notifications:** inject `NotificationService`, call `.showSuccess(msg)` / `.showError(msg)`.
 
 Always import DTOs from `types/exporter.ts`.
+
+## Backend structure (`backend/PayTrack/`)
+
+| Path | Purpose |
+|---|---|
+| `Api/Handler/` | Minimal API endpoint handlers (static classes, not controllers) |
+| `Application/Services/Model/` | Service interfaces (`IXxxService`) |
+| `Application/Services/Implementation/` | Service implementations |
+| `Application/Dto/` | Request/response DTOs, grouped by domain |
+| `Application/Exceptions/` | `NotFoundException`, `InvalidStateException`, etc. |
+| `Data/Entities/` | EF Core entities |
+| `Data/Repositories/Model/` | Repository interfaces |
+| `Data/Repositories/Implementation/` | Repository implementations |
+| `Data/AppDbContext.cs` | EF Core DbContext |
+
+**Minimal API handler pattern** — handlers are static classes, methods are registered in `Program.cs`:
+```csharp
+public static class MyHandler {
+    public static async Task<Results<Ok<Dto>, BadRequest<ProblemDetails>, ProblemHttpResult>>
+        DoThing([FromBody] RequestDto body, IMyService service) { ... }
+}
+```
+
+**Auth in handlers** — inject `IAuthService`, call `authService.GetCurrentUser()` which returns `User?`. Throw `NotFoundException` if null — there is no `[Authorize]` attribute pattern.
+
+## Key entities
+
+`Transaction` is an **abstract base class**. Concrete types:
+- `PaymentRequestByUser` — has `InvoiceNumber`, `PaymentDirection`
+- `PaymentRequestByTeam`
+
+Important fields on `Transaction`: `Id`, `UserId`, `TeamId`, `Amount` (decimal), `PurposeOfPayment`, `PaymentReference`, `Status` (TransactionStatus enum), `PaidAt` (DateTime?), `StatusHistory` (ICollection).
+
+**Enums:**
+- `TransactionStatus`: 0=Submitted, 1=Approved, 2=Rejected, 3=Paid, 4=Reimbursed
+- `PaymentDirection`: `In`, `Out`
+
+## Backend test patterns
+
+**Project:** `backend/PayTrack.Tests/` — xUnit + Moq + FluentAssertions + EF InMemory
+
+**Service unit test** (mock repository, test business logic):
+```csharp
+public class MyServiceTests {
+    private readonly Mock<IMyRepository> repoMock = new();
+    private readonly MyService service;
+    public MyServiceTests() => service = new MyService(repoMock.Object);
+
+    [Fact] public async Task Method_Condition_ExpectedResult() {
+        repoMock.Setup(r => r.GetAsync(...)).ReturnsAsync(...);
+        var result = await service.MethodAsync(...);
+        result.Should().NotBeNull();
+    }
+
+    [Theory, InlineData(...)] public async Task ... { }
+}
+```
+
+**Endpoint integration test** (WebApplicationFactory, mock services):
+```csharp
+public class MyEndpointsTests(MyApiFactory factory) : IClassFixture<MyApiFactory> { ... }
+
+public class MyApiFactory : WebApplicationFactory<Program> {
+    public Mock<IAuthService> AuthServiceMock { get; } = new();
+    public Mock<IMyService> MyServiceMock { get; } = new();
+    protected override void ConfigureWebHost(IWebHostBuilder builder) {
+        builder.UseEnvironment("Test");
+        builder.ConfigureServices(services => {
+            // Replace DB with InMemory
+            // Register TestAuthHandler for "Test" scheme
+            // Replace service registrations with mocks via services.AddSingleton(mock.Object)
+        });
+    }
+}
+```
+The `TestAuthHandler` (in `Helper/`) always authenticates successfully — tests don't need real tokens. Add `client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test")` to every authenticated request.
+
+**Positional records** — DTOs like `BankStatementUpdateRequestDto` use positional constructor syntax:
+```csharp
+new BankStatementUpdateRequestDto("entry-0", MatchedTransactionId: 5, Skipped: false)
+// NOT: new() { EntryId = ..., ... }
+```
+
+**Repository mock for ITransactionRepository:**
+```csharp
+repoMock.Setup(r => r.GetAllAsync(It.IsAny<GetTransactionQuery>()))
+    .ReturnsAsync((new List<Transaction> { tx }, totalCount));
+repoMock.Setup(r => r.GetByIdAsync(id, It.IsAny<GetTransactionQueryById>()))
+    .ReturnsAsync(transaction);
+repoMock.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
+    .ReturnsAsync((Transaction t) => t);
+```
