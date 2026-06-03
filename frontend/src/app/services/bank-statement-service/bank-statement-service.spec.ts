@@ -9,6 +9,7 @@ import {
   BankStatementUpdateRequestDto,
   TransactionDto,
 } from '../../types/exporter';
+
 import { BankStatementService } from './bank-statement-service';
 
 const mockEntry: BankStatementEntryDto = {

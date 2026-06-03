@@ -9,6 +9,7 @@ import {
   BankStatementMatchResultDto,
   TransactionDto,
 } from '../../../types/exporter';
+
 import { BankStatementImportComponent } from './bank-statement-import-component';
 
 const mockEntry: BankStatementEntryDto = {
@@ -32,7 +33,11 @@ const mockTransaction: TransactionDto = {
   paidAt: '2026-05-21T00:00:00.000Z',
 };
 
-type ResultRow = BankStatementMatchResultDto & { skipped: boolean; expanded: boolean; _entryId: string };
+type ResultRow = BankStatementMatchResultDto & {
+  skipped: boolean;
+  expanded: boolean;
+  _entryId: string;
+};
 
 const mockMatchResult: ResultRow = {
   entry: mockEntry,
@@ -216,10 +221,7 @@ describe('BankStatementImportComponent', () => {
     });
 
     it('should only affect the targeted entry', () => {
-      component.results.set([
-        { ...mockMatchResult },
-        { ...mockMatchResult, _entryId: 'entry-1' },
-      ]);
+      component.results.set([{ ...mockMatchResult }, { ...mockMatchResult, _entryId: 'entry-1' }]);
       component.toggleSkip('entry-0');
       expect(component.results()[0].skipped).toBe(true);
       expect(component.results()[1].skipped).toBe(false);
@@ -241,10 +243,7 @@ describe('BankStatementImportComponent', () => {
     });
 
     it('should not affect other entries', () => {
-      component.results.set([
-        { ...mockMatchResult },
-        { ...mockMatchResult, _entryId: 'entry-1' },
-      ]);
+      component.results.set([{ ...mockMatchResult }, { ...mockMatchResult, _entryId: 'entry-1' }]);
       component.toggleExpand('entry-0');
       expect(component.results()[1].expanded).toBe(false);
     });
@@ -282,7 +281,12 @@ describe('BankStatementImportComponent', () => {
       bankStatementServiceMock.getMatches.mockReturnValue(
         of({
           results: [
-            { entry: mockEntry, hasMatch: true, matchedTransaction: mockTransaction, matchScore: 85 },
+            {
+              entry: mockEntry,
+              hasMatch: true,
+              matchedTransaction: mockTransaction,
+              matchScore: 85,
+            },
           ],
         }),
       );
@@ -340,8 +344,16 @@ describe('BankStatementImportComponent', () => {
       await fixture.whenStable();
 
       const payload = bankStatementServiceMock.applyUpdates.mock.calls[0][0];
-      expect(payload[0]).toMatchObject({ entryId: 'entry-0', skipped: true, matchedTransactionId: 7 });
-      expect(payload[1]).toMatchObject({ entryId: 'entry-1', skipped: false, matchedTransactionId: null });
+      expect(payload[0]).toMatchObject({
+        entryId: 'entry-0',
+        skipped: true,
+        matchedTransactionId: 7,
+      });
+      expect(payload[1]).toMatchObject({
+        entryId: 'entry-1',
+        skipped: false,
+        matchedTransactionId: null,
+      });
     });
 
     it('should show error notification on failure', async () => {
