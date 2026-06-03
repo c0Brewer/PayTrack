@@ -110,7 +110,9 @@
           [class.result-item--matched]="result.hasMatch && !result.skipped"
           [class.result-item--unmatched]="!result.hasMatch && !result.skipped"
           [class.result-item--skipped]="result.skipped"
+          [class.result-item--expanded]="result.expanded"
         >
+          <!-- ── Summary row ── -->
           <div class="result-item__layout">
             <!-- Status icon -->
             <div class="result-item__icon">
@@ -145,8 +147,13 @@
 
               <div class="result-item__sub">
                 @if (result.entry?.partnerAccount?.iban) {
-                  <span class="result-item__meta">{{ formatIban(result.entry?.partnerAccount?.iban || "") }}</span>
+                  <span class="result-item__meta">{{
+                    formatIban(result.entry?.partnerAccount?.iban || '')
+                  }}</span>
                 }
+              </div>
+
+              <div class="result-item__sub">
                 @if (result.entry?.receiverReference) {
                   <span class="result-item__meta">"{{ result.entry?.receiverReference }}"</span>
                 }
@@ -160,12 +167,135 @@
               }
             </div>
 
-            <!-- Skip toggle -->
-            @if (result.hasMatch) {
-              <button type="button" class="btn btn-secondary" (click)="toggleSkip(result._entryId)">
-                {{ result.skipped ? 'Undo' : 'Skip' }}
+            <!-- Actions -->
+            <div class="result-item__actions">
+              @if (result.hasMatch) {
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="toggleSkip(result._entryId)"
+                >
+                  {{ result.skipped ? 'Undo' : 'Skip' }}
+                </button>
+              }
+              <button
+                type="button"
+                class="result-item__expand-btn"
+                [class.result-item__expand-btn--open]="result.expanded"
+                (click)="toggleExpand(result._entryId)"
+                [attr.aria-label]="result.expanded ? 'Collapse details' : 'Expand details'"
+              >
+                <span class="material-symbols-outlined">expand_more</span>
               </button>
-            }
+            </div>
+          </div>
+
+          <!-- ── Detail panel ── -->
+          <div class="result-item__details" [class.result-item__details--open]="result.expanded">
+            <div class="result-item__details-inner">
+              <div class="detail-panel">
+
+                <!-- Bank statement side -->
+                <div class="detail-panel__side">
+                  <p class="detail-panel__heading">
+                    <span class="material-symbols-outlined">account_balance</span>
+                    Bank Statement Entry
+                  </p>
+                  <dl class="detail-list">
+                    <div class="detail-list__row">
+                      <dt>Partner</dt>
+                      <dd>{{ result.entry?.partnerName || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Booking date</dt>
+                      <dd>{{ formatDate(result.entry?.booking) }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Amount</dt>
+                      <dd>{{ formatAmount(result.entry) }}</dd>
+                    </div>
+                    @if (result.entry?.partnerAccount?.iban) {
+                      <div class="detail-list__row">
+                        <dt>IBAN</dt>
+                        <dd>{{ formatIban(result.entry?.partnerAccount?.iban || '') }}</dd>
+                      </div>
+                    }
+                    @if (result.entry?.partnerAccount?.bic) {
+                      <div class="detail-list__row">
+                        <dt>BIC</dt>
+                        <dd>{{ result.entry?.partnerAccount?.bic }}</dd>
+                      </div>
+                    }
+                    @if (result.entry?.receiverReference) {
+                      <div class="detail-list__row">
+                        <dt>Receiver ref.</dt>
+                        <dd>{{ result.entry?.receiverReference }}</dd>
+                      </div>
+                    }
+                    @if (result.entry?.reference) {
+                      <div class="detail-list__row">
+                        <dt>Reference</dt>
+                        <dd>{{ result.entry?.reference }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </div>
+
+                <!-- Divider -->
+                <div class="detail-panel__divider">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                </div>
+
+                <!-- Transaction side -->
+                @if (result.hasMatch && result.matchedTransaction) {
+                  <div class="detail-panel__side">
+                    <p class="detail-panel__heading">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      Matched Transaction #{{ result.matchedTransaction.id }}
+                    </p>
+                    <dl class="detail-list">
+                      <div class="detail-list__row">
+                        <dt>Amount</dt>
+                        <dd>{{ formatTransactionAmount(result.matchedTransaction.amount) }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Paid at</dt>
+                        <dd>{{ formatDate(result.matchedTransaction.paidAt) }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Purpose</dt>
+                        <dd>{{ result.matchedTransaction.purposeOfPayment }}</dd>
+                      </div>
+                      @if (result.matchedTransaction.paymentReference) {
+                        <div class="detail-list__row">
+                          <dt>Payment ref.</dt>
+                          <dd>{{ result.matchedTransaction.paymentReference }}</dd>
+                        </div>
+                      }
+                      <div class="detail-list__row">
+                        <dt>Current status</dt>
+                        <dd>{{ getStatusLabel(result.matchedTransaction.status) }}</dd>
+                      </div>
+                      <div class="detail-list__row detail-list__row--highlight">
+                        <dt>New status</dt>
+                        <dd>{{ getStatusLabel(3) }}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                } @else {
+                  <div class="detail-panel__side detail-panel__side--empty">
+                    <p class="detail-panel__heading">
+                      <span class="material-symbols-outlined">search_off</span>
+                      No Match Found
+                    </p>
+                    <p class="detail-panel__empty-text">
+                      No transaction in the database matched this bank entry. You can skip it or
+                      wait until a matching transaction is created.
+                    </p>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
         </div>
       }

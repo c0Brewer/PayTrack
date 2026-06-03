@@ -69,7 +69,7 @@ export enum TransactionStatus {
 
 export const TransactionStatusLabels: Record<TransactionStatus, string> = {
   [TransactionStatus.Submitted]: 'Submitted',
-  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.ChangesRequested]: 'Changes Requested',
   [TransactionStatus.Approved]: 'Approved',
   [TransactionStatus.Paid]: 'Paid',
   [TransactionStatus.Declined]: 'Declined',

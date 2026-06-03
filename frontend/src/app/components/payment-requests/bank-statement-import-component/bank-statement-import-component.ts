@@ -9,7 +9,6 @@ import {
   TransactionStatus,
   TransactionStatusLabels,
 } from '../../../types/exporter';
-import { BoxComponent } from '../../general/boxes/box-component/box-component';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 
 type Phase = 'upload' | 'review';
@@ -26,7 +25,7 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [BoxComponent, StatBoxComponent],
+  imports: [StatBoxComponent],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
@@ -44,8 +43,8 @@ export class BankStatementImportComponent {
   selectedFileName = signal<string | null>(null);
   parsedEntries = signal<BankStatementEntryDto[]>([]);
 
-  /** Working copy of match results; extended with local `skipped` flag */
-  results = signal<(BankStatementMatchResultDto & { skipped: boolean; _entryId: string })[]>([]);
+  /** Working copy of match results; extended with local state flags */
+  results = signal<(BankStatementMatchResultDto & { skipped: boolean; expanded: boolean; _entryId: string })[]>([]);
 
   // ── computed helpers ───────────────────────────────────────────────────────
   matchedCount = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped).length);
@@ -126,6 +125,7 @@ export class BankStatementImportComponent {
         const enriched = (response.results ?? []).map((r, i) => ({
           ...r,
           skipped: false,
+          expanded: false,
           _entryId: `entry-${i}`,
         }));
         this.results.set(enriched);
@@ -152,6 +152,17 @@ export class BankStatementImportComponent {
     this.results.update((list) =>
       list.map((r) => (r._entryId === entryId ? { ...r, skipped: !r.skipped } : r)),
     );
+  }
+
+  toggleExpand(entryId: string): void {
+    this.results.update((list) =>
+      list.map((r) => (r._entryId === entryId ? { ...r, expanded: !r.expanded } : r)),
+    );
+  }
+
+  formatTransactionAmount(amount: number | undefined): string {
+    if (amount == null) return '—';
+    return amount.toFixed(2) + ' EUR';
   }
 
   formatAmount(entry: BankStatementEntryDto | undefined): string {
