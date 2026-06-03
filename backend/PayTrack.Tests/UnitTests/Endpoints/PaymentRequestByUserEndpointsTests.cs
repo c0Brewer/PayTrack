@@ -175,13 +175,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent("MyComment"), "Comment");
             content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
-            content.Add(new StringContent("0"), "BankAccountId");
 
             // Act
             var response = await client.PostAsync("api/v1/transaction/user", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK, "response body: {0}", responseBody);
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result.Should().NotBeNull();
