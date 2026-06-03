@@ -236,7 +236,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       invoiceNumber: v.invoiceNumber,
       comment: v.comment,
       payoutType: payoutType,
-      bankAccountId: Number(v.bankAccountId),
+      bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
       receipt: '', // ignored — real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),

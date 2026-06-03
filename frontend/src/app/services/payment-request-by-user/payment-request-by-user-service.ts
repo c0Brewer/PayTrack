@@ -11,6 +11,7 @@ import {
   GetPaymentRequestsByUserOptions,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  PayoutType,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
@@ -79,7 +80,9 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    if (updateRequest.payoutType === PayoutType.User && updateRequest.bankAccountId != null) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);

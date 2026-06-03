@@ -404,6 +404,27 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.isSubmitting).toBe(false);
   });
 
+  it('should submit external payouts without a bank account id', () => {
+    component.ngOnInit();
+
+    const file = new File(['ok'], 'ok.pdf');
+    setValidFormValues();
+    component.form.get('payoutType')?.setValue(PayoutType.External);
+    component.selectedFile = file;
+
+    paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payoutType: PayoutType.External,
+        bankAccountId: null,
+      }),
+      file,
+    );
+  });
+
   // -------------------------
   // SUBMIT ERROR
   // -------------------------

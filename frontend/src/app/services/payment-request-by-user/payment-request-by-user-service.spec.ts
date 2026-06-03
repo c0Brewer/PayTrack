@@ -5,7 +5,11 @@ import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { client } from '../../client';
-import { CreatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../types/exporter';
+import {
+  CreatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
+  PayoutType,
+} from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
 import { PaymentRequestByUserService } from './payment-request-by-user-service';
@@ -32,7 +36,7 @@ describe('PaymentRequestByUserService', () => {
     const dto = {
       invoiceNumber: 'INV-1',
       comment: 'test',
-      payoutType: 1,
+      payoutType: PayoutType.User,
       bankAccountId: 10,
       transaction: {
         teamId: 1,
@@ -70,14 +74,46 @@ describe('PaymentRequestByUserService', () => {
         }),
       }),
     );
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const body = requestInit?.body as FormData;
+    expect(body.get('bankAccountId')).toBe('10');
     expect(result).toEqual(apiResponse);
+  });
+
+  it('should omit bank account id for external payout uploads', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: '',
+      payoutType: PayoutType.External,
+      bankAccountId: null,
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'test',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+
+    const file = new File(['hello'], 'test.pdf', { type: 'application/pdf' });
+    const apiResponse = { id: 1, amount: 100, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    await firstValueFrom(service.createPaymentRequestByUser(dto, file));
+
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const body = requestInit?.body as FormData;
+    expect(body.has('bankAccountId')).toBe(false);
   });
 
   it('should throw error on create if fetch fails', async () => {
     const dto = {
       invoiceNumber: 'INV-1',
       comment: '',
-      payoutType: 1,
+      payoutType: PayoutType.User,
       bankAccountId: 10,
       transaction: {
         teamId: 1,
