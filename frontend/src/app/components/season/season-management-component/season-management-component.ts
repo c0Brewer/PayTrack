@@ -5,10 +5,11 @@ import { SeasonService } from '../../../services/season/season-service';
 import { SeasonDto } from '../../../types/exporter';
 import { SeasonFormComponent } from '../season-form-component/season-form-component';
 import { SeasonListComponent } from '../season-list-component/season-list-component';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-season-management-component',
-  imports: [SeasonFormComponent, SeasonListComponent],
+  imports: [SeasonFormComponent, SeasonListComponent, BoxComponent],
   templateUrl: './season-management-component.html',
   styleUrl: './season-management-component.scss',
 })
