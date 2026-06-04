@@ -75,6 +75,7 @@ export class PaymentRequestByTeamService {
       })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('Unexpected Error');
         return data;
       });
 

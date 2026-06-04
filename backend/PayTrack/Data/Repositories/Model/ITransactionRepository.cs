@@ -127,13 +127,6 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
 
         /// <summary>
-        /// Persists a new TransactionStatusHistory entry.
-        /// </summary>
-        /// <param name="history">The history entry to persist.</param>
-        /// <returns>The persisted TransactionStatusHistory entry.</returns>
-        Task<TransactionStatusHistory> AddStatusHistoryAsync(TransactionStatusHistory history);
-
-        /// <summary>
         /// Atomically updates a PaymentRequestByTeam and persists a status history entry in a single SaveChanges call.
         /// </summary>
         /// <param name="transaction">The transaction to update.</param>

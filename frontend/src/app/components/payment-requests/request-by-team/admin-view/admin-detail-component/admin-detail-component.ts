@@ -71,11 +71,12 @@ export class TeamRequestAdminDetailComponent implements OnInit {
     if (!this.request) return;
     this.markAsPaidLoading = true;
     this.service.markAsPaid(this.request.id, { comment: this.markAsPaidComment }).subscribe({
-      next: () => {
+      next: (updated) => {
         this.notificationService.showSuccess('Payment marked as paid.');
         this.markAsPaidLoading = false;
         this.showMarkAsPaidModal = false;
-        this.loadRequest(Number(this.route.snapshot.paramMap.get('id')));
+        this.request = { ...this.request!, status: updated.status, paidAt: updated.paidAt };
+        this.cdr.detectChanges();
       },
       error: (err: Error) => {
         this.notificationService.showError('Could not mark as paid: ' + err.message);

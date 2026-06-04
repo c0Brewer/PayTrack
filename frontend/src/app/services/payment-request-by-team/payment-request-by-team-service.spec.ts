@@ -206,5 +206,17 @@ describe('PaymentRequestByTeamService', () => {
         'Unexpected Error',
       );
     });
+
+    it('should throw "Unexpected Error" when data is missing despite no error', async () => {
+      vi.spyOn(client, 'POST').mockResolvedValue({
+        data: undefined,
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.markAsPaid(7, { comment: null }))).rejects.toThrow(
+        'Unexpected Error',
+      );
+    });
   });
 });
