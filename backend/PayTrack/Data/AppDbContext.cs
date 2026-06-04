@@ -4,6 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Data;
@@ -237,7 +238,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<PaymentRequestByUser>(e =>
         {
             e.Property(p => p.PayoutType)
-                .HasConversion<string>()
+                .HasConversion(new ValueConverter<PayoutType, string>(
+                    payoutType => payoutType.ToString(),
+                    value => value == "External"
+                        ? PayoutType.NotYetPaid
+                        : Enum.Parse<PayoutType>(value)))
                 .HasMaxLength(20);
 
             // BankAccount is optional
