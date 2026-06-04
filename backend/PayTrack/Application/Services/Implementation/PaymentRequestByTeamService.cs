@@ -125,6 +125,7 @@ namespace PayTrack.Application.Services.Implementation
                         $"New Payment Request: {purposeOfPayment}\n" +
                         $"Amount: {amount:C2} · Due: {dueDate:yyyy-MM-dd}";
 
+                    // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(userToAssignTo.Email, slackMsg);
                 }
                 catch (Exception ex)
@@ -232,6 +233,7 @@ namespace PayTrack.Application.Services.Implementation
                         $"Payment Confirmed: {transaction.PurposeOfPayment}\n" +
                         $"Amount: {transaction.Amount:C2} · Paid on: {transaction.PaidAt:yyyy-MM-dd}";
 
+                    // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
                 }
                 catch (Exception ex)

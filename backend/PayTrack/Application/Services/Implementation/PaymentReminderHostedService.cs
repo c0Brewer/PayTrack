@@ -70,6 +70,10 @@ namespace PayTrack.Application.Services.Implementation
                             await notifications.SendEmailAsync(request.User.Email, subject, body);
                             await Task.Delay(this.settings.EmailDelayMs, cancellationToken);
                         }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            throw;
+                        }
                         catch (Exception ex)
                         {
                             this.logger.LogError(
@@ -88,7 +92,12 @@ namespace PayTrack.Application.Services.Implementation
                                 $"Payment Reminder: {request.PurposeOfPayment} is due in {daysAhead} day(s) " +
                                 $"on {request.DueDate:yyyy-MM-dd}. Amount: {request.Amount:C2}";
 
+                            // NotificationDispatchService resolves the Slack user by email address.
                             await notifications.SendSlackAsync(request.User.Email, slackMsg);
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            throw;
                         }
                         catch (Exception ex)
                         {

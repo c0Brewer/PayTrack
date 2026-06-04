@@ -53,7 +53,14 @@ builder.Services.AddScoped<ISeasonService, SeasonService>();
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
-builder.Services.Configure<ReminderSettings>(builder.Configuration.GetSection("Reminders"));
+builder.Services.AddOptions<ReminderSettings>()
+    .BindConfiguration("Reminders")
+    .Validate(s => s.RunAtHourUtc is >= 0 and <= 23, "Reminders:RunAtHourUtc must be between 0 and 23.")
+    .Validate(s => s.RunAtMinuteUtc is >= 0 and <= 59, "Reminders:RunAtMinuteUtc must be between 0 and 59.")
+    .Validate(s => s.DaysBeforeDue.All(d => d >= 0), "Reminders:DaysBeforeDue must contain only positive values.")
+    .Validate(s => s.DaysBeforeDue.Distinct().Count() == s.DaysBeforeDue.Length, "Reminders:DaysBeforeDue must not contain duplicate values.")
+    .Validate(s => s.EmailDelayMs >= 0, "Reminders:EmailDelayMs must be non-negative.")
+    .ValidateOnStart();
 builder.Services.Configure<PaymentRequestNotificationSettings>(builder.Configuration.GetSection("PaymentRequestNotifications"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();

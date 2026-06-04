@@ -1086,6 +1086,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.PaymentRequestsByTeam.Add(
                 new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = targetDate, Status = TransactionStatus.Submitted });
             await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
 
             var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
 

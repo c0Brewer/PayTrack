@@ -40,7 +40,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync([]);
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7], EmailDelayMs = 0 });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -63,7 +63,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(transactions);
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7], EmailDelayMs = 0 });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -88,7 +88,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync([]);
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1], EmailDelayMs = 0 });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -105,7 +105,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ThrowsAsync(new Exception("DB error"));
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1], EmailDelayMs = 0 });
 
             Func<Task> act = async () => await service.SendRemindersAsync(CancellationToken.None);
 
@@ -132,7 +132,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(n => n.SendEmailAsync("alice@test.com", It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("SMTP error"));
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7], EmailDelayMs = 0 });
 
             Func<Task> act = async () => await service.SendRemindersAsync(CancellationToken.None);
 
@@ -159,6 +159,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var settings = new ReminderSettings
             {
                 DaysBeforeDue = [7],
+                EmailDelayMs = 0,
                 Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = true },
             };
 
@@ -189,7 +190,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(transactions);
 
-            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7], EmailDelayMs = 0 });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -214,6 +215,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var settings = new ReminderSettings
             {
                 DaysBeforeDue = [7],
+                EmailDelayMs = 0,
                 Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = false },
             };
 
@@ -247,6 +249,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var settings = new ReminderSettings
             {
                 DaysBeforeDue = [7],
+                EmailDelayMs = 0,
                 Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = true },
             };
 

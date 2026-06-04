@@ -835,6 +835,33 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Id.Should().Be(1);
         }
 
+        [Fact]
+        public async Task Create_ShouldContinue_WhenEmailThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+
+            var created = new PaymentRequestByTeam { Id = 1 };
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(created);
+
+            notificationsMock
+                .Setup(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP error"));
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            var result = await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "test", DateTime.Today.AddDays(7));
+
+            result.Id.Should().Be(1);
+        }
+
         // ----------------------------
         // MARK AS PAID — Slack channel
         // ----------------------------
@@ -949,6 +976,43 @@ namespace PayTrack.Tests.UnitTests.Services
             };
 
             var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            var result = await service.MarkAsPaidAsync(5, 42, null);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldContinue_WhenEmailThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            notificationsMock
+                .Setup(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP error"));
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
 
             var result = await service.MarkAsPaidAsync(5, 42, null);
 
