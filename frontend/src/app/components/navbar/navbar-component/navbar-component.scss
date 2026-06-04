@@ -140,6 +140,36 @@
   position: relative;
 }
 
+.sidebar__settings--warning::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  z-index: 10;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: v.$size-xs;
+  background: #111827;
+  color: white;
+  content: attr(data-tooltip);
+  font-size: v.$font-xs;
+  font-weight: v.$font-medium;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.25rem);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  white-space: normal;
+}
+
+.sidebar__settings--warning:hover::after,
+.sidebar__settings--warning:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .sidebar__settings .material-symbols-outlined,
 .sidebar__logout .material-symbols-outlined {
   display: block;

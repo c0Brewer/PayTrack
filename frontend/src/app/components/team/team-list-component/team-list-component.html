@@ -4,7 +4,7 @@
       <th class="name-col">Name</th>
       <th class="description-col">Description</th>
       <th class="members-col">Member Count</th>
-      <th class="members-col">Status</th>
+      <th class="status-col">Status</th>
       <th class="actions-col">Actions</th>
     </tr>
   </thead>
@@ -14,9 +14,8 @@
       <tr>
         <td class="name name-col" data-label="Name">
           <span
-            class="team-name-badge"
-            [style.background]="getDisplayColor(team)"
-            [style.color]="getTeamNameTextColor(team)"
+            class="table-badge team-name-badge"
+            [style.--table-badge-source-color]="getDisplayColor(team)"
           >
             {{ team.name }}
           </span>
@@ -42,13 +41,17 @@
           </button>
         </td>
         <td class="actions-col" data-label="Actions">
-          <a class="btn btn-secondary" [routerLink]="['/team', team.id]">
+          <a class="btn btn-secondary icon-hover-btn" [routerLink]="['/team', team.id]">
             <span class="material-symbols-outlined">bar_chart</span>
-            Details
+            <span class="btn-text">Details</span>
           </a>
-          <button type="button" class="btn btn-secondary" (click)="onOpenEditTeam(team)">
+          <button
+            type="button"
+            class="btn btn-secondary icon-hover-btn"
+            (click)="onOpenEditTeam(team)"
+          >
             <span class="material-symbols-outlined">edit</span>
-            Edit
+            <span class="btn-text">Edit</span>
           </button>
         </td>
       </tr>

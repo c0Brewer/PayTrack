@@ -7,13 +7,19 @@
       <a
         class="settings-tabs__item gap-2"
         [class.settings-tabs__item--active]="isActiveTab(tab.id)"
+        [class.settings-tabs__item--warning]="tab.id === 'bank-accounts' && hasNoBankAccounts(user)"
+        [attr.data-tooltip]="
+          tab.id === 'bank-accounts' && hasNoBankAccounts(user)
+            ? 'You have no Bank Account set'
+            : null
+        "
         [routerLink]="['/settings']"
         [fragment]="tab.id"
       >
         <span class="material-symbols-outlined">{{ tab.icon }}</span>
         <span>{{ tab.label }}</span>
         @if (tab.id === 'bank-accounts' && hasNoBankAccounts(user)) {
-          <div class="warning-badge-wrapper" title="You have no Bank Account set">
+          <div class="warning-badge-wrapper">
             <div class="warning-badge">
               <span class="material-symbols-outlined">error</span>
             </div>

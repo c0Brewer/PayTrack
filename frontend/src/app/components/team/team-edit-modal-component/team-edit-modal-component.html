@@ -4,6 +4,7 @@
     isCreating ? 'Add a new team and choose its display color' : 'Update Team Information and Color'
   "
   (closeEvent)="onClose()"
+  [icon]="isCreating ? 'add' : 'edit'"
 >
   @if (!isCreating && team.id < 0) {
     <span>Team not found.</span>
@@ -75,7 +76,10 @@
 
     <div class="team-preview">
       <span class="team-preview__label">Preview</span>
-      <span class="team-preview__badge" [style.background]="selectedColor">
+      <span
+        class="table-badge team-preview__badge"
+        [style.--table-badge-source-color]="selectedColor"
+      >
         {{ team.name || 'Team name' }}
       </span>
     </div>
@@ -307,9 +311,11 @@
         </button>
       }
       <button class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="onClose()">
+        <span class="material-symbols-outlined">cancel</span>
         Cancel
       </button>
       <button class="btn btn-primary d-inline-flex align-items-center gap-1" (click)="onSave()">
+        <span class="material-symbols-outlined">save</span>
         {{ isCreating ? 'Create' : 'Save' }}
       </button>
     </div>

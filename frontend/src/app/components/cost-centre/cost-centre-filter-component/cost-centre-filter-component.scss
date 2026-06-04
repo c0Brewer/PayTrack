@@ -1,18 +1,18 @@
 @use 'variables' as v;
 
-
-div:first-child {
+.cost-centre-filter {
   background: v.$background-light;
-
 }
 
-select,input {
+select,
+input {
   background-color: v.$TUR-secondary-background;
   border: 1px solid white;
   height: 2.5rem;
 }
 
-select:focus, input:focus {
+select:focus,
+input:focus {
   border-color: v.$TUR-primary-orange;
   box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
   outline: none;
