@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
-
 import {
   PaymentRequestByUserDto,
   PayoutType,

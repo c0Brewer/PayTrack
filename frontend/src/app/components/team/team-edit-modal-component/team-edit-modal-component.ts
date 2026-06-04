@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { EuroPipe } from '../../../pipes/euro.pipe';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import {
   BudgetDto,
   BudgetType,

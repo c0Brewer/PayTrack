@@ -1,8 +1,8 @@
 import { SlicePipe } from '@angular/common';
-import { EuroPipe } from '../../../pipes/euro.pipe';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { CostCentreDto } from '../../../types/exporter';
@@ -44,5 +44,4 @@ export class CostCentreDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/cost-centre']);
   }
-
 }

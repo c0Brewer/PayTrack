@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeDe from '@angular/common/locales/de';
 import {
   ApplicationConfig,
   inject,
@@ -6,8 +8,6 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
-import localeDe from '@angular/common/locales/de';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';

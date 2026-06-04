@@ -1,4 +1,3 @@
-import { EuroPipe } from '../../../pipes/euro.pipe';
 import {
   AfterViewChecked,
   Component,
@@ -11,6 +10,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { Tooltip } from 'bootstrap';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { BudgetDto, CostCentreDto } from '../../../types/exporter';
 
 @Component({

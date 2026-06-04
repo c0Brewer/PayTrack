@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { EuroPipe } from '../../../../pipes/euro.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -21,6 +20,7 @@ import {
 import Papa from 'papaparse';
 import { Subject, takeUntil } from 'rxjs';
 
+import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {

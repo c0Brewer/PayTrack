@@ -1,11 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
+import { EuroPipe } from '../../../../pipes/euro.pipe';
 import {
   DuplicatePaymentRequestByUserDto,
   PaymentRequestByUserDto,
 } from '../../../../types/exporter';
-import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 
 @Component({
