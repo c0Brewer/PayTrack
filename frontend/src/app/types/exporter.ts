@@ -135,6 +135,15 @@ export type GetPaymentRequestsByTeamOptions =
 export type GetPaymentRequestsByTeamByIdOptions =
   paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
 
+// Financial export
+export enum FinancialExportFormat {
+  Csv = 1,
+  Pdf = 2,
+}
+
+export type GetFinancialExportOptions =
+  NonNullable<paths['/api/v1/transaction/export']['get']['parameters']['query']>;
+
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];

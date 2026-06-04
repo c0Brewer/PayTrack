@@ -3,10 +3,10 @@
     <h2>Payment Requests by Team</h2>
 
     <div class="export-actions">
-      <button type="button" [disabled]="isExporting" (click)="exportFinancialData('Csv')">
+      <button type="button" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Csv)">
         Export CSV
       </button>
-      <button type="button" [disabled]="isExporting" (click)="exportFinancialData('Pdf')">
+      <button type="button" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Pdf)">
         Export PDF
       </button>
     </div>

@@ -1,23 +1,18 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import {
-  FinancialExportFormat,
-  FinancialExportService,
-} from '../../../../../services/financial-export/financial-export-service';
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
+  FinancialExportFormat,
   GetPaymentRequestsByTeamOptions,
   PaymentRequestByTeamDto,
   TEAM_REQUEST_ALLOWED_STATUSES,
   TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import {
-  TeamRequestFilterComponent,
-  TeamRequestFilterOptions,
-} from '../../general/filter-component/filter-component';
+import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
 import { TeamRequestListComponent } from '../../general/list-component/list-component';
 
 @Component({
@@ -45,10 +40,11 @@ export class TeamRequestsComponent implements OnInit {
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
-  filterOptions: TeamRequestFilterOptions = {
+  filterOptions: GetPaymentRequestsByTeamOptions = {
     IncludeTeam: true,
   };
   isExporting: boolean = false;
+  FinancialExportFormat = FinancialExportFormat;
 
   ngOnInit(): void {
     this.loadRequests();
@@ -82,7 +78,7 @@ export class TeamRequestsComponent implements OnInit {
     });
   }
 
-  updateFilterOptions(options: TeamRequestFilterOptions): void {
+  updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadRequests();

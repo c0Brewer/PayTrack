@@ -2,10 +2,8 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { FinancialExportFormat, GetFinancialExportOptions } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
-
-export type FinancialExportFormat = 'Csv' | 'Pdf';
-export type FinancialExportQuery = Record<string, string | number | boolean | undefined | null>;
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +12,7 @@ export class FinancialExportService {
   constructor(private readonly authService: AuthService) {}
 
   public downloadFinancialData(
-    queryOptions: FinancialExportQuery,
+    queryOptions: GetFinancialExportOptions,
     format: FinancialExportFormat,
   ): Observable<void> {
     const promise = fetch(this.getExportUrl(queryOptions, format), {
@@ -36,14 +34,14 @@ export class FinancialExportService {
   }
 
   private getExportUrl(
-    queryOptions: FinancialExportQuery,
+    queryOptions: GetFinancialExportOptions,
     format: FinancialExportFormat,
   ): string {
     const path = '/api/v1/transaction/export';
     const baseUrl = environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
     const params = new URLSearchParams();
 
-    params.set('Format', format);
+    params.set('Format', String(format));
 
     Object.entries(queryOptions).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -57,8 +55,9 @@ export class FinancialExportService {
   private getFileName(response: Response, format: FinancialExportFormat): string {
     const contentDisposition = response.headers.get('Content-Disposition');
     const fileNameMatch = contentDisposition?.match(/filename="?([^"]+)"?/i);
+    const extension = format === FinancialExportFormat.Pdf ? 'pdf' : 'csv';
 
-    return fileNameMatch?.[1] ?? `financial-export.${format.toLowerCase()}`;
+    return fileNameMatch?.[1] ?? `financial-export.${extension}`;
   }
 
   private downloadBlob(blob: Blob, fileName: string): void {

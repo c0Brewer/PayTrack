@@ -1,14 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import {
-  FinancialExportFormat,
-  FinancialExportService,
-} from '../../../../../services/financial-export/financial-export-service';
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
   DuplicatePaymentRequestByUserDto,
+  FinancialExportFormat,
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
 } from '../../../../../types/exporter';
@@ -57,6 +55,7 @@ export class RequestsComponent implements OnInit {
   isDuplicateModalLoading: boolean = false;
   duplicateActionInvoiceId: number | null = null;
   isExporting: boolean = false;
+  FinancialExportFormat = FinancialExportFormat;
 
   ngOnInit(): void {
     this.loadInvoices();
