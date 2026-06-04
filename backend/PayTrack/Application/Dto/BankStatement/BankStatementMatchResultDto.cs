@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Text.Json.Serialization;
-using PayTrack.Application.Dto.Transaction;
 
 namespace PayTrack.Application.Dto.BankStatement
 {
@@ -22,9 +21,9 @@ namespace PayTrack.Application.Dto.BankStatement
 
         // The matched payment request (if any).
         [property: JsonPropertyName("matchedTransaction")]
-        TransactionDto? MatchedTransaction,
+        BankStatementMatchedTransactionDto? MatchedTransaction,
 
-        // Match score (0-6, higher is better).
+        // Match score (0–11, higher is better).
         [property: JsonPropertyName("matchScore")]
         int MatchScore);
 }

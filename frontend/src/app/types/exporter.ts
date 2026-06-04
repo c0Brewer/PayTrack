@@ -149,6 +149,7 @@ export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccou
 
 // Bank Statement Matching
 export type BankStatementEntryDto = components['schemas']['BankStatementEntryDto'];
+export type BankStatementMatchedTransactionDto = components['schemas']['BankStatementMatchedTransactionDto'];
 export type BankStatementMatchResponseDto = components['schemas']['BankStatementMatchResponseDto'];
 export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
 export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];

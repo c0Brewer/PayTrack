@@ -2,8 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.BankAccount;
 using PayTrack.Application.Dto.BankStatement;
+using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -16,6 +17,8 @@ namespace PayTrack.Application.Services.Implementation
     public class BankStatementMatchingService(ITransactionRepository repo) : IBankStatementMatchingService
     {
         private const int PossibleMatchThreshold = 2;
+        private const decimal NearAmountTolerance = 1.0m;
+        private const int NearAmountMaxDays = 10;
         private readonly ITransactionRepository repo = repo;
 
         /// <inheritdoc/>
@@ -23,18 +26,39 @@ namespace PayTrack.Application.Services.Implementation
         {
             var results = new List<BankStatementMatchResultDto>();
 
-            // Get all Approved transactions that could potentially be matched
+            // Only match against Approved transactions; always includes User via ApplyBasePostFilters
             var (approvedTransactions, _) = await this.repo.GetAllAsync(
-                new GetTransactionQuery());
+                new GetTransactionQuery
+                {
+                    // Status = TransactionStatus.Approved,
+                    IncludeTeam = true,
+                });
+
+            // Load approved user payment requests with bank accounts for IBAN matching and display
+            var (userRequests, _) = await this.repo.GetAllAsync(
+                new GetPaymentRequestByUserQuery
+                {
+                    // Status = TransactionStatus.Approved,
+                    IncludeBankAccount = true,
+                });
+            var ibanByTransactionId = userRequests
+                .Where(r => r.BankAccount?.Iban != null)
+                .ToDictionary(
+                    r => r.Id,
+                    r => NormalizeIban(r.BankAccount!.Iban));
+            var userRequestById = userRequests.ToDictionary(r => r.Id);
 
             foreach (var entry in entries)
             {
-                var bestMatch = this.FindBestMatch(entry, approvedTransactions);
+                var bestMatch = this.FindBestMatch(entry, approvedTransactions, ibanByTransactionId);
 
+                var matchedDto = bestMatch?.Transaction != null
+                    ? MapToMatchedTransactionDto(bestMatch.Transaction, userRequestById)
+                    : null;
                 var result = new BankStatementMatchResultDto(
                     Entry: entry,
                     HasMatch: bestMatch != null,
-                    MatchedTransaction: bestMatch?.Transaction != null ? TransactionMapper.ToDto(bestMatch.Transaction) : null,
+                    MatchedTransaction: matchedDto,
                     MatchScore: bestMatch?.Score ?? 0);
 
                 results.Add(result);
@@ -88,14 +112,48 @@ namespace PayTrack.Application.Services.Implementation
             return updatedTransactions;
         }
 
-        private MatchCandidate? FindBestMatch(BankStatementEntryDto entry, List<Transaction> transactions)
+        private static string NormalizeIban(string? iban) =>
+            (iban ?? string.Empty).Replace(" ", string.Empty).ToUpperInvariant();
+
+        private static BankStatementMatchedTransactionDto MapToMatchedTransactionDto(
+            Transaction transaction,
+            Dictionary<int, PaymentRequestByUser> userRequestById)
+        {
+            userRequestById.TryGetValue(transaction.Id, out var userReq);
+
+            BankAccountDto? bankAccountDto = null;
+            if (userReq?.BankAccount != null)
+            {
+                var ba = userReq.BankAccount;
+                bankAccountDto = new BankAccountDto(ba.Id, ba.AccountHolder, ba.Iban, ba.Bic);
+            }
+
+            return new BankStatementMatchedTransactionDto
+            {
+                Id = transaction.Id,
+                Amount = transaction.Amount,
+                PurposeOfPayment = transaction.PurposeOfPayment,
+                PaymentReference = transaction.PaymentReference,
+                Status = transaction.Status,
+                PaidAt = transaction.PaidAt,
+                UserName = transaction.User?.Name,
+                TeamName = transaction.Team?.Name,
+                InvoiceNumber = userReq?.InvoiceNumber,
+                BankAccount = bankAccountDto,
+            };
+        }
+
+        private MatchCandidate? FindBestMatch(
+            BankStatementEntryDto entry,
+            List<Transaction> transactions,
+            Dictionary<int, string> ibanByTransactionId)
         {
             MatchCandidate? bestMatch = null;
             int bestScore = 0;
 
             foreach (var transaction in transactions)
             {
-                var score = this.CalculateMatchScore(entry, transaction);
+                var score = this.CalculateMatchScore(entry, transaction, ibanByTransactionId);
 
                 if (score > bestScore)
                 {
@@ -108,17 +166,29 @@ namespace PayTrack.Application.Services.Implementation
             return bestScore >= PossibleMatchThreshold ? bestMatch : null;
         }
 
-        private int CalculateMatchScore(BankStatementEntryDto entry, Transaction transaction)
+        private int CalculateMatchScore(
+            BankStatementEntryDto entry,
+            Transaction transaction,
+            Dictionary<int, string> ibanByTransactionId)
         {
             int score = 0;
 
             // +3: Amount matches exactly
-            if (entry.Amount.Value == transaction.Amount)
+            bool exactAmount = entry.Amount.Value == transaction.Amount;
+            if (exactAmount)
             {
                 score += 3;
             }
 
-            // +2: Invoice number found in reference field
+            // +3: IBAN matches (PaymentRequestByUser only — partner account is the recipient's bank account)
+            if (!string.IsNullOrEmpty(entry.PartnerAccount?.Iban) &&
+                ibanByTransactionId.TryGetValue(transaction.Id, out var txIban) &&
+                NormalizeIban(entry.PartnerAccount.Iban) == txIban)
+            {
+                score += 3;
+            }
+
+            // +2: Invoice number found in any reference field (PaymentRequestByUser only)
             var referenceFields = new[]
             {
                 entry.Reference,
@@ -126,7 +196,6 @@ namespace PayTrack.Application.Services.Implementation
                 entry.PartnerName,
             };
 
-            // Check invoice number from transaction if transaction is a paymentRequestByUser
             if (transaction is PaymentRequestByUser userTx && !string.IsNullOrEmpty(userTx.InvoiceNumber) &&
                     referenceFields.Any(field =>
                         !string.IsNullOrEmpty(field) &&
@@ -136,16 +205,16 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             // +1: PaidAt date within ±3 days of booking date
-            if (transaction.PaidAt.HasValue && entry.Booking != default)
+            int? bookingDaysDiff = transaction.PaidAt.HasValue && entry.Booking != default
+                ? Math.Abs((entry.Booking.Date - transaction.PaidAt.Value.Date).Days)
+                : null;
+
+            if (bookingDaysDiff.HasValue && bookingDaysDiff.Value <= 3)
             {
-                var daysDifference = Math.Abs((entry.Booking.Date - transaction.PaidAt.Value.Date).Days);
-                if (daysDifference <= 3)
-                {
-                    score++;
-                }
+                score++;
             }
 
-            // +1: Purpose/reference fuzzy match on receiver reference
+            // +1: Purpose/reference fuzzy match (>50% string similarity)
             if (!string.IsNullOrEmpty(entry.ReceiverReference) || !string.IsNullOrEmpty(entry.Reference))
             {
                 var bankPurpose = entry.ReceiverReference ?? entry.Reference ?? string.Empty;
@@ -155,6 +224,25 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     score++;
                 }
+            }
+
+            // +2: Partner name fuzzy match with user's name (>60% similarity)
+            // User is always loaded by the repository — no extra query needed.
+            if (!string.IsNullOrEmpty(entry.PartnerName) && !string.IsNullOrEmpty(transaction.User?.Name))
+            {
+                if (this.CalculateStringSimilarity(entry.PartnerName, transaction.User.Name) > 0.6)
+                {
+                    score += 2;
+                }
+            }
+
+            // +1: Near-amount (within €1 tolerance) — only when NOT exact and booking within ±10 days.
+            // The date gate prevents spurious near-matches across many historical transactions.
+            if (!exactAmount &&
+                Math.Abs(entry.Amount.Value - transaction.Amount) <= NearAmountTolerance &&
+                bookingDaysDiff.HasValue && bookingDaysDiff.Value <= NearAmountMaxDays)
+            {
+                score++;
             }
 
             return score;

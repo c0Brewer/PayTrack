@@ -207,37 +207,31 @@
                       <dd>{{ result.entry?.partnerName || '—' }}</dd>
                     </div>
                     <div class="detail-list__row">
-                      <dt>Booking date</dt>
+                      <dt>Date</dt>
                       <dd>{{ formatDate(result.entry?.booking) }}</dd>
                     </div>
                     <div class="detail-list__row">
                       <dt>Amount</dt>
                       <dd>{{ formatAmount(result.entry) }}</dd>
                     </div>
-                    @if (result.entry?.partnerAccount?.iban) {
-                      <div class="detail-list__row">
-                        <dt>IBAN</dt>
-                        <dd>{{ formatIban(result.entry?.partnerAccount?.iban || '') }}</dd>
-                      </div>
-                    }
-                    @if (result.entry?.partnerAccount?.bic) {
-                      <div class="detail-list__row">
-                        <dt>BIC</dt>
-                        <dd>{{ result.entry?.partnerAccount?.bic }}</dd>
-                      </div>
-                    }
-                    @if (result.entry?.receiverReference) {
-                      <div class="detail-list__row">
-                        <dt>Receiver ref.</dt>
-                        <dd>{{ result.entry?.receiverReference }}</dd>
-                      </div>
-                    }
-                    @if (result.entry?.reference) {
-                      <div class="detail-list__row">
-                        <dt>Reference</dt>
-                        <dd>{{ result.entry?.reference }}</dd>
-                      </div>
-                    }
+                    <div class="detail-list__row">
+                      <dt>IBAN</dt>
+                      <dd>{{ result.entry?.partnerAccount?.iban ? formatIban(result.entry?.partnerAccount?.iban ?? '') : '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>BIC</dt>
+                      <dd>{{ result.entry?.partnerAccount?.bic || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Receiver ref.</dt>
+                      <dd>{{ result.entry?.receiverReference || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Reference</dt>
+                      <dd>{{ result.entry?.reference || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row detail-list__row--spacer"></div>
+                    <div class="detail-list__row detail-list__row--spacer"></div>
                   </dl>
                 </div>
 
@@ -255,30 +249,44 @@
                     </p>
                     <dl class="detail-list">
                       <div class="detail-list__row">
-                        <dt>Amount</dt>
-                        <dd>{{ formatTransactionAmount(result.matchedTransaction.amount) }}</dd>
+                        <dt>User</dt>
+                        <dd>{{ result.matchedTransaction.userName || '—' }}</dd>
                       </div>
                       <div class="detail-list__row">
                         <dt>Paid at</dt>
-                        <dd>{{ formatDate(result.matchedTransaction.paidAt) }}</dd>
+                        <dd>{{ formatDate(result.matchedTransaction.paidAt ?? undefined) }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Amount</dt>
+                        <dd>{{ result.matchedTransaction.amount | euro }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>IBAN</dt>
+                        <dd>{{ result.matchedTransaction.bankAccount?.iban ? formatIban(result.matchedTransaction.bankAccount?.iban ?? '') : '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>BIC</dt>
+                        <dd>{{ result.matchedTransaction.bankAccount?.bic || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Invoice no.</dt>
+                        <dd>{{ result.matchedTransaction.invoiceNumber || '—' }}</dd>
                       </div>
                       <div class="detail-list__row">
                         <dt>Purpose</dt>
-                        <dd>{{ result.matchedTransaction.purposeOfPayment }}</dd>
+                        <dd>{{ result.matchedTransaction.purposeOfPayment || '—' }}</dd>
                       </div>
-                      @if (result.matchedTransaction.paymentReference) {
-                        <div class="detail-list__row">
-                          <dt>Payment ref.</dt>
-                          <dd>{{ result.matchedTransaction.paymentReference }}</dd>
-                        </div>
-                      }
                       <div class="detail-list__row">
-                        <dt>Current status</dt>
-                        <dd>{{ getStatusLabel(result.matchedTransaction.status) }}</dd>
+                        <dt>Payment ref.</dt>
+                        <dd>{{ result.matchedTransaction.paymentReference || '—' }}</dd>
                       </div>
                       <div class="detail-list__row detail-list__row--highlight">
-                        <dt>New status</dt>
-                        <dd>{{ getStatusLabel(3) }}</dd>
+                        <dt>Status</dt>
+                        <dd>
+                          {{ getStatusLabel(result.matchedTransaction.status) }}
+                          <span class="material-symbols-outlined status-arrow">arrow_forward</span>
+                          {{ getStatusLabel(3) }}
+                        </dd>
                       </div>
                     </dl>
                   </div>

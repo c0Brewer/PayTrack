@@ -350,6 +350,17 @@
       font-weight: v.$font-semibold;
     }
   }
+
+  &--spacer {
+    border-bottom: none;
+    min-height: 1.6rem;
+  }
+}
+
+.status-arrow {
+  font-size: 0.9rem;
+  vertical-align: middle;
+  margin: 0 0.2rem;
 }
 
 // ── Confidence badge ──────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { Component, signal, computed } from '@angular/core';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { BankStatementService } from '../../../services/bank-statement-service/bank-statement-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import {
@@ -25,7 +26,7 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [StatBoxComponent],
+  imports: [StatBoxComponent, EuroPipe],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
@@ -33,7 +34,7 @@ export class BankStatementImportComponent {
   constructor(
     private readonly bankStatementService: BankStatementService,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) { }
 
   // ── state ──────────────────────────────────────────────────────────────────
   phase = signal<Phase>('upload');
@@ -107,12 +108,12 @@ export class BankStatementImportComponent {
         : undefined,
       amount: r.amount
         ? {
-            value:
-              r.amount.precision != null && r.amount.value != null
-                ? r.amount.value / Math.pow(10, r.amount.precision)
-                : r.amount.value,
-            currency: r.amount.currency,
-          }
+          value:
+            r.amount.precision != null && r.amount.value != null
+              ? r.amount.value / Math.pow(10, r.amount.precision)
+              : r.amount.value,
+          currency: r.amount.currency,
+        }
         : undefined,
       receiverReference: r.receiverReference,
       reference: r.reference,
@@ -161,11 +162,6 @@ export class BankStatementImportComponent {
     );
   }
 
-  formatTransactionAmount(amount: number | undefined): string {
-    if (amount == null) return '—';
-    return amount.toFixed(2) + ' EUR';
-  }
-
   formatAmount(entry: BankStatementEntryDto | undefined): string {
     if (!entry?.amount) return '—';
     const v = entry.amount.value ?? 0;
@@ -184,15 +180,15 @@ export class BankStatementImportComponent {
 
   scoreLabel(score: number | undefined): string {
     if (score == null) return '';
-    if (score >= 80) return 'High';
-    if (score >= 50) return 'Medium';
+    if (score >= 7) return 'High';
+    if (score >= 4) return 'Medium';
     return 'Low';
   }
 
   scoreColor(score: number | undefined): string {
     if (score == null) return 'confidence-badge confidence-badge--none';
-    if (score >= 80) return 'confidence-badge confidence-badge--high';
-    if (score >= 50) return 'confidence-badge confidence-badge--medium';
+    if (score >= 7) return 'confidence-badge confidence-badge--high';
+    if (score >= 4) return 'confidence-badge confidence-badge--medium';
     return 'confidence-badge confidence-badge--low';
   }
 
