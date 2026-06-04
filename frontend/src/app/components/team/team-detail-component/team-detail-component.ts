@@ -2,6 +2,7 @@ import { SlicePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
@@ -10,7 +11,7 @@ import { DetailComponent } from '../../general/detail-component/detail-component
 
 @Component({
   selector: 'app-team-detail-component',
-  imports: [DetailComponent, RouterLink, SlicePipe],
+  imports: [DetailComponent, EuroPipe, RouterLink, SlicePipe],
   templateUrl: './team-detail-component.html',
   styleUrl: './team-detail-component.scss',
 })
@@ -55,11 +56,6 @@ export class TeamDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/team']);
-  }
-
-  formatBudgetAmount(amount: number | null | undefined): string {
-    if (amount == null) return '—';
-    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
   }
 
   getPaidPercent(budget: BudgetDto): number {

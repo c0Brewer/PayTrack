@@ -238,7 +238,7 @@
               <div class="budget-card__details mt-3">
                 <div>
                   <span>Amount</span>
-                  <strong>{{ formatBudgetAmount(budget.targetAmount) }}{{ budget.targetAmount != null ? ' €' : '' }}</strong>
+                  <strong>{{ budget.targetAmount | euro }}</strong>
                 </div>
                 <div>
                   <span>Start</span>
@@ -276,7 +276,7 @@
               <div class="budget-card__details mt-3">
                 <div>
                   <span>Amount</span>
-                  <strong>{{ formatBudgetAmount(budget.targetAmount) }}{{ budget.targetAmount != null ? ' €' : '' }}</strong>
+                  <strong>{{ budget.targetAmount | euro }}</strong>
                 </div>
                 <div>
                   <span>Start</span>

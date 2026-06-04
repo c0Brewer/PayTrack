@@ -527,9 +527,4 @@ describe('TeamEditModalComponent', () => {
 
     expect(component.getBudgetFieldError('targetAmount')).toBe('');
   });
-
-  it('formatBudgetAmount should return dash for null and formatted number otherwise', () => {
-    expect(component.formatBudgetAmount(null)).toBe('—');
-    expect(component.formatBudgetAmount(2500)).toBe('2.500');
-  });
 });

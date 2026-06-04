@@ -25,7 +25,7 @@
         <td>{{ invoice.invoiceNumber }}</td>
         <td>{{ invoice.createdAt | date: 'dd.MM.yyyy' }}</td>
         <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'dd.MM.yyyy') : '—' }}</td>
-        <td>{{ invoice.amount }}</td>
+        <td>{{ invoice.amount | euro }}</td>
         <td>{{ invoice.purposeOfPayment }}</td>
         <td>{{ invoice.team?.name ?? '—' }}</td>
         <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
