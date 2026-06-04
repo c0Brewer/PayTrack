@@ -76,14 +76,14 @@
       padding: v.$size-s;
       border-bottom: 1px solid v.$border-color;
       vertical-align: middle;
-
-      &:last-child {
-        border-bottom: none;
-      }
     }
 
     tr {
       transition: background 0.15s ease;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:hover {
