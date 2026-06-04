@@ -118,4 +118,71 @@ describe('TypeaheadSelectComponent', () => {
     component.onDocumentMousedown({ target: outsideElement } as unknown as MouseEvent);
     expect(component.showDropdown).toBe(false);
   });
+
+  it('onDocumentMousedown inside component should keep dropdown open', () => {
+    component.showDropdown = true;
+    component.onDocumentMousedown({ target: fixture.nativeElement } as unknown as MouseEvent);
+    expect(component.showDropdown).toBe(true);
+  });
+
+  it('should hide dropdown when query is valid but no results match', () => {
+    component.searchControl.setValue('xyz_nomatch');
+    expect(component.results).toHaveLength(0);
+    expect(component.showDropdown).toBe(false);
+  });
+
+  it('select should format display text without secondaryText when absent', () => {
+    const itemWithoutSecondary: TypeaheadItem = { id: 99, primaryText: 'Zoe' };
+    component.select(itemWithoutSecondary);
+    expect(component.searchControl.value).toBe('Zoe');
+    expect(component.selectedItem).toEqual(itemWithoutSecondary);
+  });
+
+  describe('ngOnInit with initialItem', () => {
+    beforeEach(async () => {
+      fixture = TestBed.createComponent(TypeaheadSelectComponent);
+      component = fixture.componentInstance;
+      component.items = mockItems;
+    });
+
+    it('should pre-fill control with "primaryText (secondaryText)" when secondaryText is set', () => {
+      component.initialItem = { id: 1, primaryText: 'Alice', secondaryText: 'alice@example.com' };
+      fixture.detectChanges();
+      expect(component.selectedItem).toEqual(component.initialItem);
+      expect(component.searchControl.value).toBe('Alice (alice@example.com)');
+    });
+
+    it('should pre-fill control with primaryText only when secondaryText is absent', () => {
+      component.initialItem = { id: 99, primaryText: 'Zoe' };
+      fixture.detectChanges();
+      expect(component.selectedItem).toEqual(component.initialItem);
+      expect(component.searchControl.value).toBe('Zoe');
+    });
+
+    it('should leave selectedItem null when initialItem is null', () => {
+      component.initialItem = null;
+      fixture.detectChanges();
+      expect(component.selectedItem).toBeNull();
+    });
+  });
+
+  describe('closeOnScroll', () => {
+    it('should close dropdown when it is open', () => {
+      component.showDropdown = true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).closeOnScroll();
+      expect(component.showDropdown).toBe(false);
+    });
+
+    it('should be a no-op when dropdown is already closed', () => {
+      component.showDropdown = false;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).closeOnScroll();
+      expect(component.showDropdown).toBe(false);
+    });
+  });
+
+  it('ngOnDestroy should not throw', () => {
+    expect(() => component.ngOnDestroy()).not.toThrow();
+  });
 });

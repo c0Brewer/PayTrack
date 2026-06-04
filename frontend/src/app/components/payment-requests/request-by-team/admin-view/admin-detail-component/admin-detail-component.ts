@@ -74,10 +74,9 @@ export class TeamRequestAdminDetailComponent implements OnInit {
     if (!this.request) return '';
     const name = this.request.user?.name ?? 'User';
     const id = this.request.id;
-    const amount = this.request.amount.toLocaleString('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-    });
+    const amount = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(
+      this.request.amount,
+    );
     const dueDate = this.request.dueDate
       ? new Date(this.request.dueDate).toLocaleDateString('en-US', {
           year: 'numeric',

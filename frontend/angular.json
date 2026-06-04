@@ -40,15 +40,16 @@
             "security": {
               "allowedHosts": []
             },
-            "ssr": false
+            "ssr": false,
+            "allowedCommonJsDependencies": ["papaparse"]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -81,6 +82,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
+            "setupFiles": ["src/test-setup.ts"],
             "coverage": true,
             "coverageReporters": ["lcov", "html"],
             "coverageExclude": [

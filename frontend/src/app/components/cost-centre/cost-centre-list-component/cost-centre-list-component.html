@@ -13,14 +13,14 @@
     @for (c of costCentres; track c.id) {
       <tr>
         <td class="name-col" data-label="Name">
-          <a [routerLink]="[c.id]">{{ c.name }}</a>
+          <a class="table-badge" [routerLink]="[c.id]">{{ c.name }}</a>
         </td>
 
         <td class="description-col" data-label="Description">{{ c.description }}</td>
 
         <td class="budget-col" data-label="Budget">
           @if (getActiveBudget(c.budgets); as activeBudget) {
-            <span class="has-budgets">{{ activeBudget.targetAmount | currency: 'EUR' }}</span>
+            <span class="has-budgets">{{ activeBudget.targetAmount | euro }}</span>
           } @else {
             <span class="no-budgets">No current budget</span>
           }
@@ -46,36 +46,30 @@
           <div class="action-buttons">
             <button
               type="button"
-              class="btn btn-secondary"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-title="Edit cost centre"
+              class="btn btn-secondary icon-hover-btn"
               aria-label="Edit cost centre"
               (click)="onOpenEdit(c)"
             >
               <span class="material-symbols-outlined">edit</span>
+              <span class="btn-text">Edit</span>
             </button>
             <button
               type="button"
-              class="btn btn-outline-danger d-inline-flex align-items-center gap-1"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-title="Delete cost centre"
+              class="btn btn-outline-danger d-inline-flex align-items-center icon-hover-btn"
               aria-label="Delete cost centre"
               (click)="onOpenDelete(c)"
             >
               <span class="material-symbols-outlined">delete</span>
+              <span class="btn-text">Delete</span>
             </button>
             <button
               type="button"
-              class="btn btn-outline-primary d-inline-flex align-items-center gap-1"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-title="Open cost centre details"
+              class="btn btn-outline-primary d-inline-flex align-items-center icon-hover-btn"
               aria-label="Open cost centre details"
               [routerLink]="[c.id]"
             >
               <span class="material-symbols-outlined">info</span>
+              <span class="btn-text">Info</span>
             </button>
           </div>
         </td>

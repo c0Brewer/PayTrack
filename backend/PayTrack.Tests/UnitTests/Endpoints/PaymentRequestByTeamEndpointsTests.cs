@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -37,7 +38,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
 
             _factory.ServiceMock
@@ -126,7 +127,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
@@ -152,8 +153,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     PaidAt = DateTime.Today,
                 },
                 UserToAssignToId: 0,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);
@@ -171,7 +171,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync((User?)null);
 
             var client = _factory.CreateClient();
@@ -186,8 +186,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     PaidAt = DateTime.Today,
                 },
                 UserToAssignToId: 1,
-                DueDate: DateTime.Today.AddDays(7),
-                CostCentreId: null);
+                DueDate: DateTime.Today.AddDays(7));
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/team", requestDto);

@@ -25,6 +25,36 @@
   color: white;
 }
 
+.settings-tabs__item--warning::after {
+  bottom: calc(100% + 0.5rem);
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  background: #111827;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.25rem);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  white-space: normal;
+}
+
+.settings-tabs__item--warning:hover::after,
+.settings-tabs__item--warning:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .warning-badge-wrapper {
   align-items: center;
   display: flex;

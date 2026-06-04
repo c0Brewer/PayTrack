@@ -4,72 +4,114 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <div class="row gx-4 gx-xl-5 gy-4 mt-1">
       <div class="col-12 col-xl-6">
-        <app-box-component title="Invoice Information" subtitle="Basic Invoice Details" size="medium">
+        <app-box-component
+          title="Invoice Information"
+          subtitle="Basic Invoice Details"
+          size="medium"
+        >
           <div class="row mb-3">
             <div class="col-md-6 col-sm-12 input-wrapper">
-              <label for="amount">Amount (€) <span class="required">*</span></label><br/>
-              <input id="amount" type="number" formControlName="amount" placeholder="0.00" step="0.01" min="0.01"
-                     [class.is-invalid]="isInvalid('amount')"/>
-              <br/>
+              <label for="amount">Amount (€) <span class="required">*</span></label
+              ><br />
+              <input
+                id="amount"
+                type="number"
+                formControlName="amount"
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                [class.is-invalid]="isInvalid('amount')"
+              />
+              <br />
               @if (getError('amount')) {
-                <span class="error-msg"><span
-                  class="material-symbols-outlined">error</span>{{ getError('amount') }}</span>
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('amount') }}</span
+                >
               }
-
             </div>
             <div class="col-md-6 col-sm-12 input-wrapper">
-              <label for="paidAt">Invoice Date <span class="required">*</span></label><br/>
-              <input id="paidAt" type="date" formControlName="paidAt" [class.is-invalid]="isInvalid('paidAt')"/>
-              <br/>
+              <label for="paidAt">Invoice Date <span class="required">*</span></label
+              ><br />
+              <input
+                id="paidAt"
+                type="date"
+                formControlName="paidAt"
+                [class.is-invalid]="isInvalid('paidAt')"
+              />
+              <br />
               @if (getError('paidAt')) {
-                <span class="error-msg"><span
-                  class="material-symbols-outlined">error</span>{{ getError('paidAt') }}</span>
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('paidAt') }}</span
+                >
               }
             </div>
           </div>
           <div class="row">
             <div class="col-md-6 col-sm-12 input-wrapper">
-              <label for="invoiceNumber">Invoice Number <span class="required">*</span></label><br/>
-              <input id="invoiceNumber" type="text" formControlName="invoiceNumber" placeholder="INV-2024-001"
-                     [class.is-invalid]="isInvalid('invoiceNumber')"/>
+              <label for="invoiceNumber">Invoice Number <span class="required">*</span></label
+              ><br />
+              <input
+                id="invoiceNumber"
+                type="text"
+                formControlName="invoiceNumber"
+                placeholder="INV-2024-001"
+                [class.is-invalid]="isInvalid('invoiceNumber')"
+              />
               @if (getError('invoiceNumber')) {
                 <span class="error-msg">{{ getError('invoiceNumber') }}</span>
               }
             </div>
             <div class="col-md-6 col-sm-12 input-wrapper">
-              <label for="purposeOfPayment">Purpose of Payment <span class="required">*</span></label><br/>
-              <input id="purposeOfPayment" type="text" formControlName="purposeOfPayment"
-                     placeholder="e.g. Office supplies"
-                     [class.is-invalid]="isInvalid('purposeOfPayment')"/>
-              <br/>
+              <label for="purposeOfPayment"
+                >Purpose of Payment <span class="required">*</span></label
+              ><br />
+              <input
+                id="purposeOfPayment"
+                type="text"
+                formControlName="purposeOfPayment"
+                placeholder="e.g. Office supplies"
+                [class.is-invalid]="isInvalid('purposeOfPayment')"
+              />
+              <br />
               @if (getError('purposeOfPayment')) {
-                <span class="error-msg"><span
-                  class="material-symbols-outlined">error</span>{{ getError('purposeOfPayment') }}</span>
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('purposeOfPayment') }}</span
+                >
               }
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-12 col-sm-12 input-wrapper">
-              <label for="teamId">Team <span class="required">*</span></label><br/>
+              <label for="teamId">Team <span class="required">*</span></label
+              ><br />
               <select id="teamId" formControlName="teamId" [class.is-invalid]="isInvalid('teamId')">
                 <option [ngValue]="null" disabled>Select team…</option>
                 @for (team of teams; track team.id) {
                   <option [ngValue]="team.id">{{ team.name }}</option>
                 }
               </select>
-              <br/>
+              <br />
               @if (getError('teamId')) {
-                <span class="error-msg"><span
-                  class="material-symbols-outlined">error</span> {{ getError('teamId') }}</span>
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span>
+                  {{ getError('teamId') }}</span
+                >
               }
             </div>
           </div>
           <div class="row">
             <div class="col-md-12 col-sm-12 input-wrapper">
-              <label for="comment">Comment</label><br/>
-              <textarea id="comment" formControlName="comment" rows="2"
-                        placeholder="Add any relevant notes or context…"
-                        [class.is-invalid]="isInvalid('comment')"></textarea>
+              <label for="comment">Comment</label><br />
+              <textarea
+                id="comment"
+                formControlName="comment"
+                rows="2"
+                placeholder="Add any relevant notes or context…"
+                [class.is-invalid]="isInvalid('comment')"
+              ></textarea>
               @if (getError('comment')) {
                 <span class="error-msg">{{ getError('comment') }}</span>
               }
@@ -78,7 +120,11 @@
         </app-box-component>
       </div>
       <div class="col-12 col-xl-6">
-        <app-box-component title="Receipt Upload" subtitle="Upload your invoice/receipt and enter the details." size="medium">
+        <app-box-component
+          title="Receipt Upload"
+          subtitle="Upload your invoice/receipt and enter the details."
+          size="medium"
+        >
           <label
             class="receipt-upload"
             for="receiptFile"
@@ -115,7 +161,11 @@
 
     <div class="row gx-4 gx-xl-5 gy-4 mt-1">
       <div class="col-12">
-        <app-box-component title="Transaction" subtitle="Select the payout method and, if applicable, your bank account." size="large">
+        <app-box-component
+          title="Transaction"
+          subtitle="Select the payout method and, if applicable, your bank account."
+          size="large"
+        >
           <fieldset class="payout-type" [class.payout-type--invalid]="isInvalid('payoutType')">
             <legend>
               <span>Payout Type <span class="required">*</span></span>
@@ -123,7 +173,9 @@
             <div class="payout-type__options">
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="form.get('payoutType')?.value === PayoutType.User"
+                [class.payout-type__option--selected]="
+                  form.get('payoutType')?.value === PayoutType.User
+                "
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.User" />
                 <span class="payout-type__dot"></span>
@@ -135,13 +187,30 @@
 
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="form.get('payoutType')?.value === PayoutType.External"
+                [class.payout-type__option--selected]="
+                  form.get('payoutType')?.value === PayoutType.NotYetPaid
+                "
               >
-                <input type="radio" formControlName="payoutType" [value]="PayoutType.External" />
+                <input type="radio" formControlName="payoutType" [value]="PayoutType.NotYetPaid" />
                 <span class="payout-type__dot"></span>
                 <span class="payout-type__title">Not yet paid</span>
                 <span class="payout-type__description">
                   This invoice hasn’t been paid and should be paid directly by the team.
+                </span>
+              </label>
+
+              <label
+                class="payout-type__option"
+                [class.payout-type__option--selected]="
+                  form.get('payoutType')?.value === PayoutType.AlreadyPaid
+                "
+              >
+                <input type="radio" formControlName="payoutType" [value]="PayoutType.AlreadyPaid" />
+                <span class="payout-type__dot"></span>
+                <span class="payout-type__title">Already Paid</span>
+                <span class="payout-type__description">
+                  This invoice was already paid outside the system and is submitted for
+                  documentation purposes only.
                 </span>
               </label>
             </div>
@@ -153,7 +222,7 @@
           @if (form.get('payoutType')?.value === PayoutType.User) {
             <div class="field input-wrapper payout-type__bank-account">
               <div class="payout-type__legend">
-                  <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
+                <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
                 <button
                   type="button"
                   title="Manage Bank Accounts"
@@ -165,10 +234,16 @@
                   Manage Bank Accounts
                 </button>
               </div>
-              <select id="bankAccountId" formControlName="bankAccountId" [class.is-invalid]="isInvalid('bankAccountId')">
+              <select
+                id="bankAccountId"
+                formControlName="bankAccountId"
+                [class.is-invalid]="isInvalid('bankAccountId')"
+              >
                 <option [ngValue]="null" disabled>Select bank account…</option>
                 @for (account of bankAccounts; track account.id) {
-                  <option [ngValue]="account.id">{{ getShortenedIban(account.iban) + ' (' + account.accountHolder + ')' }}</option>
+                  <option [ngValue]="account.id">
+                    {{ getShortenedIban(account.iban) + ' (' + account.accountHolder + ')' }}
+                  </option>
                 }
               </select>
               @if (getError('bankAccountId')) {
@@ -176,15 +251,33 @@
               }
             </div>
           }
+
+          @if (form.get('payoutType')?.value === PayoutType.NotYetPaid) {
+            <div class="field input-wrapper payout-type__creditor-name">
+              <label for="creditorName">Company Name <span class="required">*</span></label>
+              <input
+                id="creditorName"
+                type="text"
+                formControlName="creditorName"
+                placeholder="e.g. Acme GmbH"
+                maxlength="255"
+                [class.is-invalid]="isInvalid('creditorName')"
+              />
+              @if (getError('creditorName')) {
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('creditorName') }}</span
+                >
+              }
+            </div>
+          }
         </app-box-component>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn" [disabled]="isSubmitting">
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1" [disabled]="isSubmitting">
           @if (!isSubmitting) {
-            <span class="submit-button__content">
-              <span class="material-symbols-outlined">check_circle</span>
-              Submit Invoice
-            </span>
+            <span class="material-symbols-outlined">check_circle</span>
+            Submit Invoice
           }
           @if (isSubmitting) {
             <span>Submitting…</span>

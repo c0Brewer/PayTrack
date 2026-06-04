@@ -31,9 +31,9 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string email, GetUserQueryById? query = null)
         {
-            return await this.repo.GetByEmailAsync(email);
+            return await this.repo.GetByEmailAsync(email, query);
         }
 
         /// <inheritdoc/>

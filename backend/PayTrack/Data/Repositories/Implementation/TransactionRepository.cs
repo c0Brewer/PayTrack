@@ -103,9 +103,26 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public Task<Transaction?> GetByIdAsync(int id, GetTransactionQueryById? query = null)
+        public async Task<Transaction?> GetByIdAsync(int id, GetTransactionQueryById? query = null)
         {
-            throw new NotImplementedException();
+            IQueryable<Transaction> dbQuery = this.context.Transactions.AsQueryable();
+
+            if (query?.IncludeUser == true)
+            {
+                dbQuery = dbQuery.Include(t => t.User);
+            }
+
+            if (query?.IncludeTeam == true)
+            {
+                dbQuery = dbQuery.Include(t => t.Team);
+            }
+
+            if (query?.IncludeStatusHistory == true)
+            {
+                dbQuery = dbQuery.Include(t => t.StatusHistory);
+            }
+
+            return await dbQuery.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <inheritdoc/>
@@ -168,7 +185,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.Transactions.Add(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
@@ -186,7 +203,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.PaymentRequestsByUser.Add(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
@@ -200,7 +217,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.PaymentRequestsByTeam.Add(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Saving Transaction did not end as expected. Saved {res} transactions.");
             }
@@ -251,12 +268,26 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<Transaction> UpdateAsync(Transaction transaction)
+        {
+            this.context.Transactions.Update(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res <= 0)
+            {
+                throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
         public async Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction)
         {
             this.context.PaymentRequestsByUser.Update(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res < 1)
+            if (res <= 0)
             {
                 throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transactions.");
             }
@@ -270,7 +301,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.PaymentRequestsByTeam.Update(transaction);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Updating Transaction did not end as expected. Saved {res} transaction.");
             }
@@ -328,7 +359,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 1)
+            if (res < 1)
             {
                 throw new InternalErrorException($"Dismissing duplicate warning did not end as expected. Saved {res} entries.");
             }

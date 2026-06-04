@@ -34,9 +34,10 @@ namespace PayTrack.Application.Services.Model
         /// <param name="teamId">Team id.</param>
         /// <param name="costCentreId">Cost centre id.</param>
         /// <param name="seasonId">Season id.</param>
-        /// <param name="targetAmount">Target amount.</param>
+        /// <param name="targetAmount">Target amount. Required for Expense; must be null for Income.</param>
         /// <param name="periodStart">Period start.</param>
         /// <param name="periodEnd">Period end.</param>
+        /// <param name="type">Budget type. Defaults to Expense.</param>
         /// <returns>Instance of created Budget object.</returns>
         Task<Budget> CreateBudgetAsync(
             string name,
@@ -44,9 +45,10 @@ namespace PayTrack.Application.Services.Model
             int teamId,
             int costCentreId,
             int seasonId,
-            decimal targetAmount,
+            decimal? targetAmount,
             DateTime periodStart,
-            DateTime periodEnd);
+            DateTime periodEnd,
+            BudgetType type = BudgetType.Expense);
 
         /// <summary>
         /// Updates a Budget using the given input.
@@ -60,6 +62,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="targetAmount">Target amount.</param>
         /// <param name="periodStart">Period start.</param>
         /// <param name="periodEnd">Period end.</param>
+        /// <param name="type">Budget type.</param>
         /// <returns>Instance of updated Budget object.</returns>
         Task<Budget> UpdateBudgetAsync(
             int id,
@@ -70,7 +73,8 @@ namespace PayTrack.Application.Services.Model
             int? seasonId = null,
             decimal? targetAmount = null,
             DateTime? periodStart = null,
-            DateTime? periodEnd = null);
+            DateTime? periodEnd = null,
+            BudgetType? type = null);
 
         /// <summary>
         /// Deletes a Budget by id.

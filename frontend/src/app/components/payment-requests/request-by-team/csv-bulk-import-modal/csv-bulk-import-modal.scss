@@ -1,0 +1,316 @@
+@use 'variables' as v;
+
+.step-indicator {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+  margin-bottom: v.$size-xs;
+}
+
+.step-stepper {
+  align-items: center;
+  border-bottom: 1px solid v.$TUR-border-color;
+  display: flex;
+  gap: v.$size-xs;
+  margin-bottom: v.$size-s;
+  padding-bottom: v.$size-s;
+
+  &__step {
+    align-items: center;
+    background: none;
+    border: none;
+    border-radius: 0.25rem;
+    color: v.$text-muted;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: v.$font-s;
+    gap: 0.35rem;
+    padding: 0.2rem 0.5rem;
+
+    &.active {
+      color: v.$TUR-primary-orange;
+      font-weight: v.$font-semibold;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    &:not(:disabled):not(.active):hover {
+      background: v.$TUR-secondary-orange;
+      color: v.$TUR-primary-orange;
+    }
+  }
+
+  &__arrow {
+    color: v.$text-muted;
+    font-size: 1rem;
+  }
+}
+
+.step-num {
+  align-items: center;
+  background: v.$TUR-secondary-background;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: v.$font-bold;
+  height: 1.4rem;
+  justify-content: center;
+  width: 1.4rem;
+
+  .active & {
+    background: v.$TUR-primary-orange;
+    color: white;
+  }
+}
+
+.submit-blocked-banner {
+  align-items: flex-start;
+  background-color: rgba(v.$warning-color, 0.1);
+  border-left: 3px solid v.$warning-color;
+  border-radius: 0.25rem;
+  color: v.$warning-dark;
+  display: flex;
+  font-size: v.$font-xs;
+  gap: 0.4rem;
+  margin-bottom: v.$size-s;
+  padding: 0.5rem 0.75rem;
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  &__messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
+
+.file-info {
+  align-items: center;
+  color: v.$text-muted;
+  display: flex;
+  font-size: v.$font-xs;
+  gap: 0.3rem;
+  margin-bottom: v.$size-s;
+
+  .material-symbols-outlined {
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+
+.no-rows-warning,
+.unmatched-banner {
+  align-items: flex-start;
+  background-color: rgba(v.$warning-color, 0.1);
+  border-left: 3px solid v.$warning-color;
+  border-radius: 0.25rem;
+  color: v.$warning-dark;
+  display: flex;
+  font-size: v.$font-xs;
+  gap: 0.4rem;
+  margin-bottom: v.$size-s;
+  padding: 0.5rem 0.75rem;
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+}
+
+.table-wrapper {
+  margin-bottom: v.$size-s;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.preview-table {
+  border-collapse: collapse;
+  font-size: v.$font-xs;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid v.$TUR-border-color;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background-color: v.$TUR-secondary-background;
+    font-weight: v.$font-semibold;
+    position: sticky;
+    top: 0;
+  }
+
+  .col-amount {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  select {
+    background-color: v.$TUR-secondary-background;
+    border: 1px solid v.$TUR-border-color;
+    border-radius: 0.2rem;
+    font-size: v.$font-xs;
+    max-width: 16rem;
+    padding: 0.2rem 0.4rem;
+    width: 100%;
+
+    &.is-invalid {
+      border-color: v.$accent-color;
+    }
+  }
+
+  .row-unmatched td {
+    background-color: rgba(v.$warning-color, 0.05);
+  }
+
+  .row-success td {
+    background-color: rgba(v.$success-color, 0.06);
+  }
+
+  .row-error td {
+    background-color: rgba(v.$accent-color, 0.06);
+  }
+}
+
+.status-content {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.status-ok {
+  color: v.$success-color;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.status-err {
+  color: v.$accent-color;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.error-detail {
+  color: v.$accent-color;
+  font-size: v.$font-xs;
+}
+
+.results-summary {
+  font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+  margin-bottom: v.$size-xs;
+}
+
+.result-ok {
+  color: v.$success-color;
+}
+
+.result-err {
+  color: v.$accent-color;
+}
+
+.warning-modal-text {
+  font-size: v.$font-xs;
+  margin-bottom: v.$size-xs;
+}
+
+.unmatched-list {
+  font-size: v.$font-xs;
+  margin-bottom: v.$size-s;
+  padding-left: v.$size-m;
+
+  li {
+    margin-bottom: 0.2rem;
+  }
+}
+
+.modal-actions {
+  background-color: v.$background-light;
+  border-top: 1px solid v.$TUR-border-color;
+  bottom: 0;
+  display: flex;
+  gap: v.$size-xs;
+  justify-content: flex-end;
+  margin-top: v.$size-m;
+  padding-top: v.$size-s;
+  position: sticky;
+}
+
+.btn {
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: v.$font-s;
+  padding: 0.45rem 1rem;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.btn-primary {
+  background-color: v.$TUR-primary-orange;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: rgb(214, 98, 2);
+  }
+}
+
+.btn-secondary {
+  background-color: v.$background-color;
+  border: 1px solid v.$TUR-border-color;
+  color: v.$text-color;
+
+  &:hover:not(:disabled) {
+    background-color: v.$background-dark;
+  }
+}
+
+.input-wrapper {
+  input,
+  select {
+    background-color: v.$TUR-secondary-background;
+    border: 1px solid white;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+    height: 2.2rem;
+    padding: 0 1rem;
+    width: 100%;
+  }
+
+  label {
+    margin-top: 0.5rem;
+
+    .required {
+      color: v.$accent-color;
+    }
+  }
+}
+
+.error-msg {
+  align-items: center;
+  color: v.$accent-color;
+  display: inline-flex;
+  font-size: 0.8rem;
+  gap: 0.25rem;
+  line-height: 1.2;
+  margin-top: 0.35rem;
+
+  .material-symbols-outlined {
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+}

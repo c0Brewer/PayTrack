@@ -39,7 +39,7 @@
           <tbody>
             @for (b of costCentre.budgets ?? []; track b.id) {
               <tr>
-                <td>{{ formatBudgetAmount(b.targetAmount) }}</td>
+                <td>{{ b.targetAmount | euro }}</td>
                 <td>{{ b.periodStart | slice: 0 : 10 }}</td>
                 <td>{{ b.periodEnd | slice: 0 : 10 }}</td>
               </tr>

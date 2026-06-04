@@ -2,11 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
+import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
+import { BudgetDto } from '../../../../types/exporter';
 
 import { PaymentRequestByTeamComponent } from './submission-component';
 
@@ -15,6 +17,7 @@ describe('PaymentRequestByTeamComponent', () => {
   let fixture: ComponentFixture<PaymentRequestByTeamComponent>;
 
   const mockTeamService = { getTeams: vi.fn() };
+  const mockBudgetService = { getBudgets: vi.fn() };
   const mockCostCentreService = { getCostCentres: vi.fn() };
   const mockUserService = { getUser: vi.fn() };
   const mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
@@ -22,6 +25,7 @@ describe('PaymentRequestByTeamComponent', () => {
 
   beforeEach(async () => {
     mockTeamService.getTeams.mockReset().mockReturnValue(of({ items: [], totalCount: 0 }));
+    mockBudgetService.getBudgets.mockReset().mockReturnValue(of({ items: [], totalCount: 0 }));
     mockCostCentreService.getCostCentres
       .mockReset()
       .mockReturnValue(of({ items: [], totalCount: 0 }));
@@ -34,6 +38,7 @@ describe('PaymentRequestByTeamComponent', () => {
       imports: [PaymentRequestByTeamComponent, ReactiveFormsModule],
       providers: [
         { provide: TeamService, useValue: mockTeamService },
+        { provide: BudgetService, useValue: mockBudgetService },
         { provide: CostCentreService, useValue: mockCostCentreService },
         { provide: UserService, useValue: mockUserService },
         { provide: NotificationService, useValue: mockNotificationService },
@@ -58,26 +63,57 @@ describe('PaymentRequestByTeamComponent', () => {
   });
 
   // -------------------------
-  // LOAD TEAMS
+  // LOAD DATA (teams + income budgets via forkJoin)
   // -------------------------
-  it('should populate teams on load', () => {
+  it('should populate teams that have matching income budgets on load', () => {
+    const past = new Date();
+    past.setDate(past.getDate() - 1);
+    const future = new Date();
+    future.setDate(future.getDate() + 1);
     mockTeamService.getTeams.mockReturnValue(
-      of({ items: [{ id: 1, name: 'Team A' }], totalCount: 1 }),
+      of({
+        items: [
+          { id: 1, name: 'Team A' },
+          { id: 2, name: 'Team B' },
+        ],
+        totalCount: 2,
+      }),
+    );
+    mockBudgetService.getBudgets.mockReturnValue(
+      of({
+        items: [
+          {
+            id: 10,
+            name: 'Budget',
+            teamId: 1,
+            periodStart: past.toISOString(),
+            periodEnd: future.toISOString(),
+          },
+        ],
+        totalCount: 1,
+      }),
     );
     component.ngOnInit();
     expect(component.teams).toHaveLength(1);
+    expect(component.teams[0].name).toBe('Team A');
+    expect(component.allIncomeBudgets).toHaveLength(1);
   });
 
-  it('should not overwrite teams when items is null', () => {
-    mockTeamService.getTeams.mockReturnValue(of({ items: null, totalCount: 0 }));
+  it('should show no teams when no income budgets exist', () => {
+    mockTeamService.getTeams.mockReturnValue(
+      of({ items: [{ id: 1, name: 'Team A' }], totalCount: 1 }),
+    );
+    mockBudgetService.getBudgets.mockReturnValue(of({ items: [], totalCount: 0 }));
     component.ngOnInit();
     expect(component.teams).toEqual([]);
   });
 
-  it('should show error when teams fail to load', () => {
+  it('should show error when loadData fails', () => {
     mockTeamService.getTeams.mockReturnValue(throwError(() => new Error()));
     component.ngOnInit();
-    expect(mockNotificationService.showError).toHaveBeenCalledWith('Failed to load teams.');
+    expect(mockNotificationService.showError).toHaveBeenCalledWith(
+      'Failed to load teams and budgets.',
+    );
   });
 
   // -------------------------
@@ -259,7 +295,7 @@ describe('PaymentRequestByTeamComponent', () => {
       amount: 50,
       purposeOfPayment: 'Test payment',
       teamId: 1,
-      costCentreId: 1,
+      budgetId: 1,
       dueDate: tomorrow.toISOString().slice(0, 10),
     });
 
@@ -281,7 +317,7 @@ describe('PaymentRequestByTeamComponent', () => {
       amount: 50,
       purposeOfPayment: 'Test payment',
       teamId: 1,
-      costCentreId: 1,
+      budgetId: 1,
       dueDate: tomorrow.toISOString().slice(0, 10),
     });
 
@@ -292,6 +328,82 @@ describe('PaymentRequestByTeamComponent', () => {
 
     expect(mockNotificationService.showError).toHaveBeenCalledWith('Server error');
     expect(component.isSubmitting).toBe(false);
+  });
+
+  // -------------------------
+  // BUDGET FILTERING (local, from allIncomeBudgets)
+  // -------------------------
+  describe('budget filtering on teamId change', () => {
+    it('should filter allIncomeBudgets by teamId', () => {
+      component.allIncomeBudgets = [
+        { id: 1, name: 'Budget A', teamId: 1 },
+        { id: 2, name: 'Budget B', teamId: 2 },
+        { id: 3, name: 'Budget C', teamId: 1 },
+      ] as unknown as BudgetDto[];
+      component.form.get('teamId')!.setValue(1);
+      expect(component.budgets).toHaveLength(2);
+      expect(component.budgets.map((b) => b.id)).toEqual([1, 3]);
+    });
+
+    it('should clear budgets when teamId changes to null', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.budgets = [{ id: 1, name: 'Old' } as any];
+      component.form.get('teamId')!.setValue(null);
+      expect(component.budgets).toEqual([]);
+    });
+
+    it('should show empty budgets when no allIncomeBudgets match teamId', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.allIncomeBudgets = [{ id: 5, name: 'Other', teamId: 99 } as any];
+      component.form.get('teamId')!.setValue(1);
+      expect(component.budgets).toEqual([]);
+    });
+  });
+
+  // -------------------------
+  // getCostCentreName
+  // -------------------------
+  describe('getCostCentreName', () => {
+    it('should return name when cost centre exists', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component.costCentres = [{ id: 10, name: 'IT Equipment' } as any];
+      expect(component.getCostCentreName(10)).toBe('IT Equipment');
+    });
+
+    it('should return empty string when cost centre does not exist', () => {
+      component.costCentres = [];
+      expect(component.getCostCentreName(999)).toBe('');
+    });
+  });
+
+  // -------------------------
+  // CSV IMPORT
+  // -------------------------
+  describe('CSV import modal', () => {
+    it('onCsvFileInputChange should set csvImportFile and open modal when a file is selected', () => {
+      const mockFile = new File([''], 'test.csv', { type: 'text/csv' });
+      const mockInput = { files: [mockFile], value: '' } as unknown as HTMLInputElement;
+      const event = { target: mockInput } as unknown as Event;
+      component.onCsvFileInputChange(event);
+      expect(component.csvImportFile).toBe(mockFile);
+      expect(component.isCsvModalOpen).toBe(true);
+    });
+
+    it('onCsvFileInputChange should do nothing when no file is selected', () => {
+      const mockInput = { files: [] } as unknown as HTMLInputElement;
+      const event = { target: mockInput } as unknown as Event;
+      component.onCsvFileInputChange(event);
+      expect(component.csvImportFile).toBeNull();
+      expect(component.isCsvModalOpen).toBe(false);
+    });
+
+    it('onCsvModalClose should close the modal and clear csvImportFile', () => {
+      component.csvImportFile = new File([''], 'test.csv');
+      component.isCsvModalOpen = true;
+      component.onCsvModalClose();
+      expect(component.isCsvModalOpen).toBe(false);
+      expect(component.csvImportFile).toBeNull();
+    });
   });
 
   // -------------------------

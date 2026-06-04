@@ -11,27 +11,12 @@
 .form-actions{
   display: flex;
   justify-content: flex-end;
-  button{
-    background-color: rgb(235 106 0);
-    color: white;
+
+  button {
+    padding: 1rem;
     font-size: 1.2rem;
   }
-  button:hover{
-    cursor: pointer;
-    background-color: rgb(214 98 2);
-  }
-}
 
-.submit-button__content {
-  align-items: center;
-  display: inline-flex;
-  gap: 0.45rem;
-  line-height: 1;
-}
-
-.submit-button__content .material-symbols-outlined {
-  font-size: 1.35rem;
-  line-height: 1;
 }
 
 .input-wrapper{
@@ -216,7 +201,7 @@
 .payout-type__options {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .payout-type__option {
@@ -280,7 +265,8 @@
   border-color: #ef4444;
 }
 
-.payout-type__bank-account {
+.payout-type__bank-account,
+.payout-type__creditor-name {
   margin-top: 1rem;
 }
 

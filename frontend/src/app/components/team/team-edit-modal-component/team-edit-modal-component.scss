@@ -18,8 +18,9 @@ select {
   border-radius: 0.45rem;
   color: v.$text-color;
   font-size: v.$font-s;
-  min-height: 2.6rem;
-  padding: 0 0.8rem;
+  height: 2.6rem;
+  line-height: 1.5;
+  padding: 0.45rem 0.8rem;
 }
 
 input:focus,
@@ -88,13 +89,21 @@ textarea {
 }
 
 .team-preview__badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  color: v.$background-light;
-  font-weight: 600;
+  --table-badge-background: color-mix(
+    in srgb,
+    var(--table-badge-source-color, #{v.$TUR-primary-orange}) 12%,
+    white
+  );
+  --table-badge-border-color: color-mix(
+    in srgb,
+    var(--table-badge-source-color, #{v.$TUR-primary-orange}) 35%,
+    white
+  );
+  --table-badge-color: color-mix(
+    in srgb,
+    var(--table-badge-source-color, #{v.$TUR-primary-orange}) 70%,
+    black
+  );
 }
 
 .budgets-section h4 {

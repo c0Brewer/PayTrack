@@ -251,4 +251,8 @@ export class RequestsComponent implements OnInit {
       this.loadInvoices();
     }
   }
+
+  navigateBankStatementUpload(): void {
+    this.router.navigate(['/bank-statement-upload']);
+  }
 }

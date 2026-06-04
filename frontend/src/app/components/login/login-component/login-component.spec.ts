@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
 import { AuthService } from '../../../services/auth/auth-service';
@@ -66,9 +67,7 @@ describe('LoginComponent', () => {
       showError: vi.fn(),
     };
 
-    // ✅ Correct Google API mock
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).google = {
+    window.google = {
       accounts: {
         oauth2: {
           initCodeClient: vi.fn().mockReturnValue({
@@ -114,8 +113,7 @@ describe('LoginComponent', () => {
   });
 
   it('should show error if google not available', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).google = undefined;
+    window.google = undefined;
 
     await component.ngAfterViewInit();
 
@@ -142,16 +140,26 @@ describe('LoginComponent', () => {
   // -------------------------
   // HANDLE RESPONSE SUCCESS
   // -------------------------
-  it('should handle google login success', () => {
-    authServiceMock.handleGoogleCallback.mockReturnValue({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      subscribe: ({ next }: any) => next(mockJwtResponse),
-    });
+  it('should handle google login success', async () => {
+    authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtResponse));
 
-    component.handleGoogleCodeResponse(mockGoogleResponse);
+    await component.handleGoogleCodeResponse(mockGoogleResponse);
 
     expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith('abc');
     expect(authServiceMock.storeToken).toHaveBeenCalledWith('123');
+    expect(routerMock.navigate).toHaveBeenCalledWith(['']);
+  });
+
+  it('should show login progress while handling google login', async () => {
+    authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtResponse));
+
+    const loginPromise = component.handleGoogleCodeResponse(mockGoogleResponse);
+
+    expect(component.isLoggingIn).toBe(true);
+
+    await loginPromise;
+
+    expect(component.isLoggingIn).toBe(false);
   });
 
   // -------------------------
@@ -163,39 +171,14 @@ describe('LoginComponent', () => {
     expect(notificationMock.showError).toHaveBeenCalledWith('Google login failed.');
   });
 
-  it('should handle backend error', () => {
-    authServiceMock.handleGoogleCallback.mockReturnValue({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      subscribe: ({ error }: any) => error(new Error('Login failed')),
-    });
+  it('should handle backend error', async () => {
+    authServiceMock.handleGoogleCallback.mockReturnValue(
+      throwError(() => new Error('Login failed')),
+    );
 
-    component.handleGoogleCodeResponse(mockGoogleResponse);
+    await component.handleGoogleCodeResponse(mockGoogleResponse);
 
     expect(notificationMock.showError).toHaveBeenCalledWith('Login failed');
+    expect(component.isLoggingIn).toBe(false);
   });
-
-  // it('should redirect to home ("") on successful login without bank onboarding', async () => {
-  //   authServiceMock.loadGoogleScript.mockReturnValue(of(null));
-  //   authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtResponse));
-  //   authServiceMock.storeToken.mockResolvedValue(mockUser);
-  //   authServiceMock.needsBankInformation.mockReturnValue(false);
-  //
-  //   await Promise.resolve();
-  //   expect(authServiceMock.handleGoogleCallback).toHaveBeenCalledWith(
-  //     mockGoogleCallbackResponse.credential,
-  //   );
-  //   expect(authServiceMock.storeToken).toHaveBeenCalledWith(mockJwtCallbackResponse.jwtToken);
-  //   expect(routerMock.navigate).toHaveBeenCalledWith(['']);
-  // });
-  //
-  // it('should redirect to bank-information on successful login when onboarding is needed', async () => {
-  //   authServiceMock.handleGoogleCallback.mockReturnValue(of(mockJwtCallbackResponse));
-  //   authServiceMock.storeToken.mockResolvedValue(mockUser);
-  //   authServiceMock.needsBankInformation.mockReturnValue(true);
-  //
-  //   component.handleCredentialResponse(mockGoogleCallbackResponse);
-  //
-  //   await Promise.resolve();
-  //   expect(routerMock.navigate).toHaveBeenCalledWith(['bank-information']);
-  // });
 });

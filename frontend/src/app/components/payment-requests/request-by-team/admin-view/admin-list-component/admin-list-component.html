@@ -1,6 +1,12 @@
 <div class="team-requests">
   <div class="list-header">
     <h2>Payment Requests by Team</h2>
+  <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 w-100 mb-4">
+    <h2 class="m-0">Payment Requests</h2>
+    <button class="btn btn-primary align-self-start align-self-sm-auto" (click)="navigateBankStatementUpload()">
+      Upload Bank Statement
+    </button>
+  </div>
 
     <div class="export-actions">
       <button type="button" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Csv)">

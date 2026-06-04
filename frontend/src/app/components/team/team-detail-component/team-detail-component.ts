@@ -2,14 +2,16 @@ import { SlicePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
-import { CostCentreDto, TeamDto } from '../../../types/exporter';
+import { BudgetDto, BudgetType, CostCentreDto, TeamDto } from '../../../types/exporter';
+import { DetailComponent } from '../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-team-detail-component',
-  imports: [RouterLink, SlicePipe],
+  imports: [DetailComponent, EuroPipe, RouterLink, SlicePipe],
   templateUrl: './team-detail-component.html',
   styleUrl: './team-detail-component.scss',
 })
@@ -25,6 +27,14 @@ export class TeamDetailComponent implements OnInit {
 
   team: TeamDto | null = null;
   costCentres: CostCentreDto[] = [];
+
+  get expenseBudgets(): BudgetDto[] {
+    return (this.team?.budgets ?? []).filter((b) => b.type === BudgetType.Expense);
+  }
+
+  get incomeBudgets(): BudgetDto[] {
+    return (this.team?.budgets ?? []).filter((b) => b.type === BudgetType.Income);
+  }
 
   ngOnInit(): void {
     this.loadCostCentres();
@@ -48,8 +58,20 @@ export class TeamDetailComponent implements OnInit {
     this.router.navigate(['/team']);
   }
 
-  formatBudgetAmount(amount: number): string {
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+  getPaidPercent(budget: BudgetDto): number {
+    if (!budget.targetAmount || budget.targetAmount <= 0) return 0;
+    return Math.min((Math.max(0, budget.paidAmount) / budget.targetAmount) * 100, 100);
+  }
+
+  getApprovedPercent(budget: BudgetDto): number {
+    if (!budget.targetAmount || budget.targetAmount <= 0) return 0;
+    const netTotal = Math.max(0, budget.paidAmount + budget.approvedAmount);
+    const totalPercent = Math.min((netTotal / budget.targetAmount) * 100, 100);
+    return totalPercent - this.getPaidPercent(budget);
+  }
+
+  isOverBudget(budget: BudgetDto): boolean {
+    return budget.paidAmount + budget.approvedAmount > (budget.targetAmount || 0);
   }
 
   getCostCentreName(costCentreId: number): string {

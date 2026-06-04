@@ -186,6 +186,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(b => b.TargetAmount).HasColumnType("decimal(18,2)");
 
+            e.Property(b => b.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .HasDefaultValue(BudgetType.Expense);
+
             e.HasMany(b => b.Transactions)
                 .WithOne(tx => tx.Budget)
                 .HasForeignKey(tx => tx.BudgetId)

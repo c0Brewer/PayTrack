@@ -19,7 +19,7 @@ describe('InvoiceDetailComponent', () => {
     amount: 99.99,
     team: { name: 'Engineering' },
     purposeOfPayment: 'Conference ticket',
-    payoutType: PayoutType.External,
+    payoutType: PayoutType.NotYetPaid,
     comment: 'Annual conference',
     createdAt: '2026-01-01T00:00:00Z',
     paidAt: null,
@@ -140,7 +140,7 @@ describe('InvoiceDetailComponent', () => {
 
   it('should return correct status labels', () => {
     expect(component.getStatusLabel(TransactionStatus.Submitted)).toBe('Submitted');
-    expect(component.getStatusLabel(TransactionStatus.ChangesRequested)).toBe('Changes requested');
+    expect(component.getStatusLabel(TransactionStatus.ChangesRequested)).toBe('Changes Requested');
     expect(component.getStatusLabel(TransactionStatus.Approved)).toBe('Approved');
     expect(component.getStatusLabel(TransactionStatus.Paid)).toBe('Paid');
     expect(component.getStatusLabel(TransactionStatus.Declined)).toBe('Declined');
@@ -149,7 +149,7 @@ describe('InvoiceDetailComponent', () => {
 
   it('should return correct payout type labels', () => {
     expect(component.getPayoutTypeLabel(PayoutType.User)).toBe('Pay to User');
-    expect(component.getPayoutTypeLabel(PayoutType.External)).toBe('Pay to Supplier');
+    expect(component.getPayoutTypeLabel(PayoutType.NotYetPaid)).toBe('Pay to Supplier');
     expect(component.getPayoutTypeLabel(99 as PayoutType)).toBe('Unknown');
   });
 

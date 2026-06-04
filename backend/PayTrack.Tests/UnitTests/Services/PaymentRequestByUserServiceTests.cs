@@ -119,8 +119,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     futureDate,
                     "inv-1",
                     null,
-                    PayoutType.External,
-                    1);
+                    PayoutType.NotYetPaid,
+                    1,
+                    "Test Company");
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
@@ -166,8 +167,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 DateTime.Today,
                 "inv",
                 null,
-                PayoutType.External,
-                1);
+                PayoutType.NotYetPaid,
+                1,
+                "Test Company");
 
             result.Should().NotBeNull();
             result.Id.Should().Be(1);
@@ -206,6 +208,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     "inv",
                     null,
                     PayoutType.User,
+                    null,
                     null);
 
             await act.Should()
@@ -246,7 +249,8 @@ namespace PayTrack.Tests.UnitTests.Services
                     "inv",
                     null,
                     PayoutType.User,
-                    10);
+                    10,
+                    null);
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
@@ -289,7 +293,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 "inv",
                 null,
                 PayoutType.User,
-                10);
+                10,
+                null);
 
             result.BankAccountId.Should().Be(10);
         }

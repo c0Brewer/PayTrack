@@ -45,8 +45,9 @@ namespace PayTrack.Application.Services.Model
         /// <param name="PaidAt">When the invoice was paid at.</param>
         /// <param name="invoiceNumber">InvoiceNumber of PaymentRequestByUser.</param>
         /// <param name="comment">Optional comment.</param>
-        /// <param name="payoutType">payout type (to user or to external).</param>
+        /// <param name="payoutType">payout type (to user, not yet paid, or already paid).</param>
         /// <param name="bankAccountId">id of bank account to use.</param>
+        /// <param name="creditorName">name of the external creditor, required for NotYetPaid.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> CreatePaymentRequestByUserAsync(
             int userId,
@@ -58,7 +59,8 @@ namespace PayTrack.Application.Services.Model
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int? bankAccountId);
+            int? bankAccountId,
+            string? creditorName);
 
         /// <summary>
         /// Checks possible duplicates of a PaymentRequestByUser with exact matching criteria.

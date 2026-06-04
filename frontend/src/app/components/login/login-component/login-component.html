@@ -1,11 +1,31 @@
+@if (isLoggingIn) {
+  <div class="login-progress-overlay" aria-live="polite" aria-label="Signing in">
+    <div class="login-progress-overlay__content">
+      <span class="spinner-border" aria-hidden="true"></span>
+      <span>Signing In...</span>
+    </div>
+  </div>
+}
+
 <div class="row">
   <section id="left-section-login" class="col-lg-6 order-2 order-lg-1 vh-100 d-flex justify-content-start justify-content-lg-center flex-column">
     <img id="TUR-logo" alt="TU Racing Team Logo Color" src="logos/TUR/TUWRxBMW_Logo_color1.png" width="50%">
     <h1>PayTrack</h1>
     <p>Sign in with your TU Racing Google account</p>
-    <button type="button" class="google-custom-btn" (click)="signInWithGoogle()">
-      <img src="logos/google/google-icon.jpg" alt="" />
-      <span>Login Via Google</span>
+    <button
+      type="button"
+      class="google-custom-btn"
+      [disabled]="isLoggingIn"
+      [attr.aria-busy]="isLoggingIn"
+      (click)="signInWithGoogle()"
+    >
+      @if (isLoggingIn) {
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span>Signing In...</span>
+      } @else {
+        <img src="logos/google/google-icon.jpg" alt="" />
+        <span>Login Via Google</span>
+      }
     </button>
     <div class="divider-with-text">
       <span>Use your @racing.tuwien.ac.at email address</span>
