@@ -61,7 +61,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeTeam?: boolean;
+                    IncludeBankAccounts?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2473,9 +2476,9 @@ export interface components {
             /** Format: binary */
             receipt: string;
             payoutType: components["schemas"]["PayoutType"];
+            creditorName?: string | null;
             /** Format: int32 */
             bankAccountId?: number | null;
-            creditorName?: string | null;
         };
         CreateSeasonRequestDto: {
             name: string;

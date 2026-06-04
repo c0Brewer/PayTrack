@@ -98,11 +98,17 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<User?> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email, GetUserQueryById? query = null)
         {
-            return await this.context.User
-                .Include(u => u.BankAccounts)
-                .FirstOrDefaultAsync(u => u.Email == email);
+            IQueryable<User> dbQuery = this.context.User
+                .Include(u => u.BankAccounts);
+
+            if (query?.IncludeTeam == true)
+            {
+                dbQuery = dbQuery.Include(u => u.Team);
+            }
+
+            return await dbQuery.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         /// <inheritdoc/>
