@@ -2,9 +2,11 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Options;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -17,6 +19,7 @@ namespace PayTrack.Application.Services.Implementation
         IUserService _userService,
         IBudgetService _budgetService,
         INotificationDispatchService _notifications,
+        IOptions<PaymentRequestNotificationSettings> _notifSettings,
         ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
     {
         /// <summary>
@@ -27,6 +30,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserService userService = _userService;
         private readonly IBudgetService budgetService = _budgetService;
         private readonly INotificationDispatchService notifications = _notifications;
+        private readonly PaymentRequestNotificationSettings notifSettings = _notifSettings.Value;
         private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
 
         /// <inheritdoc/>
@@ -89,23 +93,44 @@ namespace PayTrack.Application.Services.Implementation
 
             var created = await this.repo.AddAsync(paymentRequest);
 
-            try
-            {
-                var subject = $"New Payment Request: {purposeOfPayment}";
-                var body =
-                    $"Dear {userToAssignTo.Name},\n\n" +
-                    $"A new payment request has been created for you.\n\n" +
-                    $"Amount: {amount:C2}\n" +
-                    $"Purpose: {purposeOfPayment}\n" +
-                    $"Due Date: {dueDate:yyyy-MM-dd}\n\n" +
-                    $"Please ensure payment is made before the due date.\n\n" +
-                    $"PayTrack";
+            var ch = this.notifSettings.OnCreation;
 
-                await this.notifications.SendEmailAsync(userToAssignTo.Email, subject, body);
-            }
-            catch (Exception ex)
+            if (ch.SendEmail)
             {
-                this.logger.LogError(ex, "Failed to send new-payment-request email to {Email}.", userToAssignTo.Email);
+                try
+                {
+                    var subject = $"New Payment Request: {purposeOfPayment}";
+                    var body =
+                        $"Dear {userToAssignTo.Name},\n\n" +
+                        $"A new payment request has been created for you.\n\n" +
+                        $"Amount: {amount:C2}\n" +
+                        $"Purpose: {purposeOfPayment}\n" +
+                        $"Due Date: {dueDate:yyyy-MM-dd}\n\n" +
+                        $"Please ensure payment is made before the due date.\n\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(userToAssignTo.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send new-payment-request email to {Email}.", userToAssignTo.Email);
+                }
+            }
+
+            if (ch.SendSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"New Payment Request: {purposeOfPayment}\n" +
+                        $"Amount: {amount:C2} · Due: {dueDate:yyyy-MM-dd}";
+
+                    await this.notifications.SendSlackAsync(userToAssignTo.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send new-payment-request Slack notification to {Email}.", userToAssignTo.Email);
+                }
             }
 
             return created;
@@ -175,23 +200,44 @@ namespace PayTrack.Application.Services.Implementation
                     Comment = comment,
                 });
 
-            try
-            {
-                var subject = $"Payment Confirmed: {transaction.PurposeOfPayment}";
-                var body =
-                    $"Dear {transaction.User.Name},\n\n" +
-                    $"Your payment has been marked as paid.\n\n" +
-                    $"Amount: {transaction.Amount:C2}\n" +
-                    $"Purpose: {transaction.PurposeOfPayment}\n" +
-                    $"Paid on: {transaction.PaidAt:yyyy-MM-dd}\n\n" +
-                    $"Thank you,\n" +
-                    $"PayTrack";
+            var ch = this.notifSettings.OnConfirmation;
 
-                await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
-            }
-            catch (Exception ex)
+            if (ch.SendEmail)
             {
-                this.logger.LogError(ex, "Failed to send payment-confirmed email to {Email}.", transaction.User.Email);
+                try
+                {
+                    var subject = $"Payment Confirmed: {transaction.PurposeOfPayment}";
+                    var body =
+                        $"Dear {transaction.User.Name},\n\n" +
+                        $"Your payment has been marked as paid.\n\n" +
+                        $"Amount: {transaction.Amount:C2}\n" +
+                        $"Purpose: {transaction.PurposeOfPayment}\n" +
+                        $"Paid on: {transaction.PaidAt:yyyy-MM-dd}\n\n" +
+                        $"Thank you,\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-confirmed email to {Email}.", transaction.User.Email);
+                }
+            }
+
+            if (ch.SendSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"Payment Confirmed: {transaction.PurposeOfPayment}\n" +
+                        $"Amount: {transaction.Amount:C2} · Paid on: {transaction.PaidAt:yyyy-MM-dd}";
+
+                    await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-confirmed Slack notification to {Email}.", transaction.User.Email);
+                }
             }
 
             return result;

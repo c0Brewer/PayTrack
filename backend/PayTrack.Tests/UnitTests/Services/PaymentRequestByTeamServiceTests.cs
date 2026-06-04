@@ -1,10 +1,12 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -17,9 +19,11 @@ namespace PayTrack.Tests.UnitTests.Services
             Mock<ITeamService> teamMock,
             Mock<IUserService> userMock,
             Mock<IBudgetService> budgetMock,
-            Mock<INotificationDispatchService>? notificationsMock = null)
+            Mock<INotificationDispatchService>? notificationsMock = null,
+            PaymentRequestNotificationSettings? notifSettings = null)
         {
             notificationsMock ??= new Mock<INotificationDispatchService>();
+            var settings = Options.Create(notifSettings ?? new PaymentRequestNotificationSettings());
             var logger = new Mock<ILogger<PaymentRequestByTeamService>>();
             return new PaymentRequestByTeamService(
                 repoMock.Object,
@@ -27,6 +31,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 userMock.Object,
                 budgetMock.Object,
                 notificationsMock.Object,
+                settings,
                 logger.Object);
         }
 
@@ -737,6 +742,217 @@ namespace PayTrack.Tests.UnitTests.Services
             var query = new GetPaymentRequestByTeamQuery { TeamId = 3 };
 
             service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        // ----------------------------
+        // CREATE — Slack channel
+        // ----------------------------
+        [Fact]
+        public async Task Create_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var assignedUser = new User { Id = 1, Name = "Alice", Email = "alice@test.com" };
+            var creatingUser = new User { Id = 2, Name = "Bob", Email = "bob@test.com" };
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(assignedUser);
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(creatingUser);
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("New Payment Request") && s.Contains("Office Supplies"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Create_ShouldNotSendSlack_WhenSlackDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Create_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+
+            var created = new PaymentRequestByTeam { Id = 1 };
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(created);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            var result = await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "test", DateTime.Today.AddDays(7));
+
+            result.Id.Should().Be(1);
+        }
+
+        // ----------------------------
+        // MARK AS PAID — Slack channel
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("Payment Confirmed") && s.Contains("Office Supplies"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldNotSendSlack_WhenSlackDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            var result = await service.MarkAsPaidAsync(5, 42, null);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
         }
     }
 }

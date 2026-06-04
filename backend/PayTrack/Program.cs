@@ -54,6 +54,7 @@ builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
 builder.Services.Configure<ReminderSettings>(builder.Configuration.GetSection("Reminders"));
+builder.Services.Configure<PaymentRequestNotificationSettings>(builder.Configuration.GetSection("PaymentRequestNotifications"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();

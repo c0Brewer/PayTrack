@@ -16,7 +16,7 @@ namespace PayTrack.Tests.UnitTests.Services
         private static PaymentReminderHostedService BuildService(
             Mock<ITransactionRepository> repoMock,
             Mock<INotificationDispatchService> notificationsMock,
-            int[] daysBeforeDue)
+            ReminderSettings settings)
         {
             var scope = new Mock<IServiceScope>();
             scope.Setup(s => s.ServiceProvider.GetService(typeof(ITransactionRepository))).Returns(repoMock.Object);
@@ -25,10 +25,9 @@ namespace PayTrack.Tests.UnitTests.Services
             var scopeFactory = new Mock<IServiceScopeFactory>();
             scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
 
-            var settings = Options.Create(new ReminderSettings { DaysBeforeDue = daysBeforeDue });
             var logger = new Mock<ILogger<PaymentReminderHostedService>>();
 
-            return new PaymentReminderHostedService(scopeFactory.Object, settings, logger.Object);
+            return new PaymentReminderHostedService(scopeFactory.Object, Options.Create(settings), logger.Object);
         }
 
         [Fact]
@@ -41,7 +40,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync([]);
 
-            var service = BuildService(repoMock, notificationsMock, [7]);
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -64,7 +63,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(transactions);
 
-            var service = BuildService(repoMock, notificationsMock, [7]);
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -89,7 +88,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync([]);
 
-            var service = BuildService(repoMock, notificationsMock, [7, 2, 1]);
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1] });
 
             await service.SendRemindersAsync(CancellationToken.None);
 
@@ -106,7 +105,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
                 .ThrowsAsync(new Exception("DB error"));
 
-            var service = BuildService(repoMock, notificationsMock, [7, 2, 1]);
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7, 2, 1] });
 
             Func<Task> act = async () => await service.SendRemindersAsync(CancellationToken.None);
 
@@ -133,13 +132,131 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(n => n.SendEmailAsync("alice@test.com", It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("SMTP error"));
 
-            var service = BuildService(repoMock, notificationsMock, [7]);
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
 
             Func<Task> act = async () => await service.SendRemindersAsync(CancellationToken.None);
 
             await act.Should().NotThrowAsync();
 
             notificationsMock.Verify(n => n.SendEmailAsync("bob@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task SendRemindersAsync_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var transactions = new List<PaymentRequestByTeam>
+            {
+                new() { Id = 1, PurposeOfPayment = "Bills", Amount = 100m, DueDate = DateTime.Today.AddDays(7), User = new User { Name = "Alice", Email = "alice@test.com" } },
+            };
+
+            repoMock
+                .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(transactions);
+
+            var settings = new ReminderSettings
+            {
+                DaysBeforeDue = [7],
+                Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, notificationsMock, settings);
+
+            await service.SendRemindersAsync(CancellationToken.None);
+
+            notificationsMock.Verify(n => n.SendSlackAsync(
+                "alice@test.com",
+                It.Is<string>(s => s.Contains("Payment Reminder") && s.Contains("Bills") && s.Contains("7 day(s)"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SendRemindersAsync_ShouldNotSendSlack_WhenSlackDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var transactions = new List<PaymentRequestByTeam>
+            {
+                new() { Id = 1, PurposeOfPayment = "Bills", Amount = 100m, DueDate = DateTime.Today.AddDays(7), User = new User { Name = "Alice", Email = "alice@test.com" } },
+            };
+
+            repoMock
+                .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(transactions);
+
+            var service = BuildService(repoMock, notificationsMock, new ReminderSettings { DaysBeforeDue = [7] });
+
+            await service.SendRemindersAsync(CancellationToken.None);
+
+            notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SendRemindersAsync_ShouldNotSendEmail_WhenEmailDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var transactions = new List<PaymentRequestByTeam>
+            {
+                new() { Id = 1, PurposeOfPayment = "Bills", Amount = 100m, DueDate = DateTime.Today.AddDays(7), User = new User { Name = "Alice", Email = "alice@test.com" } },
+            };
+
+            repoMock
+                .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(transactions);
+
+            var settings = new ReminderSettings
+            {
+                DaysBeforeDue = [7],
+                Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = false },
+            };
+
+            var service = BuildService(repoMock, notificationsMock, settings);
+
+            await service.SendRemindersAsync(CancellationToken.None);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SendRemindersAsync_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var transactions = new List<PaymentRequestByTeam>
+            {
+                new() { Id = 1, PurposeOfPayment = "Bills", Amount = 100m, DueDate = DateTime.Today.AddDays(7), User = new User { Name = "Alice", Email = "alice@test.com" } },
+                new() { Id = 2, PurposeOfPayment = "Rent", Amount = 500m, DueDate = DateTime.Today.AddDays(7), User = new User { Name = "Bob", Email = "bob@test.com" } },
+            };
+
+            repoMock
+                .Setup(r => r.GetPaymentRequestsByTeamDueOnAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(transactions);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync("alice@test.com", It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new ReminderSettings
+            {
+                DaysBeforeDue = [7],
+                Channels = new PayTrack.Application.Settings.NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, notificationsMock, settings);
+
+            Func<Task> act = async () => await service.SendRemindersAsync(CancellationToken.None);
+
+            await act.Should().NotThrowAsync();
+
+            notificationsMock.Verify(n => n.SendSlackAsync("bob@test.com", It.IsAny<string>()), Times.Once);
         }
     }
 }
