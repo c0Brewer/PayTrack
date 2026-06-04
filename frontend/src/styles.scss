@@ -216,7 +216,7 @@ body {
 
   .action-buttons {
     display: inline-flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: v.$size-xs;
     justify-content: flex-end;
   }
