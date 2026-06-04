@@ -422,6 +422,55 @@
   display: inline-block;
 }
 
+// ── Non-approved warning modal ────────────────────────────────────────────────
+
+.modal-actions {
+  display: flex;
+  gap: v.$size-xs;
+  justify-content: flex-end;
+}
+
+.warning-modal-text {
+  font-size: v.$font-s;
+  margin-bottom: v.$size-s;
+}
+
+.warning-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 v.$size-m;
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: v.$size-s;
+    padding: v.$size-xxs v.$size-xs;
+    background: v.$background-color;
+    border-radius: 4px;
+    font-size: v.$font-xs;
+  }
+
+  &__name {
+    flex: 1;
+    font-weight: v.$font-semibold;
+  }
+
+  &__amount {
+    color: v.$text-muted;
+  }
+
+  &__status {
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: v.$warning-light;
+    color: v.$warning-dark;
+    font-weight: v.$font-semibold;
+  }
+}
+
 // ── Responsive ───────────────────────────────────────────────────────────────
 
 @media (max-width: 767.98px) {

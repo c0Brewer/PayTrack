@@ -11,6 +11,7 @@ import {
   TransactionStatusLabels,
 } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 type Phase = 'upload' | 'review';
 
@@ -26,7 +27,7 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [StatBoxComponent, EuroPipe],
+  imports: [StatBoxComponent, EuroPipe, ModalComponent],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
@@ -53,6 +54,17 @@ export class BankStatementImportComponent {
   matchedCount = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped).length);
   skippedCount = computed(() => this.results().filter((r) => r.skipped).length);
   unmatchedCount = computed(() => this.results().filter((r) => !r.hasMatch && !r.skipped).length);
+
+  showNonApprovedWarning = signal(false);
+
+  nonApprovedMatches = computed(() =>
+    this.results().filter(
+      (r) =>
+        r.hasMatch &&
+        !r.skipped &&
+        r.matchedTransaction?.status !== TransactionStatus.Approved,
+    ),
+  );
 
   // ── phase 1: upload ────────────────────────────────────────────────────────
   onDragOver(event: DragEvent): void {
@@ -181,18 +193,31 @@ export class BankStatementImportComponent {
   scoreLabel(score: number | undefined): string {
     if (score == null) return '';
     if (score >= 7) return 'High';
-    if (score >= 4) return 'Medium';
+    if (score >= 5) return 'Medium';
     return 'Low';
   }
 
   scoreColor(score: number | undefined): string {
     if (score == null) return 'confidence-badge confidence-badge--none';
     if (score >= 7) return 'confidence-badge confidence-badge--high';
-    if (score >= 4) return 'confidence-badge confidence-badge--medium';
+    if (score >= 5) return 'confidence-badge confidence-badge--medium';
     return 'confidence-badge confidence-badge--low';
   }
 
   confirmUpdates(): void {
+    if (this.nonApprovedMatches().length > 0) {
+      this.showNonApprovedWarning.set(true);
+      return;
+    }
+    this.submitUpdates();
+  }
+
+  confirmAnyway(): void {
+    this.showNonApprovedWarning.set(false);
+    this.submitUpdates();
+  }
+
+  private submitUpdates(): void {
     const updates: BankStatementUpdateRequestDto[] = this.results().map((r) => ({
       entryId: r._entryId,
       matchedTransactionId: r.hasMatch ? (r.matchedTransaction?.id as number | undefined) : null,
@@ -203,7 +228,7 @@ export class BankStatementImportComponent {
     this.bankStatementService.applyUpdates(updates).subscribe({
       next: (updated) => {
         this.notificationService.showSuccess(
-          'Bank statement import successful. Updated transactions:' + updated.length,
+          'Bank statement import successful. Updated transactions: ' + updated.length,
         );
         this.isLoading.set(false);
         this.reset();

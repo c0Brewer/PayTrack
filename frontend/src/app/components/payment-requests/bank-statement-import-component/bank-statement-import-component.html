@@ -194,7 +194,6 @@
           <div class="result-item__details" [class.result-item__details--open]="result.expanded">
             <div class="result-item__details-inner">
               <div class="detail-panel">
-
                 <!-- Bank statement side -->
                 <div class="detail-panel__side">
                   <p class="detail-panel__heading">
@@ -216,7 +215,13 @@
                     </div>
                     <div class="detail-list__row">
                       <dt>IBAN</dt>
-                      <dd>{{ result.entry?.partnerAccount?.iban ? formatIban(result.entry?.partnerAccount?.iban ?? '') : '—' }}</dd>
+                      <dd>
+                        {{
+                          result.entry?.partnerAccount?.iban
+                            ? formatIban(result.entry?.partnerAccount?.iban ?? '')
+                            : '—'
+                        }}
+                      </dd>
                     </div>
                     <div class="detail-list__row">
                       <dt>BIC</dt>
@@ -262,7 +267,13 @@
                       </div>
                       <div class="detail-list__row">
                         <dt>IBAN</dt>
-                        <dd>{{ result.matchedTransaction.bankAccount?.iban ? formatIban(result.matchedTransaction.bankAccount?.iban ?? '') : '—' }}</dd>
+                        <dd>
+                          {{
+                            result.matchedTransaction.bankAccount?.iban
+                              ? formatIban(result.matchedTransaction.bankAccount?.iban ?? '')
+                              : '—'
+                          }}
+                        </dd>
                       </div>
                       <div class="detail-list__row">
                         <dt>BIC</dt>
@@ -328,5 +339,40 @@
         }
       </button>
     </div>
+
+    <!-- ── Non-approved warning modal ── -->
+    <app-modal-component
+      title="Some transactions are not Approved"
+      icon="warning"
+      [visible]="showNonApprovedWarning()"
+      (closeEvent)="showNonApprovedWarning.set(false)"
+    >
+      <p class="warning-modal-text">
+        {{ nonApprovedMatches().length }} matched transaction{{
+          nonApprovedMatches().length === 1 ? '' : 's'
+        }}
+        {{ nonApprovedMatches().length === 1 ? 'has' : 'have' }} a status other than
+        <strong>Approved</strong>. Marking them as Paid now may be premature.
+      </p>
+      <ul class="warning-modal-list">
+        @for (r of nonApprovedMatches(); track r._entryId) {
+          <li>
+            <span class="warning-modal-list__name">{{ r.entry?.partnerName || '—' }}</span>
+            <span class="warning-modal-list__amount">{{ formatAmount(r.entry) }}</span>
+            <span class="warning-modal-list__status">{{
+              getStatusLabel(r.matchedTransaction?.status ?? 0)
+            }}</span>
+          </li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="showNonApprovedWarning.set(false)">
+          Re-check entries
+        </button>
+        <button type="button" class="btn btn-warning" (click)="confirmAnyway()">
+          Submit anyway
+        </button>
+      </div>
+    </app-modal-component>
   }
 </div>
