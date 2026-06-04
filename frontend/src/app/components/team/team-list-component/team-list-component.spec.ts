@@ -193,7 +193,7 @@ describe('TeamListComponent', () => {
 
   it('should return a fallback display color when none is configured', () => {
     expect(component.getDisplayColor(mockTeams[0])).toBe('#2563eb');
-    expect(component.getDisplayColor(mockTeams[1])).toBe('transparent');
+    expect(component.getDisplayColor(mockTeams[1])).toBe('#f47f1f');
   });
 
   it('should count members and return all active budgets for the current date', () => {
