@@ -1,5 +1,7 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 
 import {
   PaymentRequestByTeamDto,
@@ -10,7 +12,7 @@ import {
 
 @Component({
   selector: 'app-team-request-detail-component',
-  imports: [CurrencyPipe, DatePipe],
+  imports: [DatePipe, EuroPipe],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })

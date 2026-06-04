@@ -20,7 +20,7 @@
 
         <td class="budget-col" data-label="Budget">
           @if (getActiveBudget(c.budgets); as activeBudget) {
-            <span class="has-budgets">{{ activeBudget.targetAmount | currency: 'EUR' }}</span>
+            <span class="has-budgets">{{ activeBudget.targetAmount | euro }}</span>
           } @else {
             <span class="no-budgets">No current budget</span>
           }

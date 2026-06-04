@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { EuroPipe } from '../../../../pipes/euro.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -67,7 +68,7 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-csv-bulk-import-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
+  imports: [CommonModule, EuroPipe, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
   templateUrl: './csv-bulk-import-modal.html',
   styleUrl: './csv-bulk-import-modal.scss',
 })

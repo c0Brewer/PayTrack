@@ -1,6 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
+
 import {
   PaymentRequestByUserDto,
   PayoutType,
@@ -12,7 +14,7 @@ import {
 
 @Component({
   selector: 'app-invoice-list-component',
-  imports: [DatePipe],
+  imports: [DatePipe, EuroPipe],
   templateUrl: './list-component.html',
   styleUrl: './list-component.scss',
 })

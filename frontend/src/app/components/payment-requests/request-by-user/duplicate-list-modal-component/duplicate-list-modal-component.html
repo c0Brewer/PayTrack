@@ -26,7 +26,7 @@
               Invoice: {{ duplicate.paymentRequestByUser.invoiceNumber }}
             </span>
             <span class="duplicate-list__amount">
-              {{ duplicate.paymentRequestByUser.amount | currency: 'EUR' }}
+              {{ duplicate.paymentRequestByUser.amount | euro }}
             </span>
           </div>
 

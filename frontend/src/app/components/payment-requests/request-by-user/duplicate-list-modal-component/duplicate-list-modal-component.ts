@@ -1,15 +1,16 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import {
   DuplicatePaymentRequestByUserDto,
   PaymentRequestByUserDto,
 } from '../../../../types/exporter';
+import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-duplicate-list-modal-component',
-  imports: [CurrencyPipe, DatePipe, ModalComponent],
+  imports: [DatePipe, EuroPipe, ModalComponent],
   templateUrl: './duplicate-list-modal-component.html',
   styleUrl: './duplicate-list-modal-component.scss',
 })

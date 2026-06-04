@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -43,7 +44,7 @@ const budgetFields: readonly BudgetField[] = [
 
 @Component({
   selector: 'app-team-edit-modal-component',
-  imports: [DatePipe, FormsModule, ModalComponent],
+  imports: [DatePipe, EuroPipe, FormsModule, ModalComponent],
   templateUrl: './team-edit-modal-component.html',
   styleUrl: './team-edit-modal-component.scss',
 })
@@ -317,11 +318,6 @@ export class TeamEditModalComponent implements OnChanges {
 
   getSeasonName(seasonId: number): string {
     return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
-  }
-
-  formatBudgetAmount(amount: number | null | undefined): string {
-    if (amount == null) return '—';
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
   getCostCentreOptionLabel(costCentre: CostCentreDto): string {
