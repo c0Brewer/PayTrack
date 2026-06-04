@@ -38,7 +38,9 @@ export class FinancialExportService {
     format: FinancialExportFormat,
   ): string {
     const path = '/api/v1/transaction/export';
-    const baseUrl = environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+    const baseUrl = environment.apiBaseUrl
+      ? new URL(path, environment.apiBaseUrl).toString()
+      : path;
     const params = new URLSearchParams();
 
     params.set('Format', String(format));

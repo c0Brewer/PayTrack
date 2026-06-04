@@ -141,8 +141,9 @@ export enum FinancialExportFormat {
   Pdf = 2,
 }
 
-export type GetFinancialExportOptions =
-  NonNullable<paths['/api/v1/transaction/export']['get']['parameters']['query']>;
+export type GetFinancialExportOptions = NonNullable<
+  paths['/api/v1/transaction/export']['get']['parameters']['query']
+>;
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
