@@ -119,8 +119,26 @@ body {
   transform: translateY(0);
 }
 
+
+/* Global Input Styling*/
+input {
+  background: v.$TUR-secondary-background;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.45rem;
+  color: v.$text-color;
+  font-size: v.$font-s;
+  min-height: 2.6rem;
+  padding: 0 0.8rem;
+}
+
+input:focus {
+  border-color: v.$TUR-primary-orange;
+  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  outline: none;
+}
+
 .app-modal {
-  select,
+  /*select,
   input:not([type='checkbox']) {
     background-color: v.$TUR-secondary-background;
     border: 1px solid white;
@@ -136,7 +154,7 @@ body {
 
   select {
     cursor: pointer;
-  }
+  }*/
 
   .form-switch .form-check-input:checked {
     background-color: v.$TUR-primary-orange;
