@@ -4,14 +4,14 @@
   <div class="row g-3 align-items-stretch">
     <app-stat-box-component
       header="Total Invoices"
-      [content]="10"
+      [content]="totalCount"
       icon="docs"
       size="small"
       class="col-12 col-sm-6 col-xl-3"
     />
     <app-stat-box-component
       header="Total Amount"
-      [content]="'€67.200,40'"
+      [content]="getTotalAmount() | euro"
       icon="trending_up"
       iconColor="#3b82f6"
       iconBackgroundColor="#EFF6FF"
@@ -20,7 +20,7 @@
     />
     <app-stat-box-component
       header="Paid"
-      [content]="'4'"
+      [content]="getPaidInvoiceCount()"
       icon="check"
       iconColor="#10b981"
       iconBackgroundColor="#ECFDF5"
@@ -29,7 +29,7 @@
     />
     <app-stat-box-component
       header="Open"
-      [content]="2"
+      [content]="getOpenInvoiceCount()"
       icon="close"
       iconColor="red"
       iconBackgroundColor="#FECACA"
