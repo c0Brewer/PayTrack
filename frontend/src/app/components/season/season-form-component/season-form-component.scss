@@ -11,8 +11,15 @@
   grid-template-columns: minmax(0, 1fr) auto;
   padding: v.$size-m;
 
-  label {
+  .season-form-title {
+    color: v.$text-color;
+    font-size: v.$font-m;
+    font-weight: v.$font-semibold;
     grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  label {
     margin: 0;
   }
 }
