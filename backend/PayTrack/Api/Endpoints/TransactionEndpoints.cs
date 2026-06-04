@@ -27,6 +27,9 @@ namespace PayTrack.Api.Endpoints
                 .WithTags(GroupName)
                 .RequireAuthorization();
 
+            /*
+             * PaymentRequest by USER
+             */
             group.MapGet("/user", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
 
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
@@ -34,6 +37,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery(); // Needed because of the way the file upload works. This is intentional
 
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin);
+
+            group.MapDelete("/user/{id:int}", PaymentRequestByUserHandler.DeletePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
 
             group.MapPost("/user/{id:int}/mark-paid", PaymentRequestByUserHandler.MarkPaymentRequestByUserAsPaidAsync)
@@ -49,7 +55,13 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin);
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
+            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
+            group.MapPost("/user/{id:int}/duplicate/{duplicateId:int}/dismiss", PaymentRequestByUserHandler.DismissDuplicatePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin);
 
+            /*
+             * PaymentRequest by TEAM
+             */
             group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
             group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
@@ -58,13 +70,11 @@ namespace PayTrack.Api.Endpoints
             group.MapPost("/team/{id:int}/mark-as-paid", PaymentRequestByTeamHandler.MarkAsPaidPaymentRequestByTeamAsync)
                 .RequireRole(Role.Admin);
 
-            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
-
-            //Send the same information as in `create`, but without the file
-            //Return if it matches -> empty list
-            //If there are duplicates -> list of duplicates (maximum 10)
-            //Custom DTO for duplicates in `PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto`
-            //Invoice number, Amount (perhaps a fuzzy matcher)
+            /*
+             * Bankstatement Matching
+             */
+            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches);
+            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches);
         }
     }
 }

@@ -1,0 +1,138 @@
+@use 'variables' as v;
+
+.duplicate-modal__subtitle,
+.duplicate-modal__empty {
+  margin: 0 0 v.$size-m;
+  color: v.$text-muted;
+}
+
+.duplicate-modal__source-invoice {
+  color: v.$text-color;
+  display: inline-block;
+  font-size: v.$font-m;
+  font-weight: v.$font-semibold;
+  margin-left: v.$size-xxs;
+}
+
+.duplicate-list {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-s;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.duplicate-list__item {
+  border: 1px solid v.$border-color;
+  border-radius: v.$size-xs;
+  display: grid;
+  gap: v.$size-xs;
+  padding: v.$size-s;
+}
+
+.duplicate-list__main {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: v.$size-s;
+}
+
+.duplicate-list__invoice,
+.duplicate-list__amount {
+  color: v.$text-color;
+  font-weight: v.$font-semibold;
+}
+
+.duplicate-list__details,
+.duplicate-list__meta {
+  color: v.$text-muted;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs v.$size-s;
+  font-size: v.$font-xs;
+}
+
+.duplicate-list__match {
+  color: #92400e;
+  font-weight: v.$font-semibold;
+}
+
+.duplicate-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs;
+}
+
+.duplicate-list__button {
+  padding: v.$size-xxs v.$size-s;
+  border: 1px solid v.$border-color;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  cursor: pointer;
+  font-size: v.$font-xs;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+}
+
+.duplicate-list__button--danger {
+  border-color: #b91c1c;
+  color: #991b1b;
+
+  &:hover:not(:disabled) {
+    background: #fef2f2;
+  }
+}
+
+.duplicate-modal__actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
+  margin-top: v.$size-m;
+}
+
+.duplicate-modal__cancel,
+.duplicate-modal__submit {
+  align-items: center;
+  border-radius: v.$size-xs;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: v.$size-xs v.$size-m;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.duplicate-modal__cancel {
+  background: v.$background-light;
+  border: 1px solid v.$border-color;
+  color: v.$text-muted;
+
+  &:hover {
+    border-color: v.$TUR-primary-orange;
+    color: v.$TUR-primary-orange;
+  }
+}
+
+.duplicate-modal__submit {
+  background: v.$TUR-primary-orange;
+  border: 1px solid v.$TUR-primary-orange;
+  color: #fff;
+
+  &:hover {
+    background: #f3852d;
+    border-color: #f3852d;
+    box-shadow: 0 0.35rem 0.9rem rgb(235 106 0 / 22%);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+}

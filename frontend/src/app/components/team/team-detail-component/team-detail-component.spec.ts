@@ -30,6 +30,8 @@ const mockTeam: TeamDto = {
       periodEnd: '2026-12-31T00:00:00Z',
       type: 0,
       transactionIds: [],
+      paidAmount: 0,
+      approvedAmount: 0,
     },
   ],
 };
@@ -111,7 +113,7 @@ describe('TeamDetailComponent', () => {
     fixture.detectChanges();
 
     const costCentreLink = fixture.nativeElement.querySelector(
-      '.budget-table tbody a',
+      '.budget-card__cost-centre',
     ) as HTMLAnchorElement;
 
     expect(costCentreLink.textContent?.trim()).toBe('Vehicle');

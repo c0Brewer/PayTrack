@@ -76,7 +76,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var currentUser = new User { Id = 1, Name = "Name", Email = "Email", IsActive = true, ProfilePictureUrl = "123", Role = Role.RegularUser };
 
             _factory.AuthServiceMock
-                .Setup(s => s.GetCurrentUser())
+                .Setup(s => s.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(currentUser);
 
             var client = _factory.CreateClient();
@@ -103,7 +103,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             _factory.AuthServiceMock
-                .Setup(s => s.GetCurrentUser())
+                .Setup(s => s.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync((User?)null);
 
             var client = _factory.CreateClient();

@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { SeasonService } from '../../../services/season/season-service';
@@ -40,6 +41,7 @@ interface WorkingBudget {
   selector: 'app-cost-centre-management-component',
   imports: [
     DatePipe,
+    EuroPipe,
     FormsModule,
     CostCentreListComponent,
     CostCentreFilterComponent,
@@ -402,11 +404,6 @@ export class CostCentreManagementComponent implements OnInit {
       this.costCentres.find((costCentre) => costCentre.id === costCentreId)?.name ??
       `Cost Centre #${costCentreId}`
     );
-  }
-
-  formatBudgetAmount(amount: number | null | undefined): string {
-    if (amount == null) return '—';
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
   getTeamName(teamId: number): string {

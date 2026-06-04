@@ -58,6 +58,7 @@ builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
 builder.Services.AddHostedService<PaymentReminderHostedService>();
+builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();

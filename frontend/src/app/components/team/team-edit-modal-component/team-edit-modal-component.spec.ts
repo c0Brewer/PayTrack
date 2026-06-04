@@ -248,6 +248,8 @@ describe('TeamEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -426,6 +428,8 @@ describe('TeamEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -522,10 +526,5 @@ describe('TeamEditModalComponent', () => {
     };
 
     expect(component.getBudgetFieldError('targetAmount')).toBe('');
-  });
-
-  it('formatBudgetAmount should return dash for null and formatted number otherwise', () => {
-    expect(component.formatBudgetAmount(null)).toBe('—');
-    expect(component.formatBudgetAmount(2500)).toBe('2.500');
   });
 });

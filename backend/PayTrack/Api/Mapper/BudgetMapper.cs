@@ -4,6 +4,8 @@
 
 using PayTrack.Application.Dto.Budget;
 using PayTrack.Data.Entities;
+using static PayTrack.Data.Entities.PaymentDirection;
+using static PayTrack.Data.Entities.TransactionStatus;
 
 namespace PayTrack.Api.Mapper
 {
@@ -29,6 +31,26 @@ namespace PayTrack.Api.Mapper
         /// <returns>TeamBudgetDto instance.</returns>
         public static BudgetDto ToDto(Budget budget)
         {
+            var paidTransactions = budget.Transactions.Where(t => t.Status == Paid);
+            var approvedTransactions = budget.Transactions.Where(t => t.Status == Approved);
+            decimal paidAmount = 0;
+            decimal approvedAmount = 0;
+
+            if (budget.Type == BudgetType.Expense)
+            {
+                paidAmount = paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
+                               - paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
+                approvedAmount = approvedTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount)
+                                   - approvedTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount);
+            }
+            else if (budget.Type == BudgetType.Income)
+            {
+                paidAmount = paidTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount)
+                               - paidTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount);
+                approvedAmount = approvedTransactions.Where(t => t.PaymentDirection == In).Sum(t => t.Amount)
+                                   - approvedTransactions.Where(t => t.PaymentDirection == Out).Sum(t => t.Amount);
+            }
+
             return new BudgetDto(
                 budget.Id,
                 budget.Name,
@@ -40,7 +62,9 @@ namespace PayTrack.Api.Mapper
                 budget.PeriodStart,
                 budget.PeriodEnd,
                 budget.Type,
-                [.. budget.Transactions.Select(t => t.Id)]);
+                [.. budget.Transactions.Select(t => t.Id)],
+                paidAmount,
+                approvedAmount);
         }
     }
 }

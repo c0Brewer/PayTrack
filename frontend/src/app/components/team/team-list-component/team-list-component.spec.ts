@@ -43,6 +43,8 @@ describe('TeamListComponent', () => {
           periodEnd: buildBudgetDate(-60, 'end'),
           type: 0,
           transactionIds: [],
+          paidAmount: 1000,
+          approvedAmount: 500,
         },
         {
           id: 2,
@@ -56,6 +58,8 @@ describe('TeamListComponent', () => {
           periodEnd: buildBudgetDate(30, 'end'),
           type: 0,
           transactionIds: [],
+          paidAmount: 1000,
+          approvedAmount: 1500,
         },
         {
           id: 4,
@@ -69,6 +73,8 @@ describe('TeamListComponent', () => {
           periodEnd: buildBudgetDate(20, 'end'),
           type: 0,
           transactionIds: [],
+          paidAmount: 2000,
+          approvedAmount: 1500,
         },
         {
           id: 5,
@@ -82,6 +88,8 @@ describe('TeamListComponent', () => {
           periodEnd: buildBudgetDate(10, 'end'),
           type: 0,
           transactionIds: [],
+          paidAmount: 3000,
+          approvedAmount: 1500,
         },
         {
           id: 6,
@@ -95,6 +103,8 @@ describe('TeamListComponent', () => {
           periodEnd: buildBudgetDate(5, 'end'),
           type: 0,
           transactionIds: [],
+          paidAmount: 3000,
+          approvedAmount: 2500,
         },
       ],
     },
@@ -164,6 +174,8 @@ describe('TeamListComponent', () => {
         periodEnd: buildBudgetDate(120, 'end'),
         type: 0,
         transactionIds: [],
+        paidAmount: 0,
+        approvedAmount: 0,
       },
     ],
   };
@@ -229,9 +241,11 @@ describe('TeamListComponent', () => {
   it('should include the corresponding cost centre name in the budget display value', () => {
     component.costCentres = mockCostCentres;
 
-    expect(component.getBudgetDisplayValue(mockTeams[0].budgets![1])).toBe('Vehicle: 5.000 €');
-    expect(component.getBudgetDisplayValue(nonMatchingBudgetTeam.budgets![0])).toBe(
-      'Cost centre #11: 7.000 €',
+    expect(component.getBudgetDisplayValue(mockTeams[0].budgets![1])).toContain(
+      'Vehicle: 5.000,00',
+    );
+    expect(component.getBudgetDisplayValue(nonMatchingBudgetTeam.budgets![0])).toContain(
+      'Cost centre #11: 7.000',
     );
   });
 

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
@@ -38,7 +39,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
 
             _factory.ServiceMock
@@ -127,7 +128,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
@@ -171,7 +172,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync((User?)null);
 
             var client = _factory.CreateClient();

@@ -35,12 +35,14 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns the currently signed in User.
         /// </summary>
+        /// <param name="query">Query options for the request.</param>
         /// <param name="authService">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<UserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetCurrentUserAsync(
+            [AsParameters] GetUserQueryById query,
             IAuthService authService)
         {
-            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
+            var user = await authService.GetCurrentUser(query) ?? throw new NotFoundException("Current User not found");
 
             var userDto = UserMapper.ToDto(user);
 

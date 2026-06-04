@@ -28,7 +28,7 @@ namespace PayTrack.Application.Dto.Transaction
         /// </summary>
         [Required]
         [MinLength(3)]
-        public string PurposeOfPayment { get; init; } = null!;
+        public string PurposeOfPayment { get; init; } = string.Empty;
 
         /// <summary>
         /// Date the transaction was paid.
