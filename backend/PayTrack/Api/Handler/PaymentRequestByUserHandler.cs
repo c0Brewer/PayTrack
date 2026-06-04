@@ -101,7 +101,8 @@ namespace PayTrack.Api.Handler
                     createPaymentRequestByUserDto.InvoiceNumber,
                     comment,
                     createPaymentRequestByUserDto.PayoutType,
-                    createPaymentRequestByUserDto.BankAccountId);
+                    createPaymentRequestByUserDto.BankAccountId,
+                    createPaymentRequestByUserDto.CreditorName);
 
             var createdPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(createdPaymentRequestByUser);
 

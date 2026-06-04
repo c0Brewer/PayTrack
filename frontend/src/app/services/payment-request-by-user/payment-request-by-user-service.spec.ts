@@ -88,7 +88,7 @@ describe('PaymentRequestByUserService', () => {
     const dto = {
       invoiceNumber: 'INV-1',
       comment: '',
-      payoutType: PayoutType.External,
+      payoutType: PayoutType.NotYetPaid,
       bankAccountId: null,
       transaction: {
         teamId: 1,

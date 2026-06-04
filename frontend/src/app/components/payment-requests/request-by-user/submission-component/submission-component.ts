@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 
+import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -47,11 +48,13 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   payoutTypeLabels: Record<PayoutType, string> = {
     [PayoutType.User]: 'Already paid by user (you)',
-    [PayoutType.External]: 'Not yet paid by user. Should be paid to invoice-issuer.',
+    [PayoutType.NotYetPaid]: 'Not yet paid by user. Should be paid to invoice-issuer.',
+    [PayoutType.AlreadyPaid]: 'Already paid (documentation only)',
   };
 
   constructor(
     private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
@@ -78,6 +81,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       comment: ['', [Validators.maxLength(500)]],
       payoutType: [null, Validators.required],
       bankAccountId: [null, [Validators.required, Validators.min(1)]],
+      creditorName: [null],
       teamId: [null, Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
@@ -85,21 +89,28 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       receipt: [null, Validators.required],
     });
 
-    // add custom check for bank account (only trigger when payouttype is user)
     this.form
       .get('payoutType')!
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((value) => {
         const bankCtrl = this.form.get('bankAccountId');
+        const creditorCtrl = this.form.get('creditorName');
 
         if (value === PayoutType.User) {
           bankCtrl?.setValidators([Validators.required, Validators.min(1)]);
         } else {
           bankCtrl?.clearValidators();
-          bankCtrl?.setValue(null); // reset value when hidden
+          bankCtrl?.setValue(null);
         }
-
         bankCtrl?.updateValueAndValidity();
+
+        if (value === PayoutType.NotYetPaid) {
+          creditorCtrl?.setValidators([Validators.required, Validators.maxLength(255)]);
+        } else {
+          creditorCtrl?.clearValidators();
+          creditorCtrl?.setValue(null);
+        }
+        creditorCtrl?.updateValueAndValidity();
       });
   }
 
@@ -112,6 +123,13 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           if (teams.items != null) {
             this.teams = teams.items;
           }
+
+          this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+            const userTeamId = user?.team?.id;
+            if (userTeamId != null) {
+              this.form.get('teamId')!.setValue(userTeamId);
+            }
+          });
 
           this.changeDetectorRef.markForCheck();
         },
@@ -237,6 +255,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       comment: v.comment,
       payoutType: payoutType,
       bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
+      creditorName: payoutType === PayoutType.NotYetPaid ? v.creditorName : null,
       receipt: '', // ignored — real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),

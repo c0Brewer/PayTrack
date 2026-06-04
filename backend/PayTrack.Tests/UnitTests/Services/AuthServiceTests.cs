@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using PayTrack.Application.Dto.Auth;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
@@ -61,7 +62,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 User = principal
             });
 
-            userMock.Setup(u => u.GetUserByEmailAsync(expectedEmail)).ReturnsAsync(user);
+            userMock.Setup(u => u.GetUserByEmailAsync(expectedEmail, It.IsAny<GetUserQueryById?>())).ReturnsAsync(user);
 
             // Act
             var result = await service.GetCurrentUser();
@@ -69,7 +70,7 @@ namespace PayTrack.Tests.UnitTests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(expectedEmail, result.Email);
-            userMock.Verify(u => u.GetUserByEmailAsync(expectedEmail), Times.Once);
+            userMock.Verify(u => u.GetUserByEmailAsync(expectedEmail, It.IsAny<GetUserQueryById?>()), Times.Once);
         }
 
         [Fact]
@@ -82,7 +83,7 @@ namespace PayTrack.Tests.UnitTests.Services
             });
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InternalErrorException>(service.GetCurrentUser);
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(() => service.GetCurrentUser());
             Assert.Contains("ClaimTypes", ex.Message);
         }
 
@@ -93,7 +94,7 @@ namespace PayTrack.Tests.UnitTests.Services
             httpContextMock.Setup(h => h.HttpContext!.User).Returns(new ClaimsPrincipal());
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InternalErrorException>(service.GetCurrentUser);
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(() => service.GetCurrentUser());
             Assert.Contains("ClaimTypes", ex.Message);
         }
 

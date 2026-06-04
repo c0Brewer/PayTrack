@@ -46,6 +46,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         public PayoutType PayoutType { get; init; }
 
         /// <summary>
+        /// Gets the name of the external creditor. Required when PayoutType is NotYetPaid.
+        /// </summary>
+        public string? CreditorName { get; init; }
+
+        /// <summary>
         /// Gets the bank account id, required only for user payouts.
         /// </summary>
         public int? BankAccountId { get; init; }

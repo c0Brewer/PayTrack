@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -38,6 +39,10 @@ describe('ReceiptSubmitComponent', () => {
     navigate: vi.fn(),
   };
 
+  const authServiceMock = {
+    currentUser$: of(null),
+  };
+
   const setValidFormValues = (): void => {
     component.form.setValue({
       invoiceNumber: 'INV-1',
@@ -49,6 +54,7 @@ describe('ReceiptSubmitComponent', () => {
       purposeOfPayment: 'test',
       paidAt: '2025-01-01',
       receipt: 'ok.pdf',
+      creditorName: '',
     });
   };
 
@@ -68,6 +74,7 @@ describe('ReceiptSubmitComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
       providers: [
+        { provide: AuthService, useValue: authServiceMock },
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
@@ -234,7 +241,7 @@ describe('ReceiptSubmitComponent', () => {
     component.ngOnInit();
     const bankAccountControl = component.form.get('bankAccountId')!;
 
-    component.form.get('payoutType')?.setValue(PayoutType.External);
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
 
     expect(bankAccountControl.value).toBeNull();
     expect(bankAccountControl.errors).toBeNull();
@@ -413,7 +420,8 @@ describe('ReceiptSubmitComponent', () => {
 
     const file = new File(['ok'], 'ok.pdf');
     setValidFormValues();
-    component.form.get('payoutType')?.setValue(PayoutType.External);
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form.get('creditorName')?.setValue('Acme GmbH');
     component.selectedFile = file;
 
     paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
@@ -422,7 +430,7 @@ describe('ReceiptSubmitComponent', () => {
 
     expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(
       expect.objectContaining({
-        payoutType: PayoutType.External,
+        payoutType: PayoutType.NotYetPaid,
         bankAccountId: null,
       }),
       file,

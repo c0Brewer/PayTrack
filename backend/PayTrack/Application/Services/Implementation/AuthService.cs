@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Google.Apis.Auth;
 using PayTrack.Application.Dto.Auth;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
@@ -30,11 +31,11 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IConfiguration configuration = _configuration;
 
         /// <inheritdoc/>
-        public Task<User?> GetCurrentUser()
+        public Task<User?> GetCurrentUser(GetUserQueryById? query = null)
         {
             var email = this.httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email) ?? throw new InternalErrorException("Could not find ClaimTypes");
 
-            return this.userService.GetUserByEmailAsync(email.Value);
+            return this.userService.GetUserByEmailAsync(email.Value, query);
         }
 
         /// <inheritdoc/>

@@ -70,7 +70,8 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByUser.Comment,
                 paymentRequestByUser.PayoutType,
                 paymentRequestByUser.HasPotentialDuplicate,
-                bankAccountDto);
+                bankAccountDto,
+                paymentRequestByUser.CreditorName);
         }
 
         /// <summary>
