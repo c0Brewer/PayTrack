@@ -1,5 +1,56 @@
 @use 'variables' as v;
 
+.invoice-table-wrapper {
+  border-radius: v.$size-xs;
+  width: 100%;
+}
+
+:host-context(.my-invoices) {
+  .invoice-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .invoice-table {
+    min-width: 82rem;
+    table-layout: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  :host-context(.my-invoices) {
+    .invoice-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .invoice-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
+  }
+}
+
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
@@ -43,8 +94,11 @@
   /* ---------- ACTIONS ---------- */
 
   .actions-col {
-    width: 1%;
+    display: table-cell;
+    min-width: 5.5rem;
+    text-align: right;
     white-space: nowrap;
+    width: 5.5rem;
   }
 
   .view-btn,
