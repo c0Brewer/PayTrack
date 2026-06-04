@@ -18,7 +18,6 @@ import {
 export class TeamRequestListComponent {
   @Input() requests: PaymentRequestByTeamDto[] = [];
   @Input() showTeamColumn: boolean = true;
-  @Input() showBudgetColumn: boolean = true;
   @Input() showUserColumn: boolean = true;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByTeamDto>();
