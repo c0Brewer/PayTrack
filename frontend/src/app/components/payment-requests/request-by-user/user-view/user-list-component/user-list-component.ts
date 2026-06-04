@@ -13,10 +13,16 @@ import {
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
 import { InvoiceListComponent } from '../../general/list-component/list-component';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-my-invoices-component',
-  imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent],
+  imports: [
+    PaginationComponent,
+    InvoiceFilterComponent,
+    InvoiceListComponent,
+    StatBoxComponent,
+  ],
   templateUrl: './user-list-component.html',
   styleUrl: './user-list-component.scss',
 })

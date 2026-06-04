@@ -121,17 +121,68 @@ body {
 
 
 /* Global Input Styling*/
-input {
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']),
+select,
+textarea,
+.form-control:not([type='color']),
+.form-select {
+  --bs-form-control-bg: #{v.$TUR-secondary-background};
+  --bs-form-select-bg: #{v.$TUR-secondary-background};
+  --bs-border-color: #{v.$TUR-border-color};
+  --bs-body-color: #{v.$text-color};
+  --bs-focus-ring-color: #{rgba(v.$TUR-primary-orange, 0.14)};
+
   background: v.$TUR-secondary-background;
   border: 1px solid v.$TUR-border-color;
   border-radius: 0.45rem;
   color: v.$text-color;
   font-size: v.$font-s;
-  min-height: 2.6rem;
+  height: 2.6rem;
   padding: 0 0.8rem;
 }
 
-input:focus {
+input[type='date'],
+input[type='date'].form-control {
+  align-items: center;
+  display: inline-flex;
+  line-height: normal;
+  min-height: 2.6rem;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+input[type='date']::-webkit-datetime-edit {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  padding: 0;
+}
+
+input[type='date']::-webkit-date-and-time-value {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+textarea,
+.form-control:is(textarea) {
+  height: auto;
+  min-height: 6rem;
+  padding: 0.7rem 0.8rem;
+}
+
+select,
+.form-select {
+  cursor: pointer;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):focus,
+select:focus,
+textarea:focus,
+.form-control:not([type='color']):focus,
+.form-select:focus {
   border-color: v.$TUR-primary-orange;
   box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
   outline: none;
