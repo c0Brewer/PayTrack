@@ -1905,6 +1905,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transaction/user/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    TeamId: number;
+                    Amount: number;
+                    PaidAt: string;
+                    InvoiceNumber?: string;
+                    PaymentRequestByUserId?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/user/{id}/duplicate/{duplicateId}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    duplicateId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transaction/team": {
         parameters: {
             query?: never;
@@ -2094,57 +2198,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/transaction/user/duplicate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query: {
-                    TeamId: number;
-                    Amount: number;
-                    PaidAt: string;
-                    InvoiceNumber?: string;
-                    PaymentRequestByUserId?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DuplicatePaymentRequestByUserDto"][];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/transaction/user/{id}/duplicate/{duplicateId}/dismiss": {
+    "/api/v1/transaction/bank-statement-matches": {
         parameters: {
             query?: never;
             header?: never;
@@ -2152,25 +2206,27 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        post: {
+        put: {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    id: number;
-                    duplicateId: number;
-                };
+                path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BankStatementUpdateRequestDto"][];
+                };
+            };
             responses: {
-                /** @description No Content */
-                204: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["TransactionDto"][];
+                    };
                 };
                 /** @description Bad Request */
                 400: {
@@ -2181,8 +2237,32 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Not Found */
-                404: {
+            };
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BankStatementEntryDto"][];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BankStatementMatchResponseDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2358,6 +2438,55 @@ export interface components {
             accountHolder: string;
             iban: string;
             bic: string;
+        };
+        BankStatementAccountDto: {
+            iban?: string | null;
+            bic?: string | null;
+        };
+        BankStatementAmountDto: {
+            /** Format: double */
+            value?: number;
+            currency?: string | null;
+        };
+        BankStatementEntryDto: {
+            /** Format: date-time */
+            booking?: string;
+            partnerName?: string | null;
+            partnerAccount?: components["schemas"]["BankStatementAccountDto"];
+            amount?: components["schemas"]["BankStatementAmountDto"];
+            receiverReference?: string | null;
+            reference?: string | null;
+        };
+        BankStatementMatchResponseDto: {
+            results?: components["schemas"]["BankStatementMatchResultDto"][] | null;
+        };
+        BankStatementMatchedTransactionDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: double */
+            amount: number;
+            purposeOfPayment?: string | null;
+            paymentReference?: string | null;
+            status: components["schemas"]["TransactionStatus"];
+            /** Format: date-time */
+            paidAt?: string | null;
+            userName?: string | null;
+            teamName?: string | null;
+            invoiceNumber?: string | null;
+            bankAccount?: components["schemas"]["BankAccountDto"];
+        };
+        BankStatementMatchResultDto: {
+            entry?: components["schemas"]["BankStatementEntryDto"];
+            hasMatch?: boolean;
+            matchedTransaction?: components["schemas"]["BankStatementMatchedTransactionDto"];
+            /** Format: int32 */
+            matchScore?: number;
+        };
+        BankStatementUpdateRequestDto: {
+            entryId?: string | null;
+            /** Format: int32 */
+            matchedTransactionId?: number | null;
+            skipped?: boolean;
         };
         BudgetDto: {
             /** Format: int32 */
@@ -2695,6 +2824,23 @@ export interface components {
             offset: number;
             readonly hasNext?: boolean;
             readonly hasPrevious?: boolean;
+        };
+        TransactionDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            userId: number;
+            /** Format: int32 */
+            teamId: number;
+            /** Format: double */
+            amount: number;
+            purposeOfPayment: string;
+            paymentReference?: string | null;
+            status: components["schemas"]["TransactionStatus"];
+            /** Format: int32 */
+            budgetId?: number | null;
+            /** Format: date-time */
+            paidAt: string;
         };
         /**
          * Format: int32
