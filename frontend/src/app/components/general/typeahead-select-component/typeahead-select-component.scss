@@ -46,9 +46,8 @@
   }
 
   &__dropdown {
-    position: absolute;
+    position: fixed;
     z-index: 200;
-    width: 100%;
     border: 1.5px solid v.$TUR-border-color;
     border-radius: 0.2rem;
     background: v.$TUR-secondary-background;

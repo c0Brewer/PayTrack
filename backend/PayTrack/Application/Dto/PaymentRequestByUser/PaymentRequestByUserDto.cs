@@ -44,6 +44,8 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
 
         DateTime? PaidAt,
 
+        DateTime? FinancePaidAt,
+
         [property: Required]
         [property: MinLength(3)]
         string InvoiceNumber,
@@ -54,5 +56,9 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         [property: Required]
         PayoutType PayoutType,
 
-        BankAccountDto? BankAccount);
+        bool HasPotentialDuplicate,
+
+        BankAccountDto? BankAccount,
+
+        string? CreditorName);
 }

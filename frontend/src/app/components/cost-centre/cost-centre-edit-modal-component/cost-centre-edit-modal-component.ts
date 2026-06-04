@@ -2,8 +2,10 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import {
   BudgetDto,
+  BudgetType,
   CostCentreDto,
   SeasonDto,
   TeamDto,
@@ -17,10 +19,11 @@ interface WorkingBudget {
   name: string;
   seasonId: number;
   teamId: number;
-  targetAmount: number;
+  targetAmount: number | null;
   periodStart: string;
   periodEnd: string;
   markedForDeletion: boolean;
+  type: BudgetType;
 }
 
 type BudgetField = 'name' | 'teamId' | 'targetAmount' | 'seasonId' | 'periodStart' | 'periodEnd';
@@ -35,11 +38,13 @@ const budgetFields: readonly BudgetField[] = [
 
 @Component({
   selector: 'app-cost-centre-edit-modal-component',
-  imports: [DatePipe, FormsModule, ModalComponent],
+  imports: [DatePipe, EuroPipe, FormsModule, ModalComponent],
   templateUrl: './cost-centre-edit-modal-component.html',
   styleUrl: './cost-centre-edit-modal-component.scss',
 })
 export class CostCentreEditModalComponent implements OnChanges {
+  protected readonly BudgetType = BudgetType;
+
   @Input() costCentre: CostCentreDto = {
     id: -1,
     name: '',
@@ -68,10 +73,11 @@ export class CostCentreEditModalComponent implements OnChanges {
         name: b.name,
         seasonId: b.seasonId,
         teamId: b.teamId,
-        targetAmount: b.targetAmount,
+        targetAmount: b.targetAmount ?? null,
         periodStart: b.periodStart,
         periodEnd: b.periodEnd,
         markedForDeletion: false,
+        type: (b.type as BudgetType) ?? BudgetType.Expense,
       }));
       this.newBudgets = [];
       this.newBudgetDraft = this.emptyDraft();
@@ -175,6 +181,10 @@ export class CostCentreEditModalComponent implements OnChanges {
 
         return '';
       case 'targetAmount':
+        if (this.newBudgetDraft.type === BudgetType.Income) {
+          return '';
+        }
+
         if (
           this.newBudgetDraft.targetAmount === null ||
           this.newBudgetDraft.targetAmount === undefined ||
@@ -232,9 +242,10 @@ export class CostCentreEditModalComponent implements OnChanges {
       description: null,
       teamId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: BudgetType.Expense,
     };
   }
 }

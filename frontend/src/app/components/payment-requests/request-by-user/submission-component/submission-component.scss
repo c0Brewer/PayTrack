@@ -201,7 +201,7 @@
 .payout-type__options {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .payout-type__option {
@@ -265,7 +265,8 @@
   border-color: #ef4444;
 }
 
-.payout-type__bank-account {
+.payout-type__bank-account,
+.payout-type__creditor-name {
   margin-top: 1rem;
 }
 

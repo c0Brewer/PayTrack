@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.Budget
 {
@@ -24,13 +25,13 @@ namespace PayTrack.Application.Dto.Budget
         [property: Required]
         int SeasonId,
 
-        [property: Required]
-        [property: Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]
-        decimal TargetAmount,
+        decimal? TargetAmount,
 
         [property: Required]
         DateTime PeriodStart,
 
         [property: Required]
-        DateTime PeriodEnd);
+        DateTime PeriodEnd,
+
+        BudgetType? Type = null);
 }

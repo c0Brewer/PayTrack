@@ -32,6 +32,14 @@ export type PaginatedPaymentRequestByUserDto =
 export type PaymentRequestByUserDto = components['schemas']['PaymentRequestByUserDto'];
 export type CreatePaymentRequestByUserDto = components['schemas']['CreatePaymentRequestByUserDto'];
 export type UpdatePaymentRequestByUserDto = components['schemas']['UpdatePaymentRequestByUserDto'];
+export type MarkPaymentRequestByUserAsPaidDto =
+  components['schemas']['MarkPaymentRequestByUserAsPaidDto'];
+export type ApprovePaymentRequestByUserDto =
+  components['schemas']['ApprovePaymentRequestByUserDto'];
+export type DeclinePaymentRequestByUserDto =
+  components['schemas']['DeclinePaymentRequestByUserDto'];
+export type RequestChangesPaymentRequestByUserDto =
+  components['schemas']['RequestChangesPaymentRequestByUserDto'];
 export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
 
@@ -44,12 +52,19 @@ export type GetDuplicatePaymentRequestsByUserOptions =
 
 export enum PayoutType {
   User = 0,
-  External = 1,
+  NotYetPaid = 1,
+  AlreadyPaid = 2,
+}
+
+export enum BudgetType {
+  Expense = 0,
+  Income = 1,
 }
 
 export const PayoutTypeLabels: Record<PayoutType, string> = {
   [PayoutType.User]: 'Pay to User',
-  [PayoutType.External]: 'Pay to Supplier',
+  [PayoutType.NotYetPaid]: 'Pay to Supplier',
+  [PayoutType.AlreadyPaid]: 'Already Paid',
 };
 
 // Roles
@@ -65,14 +80,16 @@ export enum TransactionStatus {
   Approved = 2,
   Paid = 3,
   Declined = 4,
+  Review = 5,
 }
 
 export const TransactionStatusLabels: Record<TransactionStatus, string> = {
   [TransactionStatus.Submitted]: 'Submitted',
-  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.ChangesRequested]: 'Changes Requested',
   [TransactionStatus.Approved]: 'Approved',
   [TransactionStatus.Paid]: 'Paid',
   [TransactionStatus.Declined]: 'Declined',
+  [TransactionStatus.Review]: 'Review',
 };
 
 export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
@@ -81,6 +98,7 @@ export const TransactionStatusCssClass: Record<TransactionStatus, string> = {
   [TransactionStatus.Approved]: 'status-approved',
   [TransactionStatus.Paid]: 'status-paid',
   [TransactionStatus.Declined]: 'status-declined',
+  [TransactionStatus.Review]: 'status-review',
 };
 
 export const TEAM_REQUEST_ALLOWED_STATUSES: readonly TransactionStatus[] = [
@@ -128,3 +146,12 @@ export type GetPaymentRequestsByTeamByIdOptions =
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
 export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];
+
+// Bank Statement Matching
+export type BankStatementEntryDto = components['schemas']['BankStatementEntryDto'];
+export type BankStatementMatchedTransactionDto =
+  components['schemas']['BankStatementMatchedTransactionDto'];
+export type BankStatementMatchResponseDto = components['schemas']['BankStatementMatchResponseDto'];
+export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
+export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];
+export type TransactionDto = components['schemas']['TransactionDto'];

@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestByUserDto } from '../../../../../types/exporter';
@@ -16,10 +17,19 @@ describe('RequestDetailComponent', () => {
   const serviceMock = {
     getPaymentRequestsByUserById: vi.fn(),
     downloadReceipt: vi.fn(),
+    markPaymentRequestByUserAsPaid: vi.fn(),
+    approvePaymentRequestByUser: vi.fn(),
+    declinePaymentRequestByUser: vi.fn(),
+    requestChangesForPaymentRequestByUser: vi.fn(),
+  };
+
+  const costCentreServiceMock = {
+    getCostCentres: vi.fn(),
   };
 
   const notificationMock = {
     showError: vi.fn(),
+    showSuccess: vi.fn(),
   };
 
   const routerMock = {
@@ -54,11 +64,13 @@ describe('RequestDetailComponent', () => {
     vi.clearAllMocks();
     URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
     URL.revokeObjectURL = vi.fn();
+    costCentreServiceMock.getCostCentres.mockReturnValue(of({ items: [] }));
 
     await TestBed.configureTestingModule({
       imports: [RequestDetailComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: serviceMock },
+        { provide: CostCentreService, useValue: costCentreServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
@@ -98,6 +110,24 @@ describe('RequestDetailComponent', () => {
       IncludeBankAccount: true,
       IncludeStatusHistory: true,
     });
+  });
+
+  it('should load active cost centres on init', () => {
+    costCentreServiceMock.getCostCentres.mockReturnValue(
+      of({
+        items: [
+          { id: 1, name: 'Active' },
+          { id: 2, name: 'Inactive', isActive: false },
+        ],
+      }),
+    );
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+    serviceMock.downloadReceipt.mockReturnValue(of(new Blob()));
+
+    component.ngOnInit();
+
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledWith({ Limit: 100 });
+    expect(component.costCentres).toEqual([{ id: 1, name: 'Active' }]);
   });
 
   it('should call downloadReceipt with the route id on init', () => {
@@ -177,6 +207,63 @@ describe('RequestDetailComponent', () => {
     expect(notificationMock.showError).toHaveBeenCalledWith(
       'Could not load receipt: Network error',
     );
+  });
+
+  it('should reload invoice with includes after mark paid succeeds', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: 3,
+      team: { name: 'Finance reloaded' },
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    serviceMock.markPaymentRequestByUserAsPaid.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onMarkPaid({
+      paymentReference: 'REF-123',
+      purposeOfPayment: 'Supplier payout',
+      paymentDate: '2026-02-03T00:00:00.000Z',
+    });
+
+    expect(serviceMock.markPaymentRequestByUserAsPaid).toHaveBeenCalledWith(7, {
+      paymentReference: 'REF-123',
+      purposeOfPayment: 'Supplier payout',
+      paymentDate: '2026-02-03T00:00:00.000Z',
+    });
+    expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
+      IncludeUser: true,
+      IncludeTeam: true,
+      IncludeBankAccount: true,
+      IncludeStatusHistory: true,
+    });
+    expect(component.invoice).toEqual(reloadedInvoice);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice marked as paid');
+  });
+
+  it('should reload invoice with includes after approve succeeds', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: 2,
+      team: { name: 'Finance reloaded' },
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    serviceMock.approvePaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onApprove({ costCentreId: 5, reason: 'ok' });
+
+    expect(serviceMock.approvePaymentRequestByUser).toHaveBeenCalledWith(7, {
+      costCentreId: 5,
+      reason: 'ok',
+    });
+    expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
+      IncludeUser: true,
+      IncludeTeam: true,
+      IncludeBankAccount: true,
+      IncludeStatusHistory: true,
+    });
+    expect(component.invoice).toEqual(reloadedInvoice);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice approved');
   });
 
   it('should revoke blob URL on destroy when one exists', () => {

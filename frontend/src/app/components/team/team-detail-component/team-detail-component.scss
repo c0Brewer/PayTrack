@@ -1,32 +1,17 @@
 @use 'variables' as v;
 
 .team-detail {
-  padding: 25px;
-
-  .back-btn {
-    margin-bottom: v.$size-l;
-    background: v.$background-dark;
-    color: v.$text-color;
-    border: 1px solid v.$border-color;
-    font-size: v.$font-s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    &:hover {
-      background: v.$border-color;
-      cursor: pointer;
-    }
+  h3 {
+    margin: 0 0 v.$size-s;
   }
 
-  .detail-card {
-    h2 {
-      margin: 0 0 v.$size-m;
-    }
-
-    h3 {
-      margin: v.$size-l 0 v.$size-s;
-    }
+  h4 {
+    margin: v.$size-m 0 v.$size-s;
+    font-size: v.$font-s;
+    font-weight: v.$font-semibold;
+    color: v.$text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .info-table {
@@ -47,41 +32,143 @@
     }
   }
 
-  .budget-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: v.$font-s;
-    background: v.$background-light;
-    border-radius: v.$size-xs;
-    overflow: hidden;
+  .color-cell {
+    display: flex;
+    align-items: center;
+    gap: v.$size-xs;
+  }
 
-    thead {
-      background: v.$background-dark;
-
-      th {
-        text-align: left;
-        padding: v.$size-s;
-        font-weight: v.$font-semibold;
-        color: v.$text-light;
-        border-bottom: 1px solid v.$border-color;
-      }
-    }
-
-    tbody {
-      td {
-        padding: v.$size-s;
-        border-bottom: 1px solid v.$border-color;
-      }
-
-      tr:hover {
-        background: v.$gray-100;
-      }
-    }
+  .color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid v.$border-color;
+    flex-shrink: 0;
   }
 
   .no-budgets {
     color: v.$text-muted;
     font-style: italic;
     font-size: v.$font-s;
+  }
+
+  .budget-list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-m;
+  }
+
+  .budget-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+
+    &--over {
+      border-color: v.$accent-color;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: v.$size-m;
+      margin-bottom: v.$size-s;
+      flex-wrap: wrap;
+    }
+
+    &__name {
+      font-weight: v.$font-semibold;
+      font-size: v.$font-s;
+    }
+
+    &__cost-centre {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: v.$font-s;
+      color: v.$text-muted;
+      background: v.$background-color;
+      border: 1px solid v.$border-color;
+      border-radius: 999px;
+      padding: 2px v.$size-s;
+      text-decoration: none;
+
+      &:hover {
+        background: v.$border-color;
+        color: v.$text-color;
+      }
+    }
+
+    &__period {
+      font-size: v.$font-s;
+      color: v.$text-muted;
+      margin-left: auto;
+    }
+  }
+
+  .budget-bar {
+    height: 10px;
+    border-radius: 9999px;
+    background: v.$border-color;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: v.$size-s;
+
+    &__paid {
+      height: 100%;
+      background: v.$success-color;
+      transition: width 0.3s ease;
+    }
+
+    &__approved {
+      height: 100%;
+      background: v.$info-color;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .budget-card--over {
+    .budget-bar__paid,
+    .budget-bar__approved {
+      background: v.$accent-color;
+    }
+  }
+
+  .budget-card__amounts {
+    display: flex;
+    align-items: center;
+    gap: v.$size-m;
+    flex-wrap: wrap;
+    font-size: v.$font-s;
+    color: v.$text-muted;
+  }
+
+  .budget-card__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+
+    &--paid {
+      background: v.$success-color;
+    }
+
+    &--approved {
+      background: v.$info-color;
+    }
+  }
+
+  .budget-card__target-label {
+    margin-left: auto;
+    font-weight: v.$font-semibold;
+    color: v.$text-color;
+  }
+
+  .budget-card__over-label {
+    color: v.$accent-color;
+    font-weight: v.$font-semibold;
   }
 }

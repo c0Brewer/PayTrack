@@ -19,6 +19,16 @@ namespace PayTrack.Application.Services.Model
         Task SendEmailAsync(string recipientEmail, string subject, string body);
 
         /// <summary>
+        /// Sends an email with attachments to the given recipient.
+        /// </summary>
+        /// <param name="recipientEmail">Email address of the recipient.</param>
+        /// <param name="subject">Email subject.</param>
+        /// <param name="body">Email body (plain text).</param>
+        /// <param name="attachments">Files to attach to the email.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task SendEmailAsync(string recipientEmail, string subject, string body, IReadOnlyCollection<EmailAttachment> attachments);
+
+        /// <summary>
         /// Sends a Slack DM to the user whose Slack account is associated with <paramref name="recipientEmail"/>.
         /// </summary>
         /// <param name="recipientEmail">Email address used to resolve the Slack user.</param>

@@ -17,7 +17,10 @@
   </div>
 
   @if (showDropdown) {
-    <div class="typeahead__dropdown">
+    <div class="typeahead__dropdown"
+         [style.top.px]="dropdownTop"
+         [style.left.px]="dropdownLeft"
+         [style.width.px]="dropdownWidth">
       @for (item of results; track item.id) {
         <div class="typeahead__option" (mousedown)="select(item)">
           <span class="typeahead__option__primary">{{ item.primaryText }}</span>

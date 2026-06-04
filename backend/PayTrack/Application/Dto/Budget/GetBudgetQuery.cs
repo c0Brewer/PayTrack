@@ -2,6 +2,8 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Data.Entities;
+
 namespace PayTrack.Application.Dto.Budget
 {
     /// <summary>
@@ -53,5 +55,10 @@ namespace PayTrack.Application.Dto.Budget
         /// Offset of query.
         /// </summary>
         public int? Offset { get; init; }
+
+        /// <summary>
+        /// Type of budget to query.
+        /// </summary>
+        public BudgetType? Type { get; init; }
     }
 }

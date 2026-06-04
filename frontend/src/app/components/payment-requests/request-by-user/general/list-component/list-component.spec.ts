@@ -39,6 +39,33 @@ describe('InvoiceListComponent', () => {
     expect(emitted).toEqual(invoice);
   });
 
+  it('should emit invoice when onOpenDuplicates is called', () => {
+    const invoice = { id: 1, amount: 100 } as PaymentRequestByUserDto;
+    let emitted: PaymentRequestByUserDto | undefined;
+    component.openDuplicates.subscribe((inv) => (emitted = inv));
+
+    component.onOpenDuplicates(invoice);
+
+    expect(emitted).toEqual(invoice);
+  });
+
+  it('should render duplicate badge when duplicate indicator is enabled', () => {
+    fixture.componentRef.setInput('showDuplicateIndicator', true);
+    fixture.componentRef.setInput('invoices', [
+      {
+        id: 1,
+        amount: 100,
+        invoiceNumber: 'INV-1',
+        hasPotentialDuplicate: true,
+      } as PaymentRequestByUserDto,
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.duplicate-badge')?.textContent).toContain('Duplicates');
+  });
+
   it('should return correct text for getPayoutTypeLabel', () => {
     expect(component.getPayoutTypeLabel(0)).toBe('Pay to User');
     expect(component.getPayoutTypeLabel(1)).toBe('Pay to Supplier');
@@ -46,7 +73,7 @@ describe('InvoiceListComponent', () => {
 
   it('should return correct text for getTransactionStatusLabel', () => {
     expect(component.getTransactionStatusLabel(0)).toBe('Submitted');
-    expect(component.getTransactionStatusLabel(1)).toBe('Changes requested');
+    expect(component.getTransactionStatusLabel(1)).toBe('Changes Requested');
     expect(component.getTransactionStatusLabel(2)).toBe('Approved');
     expect(component.getTransactionStatusLabel(3)).toBe('Paid');
     expect(component.getTransactionStatusLabel(4)).toBe('Declined');

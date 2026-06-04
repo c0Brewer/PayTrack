@@ -2,8 +2,10 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import {
   BudgetDto,
+  BudgetType,
   CostCentreDto,
   SeasonDto,
   TeamDto,
@@ -17,10 +19,11 @@ interface WorkingBudget {
   name: string;
   seasonId: number;
   costCentreId: number;
-  targetAmount: number;
+  targetAmount: number | null;
   periodStart: string;
   periodEnd: string;
   markedForDeletion: boolean;
+  type: BudgetType;
 }
 
 type BudgetField =
@@ -41,11 +44,12 @@ const budgetFields: readonly BudgetField[] = [
 
 @Component({
   selector: 'app-team-edit-modal-component',
-  imports: [DatePipe, FormsModule, ModalComponent],
+  imports: [DatePipe, EuroPipe, FormsModule, ModalComponent],
   templateUrl: './team-edit-modal-component.html',
   styleUrl: './team-edit-modal-component.scss',
 })
 export class TeamEditModalComponent implements OnChanges {
+  protected readonly BudgetType = BudgetType;
   readonly defaultColor = '#2563eb';
   readonly minNameLength = 3;
   readonly minDescriptionLength = 3;
@@ -127,10 +131,11 @@ export class TeamEditModalComponent implements OnChanges {
         name: budget.name,
         seasonId: budget.seasonId,
         costCentreId: budget.costCentreId,
-        targetAmount: budget.targetAmount,
+        targetAmount: budget.targetAmount ?? null,
         periodStart: budget.periodStart,
         periodEnd: budget.periodEnd,
         markedForDeletion: false,
+        type: (budget.type as BudgetType) ?? BudgetType.Expense,
       }));
       this.newBudgets = [];
       this.newBudgetDraft = this.emptyDraft();
@@ -257,6 +262,10 @@ export class TeamEditModalComponent implements OnChanges {
 
         return '';
       case 'targetAmount':
+        if (this.newBudgetDraft.type === BudgetType.Income) {
+          return '';
+        }
+
         if (
           this.newBudgetDraft.targetAmount === null ||
           this.newBudgetDraft.targetAmount === undefined ||
@@ -309,10 +318,6 @@ export class TeamEditModalComponent implements OnChanges {
 
   getSeasonName(seasonId: number): string {
     return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
-  }
-
-  formatBudgetAmount(amount: number): string {
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
   getCostCentreOptionLabel(costCentre: CostCentreDto): string {
@@ -396,9 +401,10 @@ export class TeamEditModalComponent implements OnChanges {
       description: null,
       costCentreId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: BudgetType.Expense,
     };
   }
 }
