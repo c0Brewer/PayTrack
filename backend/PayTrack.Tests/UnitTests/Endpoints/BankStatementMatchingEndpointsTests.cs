@@ -12,7 +12,6 @@ using PayTrack.Application.Dto.BankStatement;
 using PayTrack.Data.Entities;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
-using PayTrack.Data.Entities;
 using PayTrack.Tests.UnitTests.Helper;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
