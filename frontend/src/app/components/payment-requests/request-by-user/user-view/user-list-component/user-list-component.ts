@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -11,11 +12,10 @@ import {
   TransactionStatus,
   UserDto,
 } from '../../../../../types/exporter';
-import { EuroPipe } from '../../../../../pipes/euro.pipe';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
 import { InvoiceListComponent } from '../../general/list-component/list-component';
-import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-my-invoices-component',

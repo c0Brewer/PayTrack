@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
-import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import {
   ApprovePaymentRequestByUserDto,
   CostCentreDto,
@@ -18,6 +17,7 @@ import {
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
+import { DetailComponent } from '../../../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-invoice-detail-component',
