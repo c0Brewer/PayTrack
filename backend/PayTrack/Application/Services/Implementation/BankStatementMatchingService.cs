@@ -102,6 +102,7 @@ namespace PayTrack.Application.Services.Implementation
                         FromStatus = transaction.Status,
                         ToStatus = TransactionStatus.Paid,
                         ChangedAt = DateTime.UtcNow,
+                        Comment = "Automatically updated by bank import",
                     };
 
                     transaction.StatusHistory.Add(statusHistory);
