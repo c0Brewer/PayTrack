@@ -70,12 +70,15 @@ namespace PayTrack.Data.Entities
         public CostCentre CostCentre { get; set; } = null!;
 
         /// <summary>
-        /// Target Amount of Budget.
+        /// Target Amount of Budget. Required for Expense budgets; must be null for Income budgets.
         /// </summary>
-        [Required]
         [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue, ErrorMessage = "Target amount must be non-negative.")]
-        public decimal TargetAmount { get; set; }
+        public decimal? TargetAmount { get; set; }
+
+        /// <summary>
+        /// Type of this Budget (Expense or Income).
+        /// </summary>
+        public BudgetType Type { get; set; } = BudgetType.Expense;
 
         /// <summary>
         /// Start of Budget Period.

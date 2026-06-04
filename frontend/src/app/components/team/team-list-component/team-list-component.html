@@ -14,9 +14,8 @@
       <tr>
         <td class="name name-col" data-label="Name">
           <span
-            class="team-name-badge"
-            [style.background]="getDisplayColor(team)"
-            [style.color]="getTeamNameTextColor(team)"
+            class="table-badge team-name-badge"
+            [style.--table-badge-source-color]="getDisplayColor(team)"
           >
             {{ team.name }}
           </span>
@@ -42,6 +41,10 @@
           </button>
         </td>
         <td class="actions-col" data-label="Actions">
+          <a class="btn btn-secondary icon-hover-btn" [routerLink]="['/team', team.id]">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <span class="btn-text">Details</span>
+          </a>
           <button
             type="button"
             class="btn btn-secondary icon-hover-btn"

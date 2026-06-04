@@ -30,6 +30,7 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy {
   @Input() placeholder = 'Search…';
   @Input() minChars = 1;
   @Input() isInvalid = false;
+  @Input() initialItem: TypeaheadItem | null = null;
 
   @Output() itemSelected = new EventEmitter<TypeaheadItem>();
   @Output() cleared = new EventEmitter<void>();
@@ -39,11 +40,32 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy {
   showDropdown = false;
   selectedItem: TypeaheadItem | null = null;
 
+  dropdownTop = 0;
+  dropdownLeft = 0;
+  dropdownWidth = 0;
+
   private readonly destroy$ = new Subject<void>();
+
+  private readonly closeOnScroll = (): void => {
+    if (this.showDropdown) {
+      this.showDropdown = false;
+    }
+  };
 
   constructor(private readonly el: ElementRef) {}
 
   ngOnInit(): void {
+    window.addEventListener('scroll', this.closeOnScroll, true);
+    window.addEventListener('resize', this.closeOnScroll);
+
+    if (this.initialItem) {
+      this.selectedItem = this.initialItem;
+      const display = this.initialItem.secondaryText
+        ? `${this.initialItem.primaryText} (${this.initialItem.secondaryText})`
+        : this.initialItem.primaryText;
+      this.searchControl.setValue(display, { emitEvent: false });
+    }
+
     this.searchControl.valueChanges
       .pipe(
         takeUntil(this.destroy$),
@@ -61,11 +83,17 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy {
             item.primaryText.toLowerCase().includes(q) ||
             (item.secondaryText?.toLowerCase().includes(q) ?? false),
         );
-        this.showDropdown = this.results.length > 0;
+        if (this.results.length > 0) {
+          this.openDropdown();
+        } else {
+          this.showDropdown = false;
+        }
       });
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.closeOnScroll, true);
+    window.removeEventListener('resize', this.closeOnScroll);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -79,7 +107,7 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy {
 
   onFocus(): void {
     if (this.results.length > 0 && !this.selectedItem) {
-      this.showDropdown = true;
+      this.openDropdown();
     }
   }
 
@@ -103,5 +131,13 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy {
 
   public reset(): void {
     this.clear();
+  }
+
+  private openDropdown(): void {
+    const rect = (this.el.nativeElement as HTMLElement).getBoundingClientRect();
+    this.dropdownTop = rect.bottom;
+    this.dropdownLeft = rect.left;
+    this.dropdownWidth = rect.width;
+    this.showDropdown = true;
   }
 }

@@ -45,8 +45,9 @@ namespace PayTrack.Application.Services.Model
         /// <param name="PaidAt">When the invoice was paid at.</param>
         /// <param name="invoiceNumber">InvoiceNumber of PaymentRequestByUser.</param>
         /// <param name="comment">Optional comment.</param>
-        /// <param name="payoutType">payout type (to user or to external).</param>
+        /// <param name="payoutType">payout type (to user, not yet paid, or already paid).</param>
         /// <param name="bankAccountId">id of bank account to use.</param>
+        /// <param name="creditorName">name of the external creditor, required for NotYetPaid.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> CreatePaymentRequestByUserAsync(
             int userId,
@@ -58,7 +59,8 @@ namespace PayTrack.Application.Services.Model
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int? bankAccountId);
+            int? bankAccountId,
+            string? creditorName);
 
         /// <summary>
         /// Checks possible duplicates of a PaymentRequestByUser with exact matching criteria.
@@ -66,11 +68,17 @@ namespace PayTrack.Application.Services.Model
         /// <param name="userId">Current user id for matching.</param>
         /// <param name="teamId">Team id for matching.</param>
         /// <param name="amount">Amount for matching.</param>
+        /// <param name="paidAt">Paid-at day for matching.</param>
+        /// <param name="invoiceNumber">Invoice number for matching.</param>
+        /// <param name="paymentRequestByUserId">Optional source payment request id to exclude dismissed pairs.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount);
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber = null,
+            int? paymentRequestByUserId = null);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.
@@ -86,6 +94,75 @@ namespace PayTrack.Application.Services.Model
         /// <param name="bankAccountId">The new bank account id that the PaymentRequestByUser should be assigned.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Dismisses a potential duplicate warning between two PaymentRequestByUser entries.
+        /// </summary>
+        /// <param name="paymentRequestByUserId">Source PaymentRequestByUser id.</param>
+        /// <param name="duplicatePaymentRequestByUserId">Potential duplicate PaymentRequestByUser id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId);
+
+        /// <summary>
+        /// Marks a PaymentRequestByUser as paid and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to mark as paid.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="paymentReference">Payment reference supplied by finance.</param>
+        /// <param name="purposeOfPayment">Payment purpose supplied by finance.</param>
+        /// <param name="paymentDate">Date when finance completed the payment.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> MarkPaymentRequestByUserAsPaidAsync(
+            int id,
+            int changedById,
+            string paymentReference,
+            string purposeOfPayment,
+            DateTime paymentDate);
+
+        /// <summary>
+        /// Approves a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to approve.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="costCentreId">Cost centre assigned by finance.</param>
+        /// <param name="reason">Optional reason or comment.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            int costCentreId,
+            string? reason);
+
+        /// <summary>
+        /// Declines a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to decline.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="reason">Required decline reason.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> DeclinePaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason);
+
+        /// <summary>
+        /// Requests changes for a PaymentRequestByUser and stores the status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to request changes for.</param>
+        /// <param name="changedById">Id of the user who changed the status.</param>
+        /// <param name="reason">Required reason describing the requested changes.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> RequestChangesPaymentRequestByUserAsync(
+            int id,
+            int changedById,
+            string reason);
 
         /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.

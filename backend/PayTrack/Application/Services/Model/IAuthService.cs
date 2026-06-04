@@ -3,6 +3,7 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Auth;
+using PayTrack.Application.Dto.User;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Services.Model
@@ -22,7 +23,8 @@ namespace PayTrack.Application.Services.Model
         /// <summary>
         /// Returns the currently logged in User.
         /// </summary>
+        /// <param name="query">Optional query options (e.g. IncludeTeam).</param>
         /// <returns>Currently logged in User.</returns>
-        Task<User?> GetCurrentUser();
+        Task<User?> GetCurrentUser(GetUserQueryById? query = null);
     }
 }

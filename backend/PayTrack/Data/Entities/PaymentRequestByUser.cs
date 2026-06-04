@@ -33,10 +33,16 @@ namespace PayTrack.Data.Entities
         public string? ReceiptUrl { get; set; }
 
         /// <summary>
-        /// Type of Payout (Internal => to user, External => to invoice issuer).
+        /// Type of Payout (Internal => to user, NotYetPaid => to invoice issuer, AlreadyPaid => only for documentation).
         /// </summary>
         [Required]
         public PayoutType PayoutType { get; set; }
+
+        /// <summary>
+        /// Name of the external creditor. Required when PayoutType is NotYetPaid.
+        /// </summary>
+        [MaxLength(255)]
+        public string? CreditorName { get; set; }
 
         /// <summary>
         /// Required only when PayoutType is User or when an explicit bank account is chosen.
@@ -48,5 +54,11 @@ namespace PayTrack.Data.Entities
         /// </summary>
         [ForeignKey(nameof(BankAccountId))]
         public BankAccount? BankAccount { get; set; }
+
+        /// <summary>
+        /// Indicates whether another payment request matches duplicate criteria.
+        /// </summary>
+        [NotMapped]
+        public bool HasPotentialDuplicate { get; set; }
     }
 }

@@ -21,7 +21,7 @@ interface WorkingBudget {
   name: string;
   seasonId: number;
   teamId: number;
-  targetAmount: number;
+  targetAmount: number | null | undefined;
   periodStart: string;
   periodEnd: string;
   markedForDeletion: boolean;

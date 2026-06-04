@@ -25,7 +25,7 @@
           </tr>
           <tr>
             <th>Amount</th>
-            <td>{{ invoice.amount | currency: 'EUR' }}</td>
+            <td>{{ invoice.amount | euro }}</td>
           </tr>
           <tr>
             <th>Team</th>
@@ -51,6 +51,14 @@
             <th>Paid At</th>
             <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
           </tr>
+          <tr>
+            <th>Finance Paid At</th>
+            <td>{{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '-' }}</td>
+          </tr>
+          <tr>
+            <th>Payment Reference</th>
+            <td>{{ invoice.paymentReference || '-' }}</td>
+          </tr>
           @if (showUserName) {
             <tr>
               <th>User</th>
@@ -64,6 +72,132 @@
         </tbody>
       </table>
 
+      @if (canManageStatus && (canApprove(invoice.status) || canRequestChanges(invoice.status) || canDecline(invoice.status))) {
+        <div class="status-actions">
+          @if (canApprove(invoice.status)) {
+            <form class="status-form" (ngSubmit)="onApprove()">
+              <h3>Approve</h3>
+              <label>
+                <span>Cost Centre</span>
+                <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
+                  <option [ngValue]="null">Select cost centre</option>
+                  @for (costCentre of costCentres; track costCentre.id) {
+                    <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Reason</span>
+                <textarea
+                  name="approvalReason"
+                  [(ngModel)]="approvalReason"
+                  maxlength="1000"
+                ></textarea>
+              </label>
+              <button
+                class="approve-btn"
+                type="submit"
+                [disabled]="statusActionPending === 'approve' || !approvalCostCentreId"
+              >
+                <span class="material-symbols-outlined">check_circle</span>
+                {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
+              </button>
+            </form>
+          }
+
+          @if (canRequestChanges(invoice.status)) {
+            <form class="status-form" (ngSubmit)="onRequestChanges()">
+              <h3>Request Changes</h3>
+              <label>
+                <span>Reason</span>
+                <textarea
+                  name="changeRequestReason"
+                  [(ngModel)]="changeRequestReason"
+                  maxlength="1000"
+                  required
+                ></textarea>
+              </label>
+              <button
+                class="request-changes-btn"
+                type="submit"
+                [disabled]="statusActionPending === 'requestChanges' || !changeRequestReason.trim()"
+              >
+                <span class="material-symbols-outlined">edit_note</span>
+                {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
+              </button>
+            </form>
+          }
+
+          @if (canDecline(invoice.status)) {
+            <form class="status-form" (ngSubmit)="onDecline()">
+              <h3>Decline</h3>
+              <label>
+                <span>Reason</span>
+                <textarea
+                  name="declineReason"
+                  [(ngModel)]="declineReason"
+                  maxlength="1000"
+                  required
+                ></textarea>
+              </label>
+              <button
+                class="decline-btn"
+                type="submit"
+                [disabled]="statusActionPending === 'decline' || !declineReason.trim()"
+              >
+                <span class="material-symbols-outlined">cancel</span>
+                {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
+              </button>
+            </form>
+          }
+        </div>
+      }
+
+      @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
+        <form class="payment-form" (ngSubmit)="onMarkPaid()">
+          <h3>Mark as Paid</h3>
+          <div class="payment-grid">
+            <label>
+              <span>Payment Reference</span>
+              <input
+                type="text"
+                name="paymentReference"
+                [(ngModel)]="paymentReference"
+                maxlength="255"
+                required
+              />
+            </label>
+            <label>
+              <span>Payment Date</span>
+              <input
+                type="date"
+                name="paymentDate"
+                [(ngModel)]="paymentDate"
+                [max]="maxPaymentDate"
+                required
+              />
+            </label>
+            <label class="payment-purpose">
+              <span>Purpose</span>
+              <textarea
+                name="paymentPurpose"
+                [(ngModel)]="paymentPurpose"
+                maxlength="500"
+                required
+              ></textarea>
+            </label>
+          </div>
+          <button
+            class="mark-paid-btn"
+            type="submit"
+            [disabled]="markingPaid || !paymentReference.trim() || !paymentPurpose.trim() || !paymentDate"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
+          </button>
+        </form>
+      }
+
       @if ((invoice.statusHistory?.length ?? 0) > 0) {
         <h3>Status History</h3>
         <table class="info-table">
@@ -71,6 +205,7 @@
             <tr>
               <th>From</th>
               <th>To</th>
+              <th>Changed By</th>
               <th>Changed At</th>
               <th>Comment</th>
             </tr>
@@ -88,6 +223,7 @@
                     {{ getStatusLabel(entry.toStatus) }}
                   </span>
                 </td>
+                <td>{{ entry.changedBy?.name ?? ('User #' + entry.changedById) }}</td>
                 <td>{{ entry.changedAt | date: 'medium' }}</td>
                 <td>{{ entry.comment }}</td>
               </tr>

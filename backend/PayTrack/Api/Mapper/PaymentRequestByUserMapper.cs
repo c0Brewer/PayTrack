@@ -65,10 +65,13 @@ namespace PayTrack.Api.Mapper
                 statusHistory,
                 paymentRequestByUser.CreatedAt,
                 paymentRequestByUser.PaidAt,
+                paymentRequestByUser.FinancePaidAt,
                 paymentRequestByUser.InvoiceNumber,
                 paymentRequestByUser.Comment,
                 paymentRequestByUser.PayoutType,
-                bankAccountDto);
+                paymentRequestByUser.HasPotentialDuplicate,
+                bankAccountDto,
+                paymentRequestByUser.CreditorName);
         }
 
         /// <summary>
@@ -91,8 +94,7 @@ namespace PayTrack.Api.Mapper
             return new DuplicatePaymentRequestByUserDto(
                 ToDto(duplicatePaymentRequestByUser.PaymentRequestByUser),
                 duplicatePaymentRequestByUser.Score,
-                duplicatePaymentRequestByUser.IsAmountAndUserMatch,
-                duplicatePaymentRequestByUser.IsAmountAndTeamMatch);
+                duplicatePaymentRequestByUser.MatchedFields);
         }
 
         /// <summary>

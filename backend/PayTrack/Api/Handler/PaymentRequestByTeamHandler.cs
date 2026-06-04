@@ -85,7 +85,7 @@ namespace PayTrack.Api.Handler
                     createPaymentRequestByTeamDto.Transaction.Amount,
                     createPaymentRequestByTeamDto.Transaction.PurposeOfPayment,
                     createPaymentRequestByTeamDto.DueDate,
-                    createPaymentRequestByTeamDto.CostCentreId);
+                    createPaymentRequestByTeamDto.Transaction.BudgetId);
 
             var createdPaymentRequestByTeamDto = PaymentRequestByTeamMapper.ToDto(createdPaymentRequestByTeam);
 

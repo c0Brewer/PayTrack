@@ -2,6 +2,7 @@ import { SlicePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { CostCentreDto } from '../../../types/exporter';
@@ -9,7 +10,7 @@ import { DetailComponent } from '../../general/detail-component/detail-component
 
 @Component({
   selector: 'app-cost-centre-detail-component',
-  imports: [DetailComponent, SlicePipe],
+  imports: [DetailComponent, EuroPipe, SlicePipe],
   templateUrl: './cost-centre-detail-component.html',
   styleUrl: './cost-centre-detail-component.scss',
 })
@@ -42,9 +43,5 @@ export class CostCentreDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/cost-centre']);
-  }
-
-  formatBudgetAmount(amount: number): string {
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 }

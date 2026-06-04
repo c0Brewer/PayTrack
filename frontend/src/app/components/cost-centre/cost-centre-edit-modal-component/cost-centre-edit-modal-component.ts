@@ -2,10 +2,12 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
 import {
   BudgetDto,
+  BudgetType,
   CostCentreDto,
   CreateCostCentreRequestDto,
   SeasonDto,
@@ -21,10 +23,11 @@ interface WorkingBudget {
   name: string;
   seasonId: number;
   teamId: number;
-  targetAmount: number;
+  targetAmount: number | null | undefined;
   periodStart: string;
   periodEnd: string;
   markedForDeletion: boolean;
+  type: BudgetType;
 }
 
 type BudgetField = 'name' | 'teamId' | 'targetAmount' | 'seasonId' | 'periodStart' | 'periodEnd';
@@ -39,7 +42,7 @@ const budgetFields: readonly BudgetField[] = [
 
 @Component({
   selector: 'app-cost-centre-edit-modal-component',
-  imports: [DatePipe, FormsModule, ModalComponent],
+  imports: [DatePipe, EuroPipe, FormsModule, ModalComponent],
   templateUrl: './cost-centre-edit-modal-component.html',
   styleUrl: './cost-centre-edit-modal-component.scss',
 })
@@ -48,6 +51,8 @@ export class CostCentreEditModalComponent implements OnChanges {
     private readonly costCentreService: CostCentreService,
     private readonly notificationService: NotificationService,
   ) {}
+
+  protected readonly BudgetType = BudgetType;
 
   @Input() costCentre: CostCentreDto = {
     id: -1,
@@ -72,15 +77,16 @@ export class CostCentreEditModalComponent implements OnChanges {
   ngOnChanges(): void {
     if (this.costCentre) {
       this.originalCostCentre = structuredClone(this.costCentre);
-      this.workingBudgets = (this.costCentre.budgets ?? []).map((b: BudgetDto) => ({
-        originalId: b.id,
-        name: b.name,
-        seasonId: b.seasonId,
-        teamId: b.teamId,
-        targetAmount: b.targetAmount,
-        periodStart: b.periodStart,
-        periodEnd: b.periodEnd,
+      this.workingBudgets = (this.costCentre.budgets ?? []).map((budget: BudgetDto) => ({
+        originalId: budget.id,
+        name: budget.name,
+        seasonId: budget.seasonId,
+        teamId: budget.teamId,
+        targetAmount: budget.targetAmount,
+        periodStart: budget.periodStart,
+        periodEnd: budget.periodEnd,
         markedForDeletion: false,
+        type: (budget.type as BudgetType) ?? BudgetType.Expense,
       }));
       this.newBudgets = [];
       this.newBudgetDraft = this.emptyDraft();
@@ -94,12 +100,14 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   hasChanged(): boolean {
     if (!this.originalCostCentre) return false;
+
     const fieldsChanged =
       this.costCentre.name !== this.originalCostCentre.name ||
       this.costCentre.description !== this.originalCostCentre.description ||
       this.costCentre.displayColor !== this.originalCostCentre.displayColor;
     const budgetsChanged =
-      this.newBudgets.length > 0 || this.workingBudgets.some((b) => b.markedForDeletion);
+      this.newBudgets.length > 0 || this.workingBudgets.some((budget) => budget.markedForDeletion);
+
     return fieldsChanged || budgetsChanged;
   }
 
@@ -146,11 +154,11 @@ export class CostCentreEditModalComponent implements OnChanges {
     }
 
     const budgetIdsToDelete = this.workingBudgets
-      .filter((b) => b.markedForDeletion)
-      .map((b) => b.originalId);
+      .filter((budget) => budget.markedForDeletion)
+      .map((budget) => budget.originalId);
 
-    const budgetsToUpsert: UpsertBudgetEntryDto[] = this.newBudgets.map((b) => ({
-      ...b,
+    const budgetsToUpsert: UpsertBudgetEntryDto[] = this.newBudgets.map((budget) => ({
+      ...budget,
       id: null,
     }));
 
@@ -174,16 +182,11 @@ export class CostCentreEditModalComponent implements OnChanges {
       case 'name':
         return this.newBudgetDraft.name?.trim() ? '' : 'Name is required.';
       case 'teamId':
-        if (!this.newBudgetDraft.teamId) {
-          return 'Team is required.';
-        }
-
-        if (!this.isTeamActive(this.newBudgetDraft.teamId)) {
-          return 'Select an active team.';
-        }
-
-        return '';
+        if (!this.newBudgetDraft.teamId) return 'Team is required.';
+        return this.isTeamActive(this.newBudgetDraft.teamId) ? '' : 'Select an active team.';
       case 'targetAmount':
+        if (this.newBudgetDraft.type === BudgetType.Income) return '';
+
         if (
           this.newBudgetDraft.targetAmount === null ||
           this.newBudgetDraft.targetAmount === undefined ||
@@ -192,39 +195,18 @@ export class CostCentreEditModalComponent implements OnChanges {
           return 'Amount is required.';
         }
 
-        if (Number(this.newBudgetDraft.targetAmount) < 0) {
-          return 'Amount must be non-negative.';
-        }
-
-        return '';
+        return Number(this.newBudgetDraft.targetAmount) < 0 ? 'Amount must be non-negative.' : '';
       case 'seasonId':
         return this.newBudgetDraft.seasonId ? '' : 'Season is required.';
       case 'periodStart':
         return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
       case 'periodEnd':
-        if (!this.newBudgetDraft.periodEnd) {
-          return 'Period end is required.';
-        }
-
-        if (
-          this.newBudgetDraft.periodStart &&
+        if (!this.newBudgetDraft.periodEnd) return 'Period end is required.';
+        return this.newBudgetDraft.periodStart &&
           this.newBudgetDraft.periodEnd < this.newBudgetDraft.periodStart
-        ) {
-          return 'Period end must not be before period start.';
-        }
-
-        return '';
+          ? 'Period end must not be before period start.'
+          : '';
     }
-  }
-
-  private markAllBudgetFieldsTouched(): void {
-    budgetFields.forEach((field) => {
-      this.touchedBudgetFields[field] = true;
-    });
-  }
-
-  private isBudgetDraftInvalid(): boolean {
-    return budgetFields.some((field) => this.getBudgetFieldError(field).length > 0);
   }
 
   private save(event: CostCentreSaveEvent): void {
@@ -249,7 +231,16 @@ export class CostCentreEditModalComponent implements OnChanges {
       budgets:
         budgetsToUpsert.length > 0
           ? budgetsToUpsert.map(
-              ({ name, description, teamId, seasonId, targetAmount, periodStart, periodEnd }) => ({
+              ({
+                name,
+                description,
+                teamId,
+                seasonId,
+                targetAmount,
+                periodStart,
+                periodEnd,
+                type,
+              }) => ({
                 name,
                 description,
                 teamId,
@@ -257,6 +248,7 @@ export class CostCentreEditModalComponent implements OnChanges {
                 targetAmount,
                 periodStart: this.toApiDateTime(periodStart),
                 periodEnd: this.toApiDateTime(periodEnd),
+                type,
               }),
             )
           : undefined,
@@ -316,6 +308,16 @@ export class CostCentreEditModalComponent implements OnChanges {
     return value;
   }
 
+  private markAllBudgetFieldsTouched(): void {
+    budgetFields.forEach((field) => {
+      this.touchedBudgetFields[field] = true;
+    });
+  }
+
+  private isBudgetDraftInvalid(): boolean {
+    return budgetFields.some((field) => this.getBudgetFieldError(field).length > 0);
+  }
+
   private emptyBudgetTouchedFields(): Record<BudgetField, boolean> {
     return Object.fromEntries(budgetFields.map((field) => [field, false])) as Record<
       BudgetField,
@@ -330,9 +332,10 @@ export class CostCentreEditModalComponent implements OnChanges {
       description: null,
       teamId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: BudgetType.Expense,
     };
   }
 }

@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -38,6 +39,10 @@ describe('ReceiptSubmitComponent', () => {
     navigate: vi.fn(),
   };
 
+  const authServiceMock = {
+    currentUser$: of(null),
+  };
+
   const setValidFormValues = (): void => {
     component.form.setValue({
       invoiceNumber: 'INV-1',
@@ -49,6 +54,7 @@ describe('ReceiptSubmitComponent', () => {
       purposeOfPayment: 'test',
       paidAt: '2025-01-01',
       receipt: 'ok.pdf',
+      creditorName: '',
     });
   };
 
@@ -68,6 +74,7 @@ describe('ReceiptSubmitComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
       providers: [
+        { provide: AuthService, useValue: authServiceMock },
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
@@ -234,7 +241,7 @@ describe('ReceiptSubmitComponent', () => {
     component.ngOnInit();
     const bankAccountControl = component.form.get('bankAccountId')!;
 
-    component.form.get('payoutType')?.setValue(PayoutType.External);
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
 
     expect(bankAccountControl.value).toBeNull();
     expect(bankAccountControl.errors).toBeNull();
@@ -302,9 +309,8 @@ describe('ReceiptSubmitComponent', () => {
             user: { id: 11, name: 'Alex' },
             team: { id: 21, name: 'Core Team' },
           },
-          score: 2,
-          isAmountAndUserMatch: true,
-          isAmountAndTeamMatch: true,
+          score: 150,
+          matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
         },
       ]),
     );
@@ -313,6 +319,12 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledOnce();
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
+      TeamId: 1,
+      Amount: 100,
+      PaidAt: '2025-01-01T00:00:00.000Z',
+      InvoiceNumber: 'INV-1',
+    });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
     expect(component.isDuplicateModalOpen).toBe(true);
     expect(component.pendingSubmissionPayload).not.toBeNull();
@@ -350,9 +362,8 @@ describe('ReceiptSubmitComponent', () => {
           user: { id: 11, name: 'Alex' },
           team: { id: 21, name: 'Core Team' },
         },
-        score: 2,
-        isAmountAndUserMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
@@ -402,6 +413,28 @@ describe('ReceiptSubmitComponent', () => {
     expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalled();
     expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice submitted successfully.');
     expect(component.isSubmitting).toBe(false);
+  });
+
+  it('should submit external payouts without a bank account id', () => {
+    component.ngOnInit();
+
+    const file = new File(['ok'], 'ok.pdf');
+    setValidFormValues();
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form.get('creditorName')?.setValue('Acme GmbH');
+    component.selectedFile = file;
+
+    paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payoutType: PayoutType.NotYetPaid,
+        bankAccountId: null,
+      }),
+      file,
+    );
   });
 
   // -------------------------

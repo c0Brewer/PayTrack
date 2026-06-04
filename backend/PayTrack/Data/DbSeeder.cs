@@ -300,12 +300,36 @@ public static class DbSeeder
         await AddBudgetIfMissingAsync("Charger", db, marketingTeam, electronicsCostCentre, 4500m, currentSeason);
         await AddBudgetIfMissingAsync("Iron Parts", db, legacyCombustionTeam, legacyToolingCostCentre, 1200m, currentSeason);
 
+        var sponsoringCostCentre = await db.CostCentres.FirstOrDefaultAsync(c => c.Name == "Sponsoring");
+        if (sponsoringCostCentre is null)
+        {
+            sponsoringCostCentre = new CostCentre
+            {
+                Name = "Sponsoring",
+                Description = "Sponsorship income and partner contributions.",
+                DisplayColor = "#F59E0B",
+                IsActive = true,
+            };
+
+            db.CostCentres.Add(sponsoringCostCentre);
+        }
+
+        var chassisIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, chassisTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var electronicsIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, electronicsTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var suspensionIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, suspensionTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var powertrainIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, powertrainTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var batteryIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, batteryTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+        var operationsIncomeBudget = await AddBudgetIfMissingAsync("Sponsor Revenue", db, operationsTeam, sponsoringCostCentre, null, currentSeason, BudgetType.Income);
+
         await AddPresenterInvoicesIfUserExistsAsync(
             db,
             chassisTeam,
             electronicsTeam,
             suspensionTeam,
-            operationsTeam);
+            operationsTeam,
+            powertrainTeam,
+            batteryTeam,
+            aerodynamicsTeam);
 
         await AddPresenterTeamRequestsIfUserExistsAsync(
             db,
@@ -315,35 +339,44 @@ public static class DbSeeder
             batteryTeam,
             powertrainTeam,
             operationsTeam,
-            manufacturingCostCentre,
-            electronicsCostCentre,
-            compositesCostCentre);
+            chassisIncomeBudget,
+            electronicsIncomeBudget,
+            suspensionIncomeBudget,
+            powertrainIncomeBudget,
+            batteryIncomeBudget,
+            operationsIncomeBudget,
+            aerodynamicsTeam,
+            softwareTeam,
+            marketingTeam);
 
         await db.SaveChangesAsync();
     }
 
-    private static async Task AddBudgetIfMissingAsync(
+    private static async Task<Budget> AddBudgetIfMissingAsync(
         string name,
         AppDbContext db,
         Team team,
         CostCentre costCentre,
-        decimal targetAmount,
-        Season season)
+        decimal? targetAmount,
+        Season season,
+        BudgetType type = BudgetType.Expense)
     {
         var budgetStart = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var budgetEnd = new DateTime(DateTime.UtcNow.Year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
-        if (await db.Budgets.AnyAsync(b =>
+        var existing = await db.Budgets.FirstOrDefaultAsync(b =>
                 b.Team == team &&
                 b.CostCentre == costCentre &&
                 b.Season == season &&
                 b.PeriodStart == budgetStart &&
-                b.PeriodEnd == budgetEnd))
+                b.PeriodEnd == budgetEnd);
+
+        if (existing is not null)
         {
-            return;
+            return existing;
         }
 
-        db.Budgets.Add(new Budget
+        var budget = new Budget
         {
             Name = name,
             Team = team,
@@ -352,7 +385,10 @@ public static class DbSeeder
             PeriodStart = budgetStart,
             PeriodEnd = budgetEnd,
             Season = season,
-        });
+            Type = type,
+        };
+        db.Budgets.Add(budget);
+        return budget;
     }
 
     private static async Task AddPresenterInvoicesIfUserExistsAsync(
@@ -360,7 +396,10 @@ public static class DbSeeder
         Team chassisTeam,
         Team electronicsTeam,
         Team suspensionTeam,
-        Team operationsTeam)
+        Team operationsTeam,
+        Team powertrainTeam,
+        Team batteryTeam,
+        Team aerodynamicsTeam)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -396,7 +435,20 @@ public static class DbSeeder
             "Sensor connectors from electronics supplier",
             "External supplier should be paid directly.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            4);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-PRES-SUPPLIER-PNG-001-2",
+            presenterUser,
+            null,
+            electronicsTeam,
+            736.42m,
+            "Test Duplicate",
+            "External supplier should be paid directly.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             4);
         await AddPresenterInvoiceIfMissingAsync(
@@ -422,7 +474,7 @@ public static class DbSeeder
             "Workshop machine service invoice",
             "External workshop invoice submitted for finance processing.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Declined,
             8);
         await AddPresenterInvoiceIfMissingAsync(
@@ -435,9 +487,207 @@ public static class DbSeeder
             "Prototype cable labels",
             "Freshly submitted and waiting for finance review.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Submitted,
             1);
+
+        // Budget-linked invoices — gives the budget utilization bars real data.
+        // Chassis "Electric tools" (15,000€): 70% utilized — healthy
+        var chassisBudget = await db.Budgets.FirstOrDefaultAsync(b => b.TeamId == chassisTeam.Id);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-CHS-001",
+            presenterUser,
+            null,
+            chassisTeam,
+            4500.00m,
+            "Carbon fibre raw material order",
+            "Bulk carbon roll purchase for monocoque layup.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            30,
+            chassisBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-CHS-002",
+            presenterUser,
+            null,
+            chassisTeam,
+            3200.00m,
+            "CNC milling service batch",
+            "External machining service for frame brackets.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            22,
+            chassisBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-CHS-003",
+            presenterUser,
+            presenterBankAccount,
+            chassisTeam,
+            2800.00m,
+            "Aluminium profiles and brackets",
+            "Self-purchased structural material, reimbursement pending.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.User,
+            TransactionStatus.Approved,
+            10,
+            chassisBudget);
+
+        // Electronics "Cables" (8,000€): 93.75% utilized — near limit
+        var electronicsBudget = await db.Budgets.FirstOrDefaultAsync(b => b.TeamId == electronicsTeam.Id);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-ELEC-001",
+            presenterUser,
+            null,
+            electronicsTeam,
+            3500.00m,
+            "Sensor harness and connector set",
+            "Full wiring harness from specialist supplier.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            28,
+            electronicsBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-ELEC-002",
+            presenterUser,
+            null,
+            electronicsTeam,
+            2200.00m,
+            "PCB manufacturing batch",
+            "Custom PCB order for sensor interface boards.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            18,
+            electronicsBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-ELEC-003",
+            presenterUser,
+            null,
+            electronicsTeam,
+            1800.00m,
+            "Microcontroller units and modules",
+            "STM32 dev modules for embedded control system.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Approved,
+            7,
+            electronicsBudget);
+
+        // Powertrain "Rearwing Parts" (22,000€): OVER BUDGET
+        var powertrainBudget = await db.Budgets.FirstOrDefaultAsync(b => b.TeamId == powertrainTeam.Id);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-PT-001",
+            presenterUser,
+            null,
+            powertrainTeam,
+            14500.00m,
+            "Drivetrain component procurement",
+            "Gearbox internals and differential housing.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            35,
+            powertrainBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-PT-002",
+            presenterUser,
+            null,
+            powertrainTeam,
+            9200.00m,
+            "Cooling system assembly parts",
+            "Water pump, radiator and hose set.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Approved,
+            12,
+            powertrainBudget);
+
+        // Battery "Engine Parts" (14,000€): OVER BUDGET
+        var batteryBudget = await db.Budgets.FirstOrDefaultAsync(b => b.TeamId == batteryTeam.Id);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-BAT-001",
+            presenterUser,
+            null,
+            batteryTeam,
+            10000.00m,
+            "Battery cell module order",
+            "Lithium pouch cells for accumulator pack.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            40,
+            batteryBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-BAT-002",
+            presenterUser,
+            null,
+            batteryTeam,
+            5500.00m,
+            "BMS electronics and contactors",
+            "Battery management system boards and safety contactors.",
+            "uploads/presentation-invoices/invoice-techstore-2026.png",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Approved,
+            15,
+            batteryBudget);
+
+        // Aerodynamics "Wheels" (18,000€): 87% utilized — near limit
+        var aeroBudget = await db.Budgets.FirstOrDefaultAsync(b => b.TeamId == aerodynamicsTeam.Id);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-AERO-001",
+            presenterUser,
+            null,
+            aerodynamicsTeam,
+            8000.00m,
+            "Wind tunnel session booking",
+            "Full-day wind tunnel run at external facility.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            45,
+            aeroBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-AERO-002",
+            presenterUser,
+            null,
+            aerodynamicsTeam,
+            4500.00m,
+            "CFD simulation software licence",
+            "Annual licence for aero simulation toolchain.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Paid,
+            20,
+            aeroBudget);
+        await AddPresenterInvoiceIfMissingAsync(
+            db,
+            "INV-BUDGET-AERO-003",
+            presenterUser,
+            null,
+            aerodynamicsTeam,
+            3200.00m,
+            "Front wing layup materials",
+            "Prepreg carbon and core foam for front wing mould.",
+            "uploads/presentation-invoices/invoice-consulting-2026.pdf",
+            PayoutType.NotYetPaid,
+            TransactionStatus.Approved,
+            8,
+            aeroBudget);
     }
 
     private static async Task<BankAccount> GetOrCreatePresenterBankAccountAsync(AppDbContext db, User presenterUser)
@@ -476,7 +726,8 @@ public static class DbSeeder
         string receiptUrl,
         PayoutType payoutType,
         TransactionStatus status,
-        int createdDaysAgo)
+        int createdDaysAgo,
+        Budget? budget = null)
     {
         var paidAt = DateTime.UtcNow.AddDays(-createdDaysAgo).ToUniversalTime();
         var existingPaymentRequest = await db.PaymentRequestsByUser.FirstOrDefaultAsync(p => p.InvoiceNumber == invoiceNumber);
@@ -485,8 +736,8 @@ public static class DbSeeder
         {
             existingPaymentRequest.User = presenterUser;
             existingPaymentRequest.Team = team;
-            existingPaymentRequest.Budget = null!;
-            existingPaymentRequest.BudgetId = null;
+            existingPaymentRequest.Budget = budget;
+            existingPaymentRequest.BudgetId = budget?.Id;
             existingPaymentRequest.Amount = amount;
             existingPaymentRequest.PurposeOfPayment = purposeOfPayment;
             existingPaymentRequest.PaymentReference = string.Empty;
@@ -511,6 +762,7 @@ public static class DbSeeder
         {
             User = presenterUser,
             Team = team,
+            Budget = budget,
             Amount = amount,
             PurposeOfPayment = purposeOfPayment,
             PaymentReference = string.Empty,
@@ -581,9 +833,15 @@ public static class DbSeeder
         Team batteryTeam,
         Team powertrainTeam,
         Team operationsTeam,
-        CostCentre manufacturingCostCentre,
-        CostCentre electronicsCostCentre,
-        CostCentre compositesCostCentre)
+        Budget chassisIncomeBudget,
+        Budget electronicsIncomeBudget,
+        Budget suspensionIncomeBudget,
+        Budget powertrainIncomeBudget,
+        Budget batteryIncomeBudget,
+        Budget operationsIncomeBudget,
+        Team aerodynamicsTeam,
+        Team softwareTeam,
+        Team marketingTeam)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)
@@ -599,7 +857,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             chassisTeam,
-            manufacturingCostCentre.Budgets.FirstOrDefault(),
+            chassisIncomeBudget,
             150.00m,
             "Workshop tool deposit – spring season",
             TransactionStatus.Submitted,
@@ -611,7 +869,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             electronicsTeam,
-            electronicsCostCentre.Budgets.FirstOrDefault(),
+            electronicsIncomeBudget,
             320.50m,
             "CAN bus hardware contribution",
             TransactionStatus.Submitted,
@@ -623,7 +881,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             suspensionTeam,
-            compositesCostCentre.Budgets.FirstOrDefault(),
+            suspensionIncomeBudget,
             89.00m,
             "Damper test rig maintenance fee",
             TransactionStatus.Submitted,
@@ -635,7 +893,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             powertrainTeam,
-            manufacturingCostCentre.Budgets.FirstOrDefault(),
+            powertrainIncomeBudget,
             2800.00m,
             "Engine testbench booking – Q2",
             TransactionStatus.Paid,
@@ -647,7 +905,7 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             operationsTeam,
-            null,
+            operationsIncomeBudget,
             45.00m,
             "Event transport cost share – FSAE Austria",
             TransactionStatus.Paid,
@@ -659,12 +917,132 @@ public static class DbSeeder
             presenterUser,
             presenterUser,
             batteryTeam,
-            electronicsCostCentre.Budgets.FirstOrDefault(),
+            batteryIncomeBudget,
             560.00m,
             "High-voltage safety training fee",
             TransactionStatus.Submitted,
             DateTime.UtcNow.AddDays(45),
             2);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            aerodynamicsTeam,
+            null,
+            1200.00m,
+            "Wind tunnel facility access – April slot",
+            TransactionStatus.Approved,
+            DateTime.UtcNow.AddDays(7),
+            12);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            aerodynamicsTeam,
+            null,
+            340.00m,
+            "Aero test equipment rental – pitot tubes",
+            TransactionStatus.Paid,
+            null,
+            25);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            softwareTeam,
+            null,
+            890.00m,
+            "Telemetry server hosting – annual renewal",
+            TransactionStatus.Approved,
+            DateTime.UtcNow.AddDays(14),
+            8);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            softwareTeam,
+            null,
+            75.00m,
+            "GitHub Actions CI minutes – overage charge",
+            TransactionStatus.Submitted,
+            DateTime.UtcNow.AddDays(5),
+            3);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            marketingTeam,
+            null,
+            2400.00m,
+            "Sponsor presentation event catering",
+            TransactionStatus.Declined,
+            null,
+            20);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            marketingTeam,
+            null,
+            650.00m,
+            "Team photo shoot and print materials",
+            TransactionStatus.Approved,
+            DateTime.UtcNow.AddDays(3),
+            6);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            chassisTeam,
+            null,
+            480.00m,
+            "Composite repair consumables reorder",
+            TransactionStatus.Review,
+            DateTime.UtcNow.AddDays(10),
+            4);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            suspensionTeam,
+            null,
+            1100.00m,
+            "Shock absorber rebuild kit – full set",
+            TransactionStatus.Approved,
+            DateTime.UtcNow.AddDays(21),
+            15);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            electronicsTeam,
+            null,
+            220.00m,
+            "Oscilloscope calibration service",
+            TransactionStatus.ChangesRequested,
+            null,
+            9);
+
+        await AddTeamRequestIfMissingAsync(
+            db,
+            presenterUser,
+            presenterUser,
+            operationsTeam,
+            null,
+            3200.00m,
+            "Trailer rental – FSAE Germany transport",
+            TransactionStatus.Approved,
+            DateTime.UtcNow.AddDays(60),
+            1);
     }
 
     private static async Task AddTeamRequestIfMissingAsync(

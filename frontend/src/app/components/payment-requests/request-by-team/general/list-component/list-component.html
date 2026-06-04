@@ -21,7 +21,7 @@
   <tbody>
     @for (request of requests; track request.id) {
       <tr>
-        <td>{{ request.amount | currency: 'EUR' }}</td>
+        <td>{{ request.amount | euro }}</td>
         <td>{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
         <td>{{ request.purposeOfPayment ?? '—' }}</td>
         @if (showTeamColumn) {

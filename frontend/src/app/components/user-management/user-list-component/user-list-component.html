@@ -21,11 +21,11 @@
 
         <td class="role-col" data-label="Role">
           @if (u.role == regular_user) {
-            <span class="regular_user role">{{ roleToText(u.role) }}</span>
+            <span class="table-badge regular_user role">{{ roleToText(u.role) }}</span>
           } @else if (u.role == team_lead) {
-            <span class="team_lead role">{{ roleToText(u.role) }}</span>
+            <span class="table-badge team_lead role">{{ roleToText(u.role) }}</span>
           } @else if (u.role == admin) {
-            <span class="admin role">{{ roleToText(u.role) }}</span>
+            <span class="table-badge admin role">{{ roleToText(u.role) }}</span>
           }
         </td>
 

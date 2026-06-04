@@ -36,7 +36,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             this.factory.BankAccountServiceMock
@@ -63,7 +63,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             // Arrange
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync((User?)null);
 
             var client = this.factory.CreateClient();
@@ -95,7 +95,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             this.factory.BankAccountServiceMock
@@ -134,7 +134,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             this.factory.BankAccountServiceMock
@@ -168,7 +168,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var user = new User { Id = 4, Name = "Test", Email = "test4@test.com", IsActive = true };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             this.factory.BankAccountServiceMock
@@ -211,7 +211,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
             this.factory.BankAccountServiceMock
                 .Setup(service => service.CreateBankAccountOnboardingAsync(user.Id, createDto.AccountHolder, createDto.Iban, createDto.Bic))
@@ -247,7 +247,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             this.factory.AuthServiceMock
-                .Setup(service => service.GetCurrentUser())
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
             this.factory.UserServiceMock
                 .Setup(service => service.UpdateBankInformationSkippedAsync(user.Id, true))

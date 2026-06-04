@@ -76,7 +76,9 @@ export class AuthService {
   }
 
   public async fetchAndStoreUser(): Promise<UserDto> {
-    const { data, error } = await client.GET('/api/v1/auth/currentuser', { params: {} });
+    const { data, error } = await client.GET('/api/v1/auth/currentuser', {
+      params: { query: { IncludeTeam: true } },
+    });
 
     if (error) {
       throw new Error(error.detail ?? 'Unexpected Error');
