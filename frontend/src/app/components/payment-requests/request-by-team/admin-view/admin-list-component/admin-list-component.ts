@@ -12,7 +12,10 @@ import {
   TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
+import {
+  TeamRequestFilterComponent,
+  TeamRequestFilterOptions,
+} from '../../general/filter-component/filter-component';
 import { TeamRequestListComponent } from '../../general/list-component/list-component';
 
 @Component({
@@ -40,7 +43,7 @@ export class TeamRequestsComponent implements OnInit {
   hasNext: boolean = false;
   hasPrev: boolean = false;
 
-  filterOptions: GetPaymentRequestsByTeamOptions = {
+  filterOptions: TeamRequestFilterOptions = {
     IncludeTeam: true,
   };
   isExporting: boolean = false;
@@ -78,7 +81,7 @@ export class TeamRequestsComponent implements OnInit {
     });
   }
 
-  updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
+  updateFilterOptions(options: TeamRequestFilterOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadRequests();
