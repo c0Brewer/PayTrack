@@ -14,9 +14,8 @@
       <tr>
         <td class="name name-col" data-label="Name">
           <span
-            class="team-name-badge"
-            [style.background]="getDisplayColor(team)"
-            [style.color]="getTeamNameTextColor(team)"
+            class="table-badge team-name-badge"
+            [style.--table-badge-source-color]="getDisplayColor(team)"
           >
             {{ team.name }}
           </span>

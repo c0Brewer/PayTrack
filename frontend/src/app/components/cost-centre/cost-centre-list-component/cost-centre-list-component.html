@@ -13,7 +13,7 @@
     @for (c of costCentres; track c.id) {
       <tr>
         <td class="name-col" data-label="Name">
-          <a [routerLink]="[c.id]">{{ c.name }}</a>
+          <a class="table-badge" [routerLink]="[c.id]">{{ c.name }}</a>
         </td>
 
         <td class="description-col" data-label="Description">{{ c.description }}</td>

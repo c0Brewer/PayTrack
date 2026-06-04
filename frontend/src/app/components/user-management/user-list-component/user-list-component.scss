@@ -20,27 +20,25 @@
   }
 
   .role {
-    border-radius: 999px;
-    display: inline-flex;
-    font-size: v.$font-xs;
-    font-weight: v.$font-semibold;
-    line-height: 1;
-    padding: 0.35rem 0.7rem;
+    text-align: center;
   }
 
   .regular_user {
-    background-color: #e0e7ff;
-    color: #4f46e5;
+    --table-badge-background: #eff6ff;
+    --table-badge-border-color: #bfdbfe;
+    --table-badge-color: #1d4ed8;
   }
 
   .team_lead {
-    background-color: #fef3c7;
-    color: #d97706;
+    --table-badge-background: #fffbeb;
+    --table-badge-border-color: #fde68a;
+    --table-badge-color: #b45309;
   }
 
   .admin {
-    background-color: #fee2e2;
-    color: #dc2626;
+    --table-badge-background: #fef2f2;
+    --table-badge-border-color: #fecaca;
+    --table-badge-color: #b91c1c;
   }
 
   .team {
