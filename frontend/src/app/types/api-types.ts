@@ -2475,6 +2475,7 @@ export interface components {
             payoutType: components["schemas"]["PayoutType"];
             /** Format: int32 */
             bankAccountId?: number | null;
+            creditorName?: string | null;
         };
         CreateSeasonRequestDto: {
             name: string;
@@ -2618,6 +2619,7 @@ export interface components {
             payoutType: components["schemas"]["PayoutType"];
             hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
+            creditorName?: string | null;
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;
@@ -2634,7 +2636,7 @@ export interface components {
          * Format: int32
          * @enum {integer}
          */
-        PayoutType: 0 | 1;
+        PayoutType: 0 | 1 | 2;
         ProblemDetails: {
             type?: string | null;
             title?: string | null;

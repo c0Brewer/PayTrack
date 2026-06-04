@@ -63,8 +63,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Teams.Add(new Team { Id = 1, Name = "test123" });
 
             context.Transactions.AddRange(
-                new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },
-                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out }
+                new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.NotYetPaid, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },
+                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.NotYetPaid, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out }
             );
 
             await context.SaveChangesAsync();
@@ -75,7 +75,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var (transaction, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
             {
                 InvoiceNumber = "12",
-                PayoutType = PayoutType.External,
+                PayoutType = PayoutType.NotYetPaid,
                 BankAccountId = 1,
                 IncludeBankAccount = true,
 

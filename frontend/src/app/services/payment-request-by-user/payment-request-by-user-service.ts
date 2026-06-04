@@ -89,6 +89,9 @@ export class PaymentRequestByUserService {
     if (updateRequest.payoutType === PayoutType.User && updateRequest.bankAccountId != null) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));
     }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);

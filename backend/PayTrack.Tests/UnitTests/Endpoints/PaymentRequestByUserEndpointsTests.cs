@@ -144,7 +144,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int?>()))
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -174,7 +175,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // -----------------------
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent("MyComment"), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
+            content.Add(new StringContent("Test Company"), "CreditorName");
 
             // Act
             var response = await client.PostAsync("api/v1/transaction/user", content);
@@ -218,7 +220,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.Is<string?>(comment => comment == null),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int?>()))
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -235,7 +238,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent(string.Empty), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
             content.Add(new StringContent("0"), "BankAccountId");
 
             // Act
@@ -266,7 +269,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent("ab"), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
             content.Add(new StringContent("0"), "BankAccountId");
 
             // Act
@@ -366,7 +369,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new(0, 0, "111", DateTime.Today),
                 "123",
                 null,
-                PayoutType.External,
+                PayoutType.NotYetPaid,
                 0
             );
 

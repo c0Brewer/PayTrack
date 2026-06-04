@@ -57,7 +57,8 @@ namespace PayTrack.Application.Services.Implementation
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int? bankAccountId)
+            int? bankAccountId,
+            string? creditorName)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
@@ -83,9 +84,15 @@ namespace PayTrack.Application.Services.Implementation
             }
             else
             {
-                // Ensure bank account is null if payout type is external
                 bankAccountId = null;
             }
+
+            if (payoutType == PayoutType.NotYetPaid && string.IsNullOrWhiteSpace(creditorName))
+            {
+                throw new InvalidStateException("Creditor name is required when the payout type is NotYetPaid");
+            }
+
+            var isAlreadyPaid = payoutType == PayoutType.AlreadyPaid;
 
             var paymentRequest = new PaymentRequestByUser
             {
@@ -94,7 +101,7 @@ namespace PayTrack.Application.Services.Implementation
                 Amount = amount,
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
-                Status = TransactionStatus.Submitted,
+                Status = isAlreadyPaid ? TransactionStatus.Paid : TransactionStatus.Submitted,
                 BudgetId = null, // Budget will be set later by the finance team
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.Out, // Payment direction is out for payment requests by user
@@ -108,6 +115,19 @@ namespace PayTrack.Application.Services.Implementation
                 ReceiptUrl = string.Empty, // will be set in the repo later
                 PayoutType = payoutType,
                 BankAccountId = bankAccountId,
+                CreditorName = payoutType == PayoutType.NotYetPaid ? creditorName : null,
+                StatusHistory = isAlreadyPaid
+                    ?
+                    [
+                        new TransactionStatusHistory
+                        {
+                            ChangedById = userId,
+                            FromStatus = TransactionStatus.Paid,
+                            ToStatus = TransactionStatus.Paid,
+                            ChangedAt = DateTime.UtcNow,
+                        },
+                    ]
+                    : [],
             };
 
             return await this.repo.AddAsync(paymentRequest, receipt);
