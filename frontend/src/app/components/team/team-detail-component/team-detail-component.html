@@ -69,14 +69,14 @@
               <div class="budget-card__amounts">
                 <span class="budget-card__paid-label">
                   <span class="budget-card__dot budget-card__dot--paid"></span>
-                  Paid: {{ formatBudgetAmount(budget.paidAmount) }}
+                  Paid: {{ budget.paidAmount | euro }}
                 </span>
                 <span class="budget-card__approved-label">
                   <span class="budget-card__dot budget-card__dot--approved"></span>
-                  Approved: {{ formatBudgetAmount(budget.approvedAmount) }}
+                  Approved: {{ budget.approvedAmount | euro }}
                 </span>
                 <span class="budget-card__target-label">
-                  Target: {{ formatBudgetAmount(budget.targetAmount) }}
+                  Target: {{ budget.targetAmount | euro }}
                 </span>
                 @if (isOverBudget(budget)) {
                   <span class="budget-card__over-label">Over budget</span>
@@ -107,11 +107,11 @@
               <div class="budget-card__amounts">
                 <span class="budget-card__paid-label">
                   <span class="budget-card__dot budget-card__dot--paid"></span>
-                  Paid: {{ formatBudgetAmount(budget.paidAmount) }}
+                  Paid: {{ budget.paidAmount | euro }}
                 </span>
                 <span class="budget-card__approved-label">
                   <span class="budget-card__dot budget-card__dot--approved"></span>
-                  Approved: {{ formatBudgetAmount(budget.approvedAmount) }}
+                  Approved: {{ budget.approvedAmount | euro }}
                 </span>
               </div>
             </div>

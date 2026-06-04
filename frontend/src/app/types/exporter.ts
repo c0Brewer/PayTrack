@@ -52,7 +52,8 @@ export type GetDuplicatePaymentRequestsByUserOptions =
 
 export enum PayoutType {
   User = 0,
-  External = 1,
+  NotYetPaid = 1,
+  AlreadyPaid = 2,
 }
 
 export enum BudgetType {
@@ -62,7 +63,8 @@ export enum BudgetType {
 
 export const PayoutTypeLabels: Record<PayoutType, string> = {
   [PayoutType.User]: 'Pay to User',
-  [PayoutType.External]: 'Pay to Supplier',
+  [PayoutType.NotYetPaid]: 'Pay to Supplier',
+  [PayoutType.AlreadyPaid]: 'Already Paid',
 };
 
 // Roles

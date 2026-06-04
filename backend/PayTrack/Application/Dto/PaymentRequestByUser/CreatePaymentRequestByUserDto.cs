@@ -12,23 +12,47 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     /// <summary>
     /// Dto containing necessary information for creating a PaymentRequestByUser.
     /// </summary>
-    public sealed record class CreatePaymentRequestByUserDto(
-        [property: Required]
-        CreateTransactionDto Transaction,
+    public sealed class CreatePaymentRequestByUserDto
+    {
+        /// <summary>
+        /// Gets the base transaction data.
+        /// </summary>
+        [Required]
+        public CreateTransactionDto Transaction { get; init; } = null!;
 
-        [property: Required]
-        [property: MinLength(3)]
-        string InvoiceNumber,
+        /// <summary>
+        /// Gets the invoice number.
+        /// </summary>
+        [Required]
+        [MinLength(3)]
+        public string InvoiceNumber { get; init; } = string.Empty;
 
-        [property: OptionalMinLength(3)]
-        string? Comment,
+        /// <summary>
+        /// Gets an optional comment for the invoice.
+        /// </summary>
+        [OptionalMinLength(3)]
+        public string? Comment { get; init; } = string.Empty;
 
-        [property: Required]
-        IFormFile Receipt,
+        /// <summary>
+        /// Gets the uploaded receipt file.
+        /// </summary>
+        [Required]
+        public IFormFile Receipt { get; init; } = null!;
 
-        [property: Required]
-        PayoutType PayoutType,
+        /// <summary>
+        /// Gets the payout type.
+        /// </summary>
+        [Required]
+        public PayoutType PayoutType { get; init; }
 
-        [property: Required]
-        int? BankAccountId);
+        /// <summary>
+        /// Gets the name of the external creditor. Required when PayoutType is NotYetPaid.
+        /// </summary>
+        public string? CreditorName { get; init; }
+
+        /// <summary>
+        /// Gets the bank account id, required only for user payouts.
+        /// </summary>
+        public int? BankAccountId { get; init; }
+    }
 }

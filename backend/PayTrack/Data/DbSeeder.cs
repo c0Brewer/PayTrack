@@ -347,10 +347,7 @@ public static class DbSeeder
             operationsIncomeBudget,
             aerodynamicsTeam,
             softwareTeam,
-            marketingTeam,
-            manufacturingCostCentre,
-            electronicsCostCentre,
-            compositesCostCentre);
+            marketingTeam);
 
         await db.SaveChangesAsync();
     }
@@ -438,7 +435,7 @@ public static class DbSeeder
             "Sensor connectors from electronics supplier",
             "External supplier should be paid directly.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             4);
         await AddPresenterInvoiceIfMissingAsync(
@@ -451,7 +448,7 @@ public static class DbSeeder
             "Test Duplicate",
             "External supplier should be paid directly.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             4);
         await AddPresenterInvoiceIfMissingAsync(
@@ -477,7 +474,7 @@ public static class DbSeeder
             "Workshop machine service invoice",
             "External workshop invoice submitted for finance processing.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Declined,
             8);
         await AddPresenterInvoiceIfMissingAsync(
@@ -490,7 +487,7 @@ public static class DbSeeder
             "Prototype cable labels",
             "Freshly submitted and waiting for finance review.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Submitted,
             1);
 
@@ -507,7 +504,7 @@ public static class DbSeeder
             "Carbon fibre raw material order",
             "Bulk carbon roll purchase for monocoque layup.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             30,
             chassisBudget);
@@ -521,7 +518,7 @@ public static class DbSeeder
             "CNC milling service batch",
             "External machining service for frame brackets.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             22,
             chassisBudget);
@@ -552,7 +549,7 @@ public static class DbSeeder
             "Sensor harness and connector set",
             "Full wiring harness from specialist supplier.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             28,
             electronicsBudget);
@@ -566,7 +563,7 @@ public static class DbSeeder
             "PCB manufacturing batch",
             "Custom PCB order for sensor interface boards.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             18,
             electronicsBudget);
@@ -580,7 +577,7 @@ public static class DbSeeder
             "Microcontroller units and modules",
             "STM32 dev modules for embedded control system.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Approved,
             7,
             electronicsBudget);
@@ -597,7 +594,7 @@ public static class DbSeeder
             "Drivetrain component procurement",
             "Gearbox internals and differential housing.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             35,
             powertrainBudget);
@@ -611,7 +608,7 @@ public static class DbSeeder
             "Cooling system assembly parts",
             "Water pump, radiator and hose set.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Approved,
             12,
             powertrainBudget);
@@ -628,7 +625,7 @@ public static class DbSeeder
             "Battery cell module order",
             "Lithium pouch cells for accumulator pack.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             40,
             batteryBudget);
@@ -642,7 +639,7 @@ public static class DbSeeder
             "BMS electronics and contactors",
             "Battery management system boards and safety contactors.",
             "uploads/presentation-invoices/invoice-techstore-2026.png",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Approved,
             15,
             batteryBudget);
@@ -659,7 +656,7 @@ public static class DbSeeder
             "Wind tunnel session booking",
             "Full-day wind tunnel run at external facility.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             45,
             aeroBudget);
@@ -673,7 +670,7 @@ public static class DbSeeder
             "CFD simulation software licence",
             "Annual licence for aero simulation toolchain.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Paid,
             20,
             aeroBudget);
@@ -687,7 +684,7 @@ public static class DbSeeder
             "Front wing layup materials",
             "Prepreg carbon and core foam for front wing mould.",
             "uploads/presentation-invoices/invoice-consulting-2026.pdf",
-            PayoutType.External,
+            PayoutType.NotYetPaid,
             TransactionStatus.Approved,
             8,
             aeroBudget);
@@ -739,7 +736,7 @@ public static class DbSeeder
         {
             existingPaymentRequest.User = presenterUser;
             existingPaymentRequest.Team = team;
-            existingPaymentRequest.Budget = budget!;
+            existingPaymentRequest.Budget = budget;
             existingPaymentRequest.BudgetId = budget?.Id;
             existingPaymentRequest.Amount = amount;
             existingPaymentRequest.PurposeOfPayment = purposeOfPayment;
@@ -844,10 +841,7 @@ public static class DbSeeder
         Budget operationsIncomeBudget,
         Team aerodynamicsTeam,
         Team softwareTeam,
-        Team marketingTeam,
-        CostCentre manufacturingCostCentre,
-        CostCentre electronicsCostCentre,
-        CostCentre compositesCostCentre)
+        Team marketingTeam)
     {
         var presenterUser = await db.User
             .OrderBy(u => u.Id)

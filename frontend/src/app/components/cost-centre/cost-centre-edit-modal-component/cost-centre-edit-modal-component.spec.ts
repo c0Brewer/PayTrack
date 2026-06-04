@@ -193,11 +193,6 @@ describe('CostCentreEditModalComponent', () => {
     expect(component.hasBudgetFieldError('targetAmount')).toBe(false);
   });
 
-  it('formatBudgetAmount should return dash for null and formatted number otherwise', () => {
-    expect(component.formatBudgetAmount(null)).toBe('—');
-    expect(component.formatBudgetAmount(1500)).toBe('1.500');
-  });
-
   it('getTeamOptionLabel should append inactive label for inactive teams', () => {
     component.teams = [
       { id: 1, name: 'Alpha', isActive: true },

@@ -41,3 +41,14 @@ Inject `NotificationService`, call `.showSuccess(msg)` / `.showError(msg)`.
 ## DTOs
 
 Always import from `types/exporter.ts` (re-exports from `types/api-types.ts`).
+
+## Currency display
+
+Use `| euro` (from `app/pipes/euro.pipe.ts`) for all monetary values in templates. Outputs German format (`1.234,56 €`). Returns `—` for `null`/`undefined`. The `de-DE` locale is registered globally in `app.config.ts`.
+
+```html
+{{ transaction.amount | euro }}
+{{ budget.targetAmount | euro }}
+```
+
+Import `EuroPipe` in the component's `imports` array. Never use `| currency`, `| number`, raw amount bindings, or `formatBudgetAmount()` methods.

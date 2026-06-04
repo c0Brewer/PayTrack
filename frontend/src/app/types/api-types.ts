@@ -61,7 +61,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeTeam?: boolean;
+                    IncludeBankAccounts?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2587,8 +2590,9 @@ export interface components {
             /** Format: binary */
             receipt: string;
             payoutType: components["schemas"]["PayoutType"];
+            creditorName?: string | null;
             /** Format: int32 */
-            bankAccountId: number;
+            bankAccountId?: number | null;
         };
         CreateSeasonRequestDto: {
             name: string;
@@ -2732,6 +2736,7 @@ export interface components {
             payoutType: components["schemas"]["PayoutType"];
             hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
+            creditorName?: string | null;
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;
@@ -2748,7 +2753,7 @@ export interface components {
          * Format: int32
          * @enum {integer}
          */
-        PayoutType: 0 | 1;
+        PayoutType: 0 | 1 | 2;
         ProblemDetails: {
             type?: string | null;
             title?: string | null;

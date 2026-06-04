@@ -26,7 +26,15 @@ Enum on `PaymentRequestByUser` indicating money flow: `In` (incoming) or `Out` (
 
 ## TransactionStatus
 
-Lifecycle state of a Transaction: `Submitted → Approved → Paid` (primary happy path). Also: `Rejected`, `Reimbursed`.
+Lifecycle state of a Transaction: `Submitted → ChangesRequested ↔ Review → Approved → Paid` (primary happy path). Also: `Declined` (terminal). A `PaymentRequestByUser` submitted with `PayoutType = AlreadyPaid` initialises directly to `Paid`, bypassing the lifecycle.
+
+## PayoutType
+
+Enum on `PaymentRequestByUser` classifying how the payment is disbursed: `User = 0` (reimbursement to the submitting user — requires a bank account), `NotYetPaid = 1` (payment to an external creditor — requires CreditorName), `AlreadyPaid = 2` (documentation of a payment already made outside the system — status initialises to `Paid` at creation).
+
+## CreditorName
+
+The name of the external company to which a `NotYetPaid` payment must be made. Informal string; used for internal documentation and filtering. Required when `PayoutType = NotYetPaid`, absent for all other payout types.
 
 ## Team
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByUser;
+using PayTrack.Application.Dto.User;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -39,7 +40,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new() { Id = 2, Amount = 200, InvoiceNumber = "456" }
             };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.ValidateQuery(It.IsAny<GetPaymentRequestByUserQuery>(), It.IsAny<User>()))
                 .Returns(true);
@@ -73,7 +74,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var adminUser = new User { Id = 1, Role = Role.Admin };
             var entity = new PaymentRequestByUser { Id = 1, Amount = 100, InvoiceNumber = "123" };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.GetPaymentRequestByUserByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById?>()))
                 .ReturnsAsync(entity);
@@ -130,7 +131,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
@@ -144,7 +145,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int?>()))
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -174,14 +176,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // -----------------------
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent("MyComment"), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
-            content.Add(new StringContent("0"), "BankAccountId");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
+            content.Add(new StringContent("Test Company"), "CreditorName");
 
             // Act
             var response = await client.PostAsync("api/v1/transaction/user", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK, "response body: {0}", responseBody);
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
             result.Should().NotBeNull();
@@ -204,7 +207,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
 
             _factory.ServiceMock
@@ -218,7 +221,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string>(),
                     It.Is<string?>(comment => comment == null),
                     It.IsAny<PayoutType>(),
-                    It.IsAny<int?>()))
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -235,7 +239,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent(string.Empty), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
             content.Add(new StringContent("0"), "BankAccountId");
 
             // Act
@@ -266,7 +270,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Add(new StringContent(DateTime.Today.ToString("o")), "Transaction.PaidAt");
             content.Add(new StringContent("123"), "InvoiceNumber");
             content.Add(new StringContent("ab"), "Comment");
-            content.Add(new StringContent(((int)PayoutType.External).ToString()), "PayoutType");
+            content.Add(new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType");
             content.Add(new StringContent("0"), "BankAccountId");
 
             // Act
@@ -302,7 +306,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
 
             _factory.AuthServiceMock
-                .Setup(a => a.GetCurrentUser())
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
                 .ReturnsAsync(user);
             _factory.ServiceMock
                 .Setup(s => s.GetPaymentRequestByUserByIdAsync(7, null))
@@ -366,7 +370,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new(0, 0, "111", DateTime.Today),
                 "123",
                 null,
-                PayoutType.External,
+                PayoutType.NotYetPaid,
                 0
             );
 
@@ -417,7 +421,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 BudgetId = 5
             };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "ok"))
                 .ReturnsAsync(updated);
@@ -451,7 +455,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 FinancePaidAt = paymentDate,
             };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.MarkPaymentRequestByUserAsPaidAsync(
                     1,
@@ -491,7 +495,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 Status = TransactionStatus.Declined
             };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.DeclinePaymentRequestByUserAsync(1, adminUser.Id, "duplicate"))
                 .ReturnsAsync(updated);
@@ -521,7 +525,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 Status = TransactionStatus.ChangesRequested
             };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.RequestChangesPaymentRequestByUserAsync(1, adminUser.Id, "missing receipt"))
                 .ReturnsAsync(updated);
@@ -550,7 +554,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var invoice = new PaymentRequestByUser { Id = 1, InvoiceNumber = "123" };
             var fileBytes = new byte[] { 1, 2, 3 };
 
-            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
                 .Setup(s => s.GetPaymentRequestByUserByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById?>()))
                 .ReturnsAsync(invoice);

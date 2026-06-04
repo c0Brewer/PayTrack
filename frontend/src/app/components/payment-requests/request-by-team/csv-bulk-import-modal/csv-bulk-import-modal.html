@@ -191,7 +191,7 @@
                   />
                 }
               </td>
-              <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
+              <td class="col-amount">{{ row.amount | euro }}</td>
             </tr>
           }
         </tbody>
@@ -246,7 +246,7 @@
               [class.row-error]="row.status === 'error'"
             >
               <td>{{ row.displayName ?? row.rawName }}</td>
-              <td class="col-amount">{{ row.amount | number: '1.2-2' }}</td>
+              <td class="col-amount">{{ row.amount | euro }}</td>
               <td class="status-cell">
                 <span class="status-content">
                   @if (row.status === 'success') {

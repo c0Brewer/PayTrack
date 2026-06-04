@@ -62,8 +62,7 @@
               <td>{{ budget.name }}</td>
               <td>{{ getSeasonName(budget.seasonId) }}</td>
               <td>{{ getCostCentreName(budget.teamId) }}</td>
-              <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
-              <td>{{ budget.targetAmount }}</td>
+              <td>{{ budget.targetAmount | euro }}</td>
               <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
               <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
               <td>
@@ -96,7 +95,7 @@
               <td>{{ budget.name }}</td>
               <td>{{ getSeasonName(budget.seasonId) }}</td>
               <td>{{ getTeamName(budget.teamId) }}</td>
-              <td>{{ formatBudgetAmount(budget.targetAmount) }}</td>
+              <td>{{ budget.targetAmount | euro }}</td>
               <td>{{ budget.periodStart }}</td>
               <td>{{ budget.periodEnd }}</td>
               <td>

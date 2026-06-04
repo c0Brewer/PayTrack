@@ -60,14 +60,13 @@ export class TeamListComponent {
   }
 
   getBudgetDisplayValue(budget: TeamBudget): string {
-    const amount = this.formatBudgetAmount(budget.targetAmount);
-    const suffix = budget.targetAmount != null ? ' €' : '';
-    return `${this.getCostCentreName(budget.costCentreId)}: ${amount}${suffix}`;
-  }
-
-  formatBudgetAmount(amount: number | null | undefined): string {
-    if (amount == null) return '—';
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
+    const formatted =
+      budget.targetAmount == null
+        ? '—'
+        : new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(
+            budget.targetAmount,
+          );
+    return `${this.getCostCentreName(budget.costCentreId)}: ${formatted}`;
   }
 
   hasHiddenCurrentBudgets(team: TeamDto): boolean {

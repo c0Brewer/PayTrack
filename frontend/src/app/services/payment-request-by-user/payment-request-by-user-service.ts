@@ -14,6 +14,7 @@ import {
   MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  PayoutType,
   RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
@@ -85,7 +86,12 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    if (updateRequest.payoutType === PayoutType.User && updateRequest.bankAccountId != null) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);

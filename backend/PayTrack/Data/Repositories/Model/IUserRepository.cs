@@ -33,8 +33,9 @@ namespace PayTrack.Data.Repositories.Model
         /// Gets a specific User by their Email.
         /// </summary>
         /// <param name="email">Email of User to find.</param>
+        /// <param name="query">Optional query options (e.g. IncludeTeam).</param>
         /// <returns>User with given Email.</returns>
-        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByEmailAsync(string email, GetUserQueryById? query = null);
 
         /// <summary>
         /// Stores a User to the Database.

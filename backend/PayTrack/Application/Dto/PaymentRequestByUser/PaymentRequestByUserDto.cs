@@ -58,5 +58,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
 
         bool HasPotentialDuplicate,
 
-        BankAccountDto? BankAccount);
+        BankAccountDto? BankAccount,
+
+        string? CreditorName);
 }
