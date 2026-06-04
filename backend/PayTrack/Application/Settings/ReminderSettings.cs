@@ -14,7 +14,7 @@ namespace PayTrack.Application.Settings
         /// <summary>
         /// Gets or sets the number of days before the due date at which reminders are sent.
         /// </summary>
-        public int[] DaysBeforeDue { get; set; } = [7, 2, 1];
+        public int[] DaysBeforeDue { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the UTC hour (0–23) at which the reminder job runs each day.
