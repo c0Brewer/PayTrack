@@ -27,12 +27,15 @@ namespace PayTrack.Application.Services.Implementation
             var results = new List<BankStatementMatchResultDto>();
 
             // Only match against Approved transactions; always includes User via ApplyBasePostFilters
-            var (approvedTransactions, _) = await this.repo.GetAllAsync(
+            var (transactions, _) = await this.repo.GetAllAsync(
                 new GetTransactionQuery
                 {
                     // Status = TransactionStatus.Approved,
                     IncludeTeam = true,
                 });
+
+            // Ignore already paid transactions
+            transactions = [.. transactions.Where(t => t.Status != TransactionStatus.Paid)];
 
             // Load approved user payment requests with bank accounts for IBAN matching and display
             var (userRequests, _) = await this.repo.GetAllAsync(
@@ -50,7 +53,7 @@ namespace PayTrack.Application.Services.Implementation
 
             foreach (var entry in entries)
             {
-                var bestMatch = this.FindBestMatch(entry, approvedTransactions, ibanByTransactionId);
+                var bestMatch = this.FindBestMatch(entry, transactions, ibanByTransactionId);
 
                 var matchedDto = bestMatch?.Transaction != null
                     ? MapToMatchedTransactionDto(bestMatch.Transaction, userRequestById)
@@ -209,7 +212,7 @@ namespace PayTrack.Application.Services.Implementation
                 ? Math.Abs((entry.Booking.Date - transaction.PaidAt.Value.Date).Days)
                 : null;
 
-            if (bookingDaysDiff.HasValue && bookingDaysDiff.Value <= 3)
+            if (bookingDaysDiff <= 3)
             {
                 score++;
             }
@@ -228,12 +231,9 @@ namespace PayTrack.Application.Services.Implementation
 
             // +2: Partner name fuzzy match with user's name (>60% similarity)
             // User is always loaded by the repository — no extra query needed.
-            if (!string.IsNullOrEmpty(entry.PartnerName) && !string.IsNullOrEmpty(transaction.User?.Name))
+            if (!string.IsNullOrEmpty(entry.PartnerName) && !string.IsNullOrEmpty(transaction.User?.Name) && this.CalculateStringSimilarity(entry.PartnerName, transaction.User.Name) > 0.6)
             {
-                if (this.CalculateStringSimilarity(entry.PartnerName, transaction.User.Name) > 0.6)
-                {
-                    score += 2;
-                }
+                score += 2;
             }
 
             // +1: Near-amount (within €1 tolerance) — only when NOT exact and booking within ±10 days.

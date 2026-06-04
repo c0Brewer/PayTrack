@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using PayTrack.Application.Dto.BankStatement;
+using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
@@ -17,6 +18,9 @@ namespace PayTrack.Tests.UnitTests.Services
         public BankStatementMatchingServiceTests()
         {
             this.repoMock = new Mock<ITransactionRepository>();
+            this.repoMock
+                .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByUserQuery>()))
+                .ReturnsAsync((new List<PaymentRequestByUser>(), 0));
             this.service = new BankStatementMatchingService(this.repoMock.Object);
         }
 

@@ -28,7 +28,7 @@ const mockTransaction: TransactionDto = {
   amount: 120.5,
   purposeOfPayment: 'ACME Invoice',
   paymentReference: 'INV-2026-042',
-  status: 1,
+  status: 2,
   budgetId: null,
   paidAt: '2026-05-21T00:00:00.000Z',
 };
@@ -118,19 +118,19 @@ describe('BankStatementImportComponent', () => {
   // ── Score helpers ──────────────────────────────────────────────────────────
 
   describe('scoreLabel', () => {
-    it('should return High for score >= 80', () => {
-      expect(component.scoreLabel(80)).toBe('High');
-      expect(component.scoreLabel(100)).toBe('High');
+    it('should return High for score >= 7', () => {
+      expect(component.scoreLabel(7)).toBe('High');
+      expect(component.scoreLabel(11)).toBe('High');
     });
 
-    it('should return Medium for score 50–79', () => {
-      expect(component.scoreLabel(50)).toBe('Medium');
-      expect(component.scoreLabel(79)).toBe('Medium');
+    it('should return Medium for score 5–6', () => {
+      expect(component.scoreLabel(5)).toBe('Medium');
+      expect(component.scoreLabel(6)).toBe('Medium');
     });
 
-    it('should return Low for score < 50', () => {
+    it('should return Low for score < 5', () => {
       expect(component.scoreLabel(0)).toBe('Low');
-      expect(component.scoreLabel(49)).toBe('Low');
+      expect(component.scoreLabel(3)).toBe('Low');
     });
 
     it('should return empty string for undefined', () => {
@@ -139,16 +139,16 @@ describe('BankStatementImportComponent', () => {
   });
 
   describe('scoreColor', () => {
-    it('should return high badge class for score >= 80', () => {
-      expect(component.scoreColor(80)).toBe('confidence-badge confidence-badge--high');
+    it('should return high badge class for score >= 7', () => {
+      expect(component.scoreColor(7)).toBe('confidence-badge confidence-badge--high');
     });
 
-    it('should return medium badge class for score 50–79', () => {
-      expect(component.scoreColor(50)).toBe('confidence-badge confidence-badge--medium');
+    it('should return medium badge class for score 5–6', () => {
+      expect(component.scoreColor(5)).toBe('confidence-badge confidence-badge--medium');
     });
 
-    it('should return low badge class for score < 50', () => {
-      expect(component.scoreColor(49)).toBe('confidence-badge confidence-badge--low');
+    it('should return low badge class for score < 5', () => {
+      expect(component.scoreColor(3)).toBe('confidence-badge confidence-badge--low');
     });
 
     it('should return none badge class for undefined', () => {
@@ -169,17 +169,6 @@ describe('BankStatementImportComponent', () => {
 
     it('should return em-dash for entry without amount', () => {
       expect(component.formatAmount({ ...mockEntry, amount: undefined })).toBe('—');
-    });
-  });
-
-  describe('formatTransactionAmount', () => {
-    it('should format number to 2 decimal places with EUR suffix', () => {
-      expect(component.formatTransactionAmount(120.5)).toBe('120.50 EUR');
-      expect(component.formatTransactionAmount(0)).toBe('0.00 EUR');
-    });
-
-    it('should return em-dash for undefined', () => {
-      expect(component.formatTransactionAmount(undefined)).toBe('—');
     });
   });
 

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PayTrack.Application.Dto.BankStatement;
-using PayTrack.Application.Dto.Transaction;
+using PayTrack.Data.Entities;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -30,16 +30,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             ReceiverReference = "INV-2026-042",
         };
 
-        private static readonly TransactionDto SampleTransactionDto = new()
+        private static readonly BankStatementMatchedTransactionDto SampleMatchedTransactionDto = new()
         {
             Id = 7,
-            UserId = 1,
-            TeamId = 2,
             Amount = 120.50m,
             PurposeOfPayment = "ACME Invoice",
             PaymentReference = "INV-2026-042",
             Status = TransactionStatus.Approved,
             PaidAt = new DateTime(2026, 5, 21, 0, 0, 0, DateTimeKind.Utc),
+            UserName = "Test User",
         };
 
         // ── POST /api/v1/transaction/bank-statement-matches ───────────────────
@@ -50,7 +49,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Arrange
             var matchResponse = new BankStatementMatchResponseDto(
             [
-                new BankStatementMatchResultDto(SampleEntry, HasMatch: true, SampleTransactionDto, MatchScore: 85),
+                new BankStatementMatchResultDto(SampleEntry, HasMatch: true, SampleMatchedTransactionDto, MatchScore: 85),
             ]);
 
             this.factory.AuthServiceMock

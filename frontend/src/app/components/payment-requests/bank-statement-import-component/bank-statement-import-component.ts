@@ -35,7 +35,7 @@ export class BankStatementImportComponent {
   constructor(
     private readonly bankStatementService: BankStatementService,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   // ── state ──────────────────────────────────────────────────────────────────
   phase = signal<Phase>('upload');
@@ -60,9 +60,7 @@ export class BankStatementImportComponent {
   nonApprovedMatches = computed(() =>
     this.results().filter(
       (r) =>
-        r.hasMatch &&
-        !r.skipped &&
-        r.matchedTransaction?.status !== TransactionStatus.Approved,
+        r.hasMatch && !r.skipped && r.matchedTransaction?.status !== TransactionStatus.Approved,
     ),
   );
 
@@ -120,12 +118,12 @@ export class BankStatementImportComponent {
         : undefined,
       amount: r.amount
         ? {
-          value:
-            r.amount.precision != null && r.amount.value != null
-              ? r.amount.value / Math.pow(10, r.amount.precision)
-              : r.amount.value,
-          currency: r.amount.currency,
-        }
+            value:
+              r.amount.precision != null && r.amount.value != null
+                ? r.amount.value / Math.pow(10, r.amount.precision)
+                : r.amount.value,
+            currency: r.amount.currency,
+          }
         : undefined,
       receiverReference: r.receiverReference,
       reference: r.reference,
