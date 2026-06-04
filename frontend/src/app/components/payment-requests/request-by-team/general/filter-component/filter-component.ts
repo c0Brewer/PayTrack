@@ -2,11 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import { UserService } from '../../../../../services/user/user-service';
 import {
-  CostCentreDto,
   GetPaymentRequestsByTeamOptions,
   TEAM_REQUEST_ALLOWED_STATUSES,
   TeamDto,
@@ -14,10 +12,6 @@ import {
   TransactionStatusLabels,
   UserDto,
 } from '../../../../../types/exporter';
-
-export type TeamRequestFilterOptions = GetPaymentRequestsByTeamOptions & {
-  CostCentreId?: number;
-};
 
 @Component({
   selector: 'app-team-request-filter-component',
@@ -30,14 +24,12 @@ export class TeamRequestFilterComponent implements OnInit {
   @Input() limit: number = 10;
 
   @Input() showTeamFilter: boolean = true;
-  @Input() showCostCentreFilter: boolean = true;
   @Input() showUserFilter: boolean = true;
 
-  @Output() updateFilter = new EventEmitter<TeamRequestFilterOptions>();
+  @Output() updateFilter = new EventEmitter<GetPaymentRequestsByTeamOptions>();
   @Output() limitChange = new EventEmitter<number>();
 
   teams: TeamDto[] = [];
-  costCentres: CostCentreDto[] = [];
   users: UserDto[] = [];
 
   filterPurpose: string = '';
@@ -47,7 +39,6 @@ export class TeamRequestFilterComponent implements OnInit {
   filterMaxDueDate: string = '';
   filterStatus: TransactionStatus | undefined = undefined;
   filterTeamId: number | undefined = undefined;
-  filterCostCentreId: number | undefined = undefined;
   filterUserId: number | undefined = undefined;
 
   private readonly filterPurposeSubject = new Subject<string>();
@@ -57,7 +48,6 @@ export class TeamRequestFilterComponent implements OnInit {
   private readonly filterMaxDueDateSubject = new Subject<string>();
   private readonly filterStatusSubject = new Subject<TransactionStatus | undefined>();
   private readonly filterTeamSubject = new Subject<number | undefined>();
-  private readonly filterCostCentreSubject = new Subject<number | undefined>();
   private readonly filterUserSubject = new Subject<number | undefined>();
 
   TransactionStatus = TransactionStatus;
@@ -66,7 +56,6 @@ export class TeamRequestFilterComponent implements OnInit {
 
   constructor(
     private readonly teamService: TeamService,
-    private readonly costCentreService: CostCentreService,
     private readonly userService: UserService,
   ) {}
 
@@ -75,15 +64,6 @@ export class TeamRequestFilterComponent implements OnInit {
       this.teamService.getTeams({ Limit: 1000 }).subscribe({
         next: (data) => {
           this.teams = data?.items ?? [];
-        },
-        error: () => {},
-      });
-    }
-
-    if (this.showCostCentreFilter) {
-      this.costCentreService.getCostCentres({ Limit: 1000 }).subscribe({
-        next: (data) => {
-          this.costCentres = data?.items ?? [];
         },
         error: () => {},
       });
@@ -133,11 +113,6 @@ export class TeamRequestFilterComponent implements OnInit {
       this.emitFilter();
     });
 
-    this.filterCostCentreSubject.pipe(debounceTime(100)).subscribe((value) => {
-      this.filterCostCentreId = value;
-      this.emitFilter();
-    });
-
     this.filterUserSubject.pipe(debounceTime(100)).subscribe((value) => {
       this.filterUserId = value;
       this.emitFilter();
@@ -148,7 +123,7 @@ export class TeamRequestFilterComponent implements OnInit {
     this.updateFilter.emit(this.getFilterOptions());
   }
 
-  getFilterOptions(): TeamRequestFilterOptions {
+  getFilterOptions(): GetPaymentRequestsByTeamOptions {
     return {
       PurposeOfPayment: this.filterPurpose || undefined,
       MinAmount: this.filterMinAmount ? Number(this.filterMinAmount) : undefined,
@@ -157,7 +132,6 @@ export class TeamRequestFilterComponent implements OnInit {
       MaxDueDate: this.filterMaxDueDate || undefined,
       Status: this.filterStatus,
       TeamId: this.filterTeamId,
-      CostCentreId: this.filterCostCentreId,
       UserId: this.filterUserId,
       Limit: undefined,
       Offset: undefined,
@@ -192,11 +166,6 @@ export class TeamRequestFilterComponent implements OnInit {
   onTeamChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filterTeamSubject.next(value !== '' ? Number(value) : undefined);
-  }
-
-  onCostCentreChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.filterCostCentreSubject.next(value !== '' ? Number(value) : undefined);
   }
 
   onUserChange(event: Event): void {

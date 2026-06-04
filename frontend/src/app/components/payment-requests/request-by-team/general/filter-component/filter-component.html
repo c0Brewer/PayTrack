@@ -38,15 +38,6 @@
     />
   </div>
 
-  @if (showCostCentreFilter) {
-    <select (change)="onCostCentreChange($event)">
-      <option value="">All cost centres</option>
-      @for (cc of costCentres; track cc.id) {
-        <option [value]="cc.id">{{ cc.name }}</option>
-      }
-    </select>
-  }
-
   @if (showUserFilter) {
     <select (change)="onUserChange($event)">
       <option value="">All users</option>

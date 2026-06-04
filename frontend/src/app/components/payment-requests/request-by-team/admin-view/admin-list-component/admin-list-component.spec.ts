@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../../services/team/team-service';
@@ -36,10 +35,6 @@ describe('TeamRequestsComponent', () => {
     getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
   };
 
-  const costCentreServiceMock = {
-    getCostCentres: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
-  };
-
   const userServiceMock = {
     getUser: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
   };
@@ -55,7 +50,6 @@ describe('TeamRequestsComponent', () => {
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
         { provide: UserService, useValue: userServiceMock },
       ],
     }).compileComponents();

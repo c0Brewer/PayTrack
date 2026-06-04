@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import { UserService } from '../../../../../services/user/user-service';
 
@@ -15,12 +14,6 @@ describe('TeamRequestFilterComponent', () => {
     getTeams: vi.fn().mockReturnValue(of({ items: [{ id: 1, name: 'Team A' }], totalCount: 1 })),
   };
 
-  const costCentreServiceMock = {
-    getCostCentres: vi
-      .fn()
-      .mockReturnValue(of({ items: [{ id: 1, name: 'CC-1' }], totalCount: 1 })),
-  };
-
   const userServiceMock = {
     getUser: vi.fn().mockReturnValue(of({ items: [{ id: 1, name: 'Alice' }], totalCount: 1 })),
   };
@@ -32,7 +25,6 @@ describe('TeamRequestFilterComponent', () => {
       imports: [TeamRequestFilterComponent],
       providers: [
         { provide: TeamService, useValue: teamServiceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
         { provide: UserService, useValue: userServiceMock },
       ],
     }).compileComponents();
@@ -50,19 +42,6 @@ describe('TeamRequestFilterComponent', () => {
     fixture.detectChanges();
     expect(teamServiceMock.getTeams).toHaveBeenCalled();
     expect(component.teams).toHaveLength(1);
-  });
-
-  it('should load cost centres when showCostCentreFilter is true', () => {
-    component.showCostCentreFilter = true;
-    fixture.detectChanges();
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
-    expect(component.costCentres).toHaveLength(1);
-  });
-
-  it('should not load cost centres when showCostCentreFilter is false', () => {
-    component.showCostCentreFilter = false;
-    fixture.detectChanges();
-    expect(costCentreServiceMock.getCostCentres).not.toHaveBeenCalled();
   });
 
   it('should load users when showUserFilter is true', () => {
