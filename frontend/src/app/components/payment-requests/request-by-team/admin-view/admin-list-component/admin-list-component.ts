@@ -105,4 +105,8 @@ export class TeamRequestsComponent implements OnInit {
       this.loadRequests();
     }
   }
+
+  navigateBankStatementUpload(): void {
+    this.router.navigate(['/bank-statement-upload']);
+  }
 }

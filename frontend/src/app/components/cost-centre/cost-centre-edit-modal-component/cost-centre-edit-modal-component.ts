@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { EuroPipe } from '../../../pipes/euro.pipe';
 import {
   BudgetDto,
   BudgetType,
@@ -37,7 +38,7 @@ const budgetFields: readonly BudgetField[] = [
 
 @Component({
   selector: 'app-cost-centre-edit-modal-component',
-  imports: [DatePipe, FormsModule, ModalComponent],
+  imports: [DatePipe, EuroPipe, FormsModule, ModalComponent],
   templateUrl: './cost-centre-edit-modal-component.html',
   styleUrl: './cost-centre-edit-modal-component.scss',
 })
@@ -215,11 +216,6 @@ export class CostCentreEditModalComponent implements OnChanges {
 
         return '';
     }
-  }
-
-  formatBudgetAmount(amount: number | null | undefined): string {
-    if (amount == null) return '—';
-    return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(amount);
   }
 
   private markAllBudgetFieldsTouched(): void {

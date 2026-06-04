@@ -32,7 +32,7 @@
   }
 
   .description-col {
-    width: 40%;
+    width: 30%;
   }
 
   .members-col,
@@ -41,9 +41,13 @@
   }
 
   .actions-col {
-    text-align: left;
-    width: 10%;
+    text-align: right;
+    width: 20%;
     white-space: nowrap;
+
+    .btn + .btn {
+      margin-left: v.$size-xs;
+    }
   }
 
 

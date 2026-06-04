@@ -14,6 +14,7 @@ import {
   MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  PayoutType,
   RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
@@ -25,10 +26,12 @@ import { AuthService } from '../auth/auth-service';
 export class PaymentRequestByUserService {
   constructor(private readonly authService: AuthService) {}
 
+  private getApiUrl(path: string): string {
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   private getUploadUrl(): string {
-    return environment.apiBaseUrl
-      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
-      : '/api/v1/transaction/user';
+    return this.getApiUrl('/api/v1/transaction/user');
   }
 
   public getPaymentRequestsByUser(
@@ -83,7 +86,12 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    if (updateRequest.payoutType === PayoutType.User && updateRequest.bankAccountId != null) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
@@ -108,7 +116,7 @@ export class PaymentRequestByUserService {
   }
 
   public getDuplicatePaymentRequestsByUser(
-    queryOptions: GetDuplicatePaymentRequestsByUserOptions,
+    queryOptions: GetDuplicatePaymentRequestsByUserOptions & { PaymentRequestByUserId?: number },
   ): Observable<DuplicatePaymentRequestByUserDto[]> {
     const promise = client
       .GET('/api/v1/transaction/user/duplicate', {
@@ -127,6 +135,46 @@ export class PaymentRequestByUserService {
 
         return data;
       });
+
+    return from(promise);
+  }
+
+  public deletePaymentRequestByUser(id: number): Observable<void> {
+    const promise = fetch(this.getApiUrl(`/api/v1/transaction/user/${id}`), {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
+
+    return from(promise);
+  }
+
+  public dismissDuplicatePaymentRequestByUser(
+    paymentRequestByUserId: number,
+    duplicatePaymentRequestByUserId: number,
+  ): Observable<void> {
+    const promise = fetch(
+      this.getApiUrl(
+        `/api/v1/transaction/user/${paymentRequestByUserId}/duplicate/${duplicatePaymentRequestByUserId}/dismiss`,
+      ),
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
 
     return from(promise);
   }

@@ -142,6 +142,33 @@ namespace PayTrack.Migrations
                     b.ToTable("CostCentres");
                 });
 
+            modelBuilder.Entity("PayTrack.Data.Entities.DismissedDuplicatePaymentRequestByUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FirstPaymentRequestByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondPaymentRequestByUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SecondPaymentRequestByUserId");
+
+                    b.HasIndex("FirstPaymentRequestByUserId", "SecondPaymentRequestByUserId")
+                        .IsUnique();
+
+                    b.ToTable("DismissedDuplicatePaymentRequestsByUser");
+                });
+
             modelBuilder.Entity("PayTrack.Data.Entities.Season", b =>
                 {
                     b.Property<int>("Id")
@@ -212,10 +239,10 @@ namespace PayTrack.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("FinancePaidAt")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DueDate")
+                    b.Property<DateTime?>("FinancePaidAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("PaidAt")
@@ -388,6 +415,10 @@ namespace PayTrack.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<string>("CreditorName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -443,6 +474,25 @@ namespace PayTrack.Migrations
                     b.Navigation("Season");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("PayTrack.Data.Entities.DismissedDuplicatePaymentRequestByUser", b =>
+                {
+                    b.HasOne("PayTrack.Data.Entities.PaymentRequestByUser", "FirstPaymentRequestByUser")
+                        .WithMany()
+                        .HasForeignKey("FirstPaymentRequestByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PayTrack.Data.Entities.PaymentRequestByUser", "SecondPaymentRequestByUser")
+                        .WithMany()
+                        .HasForeignKey("SecondPaymentRequestByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FirstPaymentRequestByUser");
+
+                    b.Navigation("SecondPaymentRequestByUser");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Transaction", b =>

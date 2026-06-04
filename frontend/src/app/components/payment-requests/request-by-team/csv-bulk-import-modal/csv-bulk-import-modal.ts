@@ -20,6 +20,7 @@ import {
 import Papa from 'papaparse';
 import { Subject, takeUntil } from 'rxjs';
 
+import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
@@ -67,7 +68,7 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-csv-bulk-import-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
+  imports: [CommonModule, EuroPipe, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
   templateUrl: './csv-bulk-import-modal.html',
   styleUrl: './csv-bulk-import-modal.scss',
 })

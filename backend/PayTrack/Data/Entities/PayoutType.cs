@@ -15,8 +15,14 @@ namespace PayTrack.Data.Entities
         User,
 
         /// <summary>
-        /// The Money should get paid out to the issuer of the invoice.
+        /// The invoice has not been paid yet and should be paid directly to the external creditor.
         /// </summary>
-        External,
+        NotYetPaid,
+
+        /// <summary>
+        /// The invoice has already been paid outside the system and is submitted for documentation purposes only.
+        /// Status is automatically set to Paid on creation.
+        /// </summary>
+        AlreadyPaid,
     }
 }

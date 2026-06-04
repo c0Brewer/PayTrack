@@ -7,6 +7,7 @@ using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
+using PayTrack.Data.Helpers;
 using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Application.Services.Implementation
@@ -20,7 +21,6 @@ namespace PayTrack.Application.Services.Implementation
         ICostCentreService _costCentreService,
         IBudgetService _budgetService) : IPaymentRequestByUserService
     {
-        private const int DuplicateMatchThreshold = 1;
         private const int MaxDuplicateResults = 10;
 
         /// <summary>
@@ -57,7 +57,8 @@ namespace PayTrack.Application.Services.Implementation
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int? bankAccountId)
+            int? bankAccountId,
+            string? creditorName)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
@@ -83,9 +84,15 @@ namespace PayTrack.Application.Services.Implementation
             }
             else
             {
-                // Ensure bank account is null if payout type is external
                 bankAccountId = null;
             }
+
+            if (payoutType == PayoutType.NotYetPaid && string.IsNullOrWhiteSpace(creditorName))
+            {
+                throw new InvalidStateException("Creditor name is required when the payout type is NotYetPaid");
+            }
+
+            var isAlreadyPaid = payoutType == PayoutType.AlreadyPaid;
 
             var paymentRequest = new PaymentRequestByUser
             {
@@ -94,7 +101,7 @@ namespace PayTrack.Application.Services.Implementation
                 Amount = amount,
                 PurposeOfPayment = purposeOfPayment,
                 PaymentReference = string.Empty, // Payment reference will be set later by the finance team
-                Status = TransactionStatus.Submitted,
+                Status = isAlreadyPaid ? TransactionStatus.Paid : TransactionStatus.Submitted,
                 BudgetId = null, // Budget will be set later by the finance team
                 TeamId = team.Id,
                 PaymentDirection = PaymentDirection.Out, // Payment direction is out for payment requests by user
@@ -108,6 +115,19 @@ namespace PayTrack.Application.Services.Implementation
                 ReceiptUrl = string.Empty, // will be set in the repo later
                 PayoutType = payoutType,
                 BankAccountId = bankAccountId,
+                CreditorName = payoutType == PayoutType.NotYetPaid ? creditorName : null,
+                StatusHistory = isAlreadyPaid
+                    ?
+                    [
+                        new TransactionStatusHistory
+                        {
+                            ChangedById = userId,
+                            FromStatus = TransactionStatus.Paid,
+                            ToStatus = TransactionStatus.Paid,
+                            ChangedAt = DateTime.UtcNow,
+                        },
+                    ]
+                    : [],
             };
 
             return await this.repo.AddAsync(paymentRequest, receipt);
@@ -117,13 +137,45 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount)
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber = null,
+            int? paymentRequestByUserId = null)
         {
-            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(userId, teamId, amount);
+            var matchUserId = userId;
+            var matchTeamId = teamId;
+            var matchAmount = amount;
+            var matchPaidAt = paidAt;
+            var matchInvoiceNumber = invoiceNumber;
+
+            if (paymentRequestByUserId.HasValue)
+            {
+                var sourcePaymentRequest = await this.repo.GetByIdAsync(paymentRequestByUserId.Value, new GetPaymentRequestByUserQueryById())
+                    ?? throw new NotFoundException("PaymentRequestByUser could not be found");
+
+                if (!sourcePaymentRequest.PaidAt.HasValue)
+                {
+                    throw new InvalidStateException("Duplicate lookup is missing paid date.");
+                }
+
+                matchUserId = sourcePaymentRequest.UserId;
+                matchTeamId = sourcePaymentRequest.TeamId;
+                matchAmount = sourcePaymentRequest.Amount;
+                matchPaidAt = sourcePaymentRequest.PaidAt.Value;
+                matchInvoiceNumber = sourcePaymentRequest.InvoiceNumber;
+            }
+
+            var duplicateCandidates = await this.repo.GetPotentialDuplicatesAsync(
+                matchUserId,
+                matchTeamId,
+                matchAmount,
+                matchPaidAt,
+                matchInvoiceNumber,
+                paymentRequestByUserId);
 
             return duplicateCandidates
-                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, userId, teamId, amount))
-                .Where(duplicateMatch => duplicateMatch.Score >= DuplicateMatchThreshold)
+                .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt, matchInvoiceNumber))
+                .Where(duplicateMatch => duplicateMatch.Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
                 .ThenByDescending(duplicateMatch => duplicateMatch.PaymentRequestByUser.CreatedAt)
                 .Take(MaxDuplicateResults)
@@ -196,6 +248,28 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task DeletePaymentRequestByUserAsync(int id)
+        {
+            var wasDeleted = await this.repo.DeletePaymentRequestByUserAsync(id);
+
+            if (!wasDeleted)
+            {
+                throw new NotFoundException("PaymentRequestByUser could not be found");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
+        {
+            if (paymentRequestByUserId == duplicatePaymentRequestByUserId)
+            {
+                throw new InvalidStateException("A payment request cannot be a duplicate of itself.");
+            }
+
+            await this.repo.DismissDuplicatePaymentRequestByUserAsync(paymentRequestByUserId, duplicatePaymentRequestByUserId);
         }
 
         /// <inheritdoc/>
@@ -449,28 +523,22 @@ namespace PayTrack.Application.Services.Implementation
             PaymentRequestByUser paymentRequestByUser,
             int userId,
             int teamId,
-            decimal amount)
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber)
         {
-            bool isAmountAndUserMatch = paymentRequestByUser.UserId == userId && paymentRequestByUser.Amount == amount;
-            bool isAmountAndTeamMatch = paymentRequestByUser.TeamId == teamId && paymentRequestByUser.Amount == amount;
-
-            int score = 0;
-
-            if (isAmountAndUserMatch)
-            {
-                score++;
-            }
-
-            if (isAmountAndTeamMatch)
-            {
-                score++;
-            }
+            var duplicateScore = DuplicatePaymentRequestByUserScorer.Calculate(
+                paymentRequestByUser,
+                userId,
+                teamId,
+                amount,
+                paidAt,
+                invoiceNumber);
 
             return new DuplicatePaymentRequestByUserMatch(
                 paymentRequestByUser,
-                score,
-                isAmountAndUserMatch,
-                isAmountAndTeamMatch);
+                duplicateScore.Score,
+                duplicateScore.MatchedFields);
         }
     }
 }

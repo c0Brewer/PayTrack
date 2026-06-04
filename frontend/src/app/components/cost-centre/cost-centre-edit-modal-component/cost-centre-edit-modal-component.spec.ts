@@ -162,6 +162,8 @@ describe('CostCentreEditModalComponent', () => {
           periodEnd: '2026-12-31',
           type: 0,
           transactionIds: [],
+          paidAmount: 500,
+          approvedAmount: 200,
         },
       ],
     };
@@ -189,11 +191,6 @@ describe('CostCentreEditModalComponent', () => {
 
     expect(component.getBudgetFieldError('targetAmount')).toBe('');
     expect(component.hasBudgetFieldError('targetAmount')).toBe(false);
-  });
-
-  it('formatBudgetAmount should return dash for null and formatted number otherwise', () => {
-    expect(component.formatBudgetAmount(null)).toBe('—');
-    expect(component.formatBudgetAmount(1500)).toBe('1.500');
   });
 
   it('getTeamOptionLabel should append inactive label for inactive teams', () => {

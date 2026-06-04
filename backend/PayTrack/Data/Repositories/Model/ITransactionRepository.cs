@@ -88,13 +88,29 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByTeam> AddAsync(PaymentRequestByTeam transaction);
 
         /// <summary>
-        /// Gets potential duplicate PaymentRequestByUser entries based on exact duplicate criteria.
+        /// Gets candidate PaymentRequestByUser entries for weighted duplicate scoring.
         /// </summary>
         /// <param name="userId">Current user id.</param>
         /// <param name="teamId">Team id.</param>
         /// <param name="amount">Amount.</param>
-        /// <returns>List of potential duplicates.</returns>
-        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(int userId, int teamId, decimal amount);
+        /// <param name="paidAt">Paid-at day.</param>
+        /// <param name="invoiceNumber">Optional invoice number.</param>
+        /// <param name="paymentRequestByUserId">Optional source payment request id. Dismissed pairs with this id are excluded.</param>
+        /// <returns>List of potential duplicate candidates.</returns>
+        Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(
+            int userId,
+            int teamId,
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber = null,
+            int? paymentRequestByUserId = null);
+
+        /// <summary>
+        /// Updates a PaymentRequestByUser using the given input.
+        /// </summary>
+        /// <param name="transaction">Transaction object to update.</param>
+        /// <returns>Instance of created PaymentRequestByUser object.</returns>
+        Task<Transaction> UpdateAsync(Transaction transaction);
 
         /// <summary>
         /// Updates a PaymentRequestByUser using the given input.
@@ -104,10 +120,10 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByUser> UpdateAsync(PaymentRequestByUser transaction);
 
         /// <summary>
-        /// Updates a PaymentRequestByUser using the given input.
+        /// Updates a PaymentRequestByTeam using the given input.
         /// </summary>
         /// <param name="transaction">Transaction object to update.</param>
-        /// <returns>Instance of created PaymentRequestByUser object.</returns>
+        /// <returns>Instance of created PaymentRequestByTeam object.</returns>
         Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
 
         /// <summary>
@@ -124,5 +140,20 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="history">The status history entry to add.</param>
         /// <returns>The updated transaction.</returns>
         Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser by id.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <returns><c>true</c> if an invoice was deleted; otherwise <c>false</c>.</returns>
+        Task<bool> DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Stores that a potential duplicate pair has been reviewed and dismissed.
+        /// </summary>
+        /// <param name="paymentRequestByUserId">First PaymentRequestByUser id.</param>
+        /// <param name="duplicatePaymentRequestByUserId">Second PaymentRequestByUser id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId);
     }
 }

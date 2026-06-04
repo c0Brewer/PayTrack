@@ -22,6 +22,8 @@ const mockBudget: BudgetDto = {
   periodEnd: '2024-12-31T00:00:00Z',
   type: 0,
   transactionIds: [],
+  paidAmount: 0,
+  approvedAmount: 0,
 };
 
 const mockCostCentre: CostCentreDto = {

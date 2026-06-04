@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import {
   PaymentRequestByUserDto,
   PayoutType,
@@ -12,18 +13,24 @@ import {
 
 @Component({
   selector: 'app-invoice-list-component',
-  imports: [DatePipe],
+  imports: [DatePipe, EuroPipe],
   templateUrl: './list-component.html',
   styleUrl: './list-component.scss',
 })
 export class InvoiceListComponent {
   @Input() invoices: PaymentRequestByUserDto[] = [];
   @Input() showUserNameColumn: boolean = false;
+  @Input() showDuplicateIndicator: boolean = false;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
+  @Output() openDuplicates = new EventEmitter<PaymentRequestByUserDto>();
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.openDetail.emit(invoice);
+  }
+
+  onOpenDuplicates(invoice: PaymentRequestByUserDto): void {
+    this.openDuplicates.emit(invoice);
   }
 
   getPayoutTypeLabel(type: PayoutType): string {
