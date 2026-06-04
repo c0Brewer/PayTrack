@@ -882,62 +882,6 @@ namespace PayTrack.Tests.UnitTests.Repositories
         // GET BY ID PaymentRequestByTeam – includes
         // ----------------------------
         // ----------------------------
-        // ADD STATUS HISTORY
-        // ----------------------------
-        [Fact]
-        public async Task AddStatusHistoryAsync_ShouldPersistEntry()
-        {
-            await using var context = GetInMemoryDbContext("AddStatusHistory");
-
-            context.User.Add(new User { Id = 1, Email = "a@a.com", Name = "A" });
-            context.Teams.Add(new Team { Id = 1, Name = "T" });
-            context.PaymentRequestsByTeam.Add(new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1 });
-            await context.SaveChangesAsync();
-
-            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
-
-            var history = new TransactionStatusHistory
-            {
-                TransactionId = 1,
-                ChangedById = 1,
-                FromStatus = TransactionStatus.Submitted,
-                ToStatus = TransactionStatus.Paid,
-                Comment = "test comment",
-            };
-
-            var result = await repo.AddStatusHistoryAsync(history);
-
-            result.Should().NotBeNull();
-
-            var db = context.TransactionStatusHistories.First();
-            db.TransactionId.Should().Be(1);
-            db.ChangedById.Should().Be(1);
-            db.FromStatus.Should().Be(TransactionStatus.Submitted);
-            db.ToStatus.Should().Be(TransactionStatus.Paid);
-            db.Comment.Should().Be("test comment");
-        }
-
-        [Fact]
-        public async Task AddStatusHistoryAsync_ShouldThrow_WhenSaveFails()
-        {
-            var context = new FailingDbContext("FailAddStatusHistory");
-            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
-
-            var history = new TransactionStatusHistory
-            {
-                TransactionId = 1,
-                ChangedById = 1,
-                FromStatus = TransactionStatus.Submitted,
-                ToStatus = TransactionStatus.Paid,
-            };
-
-            async Task act() => await repo.AddStatusHistoryAsync(history);
-
-            var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
-            ex.Message.Should().Contain("TransactionStatusHistory");
-        }
-
-        // ----------------------------
         // UPDATE AND ADD STATUS HISTORY
         // ----------------------------
         [Fact]

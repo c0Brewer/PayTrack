@@ -310,20 +310,6 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<TransactionStatusHistory> AddStatusHistoryAsync(TransactionStatusHistory history)
-        {
-            this.context.TransactionStatusHistories.Add(history);
-            int res = await this.context.SaveChangesAsync();
-
-            if (res != 1)
-            {
-                throw new InternalErrorException($"Saving TransactionStatusHistory did not end as expected. Saved {res} entries.");
-            }
-
-            return history;
-        }
-
-        /// <inheritdoc/>
         public async Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history)
         {
             this.context.PaymentRequestsByTeam.Update(transaction);

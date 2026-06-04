@@ -257,7 +257,7 @@ describe('TeamRequestAdminDetailComponent', () => {
       expect(serviceMock.markAsPaid).not.toHaveBeenCalled();
     });
 
-    it('calls markAsPaid with request id and comment, shows success, clears modal and reloads on success', () => {
+    it('calls markAsPaid with request id and comment, shows success, clears modal and updates request on success', () => {
       const updatedRequest = {
         ...mockRequest,
         status: TransactionStatus.Paid,
@@ -265,7 +265,6 @@ describe('TeamRequestAdminDetailComponent', () => {
       component.request = mockRequest;
       component.markAsPaidComment = 'manually processed';
       serviceMock.markAsPaid.mockReturnValue(of(updatedRequest));
-      serviceMock.getPaymentRequestsByTeamById.mockReturnValue(of(updatedRequest));
 
       component.confirmMarkAsPaid();
 
@@ -273,7 +272,8 @@ describe('TeamRequestAdminDetailComponent', () => {
       expect(notificationMock.showSuccess).toHaveBeenCalledWith('Payment marked as paid.');
       expect(component.markAsPaidLoading).toBe(false);
       expect(component.showMarkAsPaidModal).toBe(false);
-      expect(serviceMock.getPaymentRequestsByTeamById).toHaveBeenCalledWith(5, expect.any(Object));
+      expect(component.request?.status).toBe(TransactionStatus.Paid);
+      expect(serviceMock.getPaymentRequestsByTeamById).not.toHaveBeenCalled();
     });
 
     it('shows error notification and clears loading but keeps modal open on failure', () => {
