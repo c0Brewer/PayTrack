@@ -30,7 +30,7 @@
           <td data-label="Purpose">{{ invoice.purposeOfPayment }}</td>
           <td data-label="Team">{{ invoice.team?.name ?? '—' }}</td>
           <td data-label="Payout Type">{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
-          <td data-label="Status">
+          <td data-label="Status" class="status-badge">
             <span [class]="'status ' + getStatusClass(invoice.status)">
               {{ getTransactionStatusLabel(invoice.status) }}
             </span>

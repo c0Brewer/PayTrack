@@ -69,10 +69,13 @@
   width: 100%;
   border-collapse: collapse;
   font-size: v.$font-s;
-  background: v.$background-light;
   border-radius: v.$size-xs;
   overflow: hidden;
 
+
+  .status-badge span{
+    text-align: center;
+  }
   thead {
     background: v.$background-dark;
 
