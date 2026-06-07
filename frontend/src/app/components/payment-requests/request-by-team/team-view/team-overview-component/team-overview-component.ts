@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
@@ -11,11 +12,10 @@ import {
   TransactionStatus,
   UserDto,
 } from '../../../../../types/exporter';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { TeamRequestTeamFilterComponent } from '../filter-component/filter-component';
 import { TeamRequestTeamListComponent } from '../list-component/list-component';
-import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
-import { EuroPipe } from '../../../../../pipes/euro.pipe';
 
 @Component({
   selector: 'app-team-request-team-overview-component',
