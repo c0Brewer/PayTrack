@@ -2,13 +2,13 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
-import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import {
   PaymentRequestByTeamDto,
   TransactionStatus,
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
+import { DetailComponent } from '../../../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-team-request-team-detail-component',
