@@ -60,7 +60,7 @@ describe('TeamRequestTeamListComponent', () => {
     let emitted: PaymentRequestByTeamDto | undefined;
     component.openDetail.subscribe((r) => (emitted = r));
 
-    (fixture.nativeElement.querySelector('.view-btn') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.icon-hover-btn') as HTMLButtonElement).click();
 
     expect(emitted).toEqual(mockRequests[0]);
   });

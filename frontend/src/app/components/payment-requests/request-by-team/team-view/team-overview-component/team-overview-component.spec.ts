@@ -6,7 +6,7 @@ import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
-import { PaymentRequestByTeamDto, UserDto } from '../../../../../types/exporter';
+import { PaymentRequestByTeamDto, TransactionStatus, UserDto } from '../../../../../types/exporter';
 
 import { TeamRequestTeamOverviewComponent } from './team-overview-component';
 
@@ -96,6 +96,40 @@ describe('TeamRequestTeamOverviewComponent', () => {
     expect(component.totalCount).toBe(2);
     expect(component.hasNext).toBe(true);
     expect(component.hasPrev).toBe(false);
+  });
+
+  it('should load stat requests when requests are loaded', () => {
+    const pageItems = [{ id: 1, amount: 100, status: TransactionStatus.Submitted }];
+    const statItems = [
+      { id: 1, amount: 100, status: TransactionStatus.Submitted },
+      { id: 2, amount: 200, status: TransactionStatus.Paid },
+    ] as PaymentRequestByTeamDto[];
+    paymentServiceMock.getPaymentRequestsByTeam
+      .mockReturnValueOnce(
+        of({ items: pageItems, totalCount: 2, hasNext: false, hasPrevious: false }),
+      )
+      .mockReturnValueOnce(
+        of({ items: statItems, totalCount: 2, hasNext: false, hasPrevious: false }),
+      );
+
+    component.loadRequests();
+
+    expect(component.statRequests).toEqual(statItems);
+    expect(paymentServiceMock.getPaymentRequestsByTeam).toHaveBeenLastCalledWith(
+      expect.objectContaining({ Limit: 2, Offset: 0 }),
+    );
+  });
+
+  it('should calculate stat box values from stat requests', () => {
+    component.statRequests = [
+      { id: 1, amount: 100, status: TransactionStatus.Submitted },
+      { id: 2, amount: 200, status: TransactionStatus.Paid },
+      { id: 3, amount: 50, status: TransactionStatus.Submitted },
+    ] as PaymentRequestByTeamDto[];
+
+    expect(component.getTotalAmount()).toBe(350);
+    expect(component.getSubmittedRequestCount()).toBe(2);
+    expect(component.getPaidRequestCount()).toBe(1);
   });
 
   it('should show error on API failure', () => {

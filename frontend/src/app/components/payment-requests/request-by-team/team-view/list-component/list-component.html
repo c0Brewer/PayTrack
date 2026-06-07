@@ -1,33 +1,38 @@
-<table class="TUR-table team-request-table">
-  <thead>
-    <tr>
-      <th>Amount</th>
-      <th>Due Date</th>
-      <th>Purpose</th>
-      <th>Status</th>
-      <th class="actions-col">Actions</th>
-    </tr>
-  </thead>
+<div class="team-request-table-wrapper">
+  <table class="TUR-table team-request-table">
+    <thead>
+      <tr>
+        <th>Amount</th>
+        <th>Due Date</th>
+        <th>Purpose</th>
+        <th>Status</th>
+        <th class="actions-col">Actions</th>
+      </tr>
+    </thead>
 
-  <tbody>
-    @for (request of requests; track request.id) {
-      <tr>
-        <td data-label="Amount">{{ request.amount | euro }}</td>
-        <td data-label="Due Date">{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
-        <td data-label="Purpose">{{ request.purposeOfPayment ?? '—' }}</td>
-        <td data-label="Status">
-          <span [class]="'status ' + getStatusClass(request.status) + ' text-center'">
-            {{ getTransactionStatusLabel(request.status) }}
-          </span>
-        </td>
-        <td class="actions-col" data-label="Actions">
-          <button class="view-btn" (click)="onOpenDetail(request)">View</button>
-        </td>
-      </tr>
-    } @empty {
-      <tr>
-        <td colspan="5">No payment requests found.</td>
-      </tr>
-    }
-  </tbody>
-</table>
+    <tbody>
+      @for (request of requests; track request.id) {
+        <tr>
+          <td data-label="Amount">{{ request.amount | euro }}</td>
+          <td data-label="Due Date">{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
+          <td data-label="Purpose">{{ request.purposeOfPayment ?? '—' }}</td>
+          <td data-label="Status">
+            <span [class]="'status ' + getStatusClass(request.status) + ' text-center'">
+              {{ getTransactionStatusLabel(request.status) }}
+            </span>
+          </td>
+          <td class="actions-col" data-label="Actions">
+            <button class="btn btn-secondary icon-hover-btn" (click)="onOpenDetail(request)">
+              <span class="material-symbols-outlined">bar_chart</span>
+              <span class="btn-text">View</span>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5">No payment requests found.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
