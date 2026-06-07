@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
-import { TeamRequestDetailComponent } from './detail-component';
+import { TeamRequestTeamDetailComponent } from './detail-component';
 
-describe('TeamRequestDetailComponent', () => {
-  let component: TeamRequestDetailComponent;
-  let fixture: ComponentFixture<TeamRequestDetailComponent>;
+describe('TeamRequestTeamDetailComponent', () => {
+  let component: TeamRequestTeamDetailComponent;
+  let fixture: ComponentFixture<TeamRequestTeamDetailComponent>;
 
   const mockRequest = {
     id: 1,
@@ -25,10 +25,10 @@ describe('TeamRequestDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeamRequestDetailComponent],
+      imports: [TeamRequestTeamDetailComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestDetailComponent);
+    fixture = TestBed.createComponent(TeamRequestTeamDetailComponent);
     component = fixture.componentInstance;
   });
 
@@ -58,36 +58,13 @@ describe('TeamRequestDetailComponent', () => {
     expect(text).toContain('REF-001');
   });
 
-  it('should show team row when showTeam is true', () => {
+  it('should not render admin-only team and user rows', () => {
     component.request = mockRequest;
     component.loading = false;
-    component.showTeam = true;
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Chassis Team');
-  });
-
-  it('should hide team row when showTeam is false', () => {
-    component.request = mockRequest;
-    component.loading = false;
-    component.showTeam = false;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Chassis Team');
-  });
-
-  it('should show user row when showUser is true', () => {
-    component.request = mockRequest;
-    component.loading = false;
-    component.showUser = true;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Alice');
-  });
-
-  it('should hide user row when showUser is false', () => {
-    component.request = mockRequest;
-    component.loading = false;
-    component.showUser = false;
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Alice');
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).not.toContain('Chassis Team');
+    expect(text).not.toContain('Alice');
   });
 
   it('should emit back event when back button is clicked', () => {

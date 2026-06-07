@@ -31,18 +31,6 @@
             <th>Purpose</th>
             <td>{{ request.purposeOfPayment ?? '—' }}</td>
           </tr>
-          @if (showTeam) {
-            <tr>
-              <th>Team</th>
-              <td>{{ request.team?.name ?? '—' }}</td>
-            </tr>
-          }
-          @if (showUser) {
-            <tr>
-              <th>User</th>
-              <td>{{ request.user?.name ?? '—' }}</td>
-            </tr>
-          }
           <tr>
             <th>Payment Reference</th>
             <td>{{ request.paymentReference || '—' }}</td>

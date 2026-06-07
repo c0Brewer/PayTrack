@@ -11,16 +11,16 @@ import {
   UserDto,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
-import { TeamRequestListComponent } from '../../general/list-component/list-component';
+import { TeamRequestTeamFilterComponent } from '../filter-component/filter-component';
+import { TeamRequestTeamListComponent } from '../list-component/list-component';
 
 @Component({
-  selector: 'app-team-request-user-list-component',
-  imports: [PaginationComponent, TeamRequestFilterComponent, TeamRequestListComponent],
-  templateUrl: './user-list-component.html',
-  styleUrl: './user-list-component.scss',
+  selector: 'app-team-request-team-overview-component',
+  imports: [PaginationComponent, TeamRequestTeamFilterComponent, TeamRequestTeamListComponent],
+  templateUrl: './team-overview-component.html',
+  styleUrl: './team-overview-component.scss',
 })
-export class TeamRequestUserListComponent implements OnInit {
+export class TeamRequestTeamOverviewComponent implements OnInit {
   constructor(
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly authService: AuthService,

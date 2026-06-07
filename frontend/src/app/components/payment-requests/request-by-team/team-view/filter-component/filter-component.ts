@@ -10,12 +10,12 @@ import {
 } from '../../../../../types/exporter';
 
 @Component({
-  selector: 'app-team-request-filter-component',
+  selector: 'app-team-request-team-filter-component',
   imports: [FormsModule],
   templateUrl: './filter-component.html',
   styleUrl: './filter-component.scss',
 })
-export class TeamRequestFilterComponent implements OnInit {
+export class TeamRequestTeamFilterComponent implements OnInit {
   @Input() limitSelection: number[] = [];
   @Input() limit: number = 10;
 

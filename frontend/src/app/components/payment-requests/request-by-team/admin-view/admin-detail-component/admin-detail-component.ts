@@ -5,11 +5,11 @@ import { NotificationService } from '../../../../../services/notification/notifi
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByTeamDto } from '../../../../../types/exporter';
 import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
-import { TeamRequestDetailComponent } from '../../general/detail-component/detail-component';
+import { TeamRequestAdminDetailViewComponent } from '../detail-component/detail-component';
 
 @Component({
   selector: 'app-team-request-admin-detail-component',
-  imports: [TeamRequestDetailComponent, ExternalNotificationComponent],
+  imports: [TeamRequestAdminDetailViewComponent, ExternalNotificationComponent],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })

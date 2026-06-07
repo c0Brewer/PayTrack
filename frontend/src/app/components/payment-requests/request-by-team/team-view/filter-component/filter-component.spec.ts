@@ -2,18 +2,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransactionStatus } from '../../../../../types/exporter';
 
-import { TeamRequestFilterComponent } from './filter-component';
+import { TeamRequestTeamFilterComponent } from './filter-component';
 
-describe('TeamRequestFilterComponent', () => {
-  let component: TeamRequestFilterComponent;
-  let fixture: ComponentFixture<TeamRequestFilterComponent>;
+describe('TeamRequestTeamFilterComponent', () => {
+  let component: TeamRequestTeamFilterComponent;
+  let fixture: ComponentFixture<TeamRequestTeamFilterComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeamRequestFilterComponent],
+      imports: [TeamRequestTeamFilterComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestFilterComponent);
+    fixture = TestBed.createComponent(TeamRequestTeamFilterComponent);
     component = fixture.componentInstance;
   });
 

@@ -10,16 +10,14 @@ import {
 } from '../../../../../types/exporter';
 
 @Component({
-  selector: 'app-team-request-detail-component',
+  selector: 'app-team-request-admin-detail-view-component',
   imports: [DatePipe, EuroPipe],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })
-export class TeamRequestDetailComponent {
+export class TeamRequestAdminDetailViewComponent {
   @Input() request: PaymentRequestByTeamDto | null = null;
   @Input() loading: boolean = false;
-  @Input() showTeam: boolean = true;
-  @Input() showUser: boolean = true;
   @Output() back = new EventEmitter<void>();
 
   getStatusLabel(status: TransactionStatus): string {

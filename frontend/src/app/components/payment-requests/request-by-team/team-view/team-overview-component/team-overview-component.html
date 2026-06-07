@@ -1,17 +1,17 @@
 <div class="team-requests">
   <h2>My Payment Requests</h2>
 
-  <app-team-request-filter-component
+  <app-team-request-team-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onUpdateLimit($event)"
-  ></app-team-request-filter-component>
+  ></app-team-request-team-filter-component>
 
-  <app-team-request-list-component
+  <app-team-request-team-list-component
     [requests]="requests"
     (openDetail)="onOpenDetail($event)"
-  ></app-team-request-list-component>
+  ></app-team-request-team-list-component>
 
   <app-pagination-component
     [hasNext]="hasNext"

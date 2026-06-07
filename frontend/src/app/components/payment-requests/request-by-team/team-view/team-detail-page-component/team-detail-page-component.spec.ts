@@ -7,11 +7,11 @@ import { NotificationService } from '../../../../../services/notification/notifi
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByTeamDto } from '../../../../../types/exporter';
 
-import { TeamRequestUserDetailComponent } from './user-detail-component';
+import { TeamRequestTeamDetailPageComponent } from './team-detail-page-component';
 
-describe('TeamRequestUserDetailComponent', () => {
-  let component: TeamRequestUserDetailComponent;
-  let fixture: ComponentFixture<TeamRequestUserDetailComponent>;
+describe('TeamRequestTeamDetailPageComponent', () => {
+  let component: TeamRequestTeamDetailPageComponent;
+  let fixture: ComponentFixture<TeamRequestTeamDetailPageComponent>;
 
   const serviceMock = {
     getPaymentRequestsByTeamById: vi.fn(),
@@ -45,7 +45,7 @@ describe('TeamRequestUserDetailComponent', () => {
     vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      imports: [TeamRequestUserDetailComponent],
+      imports: [TeamRequestTeamDetailPageComponent],
       providers: [
         { provide: PaymentRequestByTeamService, useValue: serviceMock },
         { provide: NotificationService, useValue: notificationMock },
@@ -55,7 +55,7 @@ describe('TeamRequestUserDetailComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestUserDetailComponent);
+    fixture = TestBed.createComponent(TeamRequestTeamDetailPageComponent);
     component = fixture.componentInstance;
   });
 

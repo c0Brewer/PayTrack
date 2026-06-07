@@ -1,4 +1,4 @@
-<table class="team-request-table">
+<table class="TUR-table team-request-table">
   <thead>
     <tr>
       <th>Amount</th>
@@ -12,15 +12,15 @@
   <tbody>
     @for (request of requests; track request.id) {
       <tr>
-        <td>{{ request.amount | euro }}</td>
-        <td>{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
-        <td>{{ request.purposeOfPayment ?? '—' }}</td>
-        <td>
-          <span [class]="'status ' + getStatusClass(request.status)">
+        <td data-label="Amount">{{ request.amount | euro }}</td>
+        <td data-label="Due Date">{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
+        <td data-label="Purpose">{{ request.purposeOfPayment ?? '—' }}</td>
+        <td data-label="Status">
+          <span [class]="'status ' + getStatusClass(request.status) + ' text-center'">
             {{ getTransactionStatusLabel(request.status) }}
           </span>
         </td>
-        <td class="actions-col">
+        <td class="actions-col" data-label="Actions">
           <button class="view-btn" (click)="onOpenDetail(request)">View</button>
         </td>
       </tr>

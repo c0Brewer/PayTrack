@@ -4,18 +4,15 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../../../services/auth/auth-service';
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
-import { TeamService } from '../../../../../services/team/team-service';
-import { UserService } from '../../../../../services/user/user-service';
 import { PaymentRequestByTeamDto, UserDto } from '../../../../../types/exporter';
 
-import { TeamRequestUserListComponent } from './user-list-component';
+import { TeamRequestTeamOverviewComponent } from './team-overview-component';
 
-describe('TeamRequestUserListComponent', () => {
-  let component: TeamRequestUserListComponent;
-  let fixture: ComponentFixture<TeamRequestUserListComponent>;
+describe('TeamRequestTeamOverviewComponent', () => {
+  let component: TeamRequestTeamOverviewComponent;
+  let fixture: ComponentFixture<TeamRequestTeamOverviewComponent>;
 
   const mockUser = { id: 42, role: 0 } as UserDto;
 
@@ -39,36 +36,21 @@ describe('TeamRequestUserListComponent', () => {
     markForCheck: vi.fn(),
   };
 
-  const teamServiceMock = {
-    getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
-  };
-
-  const costCentreServiceMock = {
-    getCostCentres: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
-  };
-
-  const userServiceMock = {
-    getUser: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
-  };
-
   beforeEach(async () => {
     vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      imports: [TeamRequestUserListComponent],
+      imports: [TeamRequestTeamOverviewComponent],
       providers: [
         { provide: PaymentRequestByTeamService, useValue: paymentServiceMock },
         { provide: AuthService, useValue: authServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
-        { provide: TeamService, useValue: teamServiceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
-        { provide: UserService, useValue: userServiceMock },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestUserListComponent);
+    fixture = TestBed.createComponent(TeamRequestTeamOverviewComponent);
     component = fixture.componentInstance;
   });
 

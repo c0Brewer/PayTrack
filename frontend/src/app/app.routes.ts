@@ -11,8 +11,8 @@ import { BankStatementImportComponent } from './components/payment-requests/bank
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
 import { TeamRequestAdminOverviewComponent } from './components/payment-requests/request-by-team/admin-view/admin-overview-component/admin-overview-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
-import { TeamRequestUserDetailComponent } from './components/payment-requests/request-by-team/user-view/user-detail-component/user-detail-component';
-import { TeamRequestUserListComponent } from './components/payment-requests/request-by-team/user-view/user-list-component/user-list-component';
+import { TeamRequestTeamDetailPageComponent } from './components/payment-requests/request-by-team/team-view/team-detail-page-component/team-detail-page-component';
+import { TeamRequestTeamOverviewComponent } from './components/payment-requests/request-by-team/team-view/team-overview-component/team-overview-component';
 import { RequestDetailComponent } from './components/payment-requests/request-by-user/admin-view/admin-detail-component/admin-detail-component';
 import { RequestsComponent } from './components/payment-requests/request-by-user/admin-view/admin-list-component/admin-list-component';
 import { ReceiptSubmitComponent } from './components/payment-requests/request-by-user/submission-component/submission-component';
@@ -135,12 +135,12 @@ export const routes: Routes = [
   {
     path: 'my-team-requests',
     canActivate: [authGuard],
-    component: TeamRequestUserListComponent,
+    component: TeamRequestTeamOverviewComponent,
   },
   {
     path: 'my-team-requests/:id',
     canActivate: [authGuard],
-    component: TeamRequestUserDetailComponent,
+    component: TeamRequestTeamDetailPageComponent,
   },
   {
     path: 'unauthorized',

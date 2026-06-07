@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
-import { TeamRequestListComponent } from './list-component';
+import { TeamRequestTeamListComponent } from './list-component';
 
-describe('TeamRequestListComponent', () => {
-  let component: TeamRequestListComponent;
-  let fixture: ComponentFixture<TeamRequestListComponent>;
+describe('TeamRequestTeamListComponent', () => {
+  let component: TeamRequestTeamListComponent;
+  let fixture: ComponentFixture<TeamRequestTeamListComponent>;
 
   const mockRequests = [
     {
@@ -24,10 +24,10 @@ describe('TeamRequestListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeamRequestListComponent],
+      imports: [TeamRequestTeamListComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestListComponent);
+    fixture = TestBed.createComponent(TeamRequestTeamListComponent);
     component = fixture.componentInstance;
   });
 
