@@ -6,19 +6,16 @@
     </button>
   </div>
 
-  <app-invoice-filter-component
+  <app-admin-invoice-filter-component
     [limitSelection]="limitSelection"
-    [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
-  ></app-invoice-filter-component>
+  ></app-admin-invoice-filter-component>
 
-  <app-invoice-list-component
+  <app-admin-invoice-list-component
     [invoices]="invoices"
-    [showUserNameColumn]="true"
-    [showDuplicateIndicator]="true"
     (openDetail)="onOpenDetail($event)"
     (openDuplicates)="onOpenDuplicates($event)"
-  ></app-invoice-list-component>
+  ></app-admin-invoice-list-component>
 
   <app-duplicate-list-modal-component
     [visible]="isDuplicateModalOpen"

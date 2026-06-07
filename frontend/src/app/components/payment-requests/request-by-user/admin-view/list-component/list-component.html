@@ -10,12 +10,8 @@
         <th>Team</th>
         <th>Payout Type</th>
         <th>Status</th>
-        @if (showUserNameColumn) {
-          <th>User</th>
-        }
-        @if (showDuplicateIndicator) {
-          <th>Duplicate</th>
-        }
+        <th>User</th>
+        <th>Duplicate</th>
         <th class="actions-col">Actions</th>
       </tr>
     </thead>
@@ -35,27 +31,23 @@
               {{ getTransactionStatusLabel(invoice.status) }}
             </span>
           </td>
-          @if (showUserNameColumn) {
-            <td data-label="User">{{ invoice.user?.name ?? '—' }}</td>
-          }
-          @if (showDuplicateIndicator) {
-            <td data-label="Duplicate">
-              @if (invoice.hasPotentialDuplicate) {
-                <button
-                  type="button"
-                  class="duplicate-badge"
-                  title="Potential duplicates found"
-                  aria-label="Show potential duplicate invoices"
-                  (click)="onOpenDuplicates(invoice)"
-                >
-                  <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-                  Duplicates
-                </button>
-              } @else {
-                <span class="duplicate-empty">-</span>
-              }
-            </td>
-          }
+          <td data-label="User">{{ invoice.user?.name ?? '—' }}</td>
+          <td data-label="Duplicate">
+            @if (invoice.hasPotentialDuplicate) {
+              <button
+                type="button"
+                class="duplicate-badge"
+                title="Potential duplicates found"
+                aria-label="Show potential duplicate invoices"
+                (click)="onOpenDuplicates(invoice)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                Duplicates
+              </button>
+            } @else {
+              <span class="duplicate-empty">-</span>
+            }
+          </td>
           <td class="actions-col" data-label="Actions">
             <button class="btn btn-secondary icon-hover-btn" (click)="onOpenDetail(invoice)">
               <span class="material-symbols-outlined">bar_chart</span>
@@ -65,9 +57,7 @@
         </tr>
       } @empty {
         <tr>
-          <td [attr.colspan]="9 + (showUserNameColumn ? 1 : 0) + (showDuplicateIndicator ? 1 : 0)">
-            No invoices found.
-          </td>
+          <td colspan="11">No invoices found.</td>
         </tr>
       }
     </tbody>

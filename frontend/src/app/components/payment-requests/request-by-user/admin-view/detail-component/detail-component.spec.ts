@@ -6,11 +6,11 @@ import {
   TransactionStatus,
 } from '../../../../../types/exporter';
 
-import { InvoiceDetailComponent } from './detail-component';
+import { AdminInvoiceDetailComponent } from './detail-component';
 
-describe('InvoiceDetailComponent', () => {
-  let component: InvoiceDetailComponent;
-  let fixture: ComponentFixture<InvoiceDetailComponent>;
+describe('AdminInvoiceDetailComponent', () => {
+  let component: AdminInvoiceDetailComponent;
+  let fixture: ComponentFixture<AdminInvoiceDetailComponent>;
 
   const mockInvoice = {
     id: 1,
@@ -30,10 +30,10 @@ describe('InvoiceDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InvoiceDetailComponent],
+      imports: [AdminInvoiceDetailComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InvoiceDetailComponent);
+    fixture = TestBed.createComponent(AdminInvoiceDetailComponent);
     component = fixture.componentInstance;
   });
 

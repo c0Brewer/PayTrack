@@ -10,21 +10,21 @@ import {
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
-import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
-import { InvoiceListComponent } from '../../general/list-component/list-component';
+import { AdminInvoiceFilterComponent } from '../filter-component/filter-component';
+import { AdminInvoiceListComponent } from '../list-component/list-component';
 
 @Component({
-  selector: 'app-requests-component',
+  selector: 'app-admin-invoices-overview-component',
   imports: [
     PaginationComponent,
-    InvoiceFilterComponent,
-    InvoiceListComponent,
+    AdminInvoiceFilterComponent,
+    AdminInvoiceListComponent,
     DuplicateListModalComponent,
   ],
-  templateUrl: './admin-list-component.html',
-  styleUrl: './admin-list-component.scss',
+  templateUrl: './admin-overview-component.html',
+  styleUrl: './admin-overview-component.scss',
 })
-export class RequestsComponent implements OnInit {
+export class AdminInvoicesOverviewComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly notificationService: NotificationService,

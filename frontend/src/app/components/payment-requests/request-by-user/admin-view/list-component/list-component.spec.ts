@@ -2,18 +2,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PaymentRequestByUserDto } from '../../../../../types/exporter';
 
-import { InvoiceListComponent } from './list-component';
+import { AdminInvoiceListComponent } from './list-component';
 
-describe('InvoiceListComponent', () => {
-  let component: InvoiceListComponent;
-  let fixture: ComponentFixture<InvoiceListComponent>;
+describe('AdminInvoiceListComponent', () => {
+  let component: AdminInvoiceListComponent;
+  let fixture: ComponentFixture<AdminInvoiceListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InvoiceListComponent],
+      imports: [AdminInvoiceListComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InvoiceListComponent);
+    fixture = TestBed.createComponent(AdminInvoiceListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -49,8 +49,7 @@ describe('InvoiceListComponent', () => {
     expect(emitted).toEqual(invoice);
   });
 
-  it('should render duplicate badge when duplicate indicator is enabled', () => {
-    fixture.componentRef.setInput('showDuplicateIndicator', true);
+  it('should render duplicate badge for potential duplicates', () => {
     fixture.componentRef.setInput('invoices', [
       {
         id: 1,

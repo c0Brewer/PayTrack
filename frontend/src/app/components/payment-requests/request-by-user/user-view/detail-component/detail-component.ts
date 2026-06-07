@@ -20,12 +20,12 @@ import {
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
 
 @Component({
-  selector: 'app-invoice-detail-component',
+  selector: 'app-user-invoice-detail-component',
   imports: [DatePipe, DetailComponent, EuroPipe, FormsModule],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })
-export class InvoiceDetailComponent {
+export class UserInvoiceDetailComponent {
   @Input() invoice: PaymentRequestByUserDto | null = null;
   @Input() showUserName: boolean = false;
   @Input() receiptBlobUrl: string | null = null;

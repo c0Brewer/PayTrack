@@ -3,11 +3,11 @@ import { of } from 'rxjs';
 
 import { TeamService } from '../../../../../services/team/team-service';
 
-import { InvoiceFilterComponent } from './filter-component';
+import { UserInvoiceFilterComponent } from './filter-component';
 
-describe('InvoiceFilterComponent', () => {
-  let component: InvoiceFilterComponent;
-  let fixture: ComponentFixture<InvoiceFilterComponent>;
+describe('UserInvoiceFilterComponent', () => {
+  let component: UserInvoiceFilterComponent;
+  let fixture: ComponentFixture<UserInvoiceFilterComponent>;
 
   const teamServiceMock = {
     getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0, limit: 1000, offset: 0 })),
@@ -15,11 +15,11 @@ describe('InvoiceFilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InvoiceFilterComponent],
+      imports: [UserInvoiceFilterComponent],
       providers: [{ provide: TeamService, useValue: teamServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InvoiceFilterComponent);
+    fixture = TestBed.createComponent(UserInvoiceFilterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

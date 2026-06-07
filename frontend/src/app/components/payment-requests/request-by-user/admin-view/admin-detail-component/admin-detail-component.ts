@@ -13,11 +13,11 @@ import {
   PaymentRequestByUserDto,
   RequestChangesPaymentRequestByUserDto,
 } from '../../../../../types/exporter';
-import { InvoiceDetailComponent } from '../../general/detail-component/detail-component';
+import { AdminInvoiceDetailComponent } from '../detail-component/detail-component';
 
 @Component({
   selector: 'app-request-detail-component',
-  imports: [InvoiceDetailComponent],
+  imports: [AdminInvoiceDetailComponent],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })

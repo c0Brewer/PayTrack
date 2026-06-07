@@ -12,15 +12,13 @@ import {
 } from '../../../../../types/exporter';
 
 @Component({
-  selector: 'app-invoice-list-component',
+  selector: 'app-admin-invoice-list-component',
   imports: [DatePipe, EuroPipe],
   templateUrl: './list-component.html',
   styleUrl: './list-component.scss',
 })
-export class InvoiceListComponent {
+export class AdminInvoiceListComponent {
   @Input() invoices: PaymentRequestByUserDto[] = [];
-  @Input() showUserNameColumn: boolean = false;
-  @Input() showDuplicateIndicator: boolean = false;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
   @Output() openDuplicates = new EventEmitter<PaymentRequestByUserDto>();

@@ -12,11 +12,11 @@ import {
   PaymentRequestByUserDto,
 } from '../../../../../types/exporter';
 
-import { RequestsComponent } from './admin-list-component';
+import { AdminInvoicesOverviewComponent } from './admin-overview-component';
 
-describe('RequestsComponent', () => {
-  let component: RequestsComponent;
-  let fixture: ComponentFixture<RequestsComponent>;
+describe('AdminInvoicesOverviewComponent', () => {
+  let component: AdminInvoicesOverviewComponent;
+  let fixture: ComponentFixture<AdminInvoicesOverviewComponent>;
 
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
@@ -55,7 +55,7 @@ describe('RequestsComponent', () => {
     paymentServiceMock.dismissDuplicatePaymentRequestByUser.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
-      imports: [RequestsComponent],
+      imports: [AdminInvoicesOverviewComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: NotificationService, useValue: notificationMock },
@@ -66,7 +66,7 @@ describe('RequestsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RequestsComponent);
+    fixture = TestBed.createComponent(AdminInvoicesOverviewComponent);
     component = fixture.componentInstance;
   });
 

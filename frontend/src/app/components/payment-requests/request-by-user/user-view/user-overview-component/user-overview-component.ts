@@ -14,22 +14,22 @@ import {
 } from '../../../../../types/exporter';
 import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
-import { InvoiceListComponent } from '../../general/list-component/list-component';
+import { UserInvoiceFilterComponent } from '../filter-component/filter-component';
+import { UserInvoiceListComponent } from '../list-component/list-component';
 
 @Component({
-  selector: 'app-my-invoices-component',
+  selector: 'app-user-invoices-overview-component',
   imports: [
     PaginationComponent,
-    InvoiceFilterComponent,
-    InvoiceListComponent,
+    UserInvoiceFilterComponent,
+    UserInvoiceListComponent,
     StatBoxComponent,
     EuroPipe,
   ],
-  templateUrl: './user-list-component.html',
-  styleUrl: './user-list-component.scss',
+  templateUrl: './user-overview-component.html',
+  styleUrl: './user-overview-component.scss',
 })
-export class MyInvoicesComponent implements OnInit {
+export class UserInvoicesOverviewComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly authService: AuthService,

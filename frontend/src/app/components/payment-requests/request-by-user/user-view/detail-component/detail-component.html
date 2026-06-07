@@ -1,0 +1,248 @@
+<div class="main-page-container invoice-detail">
+  @if (loading) {
+    <p>Loading...</p>
+  } @else if (invoice) {
+    <app-detail-component
+      [title]="'Invoice ' + invoice.invoiceNumber"
+      [subtitle]="invoice.purposeOfPayment || 'No purpose set.'"
+      eyebrow="Invoice"
+      icon="receipt_long"
+      backLabel="Back"
+      [statusLabel]="getStatusLabel(invoice.status)"
+      statusVariant="neutral"
+      (backClick)="back.emit()"
+    >
+      <div detail-meta class="invoice-info-card">
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <th>Invoice Number</th>
+              <td>{{ invoice.invoiceNumber }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>
+                <span [class]="'status ' + getStatusClass(invoice.status)">
+                  {{ getStatusLabel(invoice.status) }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>Amount</th>
+              <td>{{ invoice.amount | euro }}</td>
+            </tr>
+            <tr>
+              <th>Team</th>
+              <td>{{ invoice.team?.name ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Purpose</th>
+              <td>{{ invoice.purposeOfPayment || '—' }}</td>
+            </tr>
+            <tr>
+              <th>Payout Type</th>
+              <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+            </tr>
+            <tr>
+              <th>Comment</th>
+              <td>{{ invoice.comment || '—' }}</td>
+            </tr>
+            <tr>
+              <th>Submitted</th>
+              <td>{{ invoice.createdAt | date: 'mediumDate' }}</td>
+            </tr>
+            <tr>
+              <th>Paid At</th>
+              <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
+            </tr>
+            <tr>
+              <th>Finance Paid At</th>
+              <td>{{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '—' }}</td>
+            </tr>
+            <tr>
+              <th>Payment Reference</th>
+              <td>{{ invoice.paymentReference || '—' }}</td>
+            </tr>
+            @if (showUserName) {
+              <tr>
+                <th>User</th>
+                <td>{{ invoice.user?.name ?? '—' }}</td>
+              </tr>
+            }
+            <tr>
+              <th>Bank Account (IBAN)</th>
+              <td>{{ invoice.bankAccount?.iban ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      @if (canManageStatus && (canApprove(invoice.status) || canRequestChanges(invoice.status) || canDecline(invoice.status))) {
+        <h3>Status Actions</h3>
+        <div class="status-actions row g-3">
+          @if (canApprove(invoice.status)) {
+            <form class="status-form col-12 col-xl-4" (ngSubmit)="onApprove()">
+              <h4>Approve</h4>
+              <label>
+                <span>Cost Centre</span>
+                <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
+                  <option [ngValue]="null">Select cost centre</option>
+                  @for (costCentre of costCentres; track costCentre.id) {
+                    <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Reason</span>
+                <textarea name="approvalReason" [(ngModel)]="approvalReason" maxlength="1000"></textarea>
+              </label>
+              <button
+                class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+                type="submit"
+                [disabled]="statusActionPending === 'approve' || !approvalCostCentreId"
+              >
+                <span class="material-symbols-outlined">check_circle</span>
+                {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
+              </button>
+            </form>
+          }
+
+          @if (canRequestChanges(invoice.status)) {
+            <form class="status-form col-12 col-xl-4" (ngSubmit)="onRequestChanges()">
+              <h4>Request Changes</h4>
+              <label>
+                <span>Reason</span>
+                <textarea
+                  name="changeRequestReason"
+                  [(ngModel)]="changeRequestReason"
+                  maxlength="1000"
+                  required
+                ></textarea>
+              </label>
+              <button
+                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
+                type="submit"
+                [disabled]="statusActionPending === 'requestChanges' || !changeRequestReason.trim()"
+              >
+                <span class="material-symbols-outlined">edit_note</span>
+                {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
+              </button>
+            </form>
+          }
+
+          @if (canDecline(invoice.status)) {
+            <form class="status-form col-12 col-xl-4" (ngSubmit)="onDecline()">
+              <h4>Decline</h4>
+              <label>
+                <span>Reason</span>
+                <textarea name="declineReason" [(ngModel)]="declineReason" maxlength="1000" required></textarea>
+              </label>
+              <button
+                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
+                type="submit"
+                [disabled]="statusActionPending === 'decline' || !declineReason.trim()"
+              >
+                <span class="material-symbols-outlined">cancel</span>
+                {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
+              </button>
+            </form>
+          }
+        </div>
+      }
+
+      @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
+        <form class="payment-form" (ngSubmit)="onMarkPaid()">
+          <h3>Mark as Paid</h3>
+          <div class="row g-3">
+            <label class="col-12 col-md-6">
+              <span>Payment Reference</span>
+              <input
+                type="text"
+                name="paymentReference"
+                [(ngModel)]="paymentReference"
+                maxlength="255"
+                required
+              />
+            </label>
+            <label class="col-12 col-md-6">
+              <span>Payment Date</span>
+              <input type="date" name="paymentDate" [(ngModel)]="paymentDate" [max]="maxPaymentDate" required />
+            </label>
+            <label class="col-12">
+              <span>Purpose</span>
+              <textarea name="paymentPurpose" [(ngModel)]="paymentPurpose" maxlength="500" required></textarea>
+            </label>
+          </div>
+          <button
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 mt-3"
+            type="submit"
+            [disabled]="markingPaid || !paymentReference.trim() || !paymentPurpose.trim() || !paymentDate"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
+          </button>
+        </form>
+      }
+
+      @if ((invoice.statusHistory?.length ?? 0) > 0) {
+        <h3>Status History</h3>
+        <div class="history-table-wrapper">
+          <table class="info-table history-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Changed By</th>
+                <th>Changed At</th>
+                <th>Comment</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of invoice.statusHistory ?? []; track entry.changedAt) {
+                <tr>
+                  <td>
+                    <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                      {{ getStatusLabel(entry.fromStatus) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                      {{ getStatusLabel(entry.toStatus) }}
+                    </span>
+                  </td>
+                  <td>{{ entry.changedBy?.name ?? ('User #' + entry.changedById) }}</td>
+                  <td>{{ entry.changedAt | date: 'medium' }}</td>
+                  <td>{{ entry.comment || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <section class="receipt-section text-center">
+        <h3>Receipt</h3>
+        @if (receiptBlobUrl) {
+          @if (isReceiptImage) {
+            <img class="receipt-image" [src]="safeReceiptUrl" alt="Receipt" />
+          } @else {
+            <iframe class="receipt-frame" [src]="safeReceiptUrl" title="Receipt"></iframe>
+          }
+        } @else if (!hasReceipt) {
+          <p>Loading receipt...</p>
+        } @else {
+          <p>Preview not available.</p>
+        }
+        @if (hasReceipt) {
+          <button
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2 m-3"
+            (click)="downloadReceipt.emit()"
+          >
+            <span class="material-symbols-outlined">download</span>
+            Download Receipt
+          </button>
+        }
+      </section>
+    </app-detail-component>
+  }
+</div>

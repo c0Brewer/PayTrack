@@ -14,11 +14,11 @@ import {
   UserDto,
 } from '../../../../../types/exporter';
 
-import { MyInvoicesComponent } from './user-list-component';
+import { UserInvoicesOverviewComponent } from './user-overview-component';
 
-describe('MyInvoicesComponent', () => {
-  let component: MyInvoicesComponent;
-  let fixture: ComponentFixture<MyInvoicesComponent>;
+describe('UserInvoicesOverviewComponent', () => {
+  let component: UserInvoicesOverviewComponent;
+  let fixture: ComponentFixture<UserInvoicesOverviewComponent>;
 
   const paymentServiceMock = {
     getPaymentRequestsByUser: vi.fn(),
@@ -49,7 +49,7 @@ describe('MyInvoicesComponent', () => {
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
 
     await TestBed.configureTestingModule({
-      imports: [MyInvoicesComponent],
+      imports: [UserInvoicesOverviewComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: AuthService, useValue: authServiceMock },
@@ -60,7 +60,7 @@ describe('MyInvoicesComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MyInvoicesComponent);
+    fixture = TestBed.createComponent(UserInvoicesOverviewComponent);
     component = fixture.componentInstance;
   });
 

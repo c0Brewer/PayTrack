@@ -64,17 +64,6 @@
       <input class="form-control" type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
     </div>
 
-    @if (showUserFilter) {
-      <div class="col-12 col-md-6 col-xl-3">
-        <select class="form-select" (change)="onUserChange($event)">
-          <option value="">All users</option>
-          @for (user of users; track user.id) {
-            <option [value]="user.id">{{ user.name }}</option>
-          }
-        </select>
-      </div>
-    }
-
     <div class="col-12 col-md-6 col-xl-3">
       <select class="form-select" [(ngModel)]="limit" (change)="onLimitChange()">
         @for (l of limitSelection; track l) {

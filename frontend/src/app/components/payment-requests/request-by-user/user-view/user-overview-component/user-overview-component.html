@@ -37,16 +37,15 @@
       class="col-12 col-sm-6 col-xl-3"
     />
   </div>
-  <app-invoice-filter-component
+  <app-user-invoice-filter-component
     [limitSelection]="limitSelection"
     (updateFilter)="updateFilterOptions($event)"
-  ></app-invoice-filter-component>
+  ></app-user-invoice-filter-component>
 
-  <app-invoice-list-component
+  <app-user-invoice-list-component
     [invoices]="invoices"
-    [showUserNameColumn]="false"
     (openDetail)="onOpenDetail($event)"
-  ></app-invoice-list-component>
+  ></app-user-invoice-list-component>
 
   <app-pagination-component
     [hasNext]="hasNext"
