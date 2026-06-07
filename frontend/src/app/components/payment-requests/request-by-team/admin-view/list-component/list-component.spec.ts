@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
-import { TeamRequestListComponent } from './list-component';
+import { TeamRequestAdminListComponent } from './list-component';
 
-describe('TeamRequestListComponent', () => {
-  let component: TeamRequestListComponent;
-  let fixture: ComponentFixture<TeamRequestListComponent>;
+describe('TeamRequestAdminListComponent', () => {
+  let component: TeamRequestAdminListComponent;
+  let fixture: ComponentFixture<TeamRequestAdminListComponent>;
 
   const mockRequests = [
     {
@@ -16,7 +16,7 @@ describe('TeamRequestListComponent', () => {
       purposeOfPayment: 'Engine repair',
       dueDate: '2026-06-01T00:00:00Z',
       team: { name: 'Chassis Team' },
-      costCentre: { name: 'CC-Eng' },
+      budget: { name: 'CC-Eng' },
       user: { name: 'Alice' },
       createdAt: '2026-01-01T00:00:00Z',
     },
@@ -24,10 +24,10 @@ describe('TeamRequestListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeamRequestListComponent],
+      imports: [TeamRequestAdminListComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestListComponent);
+    fixture = TestBed.createComponent(TeamRequestAdminListComponent);
     component = fixture.componentInstance;
   });
 
@@ -36,21 +36,14 @@ describe('TeamRequestListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render a row for each request', () => {
-    component.requests = mockRequests;
-    fixture.detectChanges();
-    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr');
-    expect(rows.length).toBe(1);
-  });
-
-  it('should not render admin-only columns', () => {
+  it('should render admin columns', () => {
     component.requests = mockRequests;
     fixture.detectChanges();
 
     const textContent = (fixture.nativeElement as HTMLElement).textContent;
-    expect(textContent).not.toContain('Alice');
-    expect(textContent).not.toContain('Chassis Team');
-    expect(textContent).not.toContain('CC-Eng');
+    expect(textContent).toContain('Alice');
+    expect(textContent).toContain('Chassis Team');
+    expect(textContent).toContain('CC-Eng');
   });
 
   it('should emit openDetail when view button is clicked', () => {
@@ -58,7 +51,7 @@ describe('TeamRequestListComponent', () => {
     fixture.detectChanges();
 
     let emitted: PaymentRequestByTeamDto | undefined;
-    component.openDetail.subscribe((r) => (emitted = r));
+    component.openDetail.subscribe((request) => (emitted = request));
 
     (fixture.nativeElement.querySelector('.view-btn') as HTMLButtonElement).click();
 
@@ -68,6 +61,7 @@ describe('TeamRequestListComponent', () => {
   it('should show empty state when requests is empty', () => {
     component.requests = [];
     fixture.detectChanges();
+
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
       'No payment requests found.',
     );

@@ -9,7 +9,7 @@ import { InitialLoginBankAccountComponent } from './components/inital-login-bank
 import { LoginComponent } from './components/login/login-component/login-component';
 import { BankStatementImportComponent } from './components/payment-requests/bank-statement-import-component/bank-statement-import-component';
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
-import { TeamRequestsComponent } from './components/payment-requests/request-by-team/admin-view/admin-list-component/admin-list-component';
+import { TeamRequestAdminOverviewComponent } from './components/payment-requests/request-by-team/admin-view/admin-overview-component/admin-overview-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
 import { TeamRequestUserDetailComponent } from './components/payment-requests/request-by-team/user-view/user-detail-component/user-detail-component';
 import { TeamRequestUserListComponent } from './components/payment-requests/request-by-team/user-view/user-list-component/user-list-component';
@@ -125,7 +125,7 @@ export const routes: Routes = [
   {
     path: 'payment-requests-by-team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: TeamRequestsComponent,
+    component: TeamRequestAdminOverviewComponent,
   },
   {
     path: 'payment-requests-by-team/:id',

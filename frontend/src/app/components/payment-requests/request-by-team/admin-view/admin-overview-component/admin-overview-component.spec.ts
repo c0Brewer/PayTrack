@@ -3,18 +3,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import { UserService } from '../../../../../services/user/user-service';
 import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
-import { TeamRequestsComponent } from './admin-list-component';
+import { TeamRequestAdminOverviewComponent } from './admin-overview-component';
 
-describe('TeamRequestsComponent', () => {
-  let component: TeamRequestsComponent;
-  let fixture: ComponentFixture<TeamRequestsComponent>;
+describe('TeamRequestAdminOverviewComponent', () => {
+  let component: TeamRequestAdminOverviewComponent;
+  let fixture: ComponentFixture<TeamRequestAdminOverviewComponent>;
 
   const paymentServiceMock = {
     getPaymentRequestsByTeam: vi.fn(),
@@ -36,10 +35,6 @@ describe('TeamRequestsComponent', () => {
     getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
   };
 
-  const costCentreServiceMock = {
-    getCostCentres: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
-  };
-
   const userServiceMock = {
     getUser: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
   };
@@ -48,19 +43,18 @@ describe('TeamRequestsComponent', () => {
     vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      imports: [TeamRequestsComponent],
+      imports: [TeamRequestAdminOverviewComponent],
       providers: [
         { provide: PaymentRequestByTeamService, useValue: paymentServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
         { provide: UserService, useValue: userServiceMock },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TeamRequestsComponent);
+    fixture = TestBed.createComponent(TeamRequestAdminOverviewComponent);
     component = fixture.componentInstance;
   });
 

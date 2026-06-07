@@ -10,12 +10,12 @@ import {
 } from '../../../../../types/exporter';
 
 @Component({
-  selector: 'app-team-request-list-component',
+  selector: 'app-team-request-admin-list-component',
   imports: [DatePipe, EuroPipe],
   templateUrl: './list-component.html',
   styleUrl: './list-component.scss',
 })
-export class TeamRequestListComponent {
+export class TeamRequestAdminListComponent {
   @Input() requests: PaymentRequestByTeamDto[] = [];
 
   @Output() openDetail = new EventEmitter<PaymentRequestByTeamDto>();

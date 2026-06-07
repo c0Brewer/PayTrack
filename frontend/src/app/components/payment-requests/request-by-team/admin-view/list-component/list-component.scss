@@ -1,0 +1,64 @@
+@use 'variables' as v;
+
+.team-request-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  background: v.$background-light;
+  border-radius: v.$size-xs;
+  overflow: hidden;
+
+  thead {
+    background: v.$background-dark;
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
+  }
+
+  tbody {
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
+  }
+
+  .actions-col {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .view-btn {
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+    border-radius: v.$size-xs;
+    cursor: pointer;
+    transition:
+      transform 0.1s ease,
+      box-shadow 0.1s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px v.$shadow-color;
+    }
+  }
+}

@@ -10,16 +10,16 @@ import {
   TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestListComponent } from '../../general/list-component/list-component';
 import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
+import { TeamRequestAdminListComponent } from '../list-component/list-component';
 
 @Component({
-  selector: 'app-team-requests-component',
-  imports: [PaginationComponent, TeamRequestAdminFilterComponent, TeamRequestListComponent],
-  templateUrl: './admin-list-component.html',
-  styleUrl: './admin-list-component.scss',
+  selector: 'app-team-request-admin-overview-component',
+  imports: [PaginationComponent, TeamRequestAdminFilterComponent, TeamRequestAdminListComponent],
+  templateUrl: './admin-overview-component.html',
+  styleUrl: './admin-overview-component.scss',
 })
-export class TeamRequestsComponent implements OnInit {
+export class TeamRequestAdminOverviewComponent implements OnInit {
   constructor(
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly notificationService: NotificationService,

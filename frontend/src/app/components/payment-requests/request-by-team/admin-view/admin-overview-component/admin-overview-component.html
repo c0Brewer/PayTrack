@@ -13,11 +13,10 @@
     (limitChange)="onUpdateLimit($event)"
   ></app-team-request-admin-filter-component>
 
-  <app-team-request-list-component
+  <app-team-request-admin-list-component
     [requests]="requests"
-    [showUserColumn]="true"
     (openDetail)="onOpenDetail($event)"
-  ></app-team-request-list-component>
+  ></app-team-request-admin-list-component>
 
   <app-pagination-component
     [hasNext]="hasNext"
