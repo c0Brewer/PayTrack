@@ -4,8 +4,8 @@
     <h5 class="m-0">Filter</h5>
   </div>
 
-  <div class="row g-3">
-    <div class="col-12 col-md-6 col-xl-3">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3">
+    <div class="col">
       <input
         class="form-control"
         type="text"
@@ -14,7 +14,7 @@
       />
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <select class="form-select status-select" (change)="onStatusChange($event)">
         <option value="">All statuses</option>
         @for (status of transactionStatusOptions; track status) {
@@ -23,15 +23,15 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <input class="form-control" type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <input class="form-control" type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <select class="form-select" [(ngModel)]="limit" (change)="onLimitChange()">
         @for (l of limitSelection; track l) {
           <option [value]="l">{{ l }} per page</option>
