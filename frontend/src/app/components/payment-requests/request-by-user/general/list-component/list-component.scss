@@ -12,7 +12,21 @@
 
   .invoice-table {
     min-width: 82rem;
-    table-layout: auto;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
   }
 }
 
