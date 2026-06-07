@@ -10,12 +10,12 @@ import {
   TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
 import { TeamRequestListComponent } from '../../general/list-component/list-component';
+import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
 
 @Component({
   selector: 'app-team-requests-component',
-  imports: [PaginationComponent, TeamRequestFilterComponent, TeamRequestListComponent],
+  imports: [PaginationComponent, TeamRequestAdminFilterComponent, TeamRequestListComponent],
   templateUrl: './admin-list-component.html',
   styleUrl: './admin-list-component.scss',
 })

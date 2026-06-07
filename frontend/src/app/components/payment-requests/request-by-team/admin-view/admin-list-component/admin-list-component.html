@@ -6,14 +6,12 @@
     </button>
   </div>
 
-  <app-team-request-filter-component
+  <app-team-request-admin-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
-    [showCostCentreFilter]="false"
-    [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onUpdateLimit($event)"
-  ></app-team-request-filter-component>
+  ></app-team-request-admin-filter-component>
 
   <app-team-request-list-component
     [requests]="requests"
