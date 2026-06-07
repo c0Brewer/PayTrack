@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
+import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import {
   PaymentRequestByTeamDto,
   TransactionStatus,
@@ -11,7 +12,7 @@ import {
 
 @Component({
   selector: 'app-team-request-team-detail-component',
-  imports: [DatePipe, EuroPipe],
+  imports: [DatePipe, DetailComponent, EuroPipe],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })

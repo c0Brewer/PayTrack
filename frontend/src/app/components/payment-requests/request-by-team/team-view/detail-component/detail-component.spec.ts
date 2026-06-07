@@ -68,10 +68,12 @@ describe('TeamRequestTeamDetailComponent', () => {
   });
 
   it('should emit back event when back button is clicked', () => {
+    component.request = mockRequest;
+    component.loading = false;
     fixture.detectChanges();
     let emitted = false;
     component.back.subscribe(() => (emitted = true));
-    (fixture.nativeElement.querySelector('.back-btn') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.detail-shell__back') as HTMLButtonElement).click();
     expect(emitted).toBe(true);
   });
 
