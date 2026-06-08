@@ -1,0 +1,86 @@
+<div class="toolbar">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <span class="filter-icon material-symbols-outlined" aria-hidden="true">filter_alt</span>
+    <h5 class="m-0">Filter</h5>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3">
+      <input
+        class="form-control"
+        type="text"
+        placeholder="Purpose of payment..."
+        (input)="onPurposeChange($event)"
+      />
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <select class="form-select status-select" (change)="onStatusChange($event)">
+        <option value="">All statuses</option>
+        @for (status of transactionStatusOptions; track status) {
+          <option [value]="status">{{ TransactionStatusLabels[status] }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <select class="form-select" (change)="onTeamChange($event)">
+        <option value="">All teams</option>
+        @for (team of teams; track team.id) {
+          <option [value]="team.id">{{ team.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <input class="form-control" type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <input class="form-control" type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <select class="form-select" (change)="onUserChange($event)">
+        <option value="">All users</option>
+        @for (user of users; track user.id) {
+          <option [value]="user.id">{{ user.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <select class="form-select" [(ngModel)]="limit" (change)="onLimitChange()">
+        @for (l of limitSelection; track l) {
+          <option [value]="l">{{ l }} per page</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <hr class="my-3" />
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <label class="filter-label mb-2">Due date</label>
+      <div class="row g-2">
+        <div class="col-12 col-sm-6">
+          <input
+            class="form-control"
+            type="date"
+            title="Due date from"
+            (input)="onMinDueDateChange($event)"
+          />
+        </div>
+        <div class="col-12 col-sm-6">
+          <input
+            class="form-control"
+            type="date"
+            title="Due date to"
+            (input)="onMaxDueDateChange($event)"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

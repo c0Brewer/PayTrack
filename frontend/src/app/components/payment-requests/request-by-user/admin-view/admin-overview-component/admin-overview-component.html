@@ -1,0 +1,40 @@
+<div class="requests">
+  <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 w-100 mb-4">
+    <h2 class="m-0">Invoices</h2>
+    <button class="btn btn-primary align-self-start align-self-sm-auto" (click)="navigateBankStatementUpload()">
+      Upload Bank Statement
+    </button>
+  </div>
+
+  <app-admin-invoice-filter-component
+    [limitSelection]="limitSelection"
+    (updateFilter)="updateFilterOptions($event)"
+  ></app-admin-invoice-filter-component>
+
+  <app-admin-invoice-list-component
+    [invoices]="invoices"
+    (openDetail)="onOpenDetail($event)"
+    (openDuplicates)="onOpenDuplicates($event)"
+  ></app-admin-invoice-list-component>
+
+  <app-duplicate-list-modal-component
+    [visible]="isDuplicateModalOpen"
+    [loading]="isDuplicateModalLoading"
+    [actionInvoiceId]="duplicateActionInvoiceId"
+    [sourceInvoice]="selectedDuplicateInvoice"
+    [duplicates]="duplicateCandidates"
+    (closeModal)="onCloseDuplicateModal()"
+    (openDetail)="onOpenDuplicateDetail($event)"
+    (deleteInvoice)="onDeleteDuplicateInvoice($event)"
+    (dismissDuplicate)="onDismissDuplicate($event)"
+  ></app-duplicate-list-modal-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

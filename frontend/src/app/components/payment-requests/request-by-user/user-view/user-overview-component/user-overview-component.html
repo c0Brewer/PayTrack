@@ -1,0 +1,58 @@
+<div class="main-page-container my-invoices">
+  <h2 class="m-0">My Invoices</h2>
+
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component
+      header="Total Invoices"
+      [content]="totalCount"
+      icon="docs"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Total Amount"
+      [content]="getTotalAmount() | euro"
+      icon="trending_up"
+      iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Paid"
+      [content]="getPaidInvoiceCount()"
+      icon="check"
+      iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Open"
+      [content]="getOpenInvoiceCount()"
+      icon="close"
+      iconColor="red"
+      iconBackgroundColor="#FECACA"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+  </div>
+  <app-user-invoice-filter-component
+    [limitSelection]="limitSelection"
+    (updateFilter)="updateFilterOptions($event)"
+  ></app-user-invoice-filter-component>
+
+  <app-user-invoice-list-component
+    [invoices]="invoices"
+    (openDetail)="onOpenDetail($event)"
+  ></app-user-invoice-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

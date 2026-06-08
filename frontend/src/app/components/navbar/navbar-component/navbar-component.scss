@@ -119,16 +119,22 @@
   padding-top: v.$size-s;
 }
 .nav-badge {
+  align-items: center;
   background: #dc3545;
-  border-radius: 10px;
+  border-radius: 50%;
   color: white;
-  font-size: 0.7rem;
+  display: inline-flex;
+  flex: 0 0 1.875rem;
+  font-size: 0.8rem;
   font-weight: bold;
+  height: 1.875rem;
+  justify-content: center;
   line-height: 1;
   margin-left: auto;
-  min-width: 1.2rem;
-  padding: 0.2rem 0.4rem;
+  min-width: 1.875rem;
+  padding: 0;
   text-align: center;
+  width: 1.875rem;
 }
 
 .sidebar__settings,

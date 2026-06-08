@@ -1,0 +1,46 @@
+<div class="invoice-table-wrapper">
+  <table class="TUR-table invoice-table">
+    <thead>
+      <tr>
+        <th>Invoice Number</th>
+        <th>Submitted</th>
+        <th>Paid At</th>
+        <th>Amount</th>
+        <th>Purpose</th>
+        <th>Team</th>
+        <th>Payout Type</th>
+        <th>Status</th>
+        <th class="actions-col">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (invoice of invoices; track invoice.id) {
+        <tr>
+          <td data-label="Invoice Number">{{ invoice.invoiceNumber }}</td>
+          <td data-label="Submitted">{{ invoice.createdAt | date: 'dd.MM.yyyy' }}</td>
+          <td data-label="Paid At">{{ invoice.paidAt ? (invoice.paidAt | date: 'dd.MM.yyyy') : '—' }}</td>
+          <td data-label="Amount">{{ invoice.amount | euro }}</td>
+          <td data-label="Purpose">{{ invoice.purposeOfPayment }}</td>
+          <td data-label="Team">{{ invoice.team?.name ?? '—' }}</td>
+          <td data-label="Payout Type">{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+          <td data-label="Status" class="status-badge">
+            <span [class]="'status ' + getStatusClass(invoice.status)">
+              {{ getTransactionStatusLabel(invoice.status) }}
+            </span>
+          </td>
+          <td class="actions-col" data-label="Actions">
+            <button class="btn btn-secondary icon-hover-btn" (click)="onOpenDetail(invoice)">
+              <span class="material-symbols-outlined">bar_chart</span>
+              <span class="btn-text">View</span>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="9">No invoices found.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

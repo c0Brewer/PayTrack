@@ -1,0 +1,116 @@
+@use 'variables' as v;
+
+.invoice-detail {
+  h3 {
+    margin: 0 0 v.$size-s;
+  }
+
+  h4 {
+    color: v.$text-muted;
+    font-size: v.$font-s;
+    font-weight: v.$font-semibold;
+    letter-spacing: 0.05em;
+    margin: 0 0 v.$size-s;
+    text-transform: uppercase;
+  }
+
+  .info-table {
+    border-collapse: collapse;
+    font-size: v.$font-s;
+    margin-bottom: 0;
+    width: 100%;
+
+    th {
+      color: v.$text-muted;
+      font-weight: v.$font-medium;
+      padding: v.$size-xs v.$size-m v.$size-xs 0;
+      text-align: left;
+      width: 180px;
+    }
+
+    td {
+      padding: v.$size-xs 0;
+    }
+  }
+
+  .invoice-info-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .status-actions,
+  .payment-form,
+  .receipt-section,
+  .history-table-wrapper {
+    margin-bottom: v.$size-l;
+  }
+
+  .status-form,
+  .payment-form {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+
+    label {
+      color: v.$text-muted;
+      display: flex;
+      flex-direction: column;
+      font-weight: v.$font-semibold;
+      gap: v.$size-xxs;
+    }
+  }
+
+  .status-form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-s;
+  }
+
+  .history-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    min-width: 48rem;
+  }
+
+  .receipt-section {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .receipt-image {
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    max-width: 100%;
+  }
+
+  .receipt-frame {
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    height: 600px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .invoice-detail {
+    .info-table {
+      th {
+        display: block;
+        padding: v.$size-xs 0 0;
+        width: auto;
+      }
+
+      td {
+        display: block;
+        padding: 0 0 v.$size-xs;
+      }
+    }
+  }
+}
