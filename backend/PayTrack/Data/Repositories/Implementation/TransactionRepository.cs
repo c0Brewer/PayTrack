@@ -49,7 +49,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.InvoiceNumber))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.InvoiceNumber, $"%{query.InvoiceNumber}%"));
+                dbQuery = dbQuery.Where(t => EF.Functions.ILike(t.InvoiceNumber, $"%{query.InvoiceNumber}%"));
             }
 
             if (query?.PayoutType.HasValue == true)
@@ -416,13 +416,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.PurposeOfPayment))
             {
-                var purposeLower = query.PurposeOfPayment.ToLower();
-                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(purposeLower));
+                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && EF.Functions.ILike(t.PurposeOfPayment, $"%{query.PurposeOfPayment}%"));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.PaymentReference))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.PaymentReference, $"%{query.PaymentReference}%"));
+                dbQuery = dbQuery.Where(t => t.PaymentReference != null && EF.Functions.ILike(t.PaymentReference, $"%{query.PaymentReference}%"));
             }
 
             if (query?.Status.HasValue == true)
