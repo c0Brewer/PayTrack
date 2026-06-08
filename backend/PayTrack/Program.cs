@@ -57,7 +57,7 @@ builder.Services.AddOptions<ReminderSettings>()
     .BindConfiguration("Reminders")
     .Validate(s => s.RunAtHourUtc is >= 0 and <= 23, "Reminders:RunAtHourUtc must be between 0 and 23.")
     .Validate(s => s.RunAtMinuteUtc is >= 0 and <= 59, "Reminders:RunAtMinuteUtc must be between 0 and 59.")
-    .Validate(s => s.DaysBeforeDue.All(d => d >= 0), "Reminders:DaysBeforeDue must contain only positive values.")
+    .Validate(s => s.DaysBeforeDue.All(d => d >= 0), "Reminders:DaysBeforeDue must contain only non-negative values.")
     .Validate(s => s.DaysBeforeDue.Distinct().Count() == s.DaysBeforeDue.Length, "Reminders:DaysBeforeDue must not contain duplicate values.")
     .Validate(s => s.EmailDelayMs >= 0, "Reminders:EmailDelayMs must be non-negative.")
     .ValidateOnStart();
