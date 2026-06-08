@@ -7,7 +7,12 @@ import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../../../services/team/team-service';
-import { PaymentRequestByUserDto, Role, UserDto } from '../../../../../types/exporter';
+import {
+  PaymentRequestByUserDto,
+  Role,
+  TransactionStatus,
+  UserDto,
+} from '../../../../../types/exporter';
 
 import { MyInvoicesComponent } from './user-list-component';
 
@@ -86,6 +91,35 @@ describe('MyInvoicesComponent', () => {
 
     expect(component.invoices).toEqual(apiResponse.items);
     expect(component.totalCount).toBe(2);
+  });
+
+  it('should compute invoice stat boxes from loaded stat invoices', () => {
+    component.statInvoices = [
+      { id: 1, amount: 100, status: TransactionStatus.Paid },
+      { id: 2, amount: 200, status: TransactionStatus.Submitted },
+      { id: 3, amount: 300, status: TransactionStatus.Approved },
+      { id: 4, amount: 400, status: TransactionStatus.Declined },
+    ] as PaymentRequestByUserDto[];
+
+    expect(component.getTotalAmount()).toBe(1000);
+    expect(component.getPaidInvoiceCount()).toBe(1);
+    expect(component.getOpenInvoiceCount()).toBe(2);
+  });
+
+  it('should load stat invoices with the full filtered count', () => {
+    const apiResponse = {
+      items: [{ id: 1, amount: 100, status: TransactionStatus.Paid }] as PaymentRequestByUserDto[],
+      totalCount: 12,
+      hasNext: true,
+      hasPrevious: false,
+    };
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of(apiResponse));
+
+    component.loadInvoices();
+
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenLastCalledWith(
+      expect.objectContaining({ Limit: 12, Offset: 0 }),
+    );
   });
 
   it('should filter my invoices by current admin user id', () => {

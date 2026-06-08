@@ -2,21 +2,30 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
+  TransactionStatus,
   UserDto,
 } from '../../../../../types/exporter';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { InvoiceFilterComponent } from '../../general/filter-component/filter-component';
 import { InvoiceListComponent } from '../../general/list-component/list-component';
 
 @Component({
   selector: 'app-my-invoices-component',
-  imports: [PaginationComponent, InvoiceFilterComponent, InvoiceListComponent],
+  imports: [
+    PaginationComponent,
+    InvoiceFilterComponent,
+    InvoiceListComponent,
+    StatBoxComponent,
+    EuroPipe,
+  ],
   templateUrl: './user-list-component.html',
   styleUrl: './user-list-component.scss',
 })
@@ -30,6 +39,7 @@ export class MyInvoicesComponent implements OnInit {
   ) {}
 
   invoices: PaymentRequestByUserDto[] = [];
+  statInvoices: PaymentRequestByUserDto[] = [];
 
   limitSelection: number[] = [10, 25, 50];
 
@@ -71,6 +81,7 @@ export class MyInvoicesComponent implements OnInit {
           this.totalCount = data.totalCount;
           this.hasNext = data.hasNext ?? false;
           this.hasPrev = data.hasPrevious ?? false;
+          this.loadInvoiceStats(data.totalCount);
           this.cdr.markForCheck();
         } else {
           this.notificationService.showError('Error while loading invoices');
@@ -80,6 +91,46 @@ export class MyInvoicesComponent implements OnInit {
         this.notificationService.showError(err);
       },
     });
+  }
+
+  loadInvoiceStats(totalCount: number): void {
+    if (totalCount <= 0) {
+      this.statInvoices = [];
+      return;
+    }
+
+    const query: GetPaymentRequestsByUserOptions = {
+      ...this.filterOptions,
+      UserId: this.currentUser?.id,
+      IncludeTeam: true,
+      Limit: totalCount,
+      Offset: 0,
+    };
+
+    this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
+      next: (data) => {
+        this.statInvoices = data?.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
+  }
+
+  getTotalAmount(): number {
+    return this.statInvoices.reduce((total, invoice) => total + invoice.amount, 0);
+  }
+
+  getPaidInvoiceCount(): number {
+    return this.statInvoices.filter((invoice) => invoice.status === TransactionStatus.Paid).length;
+  }
+
+  getOpenInvoiceCount(): number {
+    return this.statInvoices.filter(
+      (invoice) =>
+        invoice.status !== TransactionStatus.Paid && invoice.status !== TransactionStatus.Declined,
+    ).length;
   }
 
   updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {

@@ -1,0 +1,23 @@
+<div class="box season-list">
+  <h5 class="season-list__title">Alle Seasons ({{ seasons.length }})</h5>
+
+  <div class="season-list__rows">
+    @for (season of seasons; track season.id) {
+      <div class="season-list__row">
+        <div class="season-list__icon" aria-hidden="true">
+          <span class="material-symbols-outlined">calendar_month</span>
+        </div>
+
+        <div class="season-list__content">
+          <span class="season-list__name">{{ season.name }}</span>
+          <span class="season-list__meta">
+            {{ season.budgets?.length ?? 0 }} Budgets zugewiesen
+          </span>
+        </div>
+
+      </div>
+    } @empty {
+      <div class="season-list__empty">No seasons found.</div>
+    }
+  </div>
+</div>

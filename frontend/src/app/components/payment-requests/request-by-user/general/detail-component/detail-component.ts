@@ -17,10 +17,11 @@ import {
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
+import { DetailComponent } from '../../../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-invoice-detail-component',
-  imports: [DatePipe, EuroPipe, FormsModule],
+  imports: [DatePipe, DetailComponent, EuroPipe, FormsModule],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })

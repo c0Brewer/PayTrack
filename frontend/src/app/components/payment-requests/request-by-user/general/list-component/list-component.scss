@@ -1,13 +1,81 @@
 @use 'variables' as v;
 
+.invoice-table-wrapper {
+  border-radius: v.$size-xs;
+  width: 100%;
+}
+
+:host-context(.my-invoices) {
+  .invoice-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .invoice-table {
+    min-width: 82rem;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  :host-context(.my-invoices) {
+    .invoice-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .invoice-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
+  }
+}
+
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
   font-size: v.$font-s;
-  background: v.$background-light;
   border-radius: v.$size-xs;
   overflow: hidden;
 
+
+  .status-badge span{
+    text-align: center;
+  }
   thead {
     background: v.$background-dark;
 
@@ -25,14 +93,14 @@
       padding: v.$size-s;
       border-bottom: 1px solid v.$border-color;
       vertical-align: middle;
-
-      &:last-child {
-        border-bottom: none;
-      }
     }
 
     tr {
       transition: background 0.15s ease;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:hover {
@@ -43,8 +111,11 @@
   /* ---------- ACTIONS ---------- */
 
   .actions-col {
-    width: 1%;
+    display: table-cell;
+    min-width: 5.5rem;
+    text-align: right;
     white-space: nowrap;
+    width: 5.5rem;
   }
 
   .view-btn,

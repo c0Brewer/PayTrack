@@ -45,8 +45,8 @@
     </label>
 
     <div class="actions">
-      <button type="button" class="secondary" (click)="cancel.emit()">Cancel</button>
-      <button type="submit">{{ submitLabel }}</button>
+      <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="cancel.emit()"><span class="material-symbols-outlined">cancel</span> Cancel</button>
+      <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined">save</span> {{ submitLabel }}</button>
     </div>
   </form>
 </app-modal-component>

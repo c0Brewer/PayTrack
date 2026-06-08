@@ -74,13 +74,13 @@
   ></app-pagination-component>
 
   @if (editingCostCentre) {
-    <app-cost-centre-edit-component
+    <app-cost-centre-edit-modal-component
       [costCentre]="editingCostCentre"
       [teams]="teams"
       [seasons]="seasons"
       (saveEvent)="onCostCentreSaved()"
       (closeEvent)="closeEdit()"
-    ></app-cost-centre-edit-component>
+    ></app-cost-centre-edit-modal-component>
   }
 
   @if (deletingCostCentre) {

@@ -1,0 +1,15 @@
+<form class="box" (ngSubmit)="createSeason()">
+  <h3 class="season-form-title">Create a new Season</h3>
+  <label for="seasonName" class="d-none">
+    Season Name
+  </label>
+    <input
+      name="seasonName"
+      [(ngModel)]="newSeasonName"
+      placeholder="Season name (e.g. 2026 Q1)"
+      autocomplete="off"
+    />
+  <button class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" type="submit">
+    <span class="material-symbols-outlined">add</span>
+    Create</button>
+</form>

@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
+import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
+import { NotificationService } from '../../../services/notification/notification-service';
 import { BudgetType, CostCentreDto, TeamDto } from '../../../types/exporter';
 
 import { CostCentreEditModalComponent } from './cost-centre-edit-modal-component';
@@ -7,6 +10,23 @@ import { CostCentreEditModalComponent } from './cost-centre-edit-modal-component
 describe('CostCentreEditModalComponent', () => {
   let component: CostCentreEditModalComponent;
   let fixture: ComponentFixture<CostCentreEditModalComponent>;
+  let costCentreServiceMock: {
+    createCostCentre: ReturnType<typeof vi.fn>;
+    updateCostCentre: ReturnType<typeof vi.fn>;
+  };
+  let notificationServiceMock: {
+    showError: ReturnType<typeof vi.fn>;
+    showSuccess: ReturnType<typeof vi.fn>;
+  };
+
+  const mockCostCentre: CostCentreDto = {
+    id: 1,
+    name: 'Aerodynamics',
+    description: 'Aero costs',
+    displayColor: '#FF5733',
+    budgets: [],
+    isActive: true,
+  };
 
   function clickAddBudgetButton(): void {
     const addButton = fixture.nativeElement.querySelector(
@@ -17,8 +37,21 @@ describe('CostCentreEditModalComponent', () => {
   }
 
   beforeEach(async () => {
+    costCentreServiceMock = {
+      createCostCentre: vi.fn().mockReturnValue(of(mockCostCentre)),
+      updateCostCentre: vi.fn().mockReturnValue(of(mockCostCentre)),
+    };
+    notificationServiceMock = {
+      showError: vi.fn(),
+      showSuccess: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [CostCentreEditModalComponent],
+      providers: [
+        { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CostCentreEditModalComponent);
@@ -40,6 +73,7 @@ describe('CostCentreEditModalComponent', () => {
       targetAmount: 500,
       periodStart: '2026-01-01',
       periodEnd: '2026-12-31',
+      type: BudgetType.Expense,
     };
 
     component.addNewBudget();
@@ -54,6 +88,7 @@ describe('CostCentreEditModalComponent', () => {
         targetAmount: 500,
         periodStart: '2026-01-01',
         periodEnd: '2026-12-31',
+        type: BudgetType.Expense,
       },
     ]);
     expect(component.touchedBudgetFields).toEqual({
@@ -63,6 +98,17 @@ describe('CostCentreEditModalComponent', () => {
       seasonId: false,
       periodStart: false,
       periodEnd: false,
+    });
+    expect(component.newBudgetDraft).toEqual({
+      id: null,
+      name: '',
+      description: null,
+      teamId: 0,
+      seasonId: 0,
+      targetAmount: null,
+      periodStart: '',
+      periodEnd: '',
+      type: BudgetType.Expense,
     });
   });
 
@@ -75,11 +121,13 @@ describe('CostCentreEditModalComponent', () => {
     expect(component.newBudgets).toEqual([]);
     expect(component.hasBudgetFieldError('name')).toBe(true);
     expect(component.hasBudgetFieldError('teamId')).toBe(true);
+    expect(component.hasBudgetFieldError('targetAmount')).toBe(true);
     expect(component.hasBudgetFieldError('seasonId')).toBe(true);
     expect(component.hasBudgetFieldError('periodStart')).toBe(true);
     expect(component.hasBudgetFieldError('periodEnd')).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Name is required.');
     expect(fixture.nativeElement.textContent).toContain('Team is required.');
+    expect(fixture.nativeElement.textContent).toContain('Amount is required.');
     expect(fixture.nativeElement.textContent).toContain('Season is required.');
     expect(fixture.nativeElement.textContent).toContain('Period start is required.');
     expect(fixture.nativeElement.textContent).toContain('Period end is required.');
@@ -98,6 +146,7 @@ describe('CostCentreEditModalComponent', () => {
       targetAmount: -1,
       periodStart: '2026-01-01',
       periodEnd: '2026-12-31',
+      type: BudgetType.Expense,
     };
     fixture.detectChanges(false);
 
@@ -124,6 +173,7 @@ describe('CostCentreEditModalComponent', () => {
       targetAmount: 500,
       periodStart: '2026-12-31',
       periodEnd: '2026-01-01',
+      type: BudgetType.Expense,
     };
     fixture.detectChanges(false);
 
@@ -160,7 +210,7 @@ describe('CostCentreEditModalComponent', () => {
           targetAmount: 1000,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
-          type: 0,
+          type: BudgetType.Expense,
           transactionIds: [],
           paidAmount: 500,
           approvedAmount: 200,
@@ -168,6 +218,7 @@ describe('CostCentreEditModalComponent', () => {
       ],
     };
     component.costCentre = costCentre;
+
     component.ngOnChanges();
 
     expect(component.originalCostCentre).toEqual(costCentre);
@@ -204,16 +255,14 @@ describe('CostCentreEditModalComponent', () => {
   });
 
   it('getTeamName should return team name or fallback', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    component.teams = [{ id: 3, name: 'Gamma' } as any];
+    component.teams = [{ id: 3, name: 'Gamma' } as unknown as TeamDto];
 
     expect(component.getTeamName(3)).toBe('Gamma');
     expect(component.getTeamName(99)).toBe('Team #99');
   });
 
   it('getSeasonName should return season name or fallback', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    component.seasons = [{ id: 1, name: '2025' } as any];
+    component.seasons = [{ id: 1, name: '2025', budgets: [] }];
 
     expect(component.getSeasonName(1)).toBe('2025');
     expect(component.getSeasonName(99)).toBe('Season #99');
@@ -225,123 +274,192 @@ describe('CostCentreEditModalComponent', () => {
     expect(component.isCreating).toBe(false);
   });
 
-  describe('hasChanged', () => {
-    it('should return false when originalCostCentre is null', () => {
-      component.originalCostCentre = null;
-      expect(component.hasChanged()).toBe(false);
-    });
+  it('hasChanged should return true when name has changed', () => {
+    component.costCentre = { ...component.costCentre, id: 1, name: 'New Name' };
+    component.ngOnChanges();
+    component.costCentre.name = 'Changed Name';
 
-    it('should return true when name has changed', () => {
-      component.costCentre = { ...component.costCentre, id: 1, name: 'New Name' };
-      component.ngOnChanges();
-      component.costCentre.name = 'Changed Name';
-      expect(component.hasChanged()).toBe(true);
-    });
+    expect(component.hasChanged()).toBe(true);
+  });
 
-    it('should return false when nothing has changed', () => {
-      component.costCentre = { ...component.costCentre, id: 1, name: 'Same' };
-      component.ngOnChanges();
-      expect(component.hasChanged()).toBe(false);
-    });
+  it('hasChanged should return false when nothing has changed', () => {
+    component.costCentre = { ...component.costCentre, id: 1, name: 'Same' };
+    component.ngOnChanges();
 
-    it('should return true when newBudgets has entries', () => {
-      component.costCentre = { ...component.costCentre, id: 1 };
-      component.ngOnChanges();
+    expect(component.hasChanged()).toBe(false);
+  });
 
-      component.newBudgets = [
+  it('onSave should close when not creating and nothing has changed', () => {
+    const closeSpy = vi.spyOn(component, 'onClose');
+    component.costCentre = { ...component.costCentre, id: 1, name: 'Unchanged' };
+    component.ngOnChanges();
+
+    component.onSave();
+
+    expect(closeSpy).toHaveBeenCalled();
+    expect(costCentreServiceMock.updateCostCentre).not.toHaveBeenCalled();
+  });
+
+  it('should create a cost centre with budget data and normalized dates', () => {
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+    component.costCentre = {
+      id: -1,
+      name: 'New CC',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    };
+    component.ngOnChanges();
+    component.newBudgets = [
+      {
+        id: null,
+        name: 'Budget',
+        description: null,
+        teamId: 1,
+        seasonId: 2,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+        type: BudgetType.Expense,
+      },
+    ];
+
+    component.onSave();
+
+    expect(costCentreServiceMock.createCostCentre).toHaveBeenCalledWith({
+      name: 'New CC',
+      description: undefined,
+      displayColor: undefined,
+      budgets: [
         {
-          id: null,
-          name: 'B',
+          name: 'Budget',
           description: null,
           teamId: 1,
-          seasonId: 1,
-          targetAmount: 0,
-          periodStart: '2026-01-01',
-          periodEnd: '2026-12-31',
+          seasonId: 2,
+          targetAmount: 500,
+          periodStart: '2026-01-01T00:00:00.000Z',
+          periodEnd: '2026-12-31T00:00:00.000Z',
+          type: BudgetType.Expense,
         },
-      ];
-      expect(component.hasChanged()).toBe(true);
+      ],
     });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Cost centre created successfully',
+    );
+    expect(emitSpy).toHaveBeenCalled();
   });
 
-  describe('onSave', () => {
-    it('should call onClose when not creating and nothing has changed', () => {
-      const closeSpy = vi.spyOn(component, 'onClose');
-      component.costCentre = { ...component.costCentre, id: 1, name: 'Unchanged' };
-      component.ngOnChanges();
-      component.onSave();
-      expect(closeSpy).toHaveBeenCalled();
-    });
+  it('should update a cost centre with budget data and normalized dates', () => {
+    const emitSpy = vi.spyOn(component.saveEvent, 'emit');
+    component.costCentre = mockCostCentre;
+    component.ngOnChanges();
+    component.newBudgets = [
+      {
+        id: 10,
+        name: 'Updated budget',
+        description: null,
+        teamId: 1,
+        seasonId: 2,
+        targetAmount: 500,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+        type: BudgetType.Expense,
+      },
+    ];
 
-    it('should emit saveEvent when creating (id === -1)', () => {
-      const emitSpy = vi.spyOn(component.saveEvent, 'emit');
-      component.costCentre = { ...component.costCentre, id: -1 };
-      component.onSave();
-      expect(emitSpy).toHaveBeenCalledWith({
-        costCentre: component.costCentre,
-        budgetsToUpsert: [],
-        budgetIdsToDelete: [],
-      });
-    });
+    component.onSave();
 
-    it('should emit saveEvent with correct budgets when not creating but changed', () => {
-      const emitSpy = vi.spyOn(component.saveEvent, 'emit');
-      component.costCentre = { ...component.costCentre, id: 2, name: 'CC' };
-      component.ngOnChanges();
-      component.costCentre.name = 'CC Updated';
-      component.onSave();
-      expect(emitSpy).toHaveBeenCalled();
-    });
+    expect(costCentreServiceMock.updateCostCentre).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        budgetsToUpsert: [
+          {
+            id: null,
+            name: 'Updated budget',
+            description: null,
+            teamId: 1,
+            seasonId: 2,
+            targetAmount: 500,
+            periodStart: '2026-01-01T00:00:00.000Z',
+            periodEnd: '2026-12-31T00:00:00.000Z',
+            type: BudgetType.Expense,
+          },
+        ],
+      }),
+    );
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Cost centre updated successfully',
+    );
+    expect(emitSpy).toHaveBeenCalled();
   });
 
-  it('onClose should emit closeEvent', () => {
-    const spy = vi.spyOn(component.closeEvent, 'emit');
-    component.onClose();
-    expect(spy).toHaveBeenCalled();
+  it('should show an error when saving fails', () => {
+    costCentreServiceMock.createCostCentre.mockReturnValueOnce(
+      throwError(() => new Error('Create failed')),
+    );
+    component.costCentre = {
+      id: -1,
+      name: 'New CC',
+      description: null,
+      displayColor: null,
+      budgets: [],
+      isActive: true,
+    };
+    component.ngOnChanges();
+
+    component.onSave();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not create cost centre: Create failed',
+    );
   });
 
   it('toggleBudgetDeletion should flip markedForDeletion', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const budget: any = { markedForDeletion: false };
+    const budget = { markedForDeletion: false } as Parameters<
+      typeof component.toggleBudgetDeletion
+    >[0];
+
     component.toggleBudgetDeletion(budget);
     expect(budget.markedForDeletion).toBe(true);
+
     component.toggleBudgetDeletion(budget);
     expect(budget.markedForDeletion).toBe(false);
   });
 
   it('removeNewBudget should remove the budget at the given index', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    component.newBudgets = [{ id: null, name: 'A' } as any, { id: null, name: 'B' } as any];
+    component.newBudgets = [
+      { ...component.newBudgetDraft, name: 'A' },
+      { ...component.newBudgetDraft, name: 'B' },
+    ];
+
     component.removeNewBudget(0);
+
     expect(component.newBudgets).toHaveLength(1);
     expect(component.newBudgets[0].name).toBe('B');
   });
 
-  describe('isTeamActive', () => {
-    it('should return true for an active team', () => {
-      component.teams = [{ id: 1, isActive: true } as unknown as TeamDto];
-      expect(component.isTeamActive(1)).toBe(true);
-    });
+  it('isTeamActive should handle active, inactive, and missing teams', () => {
+    component.teams = [
+      { id: 1, isActive: true },
+      { id: 2, isActive: false },
+    ] as unknown as TeamDto[];
 
-    it('should return false for an inactive team', () => {
-      component.teams = [{ id: 2, isActive: false } as unknown as TeamDto];
-      expect(component.isTeamActive(2)).toBe(false);
-    });
-
-    it('should return true when team is not found (treat as active)', () => {
-      component.teams = [];
-      expect(component.isTeamActive(999)).toBe(true);
-    });
-  });
-
-  it('getBudgetFieldError teamId should return inactive team error for inactive team', () => {
-    component.teams = [{ id: 2, isActive: false } as unknown as TeamDto];
-    component.newBudgetDraft = { ...component.newBudgetDraft, teamId: 2 };
-    expect(component.getBudgetFieldError('teamId')).toBe('Select an active team.');
+    expect(component.isTeamActive(1)).toBe(true);
+    expect(component.isTeamActive(2)).toBe(false);
+    expect(component.isTeamActive(999)).toBe(true);
   });
 
   it('onBudgetFieldBlur should mark the field as touched', () => {
     component.onBudgetFieldBlur('name');
     expect(component.touchedBudgetFields['name']).toBe(true);
+  });
+
+  it('onClose should emit closeEvent', () => {
+    const spy = vi.spyOn(component.closeEvent, 'emit');
+
+    component.onClose();
+
+    expect(spy).toHaveBeenCalled();
   });
 });

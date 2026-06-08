@@ -37,6 +37,23 @@ describe('InvoiceDetailComponent', () => {
     component = fixture.componentInstance;
   });
 
+  function getButtonByText(text: string): HTMLButtonElement | null {
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('button'),
+    ) as HTMLButtonElement[];
+
+    return buttons.find((button) => (button.textContent ?? '').includes(text)) ?? null;
+  }
+
+  function getStatusFormButton(title: string): HTMLButtonElement | null {
+    const forms = Array.from(
+      fixture.nativeElement.querySelectorAll('.status-form'),
+    ) as HTMLFormElement[];
+    const form = forms.find((item) => (item.textContent ?? '').includes(title));
+
+    return form?.querySelector('button') ?? null;
+  }
+
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
@@ -88,7 +105,7 @@ describe('InvoiceDetailComponent', () => {
     component.loading = false;
     component.hasReceipt = true;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.download-btn')).not.toBeNull();
+    expect(getButtonByText('Download Receipt')).not.toBeNull();
   });
 
   it('should not show download button when hasReceipt is false', () => {
@@ -96,7 +113,7 @@ describe('InvoiceDetailComponent', () => {
     component.loading = false;
     component.hasReceipt = false;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.download-btn')).toBeNull();
+    expect(getButtonByText('Download Receipt')).toBeNull();
   });
 
   it('should render img tag when isReceiptImage is true and receiptBlobUrl is set', () => {
@@ -120,10 +137,12 @@ describe('InvoiceDetailComponent', () => {
   });
 
   it('should emit back event when back button is clicked', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
     fixture.detectChanges();
     let emitted = false;
     component.back.subscribe(() => (emitted = true));
-    (fixture.nativeElement.querySelector('.back-btn') as HTMLButtonElement).click();
+    getButtonByText('Back')?.click();
     expect(emitted).toBe(true);
   });
 
@@ -134,7 +153,7 @@ describe('InvoiceDetailComponent', () => {
     fixture.detectChanges();
     let emitted = false;
     component.downloadReceipt.subscribe(() => (emitted = true));
-    (fixture.nativeElement.querySelector('.download-btn') as HTMLButtonElement).click();
+    getButtonByText('Download Receipt')?.click();
     expect(emitted).toBe(true);
   });
 
@@ -262,9 +281,9 @@ describe('InvoiceDetailComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.status-actions')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.approve-btn')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.request-changes-btn')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
+    expect(getStatusFormButton('Approve')).not.toBeNull();
+    expect(getStatusFormButton('Request Changes')).not.toBeNull();
+    expect(getStatusFormButton('Decline')).not.toBeNull();
   });
 
   it('should hide status admin controls when management is disabled', () => {
@@ -288,10 +307,10 @@ describe('InvoiceDetailComponent', () => {
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.approve-btn')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.request-changes-btn')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.mark-paid-btn')).not.toBeNull();
+    expect(getStatusFormButton('Approve')).toBeNull();
+    expect(getStatusFormButton('Request Changes')).toBeNull();
+    expect(getStatusFormButton('Decline')).not.toBeNull();
+    expect(getButtonByText('Mark as Paid')).not.toBeNull();
   });
 
   it('should hide mark paid controls when invoice is not approved', () => {
@@ -301,7 +320,7 @@ describe('InvoiceDetailComponent', () => {
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.mark-paid-btn')).toBeNull();
+    expect(getButtonByText('Mark as Paid')).toBeNull();
   });
 
   it('should disable pending action buttons', () => {
@@ -315,15 +334,9 @@ describe('InvoiceDetailComponent', () => {
 
     fixture.detectChanges();
 
-    expect(
-      (fixture.nativeElement.querySelector('.request-changes-btn') as HTMLButtonElement).disabled,
-    ).toBe(true);
-    expect(
-      (fixture.nativeElement.querySelector('.approve-btn') as HTMLButtonElement).disabled,
-    ).toBe(false);
-    expect(
-      (fixture.nativeElement.querySelector('.decline-btn') as HTMLButtonElement).disabled,
-    ).toBe(false);
+    expect(getStatusFormButton('Request Changes')?.disabled).toBe(true);
+    expect(getStatusFormButton('Approve')?.disabled).toBe(false);
+    expect(getStatusFormButton('Decline')?.disabled).toBe(false);
   });
 
   it('should disable mark paid button while marking paid', () => {
@@ -340,9 +353,7 @@ describe('InvoiceDetailComponent', () => {
 
     fixture.detectChanges();
 
-    expect(
-      (fixture.nativeElement.querySelector('.mark-paid-btn') as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(getButtonByText('Saving...')?.disabled).toBe(true);
   });
 
   it('should show user name row when showUserName is true', () => {
