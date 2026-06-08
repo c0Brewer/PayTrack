@@ -879,13 +879,10 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         // ----------------------------
-        // GET BY ID PaymentRequestByTeam – includes
-        // ----------------------------
-        // ----------------------------
         // UPDATE AND ADD STATUS HISTORY
         // ----------------------------
         [Fact]
-        public async Task UpdateAndAddStatusHistoryAsync_ShouldPersistBothAtomically()
+        public async Task UpdateAndAddStatusHistoryAsync_ShouldPersistBothChanges()
         {
             await using var context = GetInMemoryDbContext("UpdateAndAddStatusHistory");
 
@@ -949,6 +946,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
             ex.Message.Should().Contain("status history");
         }
 
+        // ----------------------------
+        // GET BY ID PaymentRequestByTeam
+        // ----------------------------
         [Fact]
         public async Task GetByIdAsyncTeam_ShouldIncludeNavigationProperties_WhenRequested()
         {

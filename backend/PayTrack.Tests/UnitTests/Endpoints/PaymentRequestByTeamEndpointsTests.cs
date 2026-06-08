@@ -197,9 +197,6 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         // ----------------------------
-        // UPDATE
-        // ----------------------------
-        // ----------------------------
         // MARK AS PAID
         // ----------------------------
         [Fact]
@@ -280,6 +277,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
+        // ----------------------------
+        // UPDATE
+        // ----------------------------
         [Fact]
         public async Task Update_ReturnsOk()
         {

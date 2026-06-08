@@ -316,7 +316,7 @@ namespace PayTrack.Data.Repositories.Implementation
             this.context.TransactionStatusHistories.Add(history);
             int res = await this.context.SaveChangesAsync();
 
-            if (res != 2)
+            if (res < 2)
             {
                 throw new InternalErrorException($"Updating transaction and saving status history did not end as expected. Saved {res} entries.");
             }
