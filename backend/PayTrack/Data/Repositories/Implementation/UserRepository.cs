@@ -25,20 +25,20 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                dbQuery = dbQuery.Where(u => EF.Functions.ILike(u.Name, $"%{query.Name}%"));
+                dbQuery = dbQuery.Where(u => u.Name.ToLower().Contains(query.Name.ToLower()));
             }
 
             // Filter by email
             if (!string.IsNullOrWhiteSpace(query?.Email))
             {
-                dbQuery = dbQuery.Where(u => EF.Functions.ILike(u.Email, $"%{query.Email}%"));
+                dbQuery = dbQuery.Where(u => u.Email.ToLower().Contains(query.Email.ToLower()));
             }
 
             // Filter by team name (need Include if navigation property)
             if (!string.IsNullOrWhiteSpace(query?.TeamName))
             {
                 dbQuery = dbQuery.Include(u => u.Team)
-                             .Where(u => u.Team != null && EF.Functions.ILike(u.Team.Name, $"%{query.TeamName}%"));
+                             .Where(u => u.Team != null && u.Team.Name.ToLower().Contains(query.TeamName.ToLower()));
             }
 
             // Filter by role
