@@ -67,6 +67,8 @@ namespace PayTrack.Api.Endpoints
             group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
             group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync)
                 .RequireRole(Role.Admin);
+            group.MapPost("/team/{id:int}/mark-as-paid", PaymentRequestByTeamHandler.MarkAsPaidPaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin);
 
             /*
              * Bankstatement Matching

@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
-import { PaymentRequestByTeamDto } from '../../../../../types/exporter';
+import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { TeamRequestAdminDetailComponent } from './admin-detail-component';
 
@@ -15,10 +15,12 @@ describe('TeamRequestAdminDetailComponent', () => {
 
   const serviceMock = {
     getPaymentRequestsByTeamById: vi.fn(),
+    markAsPaid: vi.fn(),
   };
 
   const notificationMock = {
     showError: vi.fn(),
+    showSuccess: vi.fn(),
   };
 
   const routerMock = {
@@ -31,6 +33,7 @@ describe('TeamRequestAdminDetailComponent', () => {
 
   const routeMock = {
     paramMap: of(convertToParamMap({ id: '5' })),
+    snapshot: { paramMap: convertToParamMap({ id: '5' }) },
   };
 
   const mockRequest = {
@@ -176,6 +179,115 @@ describe('TeamRequestAdminDetailComponent', () => {
       component.request = mockRequest;
       component.modalType = 'email';
       expect(component.notificationMessage).toContain('User');
+    });
+
+    it('shows N/A for dueDate in email when dueDate is absent', () => {
+      component.request = mockRequest;
+      component.modalType = 'email';
+      expect(component.notificationMessage).toContain('N/A');
+    });
+  });
+
+  describe('canMarkAsPaid', () => {
+    it('returns false when request is null', () => {
+      component.request = null;
+      expect(component.canMarkAsPaid).toBe(false);
+    });
+
+    it('returns false when status is Paid', () => {
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Paid,
+      } as unknown as PaymentRequestByTeamDto;
+      expect(component.canMarkAsPaid).toBe(false);
+    });
+
+    it('returns false when status is Declined', () => {
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Declined,
+      } as unknown as PaymentRequestByTeamDto;
+      expect(component.canMarkAsPaid).toBe(false);
+    });
+
+    it('returns true when status is Submitted', () => {
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Submitted,
+      } as unknown as PaymentRequestByTeamDto;
+      expect(component.canMarkAsPaid).toBe(true);
+    });
+
+    it('returns true when status is ChangesRequested', () => {
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.ChangesRequested,
+      } as unknown as PaymentRequestByTeamDto;
+      expect(component.canMarkAsPaid).toBe(true);
+    });
+
+    it('returns true when status is Approved', () => {
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Approved,
+      } as unknown as PaymentRequestByTeamDto;
+      expect(component.canMarkAsPaid).toBe(true);
+    });
+  });
+
+  describe('openMarkAsPaidModal / cancelMarkAsPaid', () => {
+    it('sets showMarkAsPaidModal to true and resets comment to default on open', () => {
+      component.markAsPaidComment = 'some old comment';
+      component.openMarkAsPaidModal();
+      expect(component.showMarkAsPaidModal).toBe(true);
+      expect(component.markAsPaidComment).toBe('Payment manually approved and processed.');
+    });
+
+    it('sets showMarkAsPaidModal to false on cancel', () => {
+      component.showMarkAsPaidModal = true;
+      component.cancelMarkAsPaid();
+      expect(component.showMarkAsPaidModal).toBe(false);
+    });
+  });
+
+  describe('confirmMarkAsPaid', () => {
+    it('does nothing when request is null', () => {
+      component.request = null;
+      component.confirmMarkAsPaid();
+      expect(serviceMock.markAsPaid).not.toHaveBeenCalled();
+    });
+
+    it('calls markAsPaid with request id and comment, shows success, clears modal and updates request on success', () => {
+      const updatedRequest = {
+        ...mockRequest,
+        status: TransactionStatus.Paid,
+      } as unknown as PaymentRequestByTeamDto;
+      component.request = mockRequest;
+      component.markAsPaidComment = 'manually processed';
+      serviceMock.markAsPaid.mockReturnValue(of(updatedRequest));
+
+      component.confirmMarkAsPaid();
+
+      expect(serviceMock.markAsPaid).toHaveBeenCalledWith(5, { comment: 'manually processed' });
+      expect(notificationMock.showSuccess).toHaveBeenCalledWith('Payment marked as paid.');
+      expect(component.markAsPaidLoading).toBe(false);
+      expect(component.showMarkAsPaidModal).toBe(false);
+      expect(component.request?.status).toBe(TransactionStatus.Paid);
+      expect(serviceMock.getPaymentRequestsByTeamById).not.toHaveBeenCalled();
+    });
+
+    it('shows error notification and clears loading but keeps modal open on failure', () => {
+      component.request = mockRequest;
+      component.showMarkAsPaidModal = true;
+      serviceMock.markAsPaid.mockReturnValue(throwError(() => new Error('server error')));
+
+      component.confirmMarkAsPaid();
+
+      expect(notificationMock.showError).toHaveBeenCalledWith(
+        'Could not mark as paid: server error',
+      );
+      expect(component.markAsPaidLoading).toBe(false);
+      expect(component.showMarkAsPaidModal).toBe(true);
     });
   });
 });

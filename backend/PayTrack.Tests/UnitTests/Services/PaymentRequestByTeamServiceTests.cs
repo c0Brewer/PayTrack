@@ -1,9 +1,12 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -11,6 +14,27 @@ namespace PayTrack.Tests.UnitTests.Services
 {
     public class PaymentRequestByTeamServiceTests
     {
+        private static PaymentRequestByTeamService BuildService(
+            Mock<ITransactionRepository> repoMock,
+            Mock<ITeamService> teamMock,
+            Mock<IUserService> userMock,
+            Mock<IBudgetService> budgetMock,
+            Mock<INotificationDispatchService>? notificationsMock = null,
+            PaymentRequestNotificationSettings? notifSettings = null)
+        {
+            notificationsMock ??= new Mock<INotificationDispatchService>();
+            var settings = Options.Create(notifSettings ?? new PaymentRequestNotificationSettings());
+            var logger = new Mock<ILogger<PaymentRequestByTeamService>>();
+            return new PaymentRequestByTeamService(
+                repoMock.Object,
+                teamMock.Object,
+                userMock.Object,
+                budgetMock.Object,
+                notificationsMock.Object,
+                settings,
+                logger.Object);
+        }
+
         // ----------------------------
         // GET ALL
         // ----------------------------
@@ -32,7 +56,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
                 .ReturnsAsync((list, list.Count));
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             var (result, count) = await service.GetAllAsync();
 
@@ -57,7 +81,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
                 .ReturnsAsync(entity);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             var result = await service.GetPaymentRequestByTeamByIdAsync(1);
 
@@ -80,7 +104,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(t => t.GetTeamByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Team?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -105,20 +129,12 @@ namespace PayTrack.Tests.UnitTests.Services
             var budgetMock = new Mock<IBudgetService>();
 
             var team = new Team { Id = 5 };
-            var assignedUser = new User { Id = 1 };
+            var assignedUser = new User { Id = 1, Name = "Alice", Email = "alice@test.com" };
             var creatingUser = new User { Id = 2 };
 
-            teamMock
-                .Setup(t => t.GetTeamByIdAsync(5))
-                .ReturnsAsync(team);
-
-            userMock
-                .Setup(u => u.GetUserByIdAsync(1))
-                .ReturnsAsync(assignedUser);
-
-            userMock
-                .Setup(u => u.GetUserByIdAsync(2))
-                .ReturnsAsync(creatingUser);
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(team);
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(assignedUser);
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(creatingUser);
 
             var created = new PaymentRequestByTeam { Id = 1 };
 
@@ -126,7 +142,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync(created);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             var result = await service.CreatePaymentRequestByTeamAsync(
                 userToAssignToId: 1,
@@ -153,6 +169,62 @@ namespace PayTrack.Tests.UnitTests.Services
                 Times.Once);
         }
 
+        [Fact]
+        public async Task Create_ShouldSendEmailToAssignedUser()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var assignedUser = new User { Id = 1, Name = "Alice", Email = "alice@test.com" };
+            var creatingUser = new User { Id = 2, Name = "Bob", Email = "bob@test.com" };
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(assignedUser);
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(creatingUser);
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.CreatePaymentRequestByTeamAsync(
+                userToAssignToId: 1,
+                creatingUserId: 2,
+                teamId: 5,
+                amount: 100,
+                purposeOfPayment: "Office Supplies",
+                dueDate: DateTime.Today.AddDays(7));
+
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("New Payment Request") && s.Contains("Office Supplies")),
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_ShouldNotSendEmail_WhenTeamNotFound()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(It.IsAny<int>())).ReturnsAsync((Team?)null);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            Func<Task> act = async () =>
+                await service.CreatePaymentRequestByTeamAsync(1, 2, 99, 100, "test", DateTime.Today.AddDays(7));
+
+            await act.Should().ThrowAsync<NotFoundException>();
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
         // ----------------------------
         // UPDATE
         // ----------------------------
@@ -168,7 +240,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
                 .ReturnsAsync((PaymentRequestByTeam?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.UpdatePaymentRequestByTeamAsync(1);
@@ -201,7 +273,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync((PaymentRequestByTeam p) => p);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             var result = await service.UpdatePaymentRequestByTeamAsync(
                 1,
@@ -240,7 +312,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByTeam>()))
                 .ReturnsAsync((PaymentRequestByTeam p) => p);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             var result = await service.UpdatePaymentRequestByTeamAsync(1, teamId: 5);
 
@@ -265,7 +337,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(t => t.GetTeamByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Team?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.UpdatePaymentRequestByTeamAsync(1, teamId: 99);
@@ -289,7 +361,7 @@ namespace PayTrack.Tests.UnitTests.Services
             teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -317,7 +389,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync((User?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -346,7 +418,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
             budgetMock.Setup(c => c.GetByIdAsync(99)).ReturnsAsync((Budget?)null);
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -375,7 +447,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -403,7 +475,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -431,7 +503,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1 });
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
 
-            var service = new PaymentRequestByTeamService(repoMock.Object, teamMock.Object, userMock.Object, budgetMock.Object);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
 
             Func<Task> act = async () =>
                 await service.CreatePaymentRequestByTeamAsync(
@@ -448,6 +520,136 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         // ----------------------------
+        // MARK AS PAID
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ShouldThrow_WhenTransactionNotFound()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync((PaymentRequestByTeam?)null);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            Func<Task> act = async () => await service.MarkAsPaidAsync(1, 99, null);
+
+            await act.Should().ThrowAsync<NotFoundException>().WithMessage("Transaction not found");
+        }
+
+        [Theory]
+        [InlineData(TransactionStatus.Paid)]
+        [InlineData(TransactionStatus.Declined)]
+        public async Task MarkAsPaid_ShouldThrow_WhenStatusIsPaidOrDeclined(TransactionStatus status)
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam { Id = 1, Status = status };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            Func<Task> act = async () => await service.MarkAsPaidAsync(1, 99, null);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(TransactionStatus.Submitted)]
+        [InlineData(TransactionStatus.ChangesRequested)]
+        [InlineData(TransactionStatus.Approved)]
+        public async Task MarkAsPaid_ShouldUpdateStatusAndCreateHistory_WhenStatusIsAllowed(TransactionStatus fromStatus)
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = fromStatus,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            var result = await service.MarkAsPaidAsync(5, 42, "my comment");
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+            result.PaidAt.Should().NotBeNull();
+
+            repoMock.Verify(r => r.UpdateAndAddStatusHistoryAsync(
+                It.Is<PaymentRequestByTeam>(p =>
+                    p.Status == TransactionStatus.Paid &&
+                    p.PaidAt != null),
+                It.Is<TransactionStatusHistory>(h =>
+                    h.TransactionId == 5 &&
+                    h.ChangedById == 42 &&
+                    h.FromStatus == fromStatus &&
+                    h.ToStatus == TransactionStatus.Paid &&
+                    h.Comment == "my comment")), Times.Once);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldSendConfirmationEmailToUser()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("Payment Confirmed") && s.Contains("Office Supplies")),
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        // ----------------------------
         // VALIDATE QUERY
         // ----------------------------
         [Theory]
@@ -455,11 +657,11 @@ namespace PayTrack.Tests.UnitTests.Services
         [InlineData(Role.Admin, 99, 99, true)]
         public void ValidateQuery_Admin_ShouldAlwaysReturnTrue(Role role, int? queryUserId, int? queryTeamId, bool expected)
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 1, Role = role, TeamId = 1 };
             var query = new GetPaymentRequestByTeamQuery { UserId = queryUserId, TeamId = queryTeamId };
@@ -470,11 +672,11 @@ namespace PayTrack.Tests.UnitTests.Services
         [Fact]
         public void ValidateQuery_RegularUser_ShouldReturnTrue_WhenQueryMatchesOwnId()
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 7, Role = Role.RegularUser };
             var query = new GetPaymentRequestByTeamQuery { UserId = 7 };
@@ -485,11 +687,11 @@ namespace PayTrack.Tests.UnitTests.Services
         [Fact]
         public void ValidateQuery_RegularUser_ShouldReturnFalse_WhenQueryHasDifferentUserId()
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 7, Role = Role.RegularUser };
             var query = new GetPaymentRequestByTeamQuery { UserId = 99 };
@@ -500,11 +702,11 @@ namespace PayTrack.Tests.UnitTests.Services
         [Fact]
         public void ValidateQuery_TeamLead_ShouldReturnTrue_WhenQueryMatchesOwnTeam()
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 3 };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 3 };
@@ -515,11 +717,11 @@ namespace PayTrack.Tests.UnitTests.Services
         [Fact]
         public void ValidateQuery_TeamLead_ShouldReturnFalse_WhenQueryHasDifferentTeamId()
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = 3 };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 99 };
@@ -530,16 +732,291 @@ namespace PayTrack.Tests.UnitTests.Services
         [Fact]
         public void ValidateQuery_TeamLead_ShouldReturnFalse_WhenUserHasNoTeam()
         {
-            var service = new PaymentRequestByTeamService(
-                new Mock<ITransactionRepository>().Object,
-                new Mock<ITeamService>().Object,
-                new Mock<IUserService>().Object,
-                new Mock<IBudgetService>().Object);
+            var service = BuildService(
+                new Mock<ITransactionRepository>(),
+                new Mock<ITeamService>(),
+                new Mock<IUserService>(),
+                new Mock<IBudgetService>());
 
             var user = new User { Id = 1, Role = Role.TeamLead, TeamId = null };
             var query = new GetPaymentRequestByTeamQuery { TeamId = 3 };
 
             service.ValidateQuery(query, user).Should().BeFalse();
+        }
+
+        // ----------------------------
+        // CREATE — Slack channel
+        // ----------------------------
+        [Fact]
+        public async Task Create_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var assignedUser = new User { Id = 1, Name = "Alice", Email = "alice@test.com" };
+            var creatingUser = new User { Id = 2, Name = "Bob", Email = "bob@test.com" };
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(assignedUser);
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(creatingUser);
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("New Payment Request") && s.Contains("Office Supplies"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Create_ShouldNotSendSlack_WhenSlackDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Create_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+
+            var created = new PaymentRequestByTeam { Id = 1 };
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(created);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            var result = await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "test", DateTime.Today.AddDays(7));
+
+            result.Id.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Create_ShouldContinue_WhenEmailThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+
+            var created = new PaymentRequestByTeam { Id = 1 };
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(created);
+
+            notificationsMock
+                .Setup(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP error"));
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            var result = await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "test", DateTime.Today.AddDays(7));
+
+            result.Id.Should().Be(1);
+        }
+
+        // ----------------------------
+        // MARK AS PAID — Slack channel
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("Payment Confirmed") && s.Contains("Office Supplies"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldNotSendSlack_WhenSlackDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            var result = await service.MarkAsPaidAsync(5, 42, null);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldContinue_WhenEmailThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            notificationsMock
+                .Setup(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP error"));
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            var result = await service.MarkAsPaidAsync(5, 42, null);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
         }
     }
 }
