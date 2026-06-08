@@ -12,6 +12,7 @@ using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.User;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -193,6 +194,87 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        // ----------------------------
+        // MARK AS PAID
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ReturnsOk()
+        {
+            // Arrange
+            var updated = new PaymentRequestByTeam { Id = 7, Status = TransactionStatus.Paid };
+
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.MarkAsPaidAsync(7, 1, It.IsAny<string?>()))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto("Payment manually approved and processed.");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/7/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByTeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(7);
+
+            _factory.ServiceMock.Verify(
+                s => s.MarkAsPaidAsync(7, 1, "Payment manually approved and processed."),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ReturnsNotFound_WhenCurrentUserIsNull()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync((User?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto(null);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/1/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ReturnsBadRequest_WhenInvalidState()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.MarkAsPaidAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+                .ThrowsAsync(new InvalidStateException("Cannot mark a transaction as Paid when its current status is Paid."));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto(null);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/1/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         // ----------------------------

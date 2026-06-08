@@ -310,6 +310,37 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history)
+        {
+            this.context.PaymentRequestsByTeam.Update(transaction);
+            this.context.TransactionStatusHistories.Add(history);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res < 2)
+            {
+                throw new InternalErrorException($"Updating transaction and saving status history did not end as expected. Saved {res} entries.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate)
+        {
+            var dueDateUtc = DateTime.SpecifyKind(dueDate.Date, DateTimeKind.Utc);
+            var nextDay = dueDateUtc.AddDays(1);
+
+            return await this.context.PaymentRequestsByTeam
+                .Where(t =>
+                    t.DueDate >= dueDateUtc &&
+                    t.DueDate < nextDay &&
+                    t.Status != TransactionStatus.Paid &&
+                    t.Status != TransactionStatus.Declined)
+                .Include(t => t.User)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeletePaymentRequestByUserAsync(int id)
         {
             var transaction = await this.context.PaymentRequestsByUser.FindAsync(id);

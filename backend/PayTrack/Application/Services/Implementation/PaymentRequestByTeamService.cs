@@ -2,16 +2,25 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Options;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
-    public class PaymentRequestByTeamService(ITransactionRepository repo, ITeamService _teamService, IUserService _userService, IBudgetService _budgetService) : IPaymentRequestByTeamService
+    public class PaymentRequestByTeamService(
+        ITransactionRepository repo,
+        ITeamService _teamService,
+        IUserService _userService,
+        IBudgetService _budgetService,
+        INotificationDispatchService _notifications,
+        IOptions<PaymentRequestNotificationSettings> _notifSettings,
+        ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
     {
         /// <summary>
         /// Repository for PaymentRequestByTeams.
@@ -20,6 +29,9 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITeamService teamService = _teamService;
         private readonly IUserService userService = _userService;
         private readonly IBudgetService budgetService = _budgetService;
+        private readonly INotificationDispatchService notifications = _notifications;
+        private readonly PaymentRequestNotificationSettings notifSettings = _notifSettings.Value;
+        private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByTeam> paymentRequestByTeam, int totalCount)> GetAllAsync(
@@ -79,7 +91,50 @@ namespace PayTrack.Application.Services.Implementation
                 RequestedById = creatingUser.Id,
             };
 
-            return await this.repo.AddAsync(paymentRequest);
+            var created = await this.repo.AddAsync(paymentRequest);
+
+            var ch = this.notifSettings.OnCreation;
+
+            if (ch.SendEmail)
+            {
+                try
+                {
+                    var subject = $"New Payment Request: {purposeOfPayment}";
+                    var body =
+                        $"Dear {userToAssignTo.Name},\n\n" +
+                        $"A new payment request has been created for you.\n\n" +
+                        $"Amount: {amount:C2}\n" +
+                        $"Purpose: {purposeOfPayment}\n" +
+                        $"Due Date: {dueDate:yyyy-MM-dd}\n\n" +
+                        $"Please ensure payment is made before the due date.\n\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(userToAssignTo.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send new-payment-request email to {Email}.", userToAssignTo.Email);
+                }
+            }
+
+            if (ch.SendSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"New Payment Request: {purposeOfPayment}\n" +
+                        $"Amount: {amount:C2} · Due: {dueDate:yyyy-MM-dd}";
+
+                    // NotificationDispatchService resolves the Slack user by email address.
+                    await this.notifications.SendSlackAsync(userToAssignTo.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send new-payment-request Slack notification to {Email}.", userToAssignTo.Email);
+                }
+            }
+
+            return created;
         }
 
         /// <inheritdoc/>
@@ -117,6 +172,77 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById { IncludeUser = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (transaction.Status is TransactionStatus.Paid or TransactionStatus.Declined)
+            {
+                throw new InvalidStateException(
+                    $"Cannot mark a transaction as Paid when its current status is {transaction.Status}.");
+            }
+
+            var fromStatus = transaction.Status;
+            transaction.Status = TransactionStatus.Paid;
+            transaction.PaidAt = DateTime.UtcNow;
+
+            var result = await this.repo.UpdateAndAddStatusHistoryAsync(
+                transaction,
+                new TransactionStatusHistory
+                {
+                    TransactionId = transaction.Id,
+                    ChangedById = adminUserId,
+                    FromStatus = fromStatus,
+                    ToStatus = TransactionStatus.Paid,
+                    Comment = comment,
+                });
+
+            var ch = this.notifSettings.OnConfirmation;
+
+            if (ch.SendEmail)
+            {
+                try
+                {
+                    var subject = $"Payment Confirmed: {transaction.PurposeOfPayment}";
+                    var body =
+                        $"Dear {transaction.User.Name},\n\n" +
+                        $"Your payment has been marked as paid.\n\n" +
+                        $"Amount: {transaction.Amount:C2}\n" +
+                        $"Purpose: {transaction.PurposeOfPayment}\n" +
+                        $"Paid on: {transaction.PaidAt:yyyy-MM-dd}\n\n" +
+                        $"Thank you,\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-confirmed email to {Email}.", transaction.User.Email);
+                }
+            }
+
+            if (ch.SendSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"Payment Confirmed: {transaction.PurposeOfPayment}\n" +
+                        $"Amount: {transaction.Amount:C2} · Paid on: {transaction.PaidAt:yyyy-MM-dd}";
+
+                    // NotificationDispatchService resolves the Slack user by email address.
+                    await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-confirmed Slack notification to {Email}.", transaction.User.Email);
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
