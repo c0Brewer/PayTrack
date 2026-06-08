@@ -27,7 +27,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                dbQuery = dbQuery.Where(b => EF.Functions.Like(b.Name, $"%{query.Name}%"));
+                dbQuery = dbQuery.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
             }
 
             // Filter by TeamId

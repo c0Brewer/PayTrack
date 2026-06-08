@@ -35,7 +35,7 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
             // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
         }
@@ -49,7 +49,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.InvoiceNumber))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.InvoiceNumber, $"%{query.InvoiceNumber}%"));
+                dbQuery = dbQuery.Where(t => t.InvoiceNumber.Contains(query.InvoiceNumber, StringComparison.OrdinalIgnoreCase));
             }
 
             if (query?.PayoutType.HasValue == true)
@@ -73,7 +73,7 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
             await this.SetPotentialDuplicateFlagsAsync(items);
 
             return (items, totalCount);
@@ -97,7 +97,7 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
             // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
         }
@@ -399,6 +399,8 @@ namespace PayTrack.Data.Repositories.Implementation
         private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {
+            dbQuery = dbQuery.OrderByDescending(t => t.CreatedAt);
+
             if (query?.UserId.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.UserId == query.UserId.Value);
@@ -416,13 +418,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.PurposeOfPayment))
             {
-                var purposeLower = query.PurposeOfPayment.ToLower();
-                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(purposeLower));
+                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.Contains(query.PurposeOfPayment, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.PaymentReference))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.PaymentReference, $"%{query.PaymentReference}%"));
+                dbQuery = dbQuery.Where(t => t.PaymentReference != null && t.PaymentReference.Contains(query.PaymentReference, StringComparison.OrdinalIgnoreCase));
             }
 
             if (query?.Status.HasValue == true)
