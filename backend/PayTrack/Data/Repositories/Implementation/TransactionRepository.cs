@@ -325,6 +325,22 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate)
+        {
+            var dueDateUtc = DateTime.SpecifyKind(dueDate.Date, DateTimeKind.Utc);
+            var nextDay = dueDateUtc.AddDays(1);
+
+            return await this.context.PaymentRequestsByTeam
+                .Where(t =>
+                    t.DueDate >= dueDateUtc &&
+                    t.DueDate < nextDay &&
+                    t.Status != TransactionStatus.Paid &&
+                    t.Status != TransactionStatus.Declined)
+                .Include(t => t.User)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeletePaymentRequestByUserAsync(int id)
         {
             var transaction = await this.context.PaymentRequestsByUser.FindAsync(id);
