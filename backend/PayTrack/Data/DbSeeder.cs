@@ -932,7 +932,7 @@ public static class DbSeeder
             null,
             1200.00m,
             "Wind tunnel facility access – April slot",
-            TransactionStatus.Approved,
+            TransactionStatus.Submitted,
             DateTime.UtcNow.AddDays(7),
             12);
 
@@ -956,7 +956,7 @@ public static class DbSeeder
             null,
             890.00m,
             "Telemetry server hosting – annual renewal",
-            TransactionStatus.Approved,
+            TransactionStatus.Paid,
             DateTime.UtcNow.AddDays(14),
             8);
 
@@ -980,7 +980,7 @@ public static class DbSeeder
             null,
             2400.00m,
             "Sponsor presentation event catering",
-            TransactionStatus.Declined,
+            TransactionStatus.Paid,
             null,
             20);
 
@@ -992,7 +992,7 @@ public static class DbSeeder
             null,
             650.00m,
             "Team photo shoot and print materials",
-            TransactionStatus.Approved,
+            TransactionStatus.Paid,
             DateTime.UtcNow.AddDays(3),
             6);
 
@@ -1004,7 +1004,7 @@ public static class DbSeeder
             null,
             480.00m,
             "Composite repair consumables reorder",
-            TransactionStatus.Review,
+            TransactionStatus.Submitted,
             DateTime.UtcNow.AddDays(10),
             4);
 
@@ -1016,7 +1016,7 @@ public static class DbSeeder
             null,
             1100.00m,
             "Shock absorber rebuild kit – full set",
-            TransactionStatus.Approved,
+            TransactionStatus.Paid,
             DateTime.UtcNow.AddDays(21),
             15);
 
@@ -1028,7 +1028,7 @@ public static class DbSeeder
             null,
             220.00m,
             "Oscilloscope calibration service",
-            TransactionStatus.ChangesRequested,
+            TransactionStatus.Submitted,
             null,
             9);
 
@@ -1040,7 +1040,7 @@ public static class DbSeeder
             null,
             3200.00m,
             "Trailer rental – FSAE Germany transport",
-            TransactionStatus.Approved,
+            TransactionStatus.Paid,
             DateTime.UtcNow.AddDays(60),
             1);
     }
