@@ -7,12 +7,16 @@ import { PaymentRequestByTeamService } from '../../../../../services/payment-req
 import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
 import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
 import { ModalComponent } from '../../../../general/modal-component/modal-component';
-import { TeamRequestDetailComponent } from '../../general/detail-component/detail-component';
 import { TeamRequestAdminDetailViewComponent } from '../detail-component/detail-component';
 
 @Component({
   selector: 'app-team-request-admin-detail-component',
-  imports: [TeamRequestAdminDetailViewComponent, TeamRequestDetailComponent, ExternalNotificationComponent, FormsModule, ModalComponent],
+  imports: [
+    TeamRequestAdminDetailViewComponent,
+    ExternalNotificationComponent,
+    FormsModule,
+    ModalComponent,
+  ],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })
