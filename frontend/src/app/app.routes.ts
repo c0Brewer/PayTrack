@@ -23,6 +23,7 @@ import { SettingsComponent } from './components/settings/settings-component/sett
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
+import { activeGuard } from './guards/active-guard/active-guard';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
 import { roleGuard } from './guards/role-guard/role-guard';
@@ -54,7 +55,7 @@ export const routes: Routes = [
   },
   {
     path: 'submit',
-    canActivate: [authGuard],
+    canActivate: [authGuard, activeGuard],
     component: ReceiptSubmitComponent,
   },
   {

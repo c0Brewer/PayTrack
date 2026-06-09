@@ -338,6 +338,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
     /// </summary>
     public class CostCentreApiFactory : WebApplicationFactory<Program>
     {
+        public Mock<IAuthService> AuthServiceMock { get; } = new();
+
+        public CostCentreApiFactory()
+        {
+            AuthServiceMock.Setup(a => a.GetCurrentUser(null))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+        }
+
         public Mock<ICostCentreService> ServiceMock { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -370,7 +378,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptor is not null)
                     services.Remove(serviceDescriptor);
 
+                var authServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IAuthService));
+                if (authServiceDescriptor is not null)
+                    services.Remove(authServiceDescriptor);
+
                 services.AddSingleton(ServiceMock.Object);
+                services.AddSingleton(AuthServiceMock.Object);
             });
         }
     }

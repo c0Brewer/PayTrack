@@ -43,7 +43,7 @@ describe('roleGuard', () => {
   }
 
   it('should allow access if user has required role', async () => {
-    const user = { role: Role.ADMIN } as UserDto;
+    const user = { role: Role.ADMIN, isActive: true } as UserDto;
 
     authServiceMock.fetchAndStoreUser.mockResolvedValue(user);
 
@@ -61,6 +61,20 @@ describe('roleGuard', () => {
     const result = await runGuard(Role.REGULAR_USER);
 
     expect(routerMock.createUrlTree).toHaveBeenCalledWith(['/login']);
+    expect(result).toBe(urlTree);
+  });
+
+  it('should redirect to unauthorized if user is inactive', async () => {
+    const urlTree = {} as UrlTree;
+
+    const user = { role: Role.ADMIN, isActive: false } as UserDto;
+
+    authServiceMock.fetchAndStoreUser.mockResolvedValue(user);
+    routerMock.createUrlTree.mockReturnValue(urlTree);
+
+    const result = await runGuard(Role.ADMIN);
+
+    expect(routerMock.createUrlTree).toHaveBeenCalledWith(['/unauthorized']);
     expect(result).toBe(urlTree);
   });
 

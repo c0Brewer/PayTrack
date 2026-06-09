@@ -387,6 +387,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         [Fact]
         public async Task DeletePaymentRequest_ReturnsNoContent()
         {
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 

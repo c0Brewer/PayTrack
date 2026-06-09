@@ -156,9 +156,9 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task GoogleValidateCallback_ThrowsLockedException_WhenUserIsInactive()
+        public async Task GoogleValidateCallback_ReturnsJwt_WhenUserIsInactive()
         {
-            // Arrange
+            // Arrange — deactivated users may still log in; access restrictions are enforced per-request
             var callback = new GoogleAuthCallbackDto("valid-code");
             var user = new User
             {
@@ -172,8 +172,14 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByEmailAsync(payloadToReturn.Email))
                 .ReturnsAsync(user);
 
+            jwtMock.Setup(j => j.GenerateJWTToken(payloadToReturn.Email, user.Role))
+                .ReturnsAsync("jwt-token");
+
             // Act
-            await Assert.ThrowsAsync<LockedException>(async () => await service.GoogleValidateCallback(callback));
+            var result = await service.GoogleValidateCallback(callback);
+
+            // Assert
+            Assert.Equal("jwt-token", result);
         }
     }
 

@@ -26,7 +26,8 @@ namespace PayTrack.Api.Endpoints
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
                 .RequireAuthorization()
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapGet("/", UserHandler.GetUsersAsync);
             group.MapGet("/{id:int}", UserHandler.GetUserByIdAsync);

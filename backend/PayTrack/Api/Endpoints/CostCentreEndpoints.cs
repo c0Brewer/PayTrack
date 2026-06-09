@@ -31,16 +31,20 @@ namespace PayTrack.Api.Endpoints
             group.MapGet("/{id:int}", CostCentreHandler.GetByIdAsync);
 
             group.MapPost("/", CostCentreHandler.CreateAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPut("/{id:int}", CostCentreHandler.UpdateAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapGet("/{id:int}/delete-preview", CostCentreHandler.GetDeletePreviewAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapDelete("/{id:int}", CostCentreHandler.DeleteAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }
