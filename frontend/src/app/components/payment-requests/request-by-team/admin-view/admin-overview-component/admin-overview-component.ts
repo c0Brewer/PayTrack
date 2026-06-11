@@ -13,6 +13,7 @@ import { PaginationComponent } from '../../../../general/pagination-component/pa
 import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
 import { TeamRequestAdminListComponent } from '../list-component/list-component';
 import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 
 @Component({
   selector: 'app-team-request-admin-overview-component',
@@ -21,6 +22,7 @@ import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/s
     TeamRequestAdminFilterComponent,
     TeamRequestAdminListComponent,
     StatBoxComponent,
+    EuroPipe,
   ],
   templateUrl: './admin-overview-component.html',
   styleUrl: './admin-overview-component.scss',
@@ -34,6 +36,7 @@ export class TeamRequestAdminOverviewComponent implements OnInit {
   ) {}
 
   requests: PaymentRequestByTeamDto[] = [];
+  statRequests: PaymentRequestByTeamDto[] = [];
 
   limitSelection: number[] = [10, 25, 50];
 
@@ -52,23 +55,17 @@ export class TeamRequestAdminOverviewComponent implements OnInit {
   }
 
   loadRequests(): void {
-    const query: GetPaymentRequestsByTeamOptions = {
+    const countQuery: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
       IncludeTeam: true,
       Limit: this.limit,
-      Offset: this.page * this.limit,
+      Offset: 0,
     };
 
-    this.paymentRequestByTeamService.getPaymentRequestsByTeam(query).subscribe({
+    this.paymentRequestByTeamService.getPaymentRequestsByTeam(countQuery).subscribe({
       next: (data) => {
         if (data?.items) {
-          this.requests = data.items.filter((r) =>
-            TEAM_REQUEST_ALLOWED_STATUSES.includes(r.status as TransactionStatus),
-          );
-          this.totalCount = data.totalCount;
-          this.hasNext = data.hasNext ?? false;
-          this.hasPrev = data.hasPrevious ?? false;
-          this.cdr.markForCheck();
+          this.loadRequestStats(data.totalCount);
         } else {
           this.notificationService.showError('Error while loading payment requests');
         }
@@ -77,6 +74,60 @@ export class TeamRequestAdminOverviewComponent implements OnInit {
         this.notificationService.showError(err);
       },
     });
+  }
+
+  loadRequestStats(totalCount: number): void {
+    if (totalCount <= 0) {
+      this.statRequests = [];
+      this.requests = [];
+      this.totalCount = 0;
+      this.hasNext = false;
+      this.hasPrev = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const query: GetPaymentRequestsByTeamOptions = {
+      ...this.filterOptions,
+      IncludeTeam: true,
+      Limit: totalCount,
+      Offset: 0,
+    };
+
+    this.paymentRequestByTeamService.getPaymentRequestsByTeam(query).subscribe({
+      next: (data) => {
+        this.statRequests = (data?.items ?? []).filter((request) =>
+          TEAM_REQUEST_ALLOWED_STATUSES.includes(request.status as TransactionStatus),
+        );
+        const maxPage = Math.max(Math.ceil(this.statRequests.length / this.limit) - 1, 0);
+        if (this.page > maxPage) {
+          this.page = maxPage;
+        }
+
+        const offset = this.page * this.limit;
+        this.requests = this.statRequests.slice(offset, offset + this.limit);
+        this.totalCount = this.statRequests.length;
+        this.hasPrev = this.page > 0;
+        this.hasNext = offset + this.limit < this.totalCount;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
+  }
+
+  getTotalAmount(): number {
+    return this.statRequests.reduce((total, request) => total + request.amount, 0);
+  }
+
+  getSubmittedRequestCount(): number {
+    return this.statRequests.filter((request) => request.status === TransactionStatus.Submitted)
+      .length;
+  }
+
+  getPaidRequestCount(): number {
+    return this.statRequests.filter((request) => request.status === TransactionStatus.Paid).length;
   }
 
   updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
