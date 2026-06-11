@@ -103,8 +103,24 @@
     </div>
 
     <!-- Results -->
+    <div class="result-list-toolbar">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="toggleSortMode()">
+        <span class="material-symbols-outlined" style="font-size: 16px">sort</span>
+        {{ sortMode() === 'score' ? 'Original order' : 'Sort by score' }}
+      </button>
+    </div>
     <div class="result-list">
-      @for (result of results(); track result._entryId) {
+      @for (result of displayResults(); track result._entryId; let idx = $index) {
+        @if (sortMode() === 'score' && idx === 0 && allMatchedCount() > 0) {
+          <div class="result-section-header">
+            Matches <span class="result-section-header__count">({{ allMatchedCount() }})</span>
+          </div>
+        }
+        @if (sortMode() === 'score' && idx === noMatchBoundaryIndex() && unmatchedCount() > 0) {
+          <div class="result-section-header result-section-header--no-match">
+            No matches <span class="result-section-header__count">({{ unmatchedCount() }})</span>
+          </div>
+        }
         <div
           class="result-item"
           [class.result-item--matched]="result.hasMatch && !result.skipped"
@@ -371,6 +387,39 @@
         </button>
         <button type="button" class="btn btn-warning" (click)="confirmAnyway()">
           Submit anyway
+        </button>
+      </div>
+    </app-modal-component>
+
+    <!-- ── Final confirmation modal ── -->
+    <app-modal-component
+      title="Confirm Updates"
+      icon="check_circle"
+      [visible]="showFinalConfirm()"
+      (closeEvent)="showFinalConfirm.set(false)"
+    >
+      <p class="warning-modal-text">
+        The following {{ matchedUpdates().length }}
+        transaction{{ matchedUpdates().length === 1 ? '' : 's' }} will be marked as
+        <strong>Paid</strong>:
+      </p>
+      <ul class="warning-modal-list">
+        @for (r of matchedUpdates(); track r._entryId) {
+          <li>
+            <span class="warning-modal-list__name">{{ r.entry?.partnerName || '—' }}</span>
+            <span class="warning-modal-list__amount">{{ formatAmount(r.entry) }}</span>
+            <span class="warning-modal-list__status">{{
+              getStatusLabel(r.matchedTransaction?.status ?? 0)
+            }}</span>
+          </li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="showFinalConfirm.set(false)">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="proceedWithSubmit()">
+          Confirm &amp; Submit
         </button>
       </div>
     </app-modal-component>

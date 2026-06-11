@@ -50,12 +50,32 @@ export class BankStatementImportComponent {
     (BankStatementMatchResultDto & { skipped: boolean; expanded: boolean; _entryId: string })[]
   >([]);
 
+  sortMode = signal<'score' | 'original'>('score');
+
   // ── computed helpers ───────────────────────────────────────────────────────
   matchedCount = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped).length);
   skippedCount = computed(() => this.results().filter((r) => r.skipped).length);
   unmatchedCount = computed(() => this.results().filter((r) => !r.hasMatch && !r.skipped).length);
 
+  allMatchedCount = computed(() => this.results().filter((r) => r.hasMatch).length);
+
+  displayResults = computed(() => {
+    const items = this.results();
+    if (this.sortMode() === 'original') return items;
+    const matched = [...items.filter((r) => r.hasMatch)].sort(
+      (a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0),
+    );
+    const noMatch = items.filter((r) => !r.hasMatch);
+    return [...matched, ...noMatch];
+  });
+
+  noMatchBoundaryIndex = computed(() => {
+    if (this.sortMode() !== 'score') return -1;
+    return this.results().filter((r) => r.hasMatch).length;
+  });
+
   showNonApprovedWarning = signal(false);
+  showFinalConfirm = signal(false);
 
   nonApprovedMatches = computed(() =>
     this.results().filter(
@@ -63,6 +83,8 @@ export class BankStatementImportComponent {
         r.hasMatch && !r.skipped && r.matchedTransaction?.status !== TransactionStatus.Approved,
     ),
   );
+
+  matchedUpdates = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped));
 
   // ── phase 1: upload ────────────────────────────────────────────────────────
   onDragOver(event: DragEvent): void {
@@ -207,11 +229,16 @@ export class BankStatementImportComponent {
       this.showNonApprovedWarning.set(true);
       return;
     }
-    this.submitUpdates();
+    this.showFinalConfirm.set(true);
   }
 
   confirmAnyway(): void {
     this.showNonApprovedWarning.set(false);
+    this.showFinalConfirm.set(true);
+  }
+
+  proceedWithSubmit(): void {
+    this.showFinalConfirm.set(false);
     this.submitUpdates();
   }
 
@@ -244,6 +271,10 @@ export class BankStatementImportComponent {
     this.parsedEntries.set([]);
     this.results.set([]);
     this.isLoading.set(false);
+  }
+
+  toggleSortMode(): void {
+    this.sortMode.update((m) => (m === 'score' ? 'original' : 'score'));
   }
 
   getStatusLabel(status: TransactionStatus): string {
