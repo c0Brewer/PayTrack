@@ -95,26 +95,27 @@ namespace PayTrack.Tests.UnitTests.Services
         {
             // Arrange
             var updated = new Season { Id = 3, Name = "2027" };
-            this.repoMock.Setup(r => r.UpdateAsync(3, "2027")).ReturnsAsync(updated);
+            this.repoMock.Setup(r => r.UpdateAsync(3, "2027", false)).ReturnsAsync(updated);
 
             // Act
-            var result = await this.service.UpdateAsync(3, "2027");
+            var result = await this.service.UpdateAsync(3, "2027", false);
 
             // Assert
             result.Should().Be(updated);
-            this.repoMock.Verify(r => r.UpdateAsync(3, "2027"), Times.Once);
+            this.repoMock.Verify(r => r.UpdateAsync(3, "2027", false), Times.Once);
         }
 
         [Fact]
         public async Task DeleteAsync_ShouldCallRepo()
         {
             // Arrange
-            this.repoMock.Setup(r => r.DeleteAsync(7)).Returns(Task.CompletedTask);
+            this.repoMock.Setup(r => r.DeleteAsync(7)).ReturnsAsync((Season?)null);
 
             // Act
-            await this.service.DeleteAsync(7);
+            var result = await this.service.DeleteAsync(7);
 
             // Assert
+            result.Should().BeNull();
             this.repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
         }
     }

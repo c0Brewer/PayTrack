@@ -99,7 +99,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var updated = new Season { Id = 1, Name = "2027" };
 
             this.factory.ServiceMock
-                .Setup(s => s.UpdateAsync(1, "2027"))
+                .Setup(s => s.UpdateAsync(1, "2027", null))
                 .ReturnsAsync(updated);
 
             var client = this.factory.CreateClient();
@@ -136,7 +136,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Arrange
             var requestDto = new UpdateSeasonRequestDto("2027");
             this.factory.ServiceMock
-                .Setup(s => s.UpdateAsync(999, "2027"))
+                .Setup(s => s.UpdateAsync(999, "2027", null))
                 .ThrowsAsync(new NotFoundException("Season could not be found."));
 
             var client = this.factory.CreateClient();
@@ -155,7 +155,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task DeleteSeason_ReturnsNoContent_WhenAdminRole()
         {
             // Arrange
-            this.factory.ServiceMock.Setup(s => s.DeleteAsync(1)).Returns(Task.CompletedTask);
+            this.factory.ServiceMock.Setup(s => s.DeleteAsync(1)).ReturnsAsync((Season?)null);
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -182,12 +182,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
-        public async Task DeleteSeason_ReturnsBadRequest_WhenServiceThrowsInvalidState()
+        public async Task DeleteSeason_ReturnsOkWithDeactivatedSeason_WhenLinkedBudgetsExist()
         {
             // Arrange
+            var deactivated = new Season { Id = 2, Name = "2026", IsActive = false };
             this.factory.ServiceMock
                 .Setup(s => s.DeleteAsync(2))
-                .ThrowsAsync(new InvalidStateException("Season cannot be deleted while budgets are linked."));
+                .ReturnsAsync(deactivated);
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -196,7 +197,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var response = await client.DeleteAsync("api/v1/season/2");
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<SeasonDto>();
+            result!.IsActive.Should().BeFalse();
         }
     }
 

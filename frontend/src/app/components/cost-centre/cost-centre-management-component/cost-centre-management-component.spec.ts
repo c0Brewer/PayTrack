@@ -39,8 +39,8 @@ const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
 };
 
 const mockSeasons: SeasonDto[] = [
-  { id: 1, name: '2025', budgets: [] },
-  { id: 2, name: '2026', budgets: [] },
+  { id: 1, name: '2025', isActive: true, budgets: [] },
+  { id: 2, name: '2026', isActive: true, budgets: [] },
 ];
 const mockTeams: TeamDtoPaginatedResponse = {
   items: [{ id: 1, name: 'Platform', description: null, displayColor: null, members: [] }],

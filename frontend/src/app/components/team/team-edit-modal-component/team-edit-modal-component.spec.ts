@@ -26,8 +26,8 @@ describe('TeamEditModalComponent', () => {
     },
   ];
   const seasons: SeasonDto[] = [
-    { id: 1, name: '2025', budgets: [] },
-    { id: 2, name: '2026', budgets: [] },
+    { id: 1, name: '2025', isActive: true, budgets: [] },
+    { id: 2, name: '2026', isActive: true, budgets: [] },
   ];
 
   function clickAddBudgetButton(): void {

@@ -262,7 +262,7 @@ describe('CostCentreEditModalComponent', () => {
   });
 
   it('getSeasonName should return season name or fallback', () => {
-    component.seasons = [{ id: 1, name: '2025', budgets: [] }];
+    component.seasons = [{ id: 1, name: '2025', isActive: true, budgets: [] }];
 
     expect(component.getSeasonName(1)).toBe('2025');
     expect(component.getSeasonName(99)).toBe('Season #99');
