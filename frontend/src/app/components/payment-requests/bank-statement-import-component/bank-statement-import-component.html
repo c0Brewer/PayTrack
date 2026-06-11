@@ -55,7 +55,7 @@
     <div class="import-actions-upload">
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
         [disabled]="!parsedEntries().length || isLoading()"
         (click)="submitForMatching()"
       >
@@ -358,7 +358,7 @@
           nonApprovedMatches().length === 1 ? '' : 's'
         }}
         {{ nonApprovedMatches().length === 1 ? 'has' : 'have' }} a status other than
-        <strong>Approved</strong>. Marking them as Paid now may be premature.
+        <strong>Approved</strong>. <br><br>Marking them as Paid now may be premature.
       </p>
       <ul class="warning-modal-list">
         @for (r of nonApprovedMatches(); track r._entryId) {
@@ -372,10 +372,12 @@
         }
       </ul>
       <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="showNonApprovedWarning.set(false)">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showNonApprovedWarning.set(false)">
+          <span class="material-symbols-outlined">redo</span>
           Re-check entries
         </button>
-        <button type="button" class="btn btn-warning" (click)="confirmAnyway()">
+        <button type="button" class="btn btn-danger d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="confirmAnyway()">
+          <span class="material-symbols-outlined">warning</span>
           Submit anyway
         </button>
       </div>
