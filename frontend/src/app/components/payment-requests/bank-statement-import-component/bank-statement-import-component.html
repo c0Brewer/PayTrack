@@ -1,8 +1,10 @@
-<div class="main-page-container cost-centre-management">
-  <div class="w-100 mb-4">
-    <h2 class="m-0 mb-2">Bank Statement Import</h2>
-    <p>Upload your bank export and reconcile it with your invoices.</p>
-  </div>
+<div class="cost-centre-management">
+  @if (showPageHeader()) {
+    <div class="w-100 mb-4">
+      <h2 class="m-0 mb-2">Bank Statement Import</h2>
+      <p>Upload your bank export and reconcile it with your invoices.</p>
+    </div>
+  }
 
   <!-- ── PHASE 1: UPLOAD ──────────────────────────────────────────────────── -->
   @if (phase() === 'upload') {
@@ -73,33 +75,33 @@
   <!-- ── PHASE 2: REVIEW ──────────────────────────────────────────────────── -->
   @if (phase() === 'review') {
     <div class="mb-4 row g-3 align-items-stretch">
-      <app-stat-box-component
-        header="Total Cost Centres"
-        [content]="matchedCount()"
-        icon="check_circle"
-        iconColor="#10b981"
-        iconBackgroundColor="#ECFDF5"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
-      <app-stat-box-component
-        header="Skipped"
-        [content]="skippedCount()"
-        icon="skip_next"
-        iconColor="#3b82f6"
-        iconBackgroundColor="#EFF6FF"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
-      <app-stat-box-component
-        header="Unmatched"
-        [content]="unmatchedCount()"
-        icon="no_accounts"
-        iconColor="#eb6a00"
-        iconBackgroundColor="#fff4ea"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
+        <app-stat-box-component
+          header="Total Cost Centres"
+          [content]="matchedCount()"
+          icon="check_circle"
+          iconColor="#10b981"
+          iconBackgroundColor="#ECFDF5"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Skipped"
+          [content]="skippedCount()"
+          icon="skip_next"
+          iconColor="#3b82f6"
+          iconBackgroundColor="#EFF6FF"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Unmatched"
+          [content]="unmatchedCount()"
+          icon="no_accounts"
+          iconColor="#eb6a00"
+          iconBackgroundColor="#fff4ea"
+          size="small"
+          class="col-12 col-md-4"
+        />
     </div>
 
     <!-- Results -->
@@ -172,9 +174,10 @@
               @if (result.hasMatch) {
                 <button
                   type="button"
-                  class="btn btn-secondary"
+                  class="btn btn-secondary skip-or-undo-button"
                   (click)="toggleSkip(result._entryId)"
                 >
+                  <span class="material-symbols-outlined">{{ result.skipped ? 'undo' : 'skip_next' }}</span>
                   {{ result.skipped ? 'Undo' : 'Skip' }}
                 </button>
               }
@@ -322,10 +325,12 @@
 
     <!-- Actions -->
     <div class="import-actions-review">
-      <button type="button" class="btn btn-secondary" (click)="reset()">Start over</button>
+      <button type="button" class="btn btn-secondary" (click)="reset()">
+        <span class="material-symbols-outlined">repeat</span>
+        Start over</button>
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
         [disabled]="isLoading() || matchedCount() === 0"
         (click)="confirmUpdates()"
       >
@@ -335,6 +340,7 @@
           >
           Updating…
         } @else {
+          <span class="material-symbols-outlined">update</span>
           Confirm {{ matchedCount() }} Update{{ matchedCount() === 1 ? '' : 's' }}
         }
       </button>

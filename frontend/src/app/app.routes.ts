@@ -9,6 +9,7 @@ import { InitialLoginBankAccountComponent } from './components/inital-login-bank
 import { LoginComponent } from './components/login/login-component/login-component';
 import { BankStatementImportComponent } from './components/payment-requests/bank-statement-import-component/bank-statement-import-component';
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
+import { TeamRequestBankStatementDetailComponent } from './components/payment-requests/request-by-team/admin-view/bank-statement-detail-component/bank-statement-detail-component';
 import { TeamRequestAdminOverviewComponent } from './components/payment-requests/request-by-team/admin-view/admin-overview-component/admin-overview-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
 import { TeamRequestTeamDetailPageComponent } from './components/payment-requests/request-by-team/team-view/team-detail-page-component/team-detail-page-component';
@@ -126,6 +127,11 @@ export const routes: Routes = [
     path: 'payment-requests-by-team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamRequestAdminOverviewComponent,
+  },
+  {
+    path: 'payment-requests-by-team/bank-statement-upload',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: TeamRequestBankStatementDetailComponent,
   },
   {
     path: 'payment-requests-by-team/:id',

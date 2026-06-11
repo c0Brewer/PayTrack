@@ -1,4 +1,4 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 
 import { EuroPipe } from '../../../pipes/euro.pipe';
 import { BankStatementService } from '../../../services/bank-statement-service/bank-statement-service';
@@ -36,6 +36,8 @@ export class BankStatementImportComponent {
     private readonly bankStatementService: BankStatementService,
     private readonly notificationService: NotificationService,
   ) {}
+
+  showPageHeader = input(true);
 
   // ── state ──────────────────────────────────────────────────────────────────
   phase = signal<Phase>('upload');

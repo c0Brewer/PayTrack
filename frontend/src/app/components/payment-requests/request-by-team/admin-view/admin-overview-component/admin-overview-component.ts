@@ -164,6 +164,6 @@ export class TeamRequestAdminOverviewComponent implements OnInit {
   }
 
   navigateBankStatementUpload(): void {
-    this.router.navigate(['/bank-statement-upload']);
+    this.router.navigate(['/payment-requests-by-team/bank-statement-upload']);
   }
 }

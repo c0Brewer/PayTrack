@@ -1,0 +1,11 @@
+<div class="main-page-container">
+<app-detail-component
+  title="Bank Statement Import"
+  subtitle="Upload your bank export and reconcile it with your invoices."
+  icon="upload_file"
+  backLabel="Back to Payment Requests"
+  (backClick)="onBack()"
+>
+  <app-bank-statement-import-component [showPageHeader]="false" />
+</app-detail-component>
+</div>
