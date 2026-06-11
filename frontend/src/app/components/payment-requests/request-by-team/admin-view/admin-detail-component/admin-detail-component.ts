@@ -76,7 +76,11 @@ export class TeamRequestAdminDetailComponent implements OnInit {
 
   get canMarkAsPaid(): boolean {
     const status = this.request?.status;
-    return status !== undefined && status !== TransactionStatus.Paid && status !== TransactionStatus.Declined;
+    return (
+      status !== undefined &&
+      status !== TransactionStatus.Paid &&
+      status !== TransactionStatus.Declined
+    );
   }
 
   openMarkAsPaidModal(): void {
