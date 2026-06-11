@@ -8,6 +8,15 @@ import {
 } from '../../../../types/exporter';
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 
+export type DuplicateInvoiceSummary = {
+  invoiceNumber?: string | null;
+  amount?: number | null;
+  paidAt?: string | null;
+  purposeOfPayment?: string | null;
+  user?: { name?: string | null } | null;
+  team?: { name?: string | null } | null;
+};
+
 @Component({
   selector: 'app-duplicate-list-modal-component',
   imports: [DatePipe, EuroPipe, ModalComponent],
@@ -19,7 +28,7 @@ export class DuplicateListModalComponent {
   @Input() loading = false;
   @Input() mode: 'review' | 'submit' = 'review';
   @Input() actionInvoiceId: number | null = null;
-  @Input() sourceInvoice: PaymentRequestByUserDto | null = null;
+  @Input() sourceInvoice: DuplicateInvoiceSummary | null = null;
   @Input() duplicates: DuplicatePaymentRequestByUserDto[] = [];
 
   @Output() closeModal = new EventEmitter<void>();
@@ -48,28 +57,36 @@ export class DuplicateListModalComponent {
     this.submitRegardless.emit();
   }
 
+  getInvoiceUserName(invoice: DuplicateInvoiceSummary | null): string {
+    return invoice?.user?.name ?? 'Unknown user';
+  }
+
+  getInvoiceTeamName(invoice: DuplicateInvoiceSummary | null): string {
+    return invoice?.team?.name ?? 'Unknown team';
+  }
+
   getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {
-    return duplicate.paymentRequestByUser.user?.name ?? 'Unknown user';
+    return this.getInvoiceUserName(duplicate.paymentRequestByUser);
   }
 
   getDuplicateTeamName(duplicate: DuplicatePaymentRequestByUserDto): string {
-    return duplicate.paymentRequestByUser.team?.name ?? 'Unknown team';
+    return this.getInvoiceTeamName(duplicate.paymentRequestByUser);
   }
 
   getMatchedFieldLabel(field: string): string {
     switch (field) {
       case 'invoiceNumber':
-        return 'Invoice number';
+        return 'Same invoice number';
       case 'similarInvoiceNumber':
         return 'Similar invoice number';
       case 'amount':
-        return 'Amount';
+        return 'Same amount';
       case 'payday':
-        return 'Payday';
+        return 'Same payday';
       case 'user':
-        return 'User';
+        return 'Same user';
       case 'team':
-        return 'Team';
+        return 'Same team';
       default:
         return field;
     }

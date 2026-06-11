@@ -31,11 +31,24 @@
   padding: v.$size-s;
 }
 
-.duplicate-list__main {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
+.duplicate-list__comparison {
+  display: grid;
   gap: v.$size-s;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.duplicate-list__invoice-summary {
+  border-left: 3px solid v.$border-color;
+  display: grid;
+  gap: v.$size-xxs;
+  padding: 0 0 0 v.$size-xs;
+}
+
+.duplicate-list__card-title {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+  font-weight: v.$font-semibold;
+  text-transform: uppercase;
 }
 
 .duplicate-list__invoice,
