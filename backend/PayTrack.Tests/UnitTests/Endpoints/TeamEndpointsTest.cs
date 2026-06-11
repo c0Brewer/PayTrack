@@ -508,6 +508,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
     public class TeamApiFactory : WebApplicationFactory<Program>  // <-- KEY FIX
     {
         public Mock<ITeamService> TeamServiceMock { get; } = new();
+        public Mock<IAuthService> AuthServiceMock { get; } = new();
+
+        public TeamApiFactory()
+        {
+            AuthServiceMock.Setup(a => a.GetCurrentUser(null))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -545,8 +552,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptor is not null)
                     services.Remove(serviceDescriptor);
 
-                // Register the mock instead
+                var authServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IAuthService));
+
+                if (authServiceDescriptor is not null)
+                    services.Remove(authServiceDescriptor);
+
+                // Register the mocks instead
                 services.AddSingleton(TeamServiceMock.Object);
+                services.AddSingleton(AuthServiceMock.Object);
             });
         }
     }

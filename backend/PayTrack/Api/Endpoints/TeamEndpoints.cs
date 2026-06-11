@@ -32,14 +32,14 @@ namespace PayTrack.Api.Endpoints
             group.MapGet("/{id:int}", TeamHandler.GetTeamByIdAsync);
 
             // Create Team
-            group.MapPost("/", TeamHandler.CreateTeamAsync).RequireRole(Role.Admin);
+            group.MapPost("/", TeamHandler.CreateTeamAsync).RequireRole(Role.Admin).RequireActiveUser();
 
             // Update Team
-            group.MapPut("/{id:int}", TeamHandler.UpdateTeamAsync).RequireRole(Role.Admin);
+            group.MapPut("/{id:int}", TeamHandler.UpdateTeamAsync).RequireRole(Role.Admin).RequireActiveUser();
 
             // Delete Team & get impact
-            group.MapGet("/{id:int}/delete-impact", TeamHandler.GetDeleteTeamImpactAsync).RequireRole(Role.Admin);
-            group.MapDelete("/{id:int}", TeamHandler.DeleteTeamAsync).RequireRole(Role.Admin);
+            group.MapGet("/{id:int}/delete-impact", TeamHandler.GetDeleteTeamImpactAsync).RequireRole(Role.Admin).RequireActiveUser();
+            group.MapDelete("/{id:int}", TeamHandler.DeleteTeamAsync).RequireRole(Role.Admin).RequireActiveUser();
         }
     }
 }

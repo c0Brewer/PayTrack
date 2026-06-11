@@ -11,6 +11,7 @@ using Moq;
 using PayTrack.Application.Dto.Notification;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
 {
@@ -124,6 +125,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
     public class NotificationApiFactory : WebApplicationFactory<Program>
     {
         public Mock<INotificationDispatchService> ServiceMock { get; } = new();
+        public Mock<IAuthService> AuthServiceMock { get; } = new();
+
+        public NotificationApiFactory()
+        {
+            AuthServiceMock.Setup(a => a.GetCurrentUser(null))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -150,7 +158,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptor is not null)
                     services.Remove(serviceDescriptor);
 
+                var authServiceDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IAuthService));
+                if (authServiceDescriptor is not null)
+                    services.Remove(authServiceDescriptor);
+
                 services.AddSingleton(this.ServiceMock.Object);
+                services.AddSingleton(this.AuthServiceMock.Object);
             });
         }
     }

@@ -15,6 +15,10 @@ export const roleGuard = (requiredRole: Role): CanActivateFn => {
       return router.createUrlTree(['/login']);
     }
 
+    if (!currentUser.isActive) {
+      return router.createUrlTree(['/unauthorized']);
+    }
+
     if (currentUser.role < requiredRole) {
       // assumes numeric enum, Admin > TeamLead > User
       return router.createUrlTree(['/unauthorized']); // a 403 page
