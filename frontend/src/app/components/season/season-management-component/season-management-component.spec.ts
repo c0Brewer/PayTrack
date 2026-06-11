@@ -203,5 +203,4 @@ describe('SeasonManagementComponent', () => {
 
     expect(list).not.toBeNull();
   });
-
 });
