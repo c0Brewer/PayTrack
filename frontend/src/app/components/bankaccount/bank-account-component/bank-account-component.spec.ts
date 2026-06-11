@@ -5,6 +5,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { BankAccountService } from '../../../services/bank-account/bank-account-service';
+import { NotificationService } from '../../../services/notification/notification-service';
 
 import { BankAccountComponent } from './bank-account-component';
 
@@ -19,6 +20,9 @@ describe('BankAccountComponent', () => {
   };
   let cdrMock: {
     detectChanges: ReturnType<typeof vi.fn>;
+  };
+  let notificationMock: {
+    showSuccess: ReturnType<typeof vi.fn>;
   };
 
   const mockAccount = {
@@ -39,11 +43,15 @@ describe('BankAccountComponent', () => {
     cdrMock = {
       detectChanges: vi.fn(),
     };
+    notificationMock = {
+      showSuccess: vi.fn(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [BankAccountComponent],
       providers: [
         { provide: BankAccountService, useValue: bankAccountServiceMock },
+        { provide: NotificationService, useValue: notificationMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
       ],
     }).compileComponents();
@@ -116,28 +124,42 @@ describe('BankAccountComponent', () => {
     expect(component.modalErrorMessage).toBe('');
   });
 
-  it('deleteBankAccount should set error when id is missing', () => {
-    component.deleteBankAccount(undefined);
+  it('openDeleteModal should set error when id is missing', () => {
+    component.openDeleteModal({
+      ...mockAccount,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      id: undefined as any,
+    });
 
     expect(component.errorMessage).toBe('Missing bank account id');
     expect(bankAccountServiceMock.deleteBankAccount).not.toHaveBeenCalled();
   });
 
-  it('deleteBankAccount should not call service when confirm is false', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('openDeleteModal should store the account pending deletion', () => {
+    component.openDeleteModal(mockAccount);
 
-    component.deleteBankAccount(1);
-
+    expect(component.bankAccountPendingDelete).toEqual(mockAccount);
     expect(bankAccountServiceMock.deleteBankAccount).not.toHaveBeenCalled();
   });
 
-  it('deleteBankAccount should call service when confirm is true', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const loadSpy = vi.spyOn(component, 'loadBankAccounts').mockImplementation(() => {});
+  it('closeDeleteModal should clear the account pending deletion', () => {
+    component.bankAccountPendingDelete = mockAccount;
 
-    component.deleteBankAccount(1);
+    component.closeDeleteModal();
+
+    expect(component.bankAccountPendingDelete).toBeNull();
+    expect(bankAccountServiceMock.deleteBankAccount).not.toHaveBeenCalled();
+  });
+
+  it('confirmDeleteBankAccount should call service', () => {
+    const loadSpy = vi.spyOn(component, 'loadBankAccounts').mockImplementation(() => {});
+    component.bankAccountPendingDelete = mockAccount;
+
+    component.confirmDeleteBankAccount();
 
     expect(bankAccountServiceMock.deleteBankAccount).toHaveBeenCalledWith(1);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Bank account deleted.');
+    expect(component.bankAccountPendingDelete).toBeNull();
     expect(loadSpy).toHaveBeenCalled();
   });
 

@@ -24,7 +24,7 @@
 
               <div class="card-actions">
                 <button type="button" class="secondary" (click)="openEditModal(account)">Edit</button>
-                <button type="button" class="danger" (click)="deleteBankAccount(account.id)">Delete</button>
+                <button type="button" class="danger" (click)="openDeleteModal(account)">Delete</button>
               </div>
             </div>
 
@@ -57,4 +57,19 @@
     [errorMessage]="modalErrorMessage"
     (cancel)="closeModal()"
     (submitForm)="updateBankAccount($event)" />
+}
+
+@if (bankAccountPendingDelete) {
+  <app-modal-component title="Delete Bank Account" icon="delete" (closeEvent)="closeDeleteModal()">
+    <p class="delete-modal-text">
+      Delete bank account for <strong>{{ bankAccountPendingDelete.accountHolder }}</strong
+      >?
+    </p>
+    <p class="delete-modal-text">This action cannot be undone.</p>
+
+    <div class="modal-actions">
+      <button type="button" class="secondary" (click)="closeDeleteModal()">Cancel</button>
+      <button type="button" class="danger" (click)="confirmDeleteBankAccount()">Delete</button>
+    </div>
+  </app-modal-component>
 }

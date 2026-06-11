@@ -7,12 +7,14 @@ import {
   CreateBankAccountRequestDto,
   UpdateBankAccountRequestDto,
 } from '../../../services/bank-account/bank-account-service';
+import { NotificationService } from '../../../services/notification/notification-service';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 import { BankAccountEditorComponent } from '../bank-account-editor/bank-account-editor';
 
 @Component({
   selector: 'app-bank-account-component',
   standalone: true,
-  imports: [CommonModule, BankAccountEditorComponent],
+  imports: [CommonModule, BankAccountEditorComponent, ModalComponent],
   templateUrl: './bank-account-component.html',
   styleUrl: './bank-account-component.scss',
 })
@@ -22,12 +24,14 @@ export class BankAccountComponent implements OnInit {
   public isLoading = false;
   public isCreateModalOpen = false;
   public editingBankAccount: BankAccountDto | null = null;
+  public bankAccountPendingDelete: BankAccountDto | null = null;
 
   public errorMessage = '';
   public modalErrorMessage = '';
 
   constructor(
     private readonly bankAccountService: BankAccountService,
+    private readonly notificationService: NotificationService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -74,19 +78,34 @@ export class BankAccountComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  public deleteBankAccount(id: number | undefined): void {
-    if (id == null) {
+  public openDeleteModal(account: BankAccountDto): void {
+    if (account.id == null) {
       this.handleError(new Error('Missing bank account id'), 'Failed to delete bank account');
       this.cdr.detectChanges();
       return;
     }
 
-    if (!confirm('Delete this bank account?')) {
+    this.bankAccountPendingDelete = account;
+    this.cdr.detectChanges();
+  }
+
+  public closeDeleteModal(): void {
+    this.bankAccountPendingDelete = null;
+    this.cdr.detectChanges();
+  }
+
+  public confirmDeleteBankAccount(): void {
+    const id = this.bankAccountPendingDelete?.id;
+    if (id == null) {
+      this.handleError(new Error('Missing bank account id'), 'Failed to delete bank account');
+      this.closeDeleteModal();
       return;
     }
 
     this.bankAccountService.deleteBankAccount(id).subscribe({
       next: () => {
+        this.notificationService.showSuccess('Bank account deleted.');
+        this.bankAccountPendingDelete = null;
         this.loadBankAccounts();
         this.cdr.detectChanges();
       },

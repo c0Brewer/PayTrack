@@ -91,3 +91,16 @@ button {
   margin-top: 1rem;
   color: #4b5563;
 }
+
+.delete-modal-text {
+  color: #4b5563;
+  margin: 0 0 0.75rem;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
