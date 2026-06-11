@@ -78,6 +78,44 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task AddAsync_ShouldThrowInvalidState_WhenNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddSeason_DuplicateName");
+            context.Seasons.Add(new Season { Name = "2026" });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.AddAsync(new Season { Name = "2026" }));
+
+            // Assert
+            exception.Message.Should().Be("A season with the name '2026' already exists.");
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldReactivateInactiveSeason_WhenNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddSeason_ReactivatesInactive");
+            var inactiveSeason = new Season { Name = "2026", IsActive = false };
+            context.Seasons.Add(inactiveSeason);
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.AddAsync(new Season { Name = "2026" });
+
+            // Assert
+            result.Id.Should().Be(inactiveSeason.Id);
+            result.IsActive.Should().BeTrue();
+            context.Seasons.Should().ContainSingle(s => s.Name == "2026");
+        }
+
+        [Fact]
         public async Task GetAllAsync_ShouldReturnAllSeasonsOrderedByName()
         {
             // Arrange
@@ -185,6 +223,26 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.Name.Should().Be("2027");
             var dbEntity = await context.Seasons.FindAsync(entity.Id);
             dbEntity!.Name.Should().Be("2027");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldThrowInvalidState_WhenNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateSeason_DuplicateName");
+            var first = new Season { Name = "2026" };
+            var second = new Season { Name = "2027" };
+            context.Seasons.AddRange(first, second);
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.UpdateAsync(second.Id, "2026", null));
+
+            // Assert
+            exception.Message.Should().Be("A season with the name '2026' already exists.");
         }
 
         [Fact]

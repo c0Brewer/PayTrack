@@ -295,6 +295,18 @@ describe('CostCentreEditModalComponent', () => {
     expect(component.newBudgets).toEqual([]);
   });
 
+  it('should hide inactive seasons from the new budget select', () => {
+    fixture.componentRef.setInput('seasons', mockSeasons);
+    fixture.detectChanges();
+
+    const options = Array.from(
+      fixture.nativeElement.querySelectorAll('option') as NodeListOf<HTMLOptionElement>,
+    ).map((option) => option.textContent?.trim());
+
+    expect(options).toContain('2025');
+    expect(options).not.toContain('2026 (inactive)');
+  });
+
   it('isCreating should be true when id is -1 and false otherwise', () => {
     expect(component.isCreating).toBe(true);
     component.costCentre = { ...component.costCentre, id: 5 };

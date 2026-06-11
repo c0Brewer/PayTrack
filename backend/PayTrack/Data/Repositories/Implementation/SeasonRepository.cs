@@ -44,6 +44,28 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<Season> AddAsync(Season season)
         {
+            var existingSeason = await this.context.Seasons
+                .Include(s => s.Budgets)
+                .FirstOrDefaultAsync(s => s.Name == season.Name);
+
+            if (existingSeason is not null)
+            {
+                if (existingSeason.IsActive)
+                {
+                    throw new InvalidStateException($"A season with the name '{season.Name}' already exists.");
+                }
+
+                existingSeason.IsActive = true;
+                int reactivationRes = await this.context.SaveChangesAsync();
+
+                if (reactivationRes != 1)
+                {
+                    throw new InternalErrorException($"Reactivating Season did not end as expected. Saved {reactivationRes} records.");
+                }
+
+                return existingSeason;
+            }
+
             this.context.Seasons.Add(season);
             int res = await this.context.SaveChangesAsync();
 
@@ -66,6 +88,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (name is not null && season.Name != name)
             {
+                var duplicateNameExists = await this.context.Seasons.AnyAsync(s => s.Id != id && s.Name == name);
+                if (duplicateNameExists)
+                {
+                    throw new InvalidStateException($"A season with the name '{name}' already exists.");
+                }
+
                 season.Name = name;
                 hasChanges = true;
             }

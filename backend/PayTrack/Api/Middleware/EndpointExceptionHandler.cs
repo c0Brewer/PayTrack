@@ -24,8 +24,6 @@ namespace PayTrack.Api.Middleware
         /// <returns>true if other exception handlers should get called as well.</returns>
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            this.logger.LogError(exception, "Exception occured");
-
             var problem = exception is ApiException apiException
                 ? new ProblemDetails
                 {
@@ -39,6 +37,15 @@ namespace PayTrack.Api.Middleware
                     Title = "Internal Server Error",
                     Detail = "An error occured. Please try again or contact support.",
                 };
+
+            if (exception is ApiException handledApiException && handledApiException.StatusCode < 500)
+            {
+                this.logger.LogWarning("Handled API exception: {ExceptionType} - {Message}", exception.GetType().Name, exception.Message);
+            }
+            else
+            {
+                this.logger.LogError(exception, "Exception occured");
+            }
 
             httpContext.Response.StatusCode = problem.Status ?? 500;
 

@@ -98,6 +98,10 @@ export class CostCentreEditModalComponent implements OnChanges {
     return this.costCentre.id === -1;
   }
 
+  get activeSeasons(): SeasonDto[] {
+    return this.seasons.filter((season) => season.isActive !== false);
+  }
+
   hasChanged(): boolean {
     if (!this.originalCostCentre) return false;
 
