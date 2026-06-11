@@ -14,14 +14,14 @@ namespace PayTrack.Data.Helpers
         /// <summary>
         /// Minimum score required for a candidate to be treated as a duplicate.
         /// </summary>
-        public const int MatchThreshold = 60;
+        public const int MatchThreshold = 6;
 
-        private const int ExactInvoiceNumberScore = 80;
-        private const int SimilarInvoiceNumberScore = 35;
-        private const int SameAmountScore = 30;
-        private const int SamePaydayScore = 20;
-        private const int SameUserScore = 10;
-        private const int SameTeamScore = 10;
+        private const int ExactInvoiceNumberScore = 8;
+        private const int SimilarInvoiceNumberScore = 3;
+        private const int SameAmountScore = 3;
+        private const int SamePaydayScore = 2;
+        private const int SameUserScore = 1;
+        private const int SameTeamScore = 1;
 
         /// <summary>
         /// Calculates a weighted duplicate score.

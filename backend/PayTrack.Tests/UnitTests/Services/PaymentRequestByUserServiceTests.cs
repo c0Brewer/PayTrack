@@ -401,19 +401,19 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Should().HaveCount(4);
             result[0].PaymentRequestByUser.Id.Should().Be(1);
-            result[0].Score.Should().Be(150);
+            result[0].Score.Should().Be(15);
             result[0].MatchedFields.Should().Equal("invoiceNumber", "amount", "payday", "user", "team");
 
             result[1].PaymentRequestByUser.Id.Should().Be(6);
-            result[1].Score.Should().Be(65);
+            result[1].Score.Should().Be(6);
             result[1].MatchedFields.Should().Equal("similarInvoiceNumber", "amount");
 
             result[2].PaymentRequestByUser.Id.Should().Be(3);
-            result[2].Score.Should().Be(60);
+            result[2].Score.Should().Be(6);
             result[2].MatchedFields.Should().Equal("amount", "payday", "user");
 
             result[3].PaymentRequestByUser.Id.Should().Be(2);
-            result[3].Score.Should().Be(60);
+            result[3].Score.Should().Be(6);
             result[3].MatchedFields.Should().Equal("amount", "payday", "team");
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 4);
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 5);
