@@ -174,7 +174,6 @@ describe('AdminInvoicesOverviewComponent', () => {
 
   it('should delete duplicate invoice after confirmation', () => {
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const invoice = { id: 2, invoiceNumber: 'INV-2' } as PaymentRequestByUserDto;
 
     component.onDeleteDuplicateInvoice(invoice);

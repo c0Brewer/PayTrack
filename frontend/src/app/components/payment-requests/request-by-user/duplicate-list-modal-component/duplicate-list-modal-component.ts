@@ -28,7 +28,10 @@ export class DuplicateListModalComponent {
   @Output() dismissDuplicate = new EventEmitter<DuplicatePaymentRequestByUserDto>();
   @Output() submitRegardless = new EventEmitter<void>();
 
+  invoicePendingDelete: PaymentRequestByUserDto | null = null;
+
   onClose(): void {
+    this.invoicePendingDelete = null;
     this.closeModal.emit();
   }
 
@@ -37,7 +40,20 @@ export class DuplicateListModalComponent {
   }
 
   onDeleteInvoice(invoice: PaymentRequestByUserDto): void {
-    this.deleteInvoice.emit(invoice);
+    this.invoicePendingDelete = invoice;
+  }
+
+  onCancelDeleteInvoice(): void {
+    this.invoicePendingDelete = null;
+  }
+
+  onConfirmDeleteInvoice(): void {
+    if (!this.invoicePendingDelete) {
+      return;
+    }
+
+    this.deleteInvoice.emit(this.invoicePendingDelete);
+    this.invoicePendingDelete = null;
   }
 
   onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
