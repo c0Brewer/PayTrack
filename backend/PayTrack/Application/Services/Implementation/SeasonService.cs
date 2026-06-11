@@ -35,15 +35,15 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Season> UpdateAsync(int id, string? name)
+        public async Task<Season> UpdateAsync(int id, string? name, bool? isActive)
         {
-            return await this.repo.UpdateAsync(id, name);
+            return await this.repo.UpdateAsync(id, name, isActive);
         }
 
         /// <inheritdoc/>
-        public async Task DeleteAsync(int id)
+        public async Task<Season?> DeleteAsync(int id)
         {
-            await this.repo.DeleteAsync(id);
+            return await this.repo.DeleteAsync(id);
         }
     }
 }

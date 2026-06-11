@@ -48,4 +48,41 @@ export class SeasonManagementComponent implements OnInit {
       },
     });
   }
+
+  updateSeason(update: { id: number; name: string }): void {
+    this.seasonService.updateSeason(update.id, { name: update.name }).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Season updated successfully');
+        this.loadSeasons();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not update season: ' + err.message);
+      },
+    });
+  }
+
+  deleteSeason(id: number): void {
+    const season = this.seasons.find((item) => item.id === id);
+    const hasDependencies = (season?.budgets?.length ?? 0) > 0;
+    const confirmationMessage = hasDependencies
+      ? 'This season has linked budgets and will be deactivated. Continue?'
+      : 'Delete this season?';
+
+    if (!confirm(confirmationMessage)) {
+      return;
+    }
+
+    this.seasonService.deleteSeason(id).subscribe({
+      next: (deletedSeason) => {
+        const message = deletedSeason
+          ? 'Season deactivated successfully'
+          : 'Season deleted successfully';
+        this.notificationService.showSuccess(message);
+        this.loadSeasons();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not delete season: ' + err.message);
+      },
+    });
+  }
 }

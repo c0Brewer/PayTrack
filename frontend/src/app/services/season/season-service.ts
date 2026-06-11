@@ -45,11 +45,12 @@ export class SeasonService {
     return from(promise);
   }
 
-  public deleteSeason(id: number): Observable<void> {
-    const promise: Promise<void> = client
+  public deleteSeason(id: number): Observable<SeasonDto | null> {
+    const promise: Promise<SeasonDto | null> = client
       .DELETE('/api/v1/season/{id}', { params: { path: { id } } })
-      .then(({ error }) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(SeasonService.getErrorMessage(error));
+        return data ?? null;
       });
     return from(promise);
   }

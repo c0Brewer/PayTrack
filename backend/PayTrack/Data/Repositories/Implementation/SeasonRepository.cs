@@ -22,6 +22,7 @@ namespace PayTrack.Data.Repositories.Implementation
         {
             return await this.context.Seasons
                 .Include(s => s.Budgets)
+                .Where(s => s.IsActive)
                 .OrderBy(s => s.Name)
                 .ToListAsync();
         }
@@ -49,19 +50,31 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<Season> UpdateAsync(int id, string? name)
+        public async Task<Season> UpdateAsync(int id, string? name, bool? isActive)
         {
             var season = await this.context.Seasons
                 .Include(s => s.Budgets)
                 .FirstOrDefaultAsync(s => s.Id == id)
                 ?? throw new NotFoundException($"Season with id {id} could not be found.");
+            var hasChanges = false;
 
-            if (name is null)
+            if (name is not null && season.Name != name)
+            {
+                season.Name = name;
+                hasChanges = true;
+            }
+
+            if (isActive is not null && season.IsActive != isActive.Value)
+            {
+                season.IsActive = isActive.Value;
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
             {
                 return season;
             }
 
-            season.Name = name;
             int res = await this.context.SaveChangesAsync();
 
             if (res != 1)
@@ -73,7 +86,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task DeleteAsync(int id)
+        public async Task<Season?> DeleteAsync(int id)
         {
             var season = await this.context.Seasons
                 .Include(s => s.Budgets)
@@ -82,7 +95,15 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (season.Budgets.Count > 0)
             {
-                throw new InvalidStateException("Season cannot be deleted while budgets are linked.");
+                season.IsActive = false;
+                int deactivationRes = await this.context.SaveChangesAsync();
+
+                if (deactivationRes != 1)
+                {
+                    throw new InternalErrorException($"Deactivating Season did not end as expected. Affected {deactivationRes} records.");
+                }
+
+                return season;
             }
 
             this.context.Seasons.Remove(season);
@@ -92,6 +113,8 @@ namespace PayTrack.Data.Repositories.Implementation
             {
                 throw new InternalErrorException($"Deleting Season did not end as expected. Affected {res} records.");
             }
+
+            return null;
         }
     }
 }

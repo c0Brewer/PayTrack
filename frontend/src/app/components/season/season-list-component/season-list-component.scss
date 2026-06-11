@@ -73,6 +73,39 @@
   line-height: 1.25;
 }
 
+.season-list__actions,
+.season-list__edit-form {
+  align-items: center;
+  display: flex;
+  gap: v.$size-xs;
+}
+
+.season-list__edit-form {
+  flex-wrap: wrap;
+}
+
+.season-list__edit-form input {
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.35rem;
+  color: v.$text-color;
+  min-height: 2.25rem;
+  min-width: 12rem;
+  padding: 0 v.$size-s;
+}
+
+.season-list__icon-button {
+  align-items: center;
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.25rem;
+
+  .material-symbols-outlined {
+    font-size: 1.1rem;
+  }
+}
+
 .season-list__empty {
   color: v.$text-muted;
   padding: v.$size-m;

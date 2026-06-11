@@ -322,6 +322,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonDto"];
+                    };
+                };
                 /** @description No Content */
                 204: {
                     headers: {
@@ -2853,6 +2862,7 @@ export interface components {
             /** Format: int32 */
             id: number;
             name: string;
+            isActive: boolean;
             budgets?: components["schemas"]["BudgetDto"][] | null;
         };
         SendEmailNotificationDto: {
@@ -2961,6 +2971,7 @@ export interface components {
         };
         UpdateSeasonRequestDto: {
             name?: string | null;
+            isActive?: boolean | null;
         };
         UpdateTeamRequestDto: {
             name?: string | null;

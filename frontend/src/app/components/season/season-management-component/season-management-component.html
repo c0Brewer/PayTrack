@@ -1,5 +1,9 @@
 <div class="main-page-container season-management">
   <h2 class="m-0">Season Management</h2>
   <app-season-form-component (createSeason)="createSeason($event)" />
-  <app-season-list-component [seasons]="seasons" />
+  <app-season-list-component
+    [seasons]="seasons"
+    (updateSeason)="updateSeason($event)"
+    (deleteSeason)="deleteSeason($event)"
+  />
 </div>

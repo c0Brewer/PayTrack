@@ -53,7 +53,7 @@ namespace PayTrack.Api.Handler
             [FromBody] UpdateSeasonRequestDto dto,
             ISeasonService service)
         {
-            var season = await service.UpdateAsync(id, dto.Name);
+            var season = await service.UpdateAsync(id, dto.Name, dto.IsActive);
             return TypedResults.Ok(SeasonMapper.ToDto(season));
         }
 
@@ -63,12 +63,17 @@ namespace PayTrack.Api.Handler
         /// <param name="id">Id from route.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteSeasonAsync(
+        public static async Task<Results<NoContent, Ok<SeasonDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteSeasonAsync(
             [FromRoute] int id,
             ISeasonService service)
         {
-            await service.DeleteAsync(id);
-            return TypedResults.NoContent();
+            var deletedSeason = await service.DeleteAsync(id);
+            if (deletedSeason is null)
+            {
+                return TypedResults.NoContent();
+            }
+
+            return TypedResults.Ok(SeasonMapper.ToDto(deletedSeason));
         }
     }
 }
