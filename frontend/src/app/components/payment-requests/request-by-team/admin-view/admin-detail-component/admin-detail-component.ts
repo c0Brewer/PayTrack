@@ -1,15 +1,22 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
-import { PaymentRequestByTeamDto } from '../../../../../types/exporter';
+import {
+  PaymentRequestByTeamDto,
+  TransactionStatus,
+  TransactionStatusCssClass,
+  TransactionStatusLabels,
+} from '../../../../../types/exporter';
 import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
-import { TeamRequestAdminDetailViewComponent } from '../detail-component/detail-component';
+import { DetailComponent } from '../../../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-team-request-admin-detail-component',
-  imports: [TeamRequestAdminDetailViewComponent, ExternalNotificationComponent],
+  imports: [DatePipe, DetailComponent, EuroPipe, ExternalNotificationComponent],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })
@@ -25,6 +32,14 @@ export class TeamRequestAdminDetailComponent implements OnInit {
   request: PaymentRequestByTeamDto | null = null;
   loading: boolean = true;
   modalType: 'email' | 'slack' | null = null;
+
+  getStatusLabel(status: TransactionStatus): string {
+    return TransactionStatusLabels[status] ?? 'Unknown';
+  }
+
+  getStatusClass(status: TransactionStatus): string {
+    return TransactionStatusCssClass[status] ?? '';
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
