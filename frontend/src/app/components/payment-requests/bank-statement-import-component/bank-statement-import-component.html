@@ -103,8 +103,24 @@
     </div>
 
     <!-- Results -->
+    <div class="result-list-toolbar">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="toggleSortMode()">
+        <span class="material-symbols-outlined" style="font-size: 16px">sort</span>
+        {{ sortMode() === 'score' ? 'Original order' : 'Sort by score' }}
+      </button>
+    </div>
     <div class="result-list">
-      @for (result of results(); track result._entryId) {
+      @for (result of displayResults(); track result._entryId; let idx = $index) {
+        @if (sortMode() === 'score' && idx === 0 && allMatchedCount() > 0) {
+          <div class="result-section-header">
+            Matches <span class="result-section-header__count">({{ allMatchedCount() }})</span>
+          </div>
+        }
+        @if (sortMode() === 'score' && idx === noMatchBoundaryIndex() && unmatchedCount() > 0) {
+          <div class="result-section-header result-section-header--no-match">
+            No matches <span class="result-section-header__count">({{ unmatchedCount() }})</span>
+          </div>
+        }
         <div
           class="result-item"
           [class.result-item--matched]="result.hasMatch && !result.skipped"
