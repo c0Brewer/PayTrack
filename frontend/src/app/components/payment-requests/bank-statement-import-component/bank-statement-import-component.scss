@@ -97,6 +97,10 @@
   justify-content: flex-end;
   margin-top: v.$size-s;
 }
+.import-actions-upload button:disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto;
+}
 
 // ── Result list ───────────────────────────────────────────────────────────────
 
