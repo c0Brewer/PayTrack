@@ -53,11 +53,6 @@ namespace PayTrack.Application.Services.Implementation
                 user = await this.userService.CreateUserAsync(payload.Name, payload.Email, payload.Picture);
             }
 
-            if (!user.IsActive)
-            {
-                throw new LockedException("Your Account is deactivated");
-            }
-
             return await this.jwtService.GenerateJWTToken(payload.Email, user.Role);
         }
 

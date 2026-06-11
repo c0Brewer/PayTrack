@@ -64,6 +64,15 @@ namespace PayTrack.Application.Services.Model
             DateTime? paidAt = null);
 
         /// <summary>
+        /// Marks a PaymentRequestByTeam as Paid and records the status change in history.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByTeam to mark as paid.</param>
+        /// <param name="adminUserId">The id of the admin user performing the action.</param>
+        /// <param name="comment">An optional comment to store with the status history entry.</param>
+        /// <returns>The updated PaymentRequestByTeam.</returns>
+        Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment);
+
+        /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.
         /// </summary>
         /// <param name="query">The query submitted by the client.</param>

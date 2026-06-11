@@ -478,6 +478,38 @@
   }
 }
 
+// ── Result list toolbar ───────────────────────────────────────────────────────
+
+.result-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: v.$size-xs;
+}
+
+// ── Result section headers ────────────────────────────────────────────────────
+
+.result-section-header {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: v.$text-muted;
+  padding: v.$size-xxs 0 v.$size-xxs v.$size-xxs;
+  margin-top: v.$size-s;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &--no-match {
+    color: v.$warning-dark;
+  }
+
+  &__count {
+    font-weight: 400;
+  }
+}
+
 // ── Responsive ───────────────────────────────────────────────────────────────
 
 @media (max-width: 767.98px) {

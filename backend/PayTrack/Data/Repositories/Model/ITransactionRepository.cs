@@ -127,6 +127,22 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
 
         /// <summary>
+        /// Atomically updates a PaymentRequestByTeam and persists a status history entry in a single SaveChanges call.
+        /// </summary>
+        /// <param name="transaction">The transaction to update.</param>
+        /// <param name="history">The status history entry to add.</param>
+        /// <returns>The updated transaction.</returns>
+        Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history);
+
+        /// <summary>
+        /// Returns all PaymentRequestByTeam entries whose due date falls on <paramref name="dueDate"/>
+        /// and whose status is not Paid or Declined. Includes the User navigation property.
+        /// </summary>
+        /// <param name="dueDate">The date to match against DueDate (time portion is ignored).</param>
+        /// <returns>List of matching PaymentRequestByTeam entries.</returns>
+        Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate);
+
+        /// <summary>
         /// Deletes a PaymentRequestByUser by id.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to delete.</param>

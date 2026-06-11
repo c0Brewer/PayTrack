@@ -6,6 +6,7 @@ import {
   CreatePaymentRequestByTeamDto,
   GetPaymentRequestsByTeamByIdOptions,
   GetPaymentRequestsByTeamOptions,
+  MarkAsPaidPaymentRequestByTeamDto,
   PaginatedPaymentRequestByTeamDto,
   PaymentRequestByTeamDto,
 } from '../../types/exporter';
@@ -57,6 +58,24 @@ export class PaymentRequestByTeamService {
       .POST('/api/v1/transaction/team', { body: payload })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        return data;
+      });
+
+    return from(promise);
+  }
+
+  public markAsPaid(
+    id: number,
+    payload: MarkAsPaidPaymentRequestByTeamDto,
+  ): Observable<PaymentRequestByTeamDto> {
+    const promise = client
+      .POST('/api/v1/transaction/team/{id}/mark-as-paid', {
+        params: { path: { id } },
+        body: payload,
+      })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (!data) throw new Error('Unexpected Error');
         return data;
       });
 

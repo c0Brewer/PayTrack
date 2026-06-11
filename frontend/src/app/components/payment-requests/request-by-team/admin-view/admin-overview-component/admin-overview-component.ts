@@ -99,6 +99,7 @@ export class TeamRequestAdminOverviewComponent implements OnInit {
         this.statRequests = (data?.items ?? []).filter((request) =>
           TEAM_REQUEST_ALLOWED_STATUSES.includes(request.status as TransactionStatus),
         );
+
         const maxPage = Math.max(Math.ceil(this.statRequests.length / this.limit) - 1, 0);
         if (this.page > maxPage) {
           this.page = maxPage;
