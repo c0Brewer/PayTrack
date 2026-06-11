@@ -1018,5 +1018,329 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Status.Should().Be(TransactionStatus.Paid);
         }
+
+        // ----------------------------
+        // DELETE
+        // ----------------------------
+        [Fact]
+        public async Task Delete_ShouldThrow_WhenNotFound()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync((PaymentRequestByTeam?)null);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(1);
+
+            await act.Should()
+                .ThrowAsync<NotFoundException>()
+                .WithMessage("PaymentRequestByTeam could not be found");
+        }
+
+        [Theory]
+        [InlineData(TransactionStatus.Paid)]
+        [InlineData(TransactionStatus.Approved)]
+        [InlineData(TransactionStatus.Declined)]
+        [InlineData(TransactionStatus.ChangesRequested)]
+        public async Task Delete_ShouldThrow_WhenStatusIsNotSubmitted(TransactionStatus status)
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 1,
+                Status = status,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(1);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
+            repoMock.Verify(r => r.DeletePaymentRequestByTeamAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldCallRepository_WhenStatusIsSubmitted()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            await service.DeletePaymentRequestByTeamAsync(7);
+
+            repoMock.Verify(r => r.DeletePaymentRequestByTeamAsync(7), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldSendEmail_WhenEmailEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.DeletePaymentRequestByTeamAsync(7);
+
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("Payment Request Deleted") && s.Contains("Office Supplies")),
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldNotSendEmail_WhenEmailDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = false },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.DeletePaymentRequestByTeamAsync(7);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldIncludeReason_InEmail_WhenReasonProvided()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            await service.DeletePaymentRequestByTeamAsync(7, "Budget cut");
+
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(
+                    "alice@test.com",
+                    It.IsAny<string>(),
+                    It.Is<string>(b => b.Contains("Budget cut"))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldContinue_WhenEmailThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            notificationsMock
+                .Setup(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP error"));
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(7);
+
+            await act.Should().NotThrowAsync();
+        }
+
+        [Fact]
+        public async Task Delete_ShouldSendSlack_WhenSlackEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            await service.DeletePaymentRequestByTeamAsync(7);
+
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "alice@test.com",
+                    It.Is<string>(s => s.Contains("Payment Request Deleted") && s.Contains("Office Supplies"))),
+                Times.Once);
+
+            notificationsMock.Verify(n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldContinue_WhenSlackThrows()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            notificationsMock
+                .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("Slack error"));
+
+            var settings = new PaymentRequestNotificationSettings
+            {
+                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
+            };
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(7);
+
+            await act.Should().NotThrowAsync();
+        }
     }
 }

@@ -362,6 +362,27 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<bool> DeletePaymentRequestByTeamAsync(int id)
+        {
+            var transaction = await this.context.PaymentRequestsByTeam.FindAsync(id);
+
+            if (transaction is null)
+            {
+                return false;
+            }
+
+            this.context.PaymentRequestsByTeam.Remove(transaction);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res < 1)
+            {
+                throw new InternalErrorException($"Deleting PaymentRequestByTeam did not end as expected. Deleted {res} transactions.");
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
         public async Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
         {
             var (firstId, secondId) = NormalizeDuplicatePair(paymentRequestByUserId, duplicatePaymentRequestByUserId);

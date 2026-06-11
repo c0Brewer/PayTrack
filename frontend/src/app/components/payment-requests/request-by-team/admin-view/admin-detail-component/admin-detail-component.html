@@ -33,6 +33,13 @@
               Send Slack
             </button>
           }
+
+          @if (canDelete) {
+            <button type="button" class="btn btn-danger" (click)="openDeleteModal()">
+              <span class="material-symbols-outlined">delete</span>
+              Delete
+            </button>
+          }
         </div>
       }
     </div>
@@ -50,6 +57,35 @@
       <button type="button" class="btn btn-secondary" (click)="cancelMarkAsPaid()">Cancel</button>
       <button type="button" class="btn btn-primary" [disabled]="markAsPaidLoading" (click)="confirmMarkAsPaid()">
         {{ markAsPaidLoading ? 'Processing…' : 'Confirm' }}
+      </button>
+    </div>
+  </app-modal-component>
+}
+
+@if (showDeleteModal) {
+  <app-modal-component title="Delete Payment Request" icon="delete" (closeEvent)="cancelDelete()">
+    <p>
+      Are you sure you want to <strong>permanently delete</strong> this payment request? This action
+      cannot be undone.
+    </p>
+    <label>
+      Reason (optional)
+      <textarea
+        [(ngModel)]="deleteReason"
+        rows="3"
+        maxlength="1000"
+        placeholder="Enter a reason for the deletion…"
+      ></textarea>
+    </label>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="deleteLoading"
+        (click)="confirmDelete()"
+      >
+        {{ deleteLoading ? 'Deleting…' : 'Delete' }}
       </button>
     </div>
   </app-modal-component>

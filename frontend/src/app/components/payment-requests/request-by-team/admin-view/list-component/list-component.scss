@@ -1,6 +1,23 @@
 @use 'variables' as v;
 
+.team-request-table-wrapper {
+  border-radius: v.$size-xs;
+  overflow-x: auto;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .team-request-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .team-request-table {
+    min-width: 0;
+  }
+}
+
 .team-request-table {
+  min-width: 60rem;
   width: 100%;
   border-collapse: collapse;
   font-size: v.$font-s;
@@ -41,8 +58,9 @@
   }
 
   .actions-col {
-    width: 1%;
+    min-width: 5.5rem;
     white-space: nowrap;
+    width: 5.5rem;
   }
 
   .view-btn {

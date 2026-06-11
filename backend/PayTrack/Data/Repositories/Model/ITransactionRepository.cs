@@ -150,6 +150,13 @@ namespace PayTrack.Data.Repositories.Model
         Task<bool> DeletePaymentRequestByUserAsync(int id);
 
         /// <summary>
+        /// Deletes a PaymentRequestByTeam by id.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByTeam to delete.</param>
+        /// <returns><c>true</c> if an entry was deleted; otherwise <c>false</c>.</returns>
+        Task<bool> DeletePaymentRequestByTeamAsync(int id);
+
+        /// <summary>
         /// Stores that a potential duplicate pair has been reviewed and dismissed.
         /// </summary>
         /// <param name="paymentRequestByUserId">First PaymentRequestByUser id.</param>
