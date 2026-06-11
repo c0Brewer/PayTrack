@@ -75,6 +75,7 @@ export class BankStatementImportComponent {
   });
 
   showNonApprovedWarning = signal(false);
+  showFinalConfirm = signal(false);
 
   nonApprovedMatches = computed(() =>
     this.results().filter(
@@ -82,6 +83,8 @@ export class BankStatementImportComponent {
         r.hasMatch && !r.skipped && r.matchedTransaction?.status !== TransactionStatus.Approved,
     ),
   );
+
+  matchedUpdates = computed(() => this.results().filter((r) => r.hasMatch && !r.skipped));
 
   // ── phase 1: upload ────────────────────────────────────────────────────────
   onDragOver(event: DragEvent): void {
@@ -226,11 +229,16 @@ export class BankStatementImportComponent {
       this.showNonApprovedWarning.set(true);
       return;
     }
-    this.submitUpdates();
+    this.showFinalConfirm.set(true);
   }
 
   confirmAnyway(): void {
     this.showNonApprovedWarning.set(false);
+    this.showFinalConfirm.set(true);
+  }
+
+  proceedWithSubmit(): void {
+    this.showFinalConfirm.set(false);
     this.submitUpdates();
   }
 

@@ -390,5 +390,38 @@
         </button>
       </div>
     </app-modal-component>
+
+    <!-- ── Final confirmation modal ── -->
+    <app-modal-component
+      title="Confirm Updates"
+      icon="check_circle"
+      [visible]="showFinalConfirm()"
+      (closeEvent)="showFinalConfirm.set(false)"
+    >
+      <p class="warning-modal-text">
+        The following {{ matchedUpdates().length }}
+        transaction{{ matchedUpdates().length === 1 ? '' : 's' }} will be marked as
+        <strong>Paid</strong>:
+      </p>
+      <ul class="warning-modal-list">
+        @for (r of matchedUpdates(); track r._entryId) {
+          <li>
+            <span class="warning-modal-list__name">{{ r.entry?.partnerName || '—' }}</span>
+            <span class="warning-modal-list__amount">{{ formatAmount(r.entry) }}</span>
+            <span class="warning-modal-list__status">{{
+              getStatusLabel(r.matchedTransaction?.status ?? 0)
+            }}</span>
+          </li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="showFinalConfirm.set(false)">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="proceedWithSubmit()">
+          Confirm &amp; Submit
+        </button>
+      </div>
+    </app-modal-component>
   }
 </div>
