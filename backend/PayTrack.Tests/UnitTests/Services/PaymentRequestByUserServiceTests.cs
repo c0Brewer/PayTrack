@@ -329,7 +329,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     UserId = 1,
                     TeamId = 99,
                     Amount = 100,
-                    InvoiceNumber = "ANY-1",
+                    InvoiceNumber = "INV-101",
                     PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -339,7 +339,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     UserId = 42,
                     TeamId = 1,
                     Amount = 100,
-                    InvoiceNumber = "ANY-2",
+                    InvoiceNumber = "INV-101",
                     PaidAt = paidAt,
                     CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -366,8 +366,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 new()
                 {
                     Id = 6,
-                    UserId = 1,
-                    TeamId = 1,
+                    UserId = 42,
+                    TeamId = 99,
                     Amount = 100,
                     InvoiceNumber = "INV-101",
                     PaidAt = paidAt.AddDays(3),
@@ -404,17 +404,17 @@ namespace PayTrack.Tests.UnitTests.Services
             result[0].Score.Should().Be(15);
             result[0].MatchedFields.Should().Equal("invoiceNumber", "amount", "payday", "user", "team");
 
-            result[1].PaymentRequestByUser.Id.Should().Be(6);
-            result[1].Score.Should().Be(6);
-            result[1].MatchedFields.Should().Equal("similarInvoiceNumber", "amount");
+            result[1].PaymentRequestByUser.Id.Should().Be(3);
+            result[1].Score.Should().Be(9);
+            result[1].MatchedFields.Should().Equal("similarInvoiceNumber", "amount", "payday", "user");
 
-            result[2].PaymentRequestByUser.Id.Should().Be(3);
-            result[2].Score.Should().Be(6);
-            result[2].MatchedFields.Should().Equal("amount", "payday", "user");
+            result[2].PaymentRequestByUser.Id.Should().Be(2);
+            result[2].Score.Should().Be(9);
+            result[2].MatchedFields.Should().Equal("similarInvoiceNumber", "amount", "payday", "team");
 
-            result[3].PaymentRequestByUser.Id.Should().Be(2);
-            result[3].Score.Should().Be(6);
-            result[3].MatchedFields.Should().Equal("amount", "payday", "team");
+            result[3].PaymentRequestByUser.Id.Should().Be(6);
+            result[3].Score.Should().Be(8);
+            result[3].MatchedFields.Should().Equal("similarInvoiceNumber", "amount", "user", "team");
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 4);
             result.Should().NotContain(match => match.PaymentRequestByUser.Id == 5);
 
@@ -446,7 +446,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .ToList();
 
             repoMock
-                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, null, null))
+                .Setup(r => r.GetPotentialDuplicatesAsync(42, 99, 100, paidAt, "INV-100", null))
                 .ReturnsAsync(duplicateCandidates);
 
             var service = new PaymentRequestByUserService(
@@ -457,7 +457,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 new Mock<ICostCentreService>().Object,
                 new Mock<IBudgetService>().Object);
 
-            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt);
+            var result = await service.GetDuplicatePaymentRequestsByUserAsync(42, 99, 100, paidAt, "INV-100");
 
             result.Should().HaveCount(10);
             result.Should().OnlyContain(match => match.Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold);
