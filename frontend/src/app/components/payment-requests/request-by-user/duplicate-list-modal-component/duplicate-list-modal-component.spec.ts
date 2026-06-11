@@ -45,8 +45,43 @@ describe('DuplicateListModalComponent', () => {
     expect(compiled.textContent).toContain('INV-2');
     expect(compiled.textContent).toContain('Finance');
     expect(compiled.textContent).not.toContain('Score:');
-    expect(compiled.textContent).toContain('Invoice number');
-    expect(compiled.textContent).toContain('Amount');
+    expect(compiled.textContent).toContain('Same invoice number');
+    expect(compiled.textContent).toContain('Same amount');
+  });
+
+  it('should render source invoice info when provided', () => {
+    const duplicate = {
+      paymentRequestByUser: {
+        id: 2,
+        invoiceNumber: 'INV-2',
+        amount: 25,
+        purposeOfPayment: 'Travel',
+        user: { name: 'Max' },
+        team: { name: 'Finance' },
+      } as PaymentRequestByUserDto,
+      score: 150,
+      matchedFields: ['similarInvoiceNumber', 'amount', 'team'],
+    } as DuplicatePaymentRequestByUserDto;
+
+    fixture.componentRef.setInput('visible', true);
+    fixture.componentRef.setInput('sourceInvoice', {
+      invoiceNumber: 'INV-1',
+      amount: 25,
+      purposeOfPayment: 'Travel',
+      user: { name: 'Anna' },
+      team: { name: 'Finance' },
+    });
+    fixture.componentRef.setInput('duplicates', [duplicate]);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Invoice being checked');
+    expect(compiled.textContent).toContain('Matching invoice');
+    expect(compiled.textContent).toContain('INV-1');
+    expect(compiled.textContent).toContain('Anna');
+    expect(compiled.textContent).toContain('INV-2');
+    expect(compiled.textContent).toContain('Similar invoice number');
+    expect(compiled.textContent).toContain('Same team');
   });
 
   it('should emit close event', () => {
