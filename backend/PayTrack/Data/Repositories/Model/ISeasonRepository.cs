@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Season;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Data.Repositories.Model
@@ -14,8 +15,9 @@ namespace PayTrack.Data.Repositories.Model
         /// <summary>
         /// Returns all seasons including their budgets.
         /// </summary>
+        /// <param name="query">Query options.</param>
         /// <returns>List of seasons.</returns>
-        Task<List<Season>> GetAllAsync();
+        Task<List<Season>> GetAllAsync(GetSeasonQuery? query = null);
 
         /// <summary>
         /// Gets a season by ID.

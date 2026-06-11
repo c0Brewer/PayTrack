@@ -40,8 +40,22 @@ describe('SeasonService', () => {
       const result = await firstValueFrom(service.getSeasons());
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {});
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {
+        params: { query: {} },
+      });
       expect(result).toEqual([mockSeason]);
+    });
+
+    it('should pass query options to API', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: [mockSeason], error: null });
+
+      await firstValueFrom(service.getSeasons({ IncludeInactive: true }));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {
+        params: { query: { IncludeInactive: true } },
+      });
     });
 
     it('should return an empty list when API returns no data', async () => {

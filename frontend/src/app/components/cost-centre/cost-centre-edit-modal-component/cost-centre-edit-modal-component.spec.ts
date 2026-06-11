@@ -3,7 +3,7 @@ import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../services/notification/notification-service';
-import { BudgetType, CostCentreDto, TeamDto } from '../../../types/exporter';
+import { BudgetType, CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
 
 import { CostCentreEditModalComponent } from './cost-centre-edit-modal-component';
 
@@ -27,6 +27,10 @@ describe('CostCentreEditModalComponent', () => {
     budgets: [],
     isActive: true,
   };
+  const mockSeasons: SeasonDto[] = [
+    { id: 1, name: '2025', isActive: true, budgets: [] },
+    { id: 2, name: '2026', isActive: false, budgets: [] },
+  ];
 
   function clickAddBudgetButton(): void {
     const addButton = fixture.nativeElement.querySelector(
@@ -262,10 +266,33 @@ describe('CostCentreEditModalComponent', () => {
   });
 
   it('getSeasonName should return season name or fallback', () => {
-    component.seasons = [{ id: 1, name: '2025', isActive: true, budgets: [] }];
+    component.seasons = mockSeasons;
 
     expect(component.getSeasonName(1)).toBe('2025');
+    expect(component.getSeasonName(2)).toBe('2026');
     expect(component.getSeasonName(99)).toBe('Season #99');
+  });
+
+  it('should label inactive season options and prevent adding them to new budgets', () => {
+    component.seasons = mockSeasons;
+    component.teams = [{ id: 1, name: 'Team', isActive: true } as TeamDto];
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Blocked budget',
+      teamId: 1,
+      seasonId: 2,
+      targetAmount: 500,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      type: BudgetType.Expense,
+    };
+
+    component.addNewBudget();
+
+    expect(component.getSeasonOptionLabel(mockSeasons[1])).toBe('2026 (inactive)');
+    expect(component.isSeasonActive(1)).toBe(true);
+    expect(component.isSeasonActive(2)).toBe(false);
+    expect(component.newBudgets).toEqual([]);
   });
 
   it('isCreating should be true when id is -1 and false otherwise', () => {

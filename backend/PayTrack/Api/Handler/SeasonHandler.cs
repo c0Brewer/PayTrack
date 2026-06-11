@@ -18,12 +18,14 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns all seasons.
         /// </summary>
+        /// <param name="query">Query options.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<Ok<List<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
+            [AsParameters] GetSeasonQuery query,
             ISeasonService service)
         {
-            var seasons = await service.GetAllAsync();
+            var seasons = await service.GetAllAsync(query);
             return TypedResults.Ok(SeasonMapper.ListToDto(seasons));
         }
 

@@ -32,13 +32,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 new() { Id = 1, Name = "2025" },
                 new() { Id = 2, Name = "2026" },
             };
-            this.factory.ServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(seasons);
+            this.factory.ServiceMock
+                .Setup(s => s.GetAllAsync(It.Is<GetSeasonQuery>(q => q.IncludeInactive == true)))
+                .ReturnsAsync(seasons);
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
 
             // Act
-            var response = await client.GetAsync("api/v1/season");
+            var response = await client.GetAsync("api/v1/season?IncludeInactive=true");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);

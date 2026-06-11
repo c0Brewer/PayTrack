@@ -89,7 +89,7 @@ export class CostCentreManagementComponent implements OnInit {
   }
 
   loadSeasons(): void {
-    this.seasonService.getSeasons().subscribe({
+    this.seasonService.getSeasons({ IncludeInactive: true }).subscribe({
       next: (seasons) => {
         this.seasons = seasons;
         this.cdr.markForCheck();

@@ -162,7 +162,9 @@
             >
               <option [ngValue]="0" disabled>Select season</option>
               @for (season of seasons; track season.id) {
-                <option [ngValue]="season.id">{{ season.name }}</option>
+                <option [ngValue]="season.id" [disabled]="season.isActive === false">
+                  {{ getSeasonOptionLabel(season) }}
+                </option>
               }
             </select>
             @if (hasBudgetFieldError('seasonId')) {

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -18,13 +19,18 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<List<Season>> GetAllAsync()
+        public async Task<List<Season>> GetAllAsync(GetSeasonQuery? query = null)
         {
-            return await this.context.Seasons
+            var dbQuery = this.context.Seasons
                 .Include(s => s.Budgets)
-                .Where(s => s.IsActive)
-                .OrderBy(s => s.Name)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (query?.IncludeInactive != true)
+            {
+                dbQuery = dbQuery.Where(s => s.IsActive);
+            }
+
+            return await dbQuery.OrderBy(s => s.Name).ToListAsync();
         }
 
         /// <inheritdoc/>

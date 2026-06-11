@@ -28,6 +28,7 @@ describe('TeamEditModalComponent', () => {
   const seasons: SeasonDto[] = [
     { id: 1, name: '2025', isActive: true, budgets: [] },
     { id: 2, name: '2026', isActive: true, budgets: [] },
+    { id: 3, name: '2027', isActive: false, budgets: [] },
   ];
 
   function clickAddBudgetButton(): void {
@@ -459,6 +460,28 @@ describe('TeamEditModalComponent', () => {
     expect(component.getSeasonName(99)).toBe('Season #99');
   });
 
+  it('should label inactive season options and prevent adding them to new budgets', () => {
+    component.costCentres = costCentres;
+    component.seasons = seasons;
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Blocked budget',
+      costCentreId: 1,
+      seasonId: 3,
+      targetAmount: 500,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      type: BudgetType.Expense,
+    };
+
+    component.addNewBudget();
+
+    expect(component.getSeasonOptionLabel(seasons[2])).toBe('2027 (inactive)');
+    expect(component.isSeasonActive(1)).toBe(true);
+    expect(component.isSeasonActive(3)).toBe(false);
+    expect(component.newBudgets).toEqual([]);
+  });
+
   it('should label inactive cost centre options and prevent adding them to new budgets', () => {
     component.costCentres = costCentres;
     component.seasons = seasons;
@@ -508,9 +531,10 @@ describe('TeamEditModalComponent', () => {
 
     const seasonOption = Array.from(
       fixture.nativeElement.querySelectorAll('option') as NodeListOf<HTMLOptionElement>,
-    ).find((option) => option.textContent?.trim() === '2026');
+    ).find((option) => option.textContent?.trim() === '2027 (inactive)');
 
     expect(seasonOption).toBeTruthy();
+    expect(seasonOption?.disabled).toBe(true);
   });
 
   it('getBudgetFieldError should skip amount validation for Income budgets', () => {

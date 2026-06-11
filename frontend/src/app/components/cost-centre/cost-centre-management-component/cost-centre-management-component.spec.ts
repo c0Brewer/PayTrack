@@ -118,7 +118,7 @@ describe('CostCentreManagementComponent', () => {
     component.ngOnInit();
     expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
     expect(teamServiceMock.getTeams).toHaveBeenCalled();
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.costCentres).toEqual(mockCostCentres);
     expect(component.seasons).toEqual(mockSeasons);
   });

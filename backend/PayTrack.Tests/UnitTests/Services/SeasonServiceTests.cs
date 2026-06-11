@@ -2,6 +2,7 @@
 
 using FluentAssertions;
 using Moq;
+using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -28,16 +29,17 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "2025" },
                 new() { Id = 2, Name = "2026" },
             };
-            this.repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(seasons);
+            var query = new GetSeasonQuery { IncludeInactive = true };
+            this.repoMock.Setup(r => r.GetAllAsync(query)).ReturnsAsync(seasons);
 
             // Act
-            var result = await this.service.GetAllAsync();
+            var result = await this.service.GetAllAsync(query);
 
             // Assert
             result.Should().HaveCount(2);
             result.Should().ContainSingle(s => s.Name == "2025");
             result.Should().ContainSingle(s => s.Name == "2026");
-            this.repoMock.Verify(r => r.GetAllAsync(), Times.Once);
+            this.repoMock.Verify(r => r.GetAllAsync(query), Times.Once);
         }
 
         [Fact]

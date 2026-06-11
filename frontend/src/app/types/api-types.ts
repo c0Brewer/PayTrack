@@ -1022,7 +1022,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeInactive?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;

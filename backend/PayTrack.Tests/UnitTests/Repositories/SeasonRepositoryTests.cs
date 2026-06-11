@@ -2,6 +2,7 @@
 
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -38,6 +39,26 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.IsActive.Should().BeTrue();
             var dbEntity = await context.Seasons.FindAsync(result.Id);
             dbEntity.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithIncludeInactive_ShouldReturnInactiveSeasons()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_WithInactive");
+            context.Seasons.AddRange(
+                new Season { Name = "2026" },
+                new Season { Name = "2025", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { IncludeInactive = true });
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.Select(s => s.Name).Should().Equal("2025", "2026");
         }
 
         [Fact]

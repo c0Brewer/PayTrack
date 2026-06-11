@@ -4,6 +4,7 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreateSeasonRequestDto,
+  GetSeasonOptions,
   ProblemDetails,
   SeasonDto,
   UpdateSeasonRequestDto,
@@ -13,9 +14,9 @@ import {
   providedIn: 'root',
 })
 export class SeasonService {
-  public getSeasons(): Observable<SeasonDto[]> {
+  public getSeasons(queryOptions?: GetSeasonOptions): Observable<SeasonDto[]> {
     const promise: Promise<SeasonDto[]> = client
-      .GET('/api/v1/season', {})
+      .GET('/api/v1/season', { params: { query: queryOptions ?? {} } })
       .then(({ data, error }) => {
         if (error) throw new Error(SeasonService.getErrorMessage(error));
         return data ?? [];

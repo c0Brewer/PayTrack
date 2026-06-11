@@ -154,7 +154,7 @@ describe('TeamManagementComponent', () => {
       Limit: 1000,
       Offset: 0,
     });
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.seasons).toEqual(mockSeasons);
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,
