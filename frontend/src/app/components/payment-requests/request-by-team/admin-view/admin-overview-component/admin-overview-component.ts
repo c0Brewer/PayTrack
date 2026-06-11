@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
@@ -9,11 +10,10 @@ import {
   TEAM_REQUEST_ALLOWED_STATUSES,
   TransactionStatus,
 } from '../../../../../types/exporter';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
 import { TeamRequestAdminListComponent } from '../list-component/list-component';
-import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
-import { EuroPipe } from '../../../../../pipes/euro.pipe';
 
 @Component({
   selector: 'app-team-request-admin-overview-component',

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { BankStatementImportComponent } from '../../../bank-statement-import-component/bank-statement-import-component';
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
+import { BankStatementImportComponent } from '../../../bank-statement-import-component/bank-statement-import-component';
 
 @Component({
   selector: 'app-team-request-bank-statement-detail-component',

@@ -11,8 +11,8 @@ import {
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
-import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
+import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
 
 @Component({
   selector: 'app-team-request-admin-detail-component',
