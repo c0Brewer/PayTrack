@@ -144,11 +144,13 @@ textarea,
 input[type='date'],
 input[type='date'].form-control {
   align-items: center;
-  display: inline-flex;
+  display: block;
   line-height: normal;
   min-height: 2.6rem;
   padding-bottom: 0;
+  padding-right: 2.5rem;
   padding-top: 0;
+  position: relative;
 }
 
 input[type='date']::-webkit-datetime-edit {
@@ -164,6 +166,15 @@ input[type='date']::-webkit-date-and-time-value {
   height: 100%;
   margin: 0;
   text-align: left;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  margin: 0;
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 textarea,
