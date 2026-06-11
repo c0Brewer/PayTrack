@@ -12,10 +12,16 @@ import {
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
 import { TeamRequestAdminListComponent } from '../list-component/list-component';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-team-request-admin-overview-component',
-  imports: [PaginationComponent, TeamRequestAdminFilterComponent, TeamRequestAdminListComponent],
+  imports: [
+    PaginationComponent,
+    TeamRequestAdminFilterComponent,
+    TeamRequestAdminListComponent,
+    StatBoxComponent,
+  ],
   templateUrl: './admin-overview-component.html',
   styleUrl: './admin-overview-component.scss',
 })
