@@ -4,6 +4,38 @@
   <app-season-list-component
     [seasons]="seasons"
     (updateSeason)="updateSeason($event)"
-    (deleteSeason)="deleteSeason($event)"
+    (deleteSeason)="openDeleteSeason($event)"
   />
+
+  <app-modal-component
+    [visible]="seasonToDelete !== null"
+    title="Delete Season"
+    icon="delete"
+    (closeEvent)="closeDeleteSeasonModal()"
+  >
+    @if (seasonToDelete; as selectedSeason) {
+      <p class="season-delete-modal__text">
+        You are about to delete <strong>{{ selectedSeason.name }}</strong
+        >.
+      </p>
+
+      @if (selectedSeasonHasDependencies) {
+        <div class="season-delete-modal__warning">
+          <p>This season has linked records and will be deactivated instead of deleted:</p>
+          <ul>
+            <li>{{ selectedSeason.budgets?.length ?? 0 }} budget(s)</li>
+          </ul>
+        </div>
+      } @else {
+        <p class="season-delete-modal__text">Are you sure? This action cannot be undone.</p>
+      }
+
+      <div class="season-delete-modal__actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteSeasonModal()">Cancel</button>
+        <button type="button" class="btn btn-outline-danger" (click)="confirmDeleteSeason()">
+          {{ selectedSeasonHasDependencies ? 'Deactivate' : 'Delete' }}
+        </button>
+      </div>
+    }
+  </app-modal-component>
 </div>

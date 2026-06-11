@@ -41,3 +41,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+.season-delete-modal__text {
+  margin: 0 0 1rem;
+}
+
+.season-delete-modal__warning {
+  background-color: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 0.5rem;
+  color: #7c2d12;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+}
+
+.season-delete-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}

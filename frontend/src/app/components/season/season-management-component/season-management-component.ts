@@ -3,12 +3,13 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NotificationService } from '../../../services/notification/notification-service';
 import { SeasonService } from '../../../services/season/season-service';
 import { SeasonDto } from '../../../types/exporter';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 import { SeasonFormComponent } from '../season-form-component/season-form-component';
 import { SeasonListComponent } from '../season-list-component/season-list-component';
 
 @Component({
   selector: 'app-season-management-component',
-  imports: [SeasonFormComponent, SeasonListComponent],
+  imports: [ModalComponent, SeasonFormComponent, SeasonListComponent],
   templateUrl: './season-management-component.html',
   styleUrl: './season-management-component.scss',
 })
@@ -20,6 +21,7 @@ export class SeasonManagementComponent implements OnInit {
   ) {}
 
   seasons: SeasonDto[] = [];
+  seasonToDelete: SeasonDto | null = null;
 
   ngOnInit(): void {
     this.loadSeasons();
@@ -61,23 +63,31 @@ export class SeasonManagementComponent implements OnInit {
     });
   }
 
-  deleteSeason(id: number): void {
-    const season = this.seasons.find((item) => item.id === id);
-    const hasDependencies = (season?.budgets?.length ?? 0) > 0;
-    const confirmationMessage = hasDependencies
-      ? 'This season has linked budgets and will be deactivated. Continue?'
-      : 'Delete this season?';
+  openDeleteSeason(id: number): void {
+    this.seasonToDelete = this.seasons.find((item) => item.id === id) ?? null;
+  }
 
-    if (!confirm(confirmationMessage)) {
+  closeDeleteSeasonModal(): void {
+    this.seasonToDelete = null;
+  }
+
+  get selectedSeasonHasDependencies(): boolean {
+    return (this.seasonToDelete?.budgets?.length ?? 0) > 0;
+  }
+
+  confirmDeleteSeason(): void {
+    const season = this.seasonToDelete;
+    if (!season) {
       return;
     }
 
-    this.seasonService.deleteSeason(id).subscribe({
+    this.seasonService.deleteSeason(season.id).subscribe({
       next: (deletedSeason) => {
         const message = deletedSeason
           ? 'Season deactivated successfully'
           : 'Season deleted successfully';
         this.notificationService.showSuccess(message);
+        this.closeDeleteSeasonModal();
         this.loadSeasons();
       },
       error: (err: Error) => {
