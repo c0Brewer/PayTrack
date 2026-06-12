@@ -10,6 +10,7 @@ import { TeamService } from '../../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  TransactionStatus,
 } from '../../../../../types/exporter';
 
 import { AdminInvoicesOverviewComponent } from './admin-overview-component';
@@ -99,6 +100,35 @@ describe('AdminInvoicesOverviewComponent', () => {
 
     expect(component.invoices).toEqual(apiResponse.items);
     expect(component.totalCount).toBe(2);
+  });
+
+  it('should compute overview stats from loaded stat invoices', () => {
+    component.statInvoices = [
+      { id: 1, amount: 100, status: TransactionStatus.Submitted },
+      { id: 2, amount: 200, status: TransactionStatus.Paid },
+      { id: 3, amount: 300, status: TransactionStatus.Paid },
+      { id: 4, amount: 400, status: TransactionStatus.Approved },
+    ] as PaymentRequestByUserDto[];
+
+    expect(component.getTotalAmount()).toBe(1000);
+    expect(component.getSubmittedRequestCount()).toBe(1);
+    expect(component.getPaidRequestCount()).toBe(2);
+  });
+
+  it('should load stat invoices with the full filtered count', () => {
+    const apiResponse = {
+      items: [{ id: 1, amount: 100, status: TransactionStatus.Paid }] as PaymentRequestByUserDto[],
+      totalCount: 12,
+      hasNext: true,
+      hasPrevious: false,
+    };
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of(apiResponse));
+
+    component.loadInvoices();
+
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenLastCalledWith(
+      expect.objectContaining({ Limit: 12, Offset: 0 }),
+    );
   });
 
   it('should show error on API failure', () => {

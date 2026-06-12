@@ -7,11 +7,14 @@ import {
   DuplicatePaymentRequestByUserDto,
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
+  TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
 import { AdminInvoiceFilterComponent } from '../filter-component/filter-component';
 import { AdminInvoiceListComponent } from '../list-component/list-component';
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-admin-invoices-overview-component',
@@ -20,6 +23,8 @@ import { AdminInvoiceListComponent } from '../list-component/list-component';
     AdminInvoiceFilterComponent,
     AdminInvoiceListComponent,
     DuplicateListModalComponent,
+    EuroPipe,
+    StatBoxComponent,
   ],
   templateUrl: './admin-overview-component.html',
   styleUrl: './admin-overview-component.scss',
@@ -33,6 +38,7 @@ export class AdminInvoicesOverviewComponent implements OnInit {
   ) {}
 
   invoices: PaymentRequestByUserDto[] = [];
+  statInvoices: PaymentRequestByUserDto[] = [];
 
   limitSelection: number[] = [10, 25, 50];
 
@@ -71,6 +77,7 @@ export class AdminInvoicesOverviewComponent implements OnInit {
           this.totalCount = data.totalCount;
           this.hasNext = data.hasNext ?? false;
           this.hasPrev = data.hasPrevious ?? false;
+          this.loadInvoiceStats(data.totalCount);
           this.cdr.markForCheck();
         } else {
           this.notificationService.showError('Error while loading invoices');
@@ -80,6 +87,43 @@ export class AdminInvoicesOverviewComponent implements OnInit {
         this.notificationService.showError(err);
       },
     });
+  }
+
+  loadInvoiceStats(totalCount: number): void {
+    if (totalCount <= 0) {
+      this.statInvoices = [];
+      return;
+    }
+
+    const query: GetPaymentRequestsByUserOptions = {
+      ...this.filterOptions,
+      IncludeTeam: true,
+      Limit: totalCount,
+      Offset: 0,
+    };
+
+    this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
+      next: (data) => {
+        this.statInvoices = data?.items ?? [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
+  }
+
+  getTotalAmount(): number {
+    return this.statInvoices.reduce((total, invoice) => total + invoice.amount, 0);
+  }
+
+  getSubmittedRequestCount(): number {
+    return this.statInvoices.filter((invoice) => invoice.status === TransactionStatus.Submitted)
+      .length;
+  }
+
+  getPaidRequestCount(): number {
+    return this.statInvoices.filter((invoice) => invoice.status === TransactionStatus.Paid).length;
   }
 
   updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {
