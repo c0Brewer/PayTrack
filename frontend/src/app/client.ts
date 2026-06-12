@@ -2,6 +2,7 @@ import { Router } from '@angular/router';
 import createClient from 'openapi-fetch';
 
 import { environment } from '../environments/environment';
+import { ensureOnlineForMutation } from './services/offline/offline-utils';
 
 import type { paths } from './types/api-types.ts';
 
@@ -35,6 +36,10 @@ export function initClientInterceptors(logout: () => void, router: Router): void
   client.use({
     onRequest({ request }) {
       if (isPublicRoute(request.url)) return request; // skip check entirely
+
+      if (request.method !== 'GET') {
+        ensureOnlineForMutation();
+      }
 
       const token = localStorage.getItem('jwt');
       if (!token) {
