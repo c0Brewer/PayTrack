@@ -18,6 +18,8 @@ export type DuplicateInvoiceSummary = {
   team?: { name?: string | null } | null;
 };
 
+type DuplicateInvoiceSelection = 'source' | 'matching';
+
 @Component({
   selector: 'app-duplicate-list-modal-component',
   imports: [DatePipe, EuroPipe, ModalComponent],
@@ -38,35 +40,46 @@ export class DuplicateListModalComponent {
   @Output() dismissDuplicate = new EventEmitter<DuplicatePaymentRequestByUserDto>();
   @Output() submitRegardless = new EventEmitter<void>();
 
+  selectedInvoiceByDuplicateId: Record<number, DuplicateInvoiceSelection | undefined> = {};
+  deleteConfirmationDuplicateId: number | null = null;
+  pendingDeleteInvoice: PaymentRequestByUserDto | null = null;
+
   onClose(): void {
+    this.resetInteractionState();
     this.closeModal.emit();
   }
 
-  onOpenDetail(invoice: PaymentRequestByUserDto): void {
-    this.openDetail.emit(invoice);
-  }
-
-  onDeleteInvoice(invoice: PaymentRequestByUserDto): void {
-    this.deleteInvoice.emit(invoice);
-  }
-
-  onOpenSourceDetail(): void {
-    const invoice = this.getActionableSourceInvoice();
+  onOpenSelectedDetail(duplicate: DuplicatePaymentRequestByUserDto): void {
+    const invoice = this.getSelectedInvoice(duplicate);
 
     if (invoice) {
       this.openDetail.emit(invoice);
     }
   }
 
-  onDeleteSourceInvoice(): void {
-    const invoice = this.getActionableSourceInvoice();
+  onRequestDeleteSelectedInvoice(duplicate: DuplicatePaymentRequestByUserDto): void {
+    const invoice = this.getSelectedInvoice(duplicate);
 
     if (invoice) {
-      this.deleteInvoice.emit(invoice);
+      this.deleteConfirmationDuplicateId = duplicate.paymentRequestByUser.id;
+      this.pendingDeleteInvoice = invoice;
+    }
+  }
+
+  onCancelDeleteConfirmation(): void {
+    this.deleteConfirmationDuplicateId = null;
+    this.pendingDeleteInvoice = null;
+  }
+
+  onConfirmDeleteSelectedInvoice(): void {
+    if (this.pendingDeleteInvoice) {
+      this.deleteInvoice.emit(this.pendingDeleteInvoice);
+      this.onCancelDeleteConfirmation();
     }
   }
 
   onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
+    this.onCancelDeleteConfirmation();
     this.dismissDuplicate.emit(duplicate);
   }
 
@@ -94,6 +107,49 @@ export class DuplicateListModalComponent {
     return this.sourceInvoice?.id ? (this.sourceInvoice as PaymentRequestByUserDto) : null;
   }
 
+  selectInvoice(
+    duplicate: DuplicatePaymentRequestByUserDto,
+    selection: DuplicateInvoiceSelection,
+  ): void {
+    if (selection === 'source' && !this.getActionableSourceInvoice()) {
+      return;
+    }
+
+    this.selectedInvoiceByDuplicateId[duplicate.paymentRequestByUser.id] = selection;
+    this.onCancelDeleteConfirmation();
+  }
+
+  isInvoiceSelected(
+    duplicate: DuplicatePaymentRequestByUserDto,
+    selection: DuplicateInvoiceSelection,
+  ): boolean {
+    return this.selectedInvoiceByDuplicateId[duplicate.paymentRequestByUser.id] === selection;
+  }
+
+  getSelectedInvoice(duplicate: DuplicatePaymentRequestByUserDto): PaymentRequestByUserDto | null {
+    const selection = this.selectedInvoiceByDuplicateId[duplicate.paymentRequestByUser.id];
+
+    if (selection === 'source') {
+      return this.getActionableSourceInvoice();
+    }
+
+    if (selection === 'matching') {
+      return duplicate.paymentRequestByUser;
+    }
+
+    return null;
+  }
+
+  getSelectedInvoiceLabel(duplicate: DuplicatePaymentRequestByUserDto): string {
+    const invoice = this.getSelectedInvoice(duplicate);
+
+    return invoice?.invoiceNumber ?? '-';
+  }
+
+  isDeleteConfirmationOpen(duplicate: DuplicatePaymentRequestByUserDto): boolean {
+    return this.deleteConfirmationDuplicateId === duplicate.paymentRequestByUser.id;
+  }
+
   isDuplicateActionPending(duplicate: DuplicatePaymentRequestByUserDto): boolean {
     const sourceInvoiceId = this.getActionableSourceInvoice()?.id;
     const matchingInvoiceId = duplicate.paymentRequestByUser.id;
@@ -102,6 +158,11 @@ export class DuplicateListModalComponent {
       this.actionInvoiceId !== null &&
       (this.actionInvoiceId === sourceInvoiceId || this.actionInvoiceId === matchingInvoiceId)
     );
+  }
+
+  resetInteractionState(): void {
+    this.selectedInvoiceByDuplicateId = {};
+    this.onCancelDeleteConfirmation();
   }
 
   getMatchedFieldLabel(field: string): string {
