@@ -55,35 +55,36 @@
       </table>
 
       @if ((request.statusHistory?.length ?? 0) > 0) {
-        <h3>Status History</h3>
-        <table class="info-table">
-          <thead>
-            <tr>
-              <th>From</th>
-              <th>To</th>
-              <th>Changed At</th>
-              <th>Comment</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (entry of request.statusHistory ?? []; track entry.changedAt) {
+        <app-box-component title="Status History" size="large" class="status-history-box">
+          <table class="info-table">
+            <thead>
               <tr>
-                <td>
-                  <span [class]="'status ' + getStatusClass(entry.fromStatus)">
-                    {{ getStatusLabel(entry.fromStatus) }}
-                  </span>
-                </td>
-                <td>
-                  <span [class]="'status ' + getStatusClass(entry.toStatus)">
-                    {{ getStatusLabel(entry.toStatus) }}
-                  </span>
-                </td>
-                <td>{{ entry.changedAt | date: 'medium' }}</td>
-                <td>{{ entry.comment }}</td>
+                <th>From</th>
+                <th>To</th>
+                <th>Changed At</th>
+                <th>Comment</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (entry of request.statusHistory ?? []; track entry.changedAt) {
+                <tr>
+                  <td>
+                    <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                      {{ getStatusLabel(entry.fromStatus) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                      {{ getStatusLabel(entry.toStatus) }}
+                    </span>
+                  </td>
+                  <td>{{ entry.changedAt | date: 'medium' }}</td>
+                  <td>{{ entry.comment }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </app-box-component>
       }
     </div>
   }

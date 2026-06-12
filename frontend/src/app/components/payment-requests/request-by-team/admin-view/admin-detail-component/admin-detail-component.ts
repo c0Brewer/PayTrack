@@ -12,6 +12,7 @@ import {
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
+import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
 import { ModalComponent } from '../../../../general/modal-component/modal-component';
@@ -20,6 +21,7 @@ import { ModalComponent } from '../../../../general/modal-component/modal-compon
   selector: 'app-team-request-admin-detail-component',
   imports: [
     DatePipe,
+    BoxComponent,
     DetailComponent,
     EuroPipe,
     ExternalNotificationComponent,

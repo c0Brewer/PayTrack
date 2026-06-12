@@ -31,8 +31,11 @@
     padding: v.$size-m;
   }
 
-  .history-table-wrapper {
+  .status-history-box {
     margin-bottom: v.$size-l;
+  }
+
+  .history-table-wrapper {
     overflow-x: auto;
   }
 
