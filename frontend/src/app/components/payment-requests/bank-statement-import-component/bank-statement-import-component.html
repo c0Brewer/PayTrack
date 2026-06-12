@@ -190,7 +190,7 @@
               @if (result.hasMatch) {
                 <button
                   type="button"
-                  class="btn btn-secondary skip-or-undo-button"
+                  class="btn btn-secondary skip-or-undo-button d-inline-flex align-items-center justify-content-center gap-1 p-2"
                   (click)="toggleSkip(result._entryId)"
                 >
                   <span class="material-symbols-outlined">{{ result.skipped ? 'undo' : 'skip_next' }}</span>
@@ -423,10 +423,12 @@
         }
       </ul>
       <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="showFinalConfirm.set(false)">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showFinalConfirm.set(false)">
+          <span class="material-symbols-outlined">cancel</span>
           Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="proceedWithSubmit()">
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="proceedWithSubmit()">
+          <span class="material-symbols-outlined">check</span>
           Confirm &amp; Submit
         </button>
       </div>
