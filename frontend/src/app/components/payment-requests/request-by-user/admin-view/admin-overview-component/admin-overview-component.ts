@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
@@ -9,12 +10,11 @@ import {
   PaymentRequestByUserDto,
   TransactionStatus,
 } from '../../../../../types/exporter';
+import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
 import { AdminInvoiceFilterComponent } from '../filter-component/filter-component';
 import { AdminInvoiceListComponent } from '../list-component/list-component';
-import { EuroPipe } from '../../../../../pipes/euro.pipe';
-import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 
 @Component({
   selector: 'app-admin-invoices-overview-component',
