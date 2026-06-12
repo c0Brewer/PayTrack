@@ -1,9 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
+import { DisableOfflineActionDirective } from '../../../../../directives/disable-offline-action.directive';
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
+import { OfflineService } from '../../../../../services/offline/offline-service';
 import {
   ApprovePaymentRequestByUserDto,
   CostCentreDto,
@@ -22,11 +24,20 @@ import { DetailComponent } from '../../../../general/detail-component/detail-com
 
 @Component({
   selector: 'app-admin-invoice-detail-component',
-  imports: [DatePipe, DetailComponent, EuroPipe, FormsModule, BoxComponent],
+  imports: [
+    DatePipe,
+    DetailComponent,
+    EuroPipe,
+    FormsModule,
+    BoxComponent,
+    DisableOfflineActionDirective,
+  ],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })
 export class AdminInvoiceDetailComponent {
+  protected readonly offlineService = inject(OfflineService);
+
   @Input() invoice: PaymentRequestByUserDto | null = null;
   @Input() showUserName: boolean = false;
   @Input() receiptBlobUrl: string | null = null;

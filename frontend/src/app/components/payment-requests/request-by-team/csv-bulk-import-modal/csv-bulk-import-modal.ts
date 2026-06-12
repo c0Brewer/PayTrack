@@ -4,6 +4,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  inject,
   OnDestroy,
   OnInit,
   Output,
@@ -20,8 +21,10 @@ import {
 import Papa from 'papaparse';
 import { Subject, takeUntil } from 'rxjs';
 
+import { DisableOfflineActionDirective } from '../../../../directives/disable-offline-action.directive';
 import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../services/notification/notification-service';
+import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
   BudgetDto,
@@ -68,11 +71,20 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-csv-bulk-import-modal',
   standalone: true,
-  imports: [CommonModule, EuroPipe, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
+  imports: [
+    CommonModule,
+    EuroPipe,
+    ReactiveFormsModule,
+    ModalComponent,
+    TypeaheadSelectComponent,
+    DisableOfflineActionDirective,
+  ],
   templateUrl: './csv-bulk-import-modal.html',
   styleUrl: './csv-bulk-import-modal.scss',
 })
 export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
+  protected readonly offlineService = inject(OfflineService);
+
   @Input({ required: true }) file!: File;
   @Input({ required: true }) teams!: TeamDto[];
   @Input({ required: true }) costCentres!: CostCentreDto[];

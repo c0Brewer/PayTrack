@@ -1,8 +1,10 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 
+import { DisableOfflineActionDirective } from '../../../directives/disable-offline-action.directive';
 import { EuroPipe } from '../../../pipes/euro.pipe';
 import { BankStatementService } from '../../../services/bank-statement-service/bank-statement-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { OfflineService } from '../../../services/offline/offline-service';
 import {
   BankStatementEntryDto,
   BankStatementMatchResultDto,
@@ -27,11 +29,13 @@ interface RawBankEntry {
 
 @Component({
   selector: 'app-bank-statement-import-component',
-  imports: [StatBoxComponent, EuroPipe, ModalComponent],
+  imports: [StatBoxComponent, EuroPipe, ModalComponent, DisableOfflineActionDirective],
   templateUrl: './bank-statement-import-component.html',
   styleUrl: './bank-statement-import-component.scss',
 })
 export class BankStatementImportComponent {
+  protected readonly offlineService = inject(OfflineService);
+
   constructor(
     private readonly bankStatementService: BankStatementService,
     private readonly notificationService: NotificationService,

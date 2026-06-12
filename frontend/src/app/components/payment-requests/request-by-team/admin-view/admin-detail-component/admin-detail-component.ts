@@ -1,10 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { DisableOfflineActionDirective } from '../../../../../directives/disable-offline-action.directive';
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../../services/notification/notification-service';
+import { OfflineService } from '../../../../../services/offline/offline-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
   PaymentRequestByTeamDto,
@@ -23,6 +25,7 @@ import { ModalComponent } from '../../../../general/modal-component/modal-compon
     DatePipe,
     BoxComponent,
     DetailComponent,
+    DisableOfflineActionDirective,
     EuroPipe,
     ExternalNotificationComponent,
     FormsModule,
@@ -32,6 +35,8 @@ import { ModalComponent } from '../../../../general/modal-component/modal-compon
   styleUrl: './admin-detail-component.scss',
 })
 export class TeamRequestAdminDetailComponent implements OnInit {
+  protected readonly offlineService = inject(OfflineService);
+
   constructor(
     private readonly service: PaymentRequestByTeamService,
     private readonly notificationService: NotificationService,

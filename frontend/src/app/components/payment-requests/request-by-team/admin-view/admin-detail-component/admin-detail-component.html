@@ -17,7 +17,8 @@
           <button
             type="button"
             class="btn btn-primary d-inline-flex align-items-center gap-1"
-            [disabled]="!canMarkAsPaid"
+            appDisableOfflineAction
+            [disabled]="!canMarkAsPaid || offlineService.isOffline()"
             (click)="openMarkAsPaidModal()"
           >
             <span class="material-symbols-outlined">payments</span>
@@ -146,7 +147,8 @@
       <button
         type="button"
         class="btn btn-primary"
-        [disabled]="markAsPaidLoading"
+        appDisableOfflineAction
+        [disabled]="markAsPaidLoading || offlineService.isOffline()"
         (click)="confirmMarkAsPaid()"
       >
         {{ markAsPaidLoading ? 'Processing…' : 'Confirm' }}
