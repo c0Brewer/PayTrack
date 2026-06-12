@@ -23,6 +23,16 @@
       height: 5rem;
     }
 
+    .status-badge {
+      min-width: 8.5rem;
+      width: 8.5rem;
+    }
+
+    .user-col {
+      min-width: 9rem;
+      width: 9rem;
+    }
+
     .actions-col {
       min-width: 7rem;
       width: 7rem;
@@ -72,9 +82,16 @@
   border-radius: v.$size-xs;
   overflow: hidden;
 
-
-  .status-badge span{
+  .status-badge {
     text-align: center;
+  }
+
+  .status-badge .status {
+    display: inline-flex;
+    justify-content: center;
+    max-width: 100%;
+    text-align: center;
+    white-space: normal;
   }
   thead {
     background: v.$background-dark;

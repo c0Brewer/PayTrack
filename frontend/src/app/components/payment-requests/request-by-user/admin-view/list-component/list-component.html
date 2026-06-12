@@ -10,7 +10,7 @@
         <th>Team</th>
         <th>Payout Type</th>
         <th>Status</th>
-        <th>User</th>
+        <th class="user-col">User</th>
         <th>Duplicate</th>
         <th class="actions-col">Actions</th>
       </tr>
@@ -31,7 +31,7 @@
               {{ getTransactionStatusLabel(invoice.status) }}
             </span>
           </td>
-          <td data-label="User">{{ invoice.user?.name ?? '—' }}</td>
+          <td data-label="User" class="user-col">{{ invoice.user?.name ?? '—' }}</td>
           <td data-label="Duplicate">
             @if (invoice.hasPotentialDuplicate) {
               <button
