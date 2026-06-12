@@ -11,9 +11,5 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
     /// </summary>
     public class GetPaymentRequestByTeamQuery : GetTransactionQuery
     {
-        /// <summary>
-        /// id of user who made the request to query.
-        /// </summary>
-        public int? RequestById { get; init; }
     }
 }

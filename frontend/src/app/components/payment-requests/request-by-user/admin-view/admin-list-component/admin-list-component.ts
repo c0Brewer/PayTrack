@@ -7,6 +7,7 @@ import { PaymentRequestByUserService } from '../../../../../services/payment-req
 import {
   DuplicatePaymentRequestByUserDto,
   FinancialExportFormat,
+  FinancialExportSource,
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
 } from '../../../../../types/exporter';
@@ -100,6 +101,7 @@ export class RequestsComponent implements OnInit {
       .downloadFinancialData(
         {
           ...this.filterOptions,
+          Source: FinancialExportSource.SubmittedInvoices,
           Limit: undefined,
           Offset: undefined,
         },
@@ -175,10 +177,6 @@ export class RequestsComponent implements OnInit {
   onDeleteDuplicateInvoice(invoice: PaymentRequestByUserDto): void {
     if (!invoice.id) {
       this.notificationService.showError('Invoice id is missing.');
-      return;
-    }
-
-    if (!window.confirm(`Delete invoice ${invoice.invoiceNumber}?`)) {
       return;
     }
 

@@ -6,6 +6,7 @@ import { NotificationService } from '../../../../../services/notification/notifi
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import {
   FinancialExportFormat,
+  FinancialExportSource,
   GetPaymentRequestsByTeamOptions,
   PaymentRequestByTeamDto,
   TEAM_REQUEST_ALLOWED_STATUSES,
@@ -97,6 +98,7 @@ export class TeamRequestsComponent implements OnInit {
       .downloadFinancialData(
         {
           ...this.filterOptions,
+          Source: FinancialExportSource.PaymentRequests,
           Limit: undefined,
           Offset: undefined,
         },

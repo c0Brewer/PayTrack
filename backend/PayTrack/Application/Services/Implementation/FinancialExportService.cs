@@ -4,6 +4,8 @@
 
 using System.Globalization;
 using System.Text;
+using PayTrack.Application.Dto.PaymentRequestByTeam;
+using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -24,8 +26,7 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<FinancialExportResult> ExportFinancialDataAsync(GetTransactionQuery query)
         {
-            var exportQuery = CreateExportQuery(query);
-            var (transactions, _) = await this.transactionRepository.GetAllAsync(exportQuery);
+            var transactions = await this.GetTransactionsForExportAsync(query);
             var rows = transactions
                 .OrderBy(transaction => transaction.PaidAt ?? transaction.CreatedAt)
                 .ThenBy(transaction => transaction.Id)
@@ -34,18 +35,20 @@ namespace PayTrack.Application.Services.Implementation
 
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
             var format = query.Format ?? FinancialExportFormat.Csv;
+            var filePrefix = GetFilePrefix(query.Source);
+            var title = GetTitle(query.Source);
 
             return format switch
             {
                 FinancialExportFormat.Csv => new FinancialExportResult(
                     Encoding.UTF8.GetBytes(BuildCsv(rows)),
                     CsvContentType,
-                    $"financial-export-{timestamp}.csv"),
+                    $"{filePrefix}-{timestamp}.csv"),
 
                 FinancialExportFormat.Pdf => new FinancialExportResult(
-                    BuildPdf(rows),
+                    BuildPdf(rows, title),
                     PdfContentType,
-                    $"financial-export-{timestamp}.pdf"),
+                    $"{filePrefix}-{timestamp}.pdf"),
 
                 _ => throw new InvalidStateException("Unsupported financial export format."),
             };
@@ -56,6 +59,63 @@ namespace PayTrack.Application.Services.Implementation
             return new GetTransactionQuery
             {
                 UserId = query.UserId,
+                RequestById = query.RequestById,
+                MinAmount = query.MinAmount,
+                MaxAmount = query.MaxAmount,
+                PurposeOfPayment = query.PurposeOfPayment,
+                PaymentReference = query.PaymentReference,
+                InvoiceNumber = query.InvoiceNumber,
+                PayoutType = query.PayoutType,
+                BankAccountId = query.BankAccountId,
+                Status = query.Status,
+                TeamId = query.TeamId,
+                CostCentreId = query.CostCentreId,
+                PaymentDirection = query.PaymentDirection,
+                MinCreatedAt = query.MinCreatedAt,
+                MaxCreatedAt = query.MaxCreatedAt,
+                MinPaidAt = query.MinPaidAt,
+                MaxPaidAt = query.MaxPaidAt,
+                MinDueDate = query.MinDueDate,
+                MaxDueDate = query.MaxDueDate,
+                IncludeTeam = true,
+                IncludeBudget = true,
+            };
+        }
+
+        private static GetPaymentRequestByUserQuery CreateSubmittedInvoicesExportQuery(GetTransactionQuery query)
+        {
+            return new GetPaymentRequestByUserQuery
+            {
+                UserId = query.UserId,
+                MinAmount = query.MinAmount,
+                MaxAmount = query.MaxAmount,
+                PurposeOfPayment = query.PurposeOfPayment,
+                PaymentReference = query.PaymentReference,
+                InvoiceNumber = query.InvoiceNumber,
+                PayoutType = query.PayoutType,
+                BankAccountId = query.BankAccountId,
+                Status = query.Status,
+                TeamId = query.TeamId,
+                CostCentreId = query.CostCentreId,
+                PaymentDirection = query.PaymentDirection,
+                MinCreatedAt = query.MinCreatedAt,
+                MaxCreatedAt = query.MaxCreatedAt,
+                MinPaidAt = query.MinPaidAt,
+                MaxPaidAt = query.MaxPaidAt,
+                MinDueDate = query.MinDueDate,
+                MaxDueDate = query.MaxDueDate,
+                IncludeTeam = true,
+                IncludeBudget = true,
+                IncludeBankAccount = true,
+            };
+        }
+
+        private static GetPaymentRequestByTeamQuery CreatePaymentRequestsExportQuery(GetTransactionQuery query)
+        {
+            return new GetPaymentRequestByTeamQuery
+            {
+                UserId = query.UserId,
+                RequestById = query.RequestById,
                 MinAmount = query.MinAmount,
                 MaxAmount = query.MaxAmount,
                 PurposeOfPayment = query.PurposeOfPayment,
@@ -157,11 +217,11 @@ namespace PayTrack.Application.Services.Implementation
             return builder.ToString();
         }
 
-        private static byte[] BuildPdf(IReadOnlyCollection<FinancialExportRow> rows)
+        private static byte[] BuildPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
         {
             var lines = new List<string>
             {
-                "PayTrack Financial Export",
+                title,
                 $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
                 $"Rows: {rows.Count}",
                 $"Income: {CalculateTotal(rows, PaymentDirection.In):F2}",
@@ -175,6 +235,26 @@ namespace PayTrack.Application.Services.Implementation
                 $"{FormatDate(row.PaidAt ?? row.CreatedAt),-10} {TrimForPdf(row.Type, 8),-8} {TrimForPdf(row.Direction, 3),-3} {TrimForPdf(row.Status, 18),-18} {row.Amount,10:F2}  {TrimForPdf($"{row.Team} / {row.CostCentre}", 42)}"));
 
             return SimplePdfBuilder.Build(lines);
+        }
+
+        private static string GetFilePrefix(FinancialExportSource? source)
+        {
+            return (source ?? FinancialExportSource.All) switch
+            {
+                FinancialExportSource.SubmittedInvoices => "submitted-invoices-export",
+                FinancialExportSource.PaymentRequests => "payment-requests-export",
+                _ => "financial-export",
+            };
+        }
+
+        private static string GetTitle(FinancialExportSource? source)
+        {
+            return (source ?? FinancialExportSource.All) switch
+            {
+                FinancialExportSource.SubmittedInvoices => "PayTrack Submitted Invoices Export",
+                FinancialExportSource.PaymentRequests => "PayTrack Payment Requests Export",
+                _ => "PayTrack Financial Export",
+            };
         }
 
         private static decimal CalculateTotal(IEnumerable<FinancialExportRow> rows, PaymentDirection direction)
@@ -220,6 +300,38 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return value[..(maxLength - 3)] + "...";
+        }
+
+        private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(GetTransactionQuery query)
+        {
+            return (query.Source ?? FinancialExportSource.All) switch
+            {
+                FinancialExportSource.SubmittedInvoices => await this.GetSubmittedInvoicesForExportAsync(query),
+                FinancialExportSource.PaymentRequests => await this.GetPaymentRequestsForExportAsync(query),
+                FinancialExportSource.All => await this.GetAllTransactionsForExportAsync(query),
+                _ => throw new InvalidStateException("Unsupported financial export source."),
+            };
+        }
+
+        private async Task<IReadOnlyCollection<Transaction>> GetAllTransactionsForExportAsync(GetTransactionQuery query)
+        {
+            var (transactions, _) = await this.transactionRepository.GetAllAsync(CreateExportQuery(query));
+            return transactions;
+        }
+
+        private async Task<IReadOnlyCollection<Transaction>> GetSubmittedInvoicesForExportAsync(GetTransactionQuery query)
+        {
+            var (transactions, _) = await this.transactionRepository.GetAllAsync(CreateSubmittedInvoicesExportQuery(query));
+            return transactions.Cast<Transaction>().ToList();
+        }
+
+        private async Task<IReadOnlyCollection<Transaction>> GetPaymentRequestsForExportAsync(GetTransactionQuery query)
+        {
+            var (transactions, _) = await this.transactionRepository.GetAllAsync(CreatePaymentRequestsExportQuery(query));
+            return transactions
+                .Where(transaction => query.Status.HasValue || transaction.Status is TransactionStatus.Submitted or TransactionStatus.Paid)
+                .Cast<Transaction>()
+                .ToList();
         }
 
         private sealed class FinancialExportRow

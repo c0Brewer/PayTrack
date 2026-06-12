@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { FinancialExportFormat, GetFinancialExportOptions } from '../../types/exporter';
+import { FinancialExportFormat, FinancialExportQueryOptions } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class FinancialExportService {
   constructor(private readonly authService: AuthService) {}
 
   public downloadFinancialData(
-    queryOptions: GetFinancialExportOptions,
+    queryOptions: FinancialExportQueryOptions,
     format: FinancialExportFormat,
   ): Observable<void> {
     const promise = fetch(this.getExportUrl(queryOptions, format), {
@@ -34,7 +34,7 @@ export class FinancialExportService {
   }
 
   private getExportUrl(
-    queryOptions: GetFinancialExportOptions,
+    queryOptions: FinancialExportQueryOptions,
     format: FinancialExportFormat,
   ): string {
     const path = '/api/v1/transaction/export';

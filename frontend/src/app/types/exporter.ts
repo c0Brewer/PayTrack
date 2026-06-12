@@ -148,9 +148,26 @@ export enum FinancialExportFormat {
   Pdf = 2,
 }
 
+export enum FinancialExportSource {
+  All = 0,
+  SubmittedInvoices = 1,
+  PaymentRequests = 2,
+}
+
 export type GetFinancialExportOptions = NonNullable<
   paths['/api/v1/transaction/export']['get']['parameters']['query']
 >;
+
+export type FinancialExportQueryOptions = Omit<
+  GetFinancialExportOptions,
+  'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
+> & {
+  Source?: FinancialExportSource;
+  InvoiceNumber?: string;
+  PayoutType?: PayoutType;
+  BankAccountId?: number;
+  RequestById?: number;
+};
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];

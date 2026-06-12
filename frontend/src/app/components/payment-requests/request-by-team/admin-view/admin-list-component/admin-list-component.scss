@@ -4,12 +4,20 @@
   .list-header {
     align-items: center;
     display: flex;
+    gap: 1rem;
     justify-content: space-between;
     margin-bottom: 1rem;
   }
 
   h2 {
     margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
   }
 
   .export-actions {

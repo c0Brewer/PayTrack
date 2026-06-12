@@ -3,7 +3,6 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Transaction;
-using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.PaymentRequestByUser
 {
@@ -12,21 +11,6 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     /// </summary>
     public class GetPaymentRequestByUserQuery : GetTransactionQuery
     {
-        /// <summary>
-        /// Invoice Number to query.
-        /// </summary>
-        public string? InvoiceNumber { get; init; }
-
-        /// <summary>
-        /// Payout Type to query.
-        /// </summary>
-        public PayoutType? PayoutType { get; set; }
-
-        /// <summary>
-        /// Bank account id to query.
-        /// </summary>
-        public int? BankAccountId { get; init; }
-
         /// <summary>
         /// Whether to load the bank account in the query.
         /// </summary>

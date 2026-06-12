@@ -1551,10 +1551,14 @@ export interface paths {
             parameters: {
                 query?: {
                     UserId?: number;
+                    RequestById?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
                     CostCentreId?: number;
@@ -1571,6 +1575,7 @@ export interface paths {
                     IncludeStatusHistory?: boolean;
                     IncludeBudget?: boolean;
                     Format?: components["schemas"]["FinancialExportFormat"];
+                    Source?: components["schemas"]["FinancialExportSource"];
                 };
                 header?: never;
                 path?: never;
@@ -2746,6 +2751,7 @@ export interface components {
          * @enum {integer}
          */
         FinancialExportFormat: 1 | 2;
+        FinancialExportSource: 0 | 1 | 2;
         GoogleAuthCallbackDto: {
             code: string;
         };
