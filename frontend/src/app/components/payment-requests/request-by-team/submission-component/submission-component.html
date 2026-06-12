@@ -139,17 +139,16 @@
       </div>
     </div>
 
-    <div class="row gx-4 gx-xl-5 mt-1">
+    <div class="row gx-4 gx-xl-5 mt-2">
       <div class="col-12">
         <div class="form-actions">
-          <button type="submit" class="btn" [disabled]="isSubmitting">
+          <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" [disabled]="isSubmitting">
             @if (!isSubmitting) {
-              <span class="submit-button__content">
                 <span class="material-symbols-outlined">add_card</span>
                 Create Payment Request
-              </span>
             }
             @if (isSubmitting) {
+              <span class="material-symbols-outlined">hourglass</span>
               <span>Submitting…</span>
             }
           </button>
@@ -175,7 +174,7 @@
             class="csv-file-input-hidden"
             (change)="onCsvFileInputChange($event)"
           />
-          <button type="button" class="btn csv-import-btn" (click)="onOpenCsvPicker()">
+          <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onOpenCsvPicker()">
             <span class="material-symbols-outlined">upload_file</span>
             Select CSV File
           </button>
