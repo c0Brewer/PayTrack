@@ -58,17 +58,18 @@
                 <div class="offline-queue__actions">
                   <button
                     type="button"
-                    class="btn btn-primary"
+                    class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
                     [disabled]="offlineService.isOffline()"
                     (click)="loadPendingSubmission(item)"
-                  >
+                  ><span class="material-symbols-outlined">input</span>
                     Plug into Form
                   </button>
                   <button
                     type="button"
-                    class="btn btn-secondary"
+                    class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2"
                     (click)="removePendingSubmission(item)"
                   >
+                    <span class="material-symbols-outlined">delete</span>
                     Remove Local Copy
                   </button>
                 </div>
