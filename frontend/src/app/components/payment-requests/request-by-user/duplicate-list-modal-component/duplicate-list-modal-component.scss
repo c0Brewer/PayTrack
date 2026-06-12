@@ -39,7 +39,7 @@
 
 .duplicate-list__comparison--paired {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto;
 }
 
 .duplicate-list__invoice-summary {
@@ -50,7 +50,7 @@
 }
 
 .duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
-  grid-row: 1 / span 4;
+  grid-row: 1 / span 5;
   grid-template-rows: subgrid;
 }
 

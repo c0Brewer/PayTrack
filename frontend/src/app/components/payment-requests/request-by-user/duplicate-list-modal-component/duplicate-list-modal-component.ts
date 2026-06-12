@@ -9,6 +9,7 @@ import {
 import { ModalComponent } from '../../../general/modal-component/modal-component';
 
 export type DuplicateInvoiceSummary = {
+  id?: number | null;
   invoiceNumber?: string | null;
   amount?: number | null;
   paidAt?: string | null;
@@ -49,6 +50,22 @@ export class DuplicateListModalComponent {
     this.deleteInvoice.emit(invoice);
   }
 
+  onOpenSourceDetail(): void {
+    const invoice = this.getActionableSourceInvoice();
+
+    if (invoice) {
+      this.openDetail.emit(invoice);
+    }
+  }
+
+  onDeleteSourceInvoice(): void {
+    const invoice = this.getActionableSourceInvoice();
+
+    if (invoice) {
+      this.deleteInvoice.emit(invoice);
+    }
+  }
+
   onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
     this.dismissDuplicate.emit(duplicate);
   }
@@ -71,6 +88,20 @@ export class DuplicateListModalComponent {
 
   getDuplicateTeamName(duplicate: DuplicatePaymentRequestByUserDto): string {
     return this.getInvoiceTeamName(duplicate.paymentRequestByUser);
+  }
+
+  getActionableSourceInvoice(): PaymentRequestByUserDto | null {
+    return this.sourceInvoice?.id ? (this.sourceInvoice as PaymentRequestByUserDto) : null;
+  }
+
+  isDuplicateActionPending(duplicate: DuplicatePaymentRequestByUserDto): boolean {
+    const sourceInvoiceId = this.getActionableSourceInvoice()?.id;
+    const matchingInvoiceId = duplicate.paymentRequestByUser.id;
+
+    return (
+      this.actionInvoiceId !== null &&
+      (this.actionInvoiceId === sourceInvoiceId || this.actionInvoiceId === matchingInvoiceId)
+    );
   }
 
   getMatchedFieldLabel(field: string): string {

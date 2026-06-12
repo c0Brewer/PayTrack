@@ -50,6 +50,34 @@
                     <span class="duplicate-list__detail-value">{{ sourceInvoice.purposeOfPayment || '-' }}</span>
                   </div>
                 </div>
+
+                @if (mode === 'review' && getActionableSourceInvoice()) {
+                  <div class="duplicate-list__actions">
+                    <button
+                      type="button"
+                      class="duplicate-list__button"
+                      (click)="onOpenSourceDetail()"
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      class="duplicate-list__button"
+                      [disabled]="isDuplicateActionPending(duplicate)"
+                      (click)="onDismissDuplicate(duplicate)"
+                    >
+                      Dismiss warning
+                    </button>
+                    <button
+                      type="button"
+                      class="duplicate-list__button duplicate-list__button--danger"
+                      [disabled]="actionInvoiceId === sourceInvoice.id"
+                      (click)="onDeleteSourceInvoice()"
+                    >
+                      Delete invoice
+                    </button>
+                  </div>
+                }
               </div>
             }
 
@@ -81,6 +109,34 @@
                   <span class="duplicate-list__detail-value">{{ duplicate.paymentRequestByUser.purposeOfPayment || '-' }}</span>
                 </div>
               </div>
+
+              @if (mode === 'review') {
+                <div class="duplicate-list__actions">
+                  <button
+                    type="button"
+                    class="duplicate-list__button"
+                    (click)="onOpenDetail(duplicate.paymentRequestByUser)"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    class="duplicate-list__button"
+                    [disabled]="isDuplicateActionPending(duplicate)"
+                    (click)="onDismissDuplicate(duplicate)"
+                  >
+                    Dismiss warning
+                  </button>
+                  <button
+                    type="button"
+                    class="duplicate-list__button duplicate-list__button--danger"
+                    [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
+                    (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
+                  >
+                    Delete invoice
+                  </button>
+                </div>
+              }
             </div>
           </div>
 
@@ -89,34 +145,6 @@
               <span class="duplicate-list__match">{{ getMatchedFieldLabel(field) }}</span>
             }
           </div>
-
-          @if (mode === 'review') {
-            <div class="duplicate-list__actions">
-              <button
-                type="button"
-                class="duplicate-list__button"
-                (click)="onOpenDetail(duplicate.paymentRequestByUser)"
-              >
-                View
-              </button>
-              <button
-                type="button"
-                class="duplicate-list__button"
-                [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
-                (click)="onDismissDuplicate(duplicate)"
-              >
-                Dismiss warning
-              </button>
-              <button
-                type="button"
-                class="duplicate-list__button duplicate-list__button--danger"
-                [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
-                (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
-              >
-                Delete invoice
-              </button>
-            </div>
-          }
         </li>
       }
     </ul>

@@ -93,6 +93,37 @@ describe('DuplicateListModalComponent', () => {
     expect(spy).toHaveBeenCalledOnce();
   });
 
+  it('should emit source invoice view and delete events when source invoice has an id', () => {
+    const invoice = { id: 1, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
+    const openSpy = vi.fn();
+    const deleteSpy = vi.fn();
+    component.openDetail.subscribe(openSpy);
+    component.deleteInvoice.subscribe(deleteSpy);
+    fixture.componentRef.setInput('sourceInvoice', invoice);
+    fixture.detectChanges();
+
+    component.onOpenSourceDetail();
+    component.onDeleteSourceInvoice();
+
+    expect(openSpy).toHaveBeenCalledWith(invoice);
+    expect(deleteSpy).toHaveBeenCalledWith(invoice);
+  });
+
+  it('should not emit source invoice actions when source invoice is only a preview', () => {
+    const openSpy = vi.fn();
+    const deleteSpy = vi.fn();
+    component.openDetail.subscribe(openSpy);
+    component.deleteInvoice.subscribe(deleteSpy);
+    fixture.componentRef.setInput('sourceInvoice', { invoiceNumber: 'INV-1' });
+    fixture.detectChanges();
+
+    component.onOpenSourceDetail();
+    component.onDeleteSourceInvoice();
+
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(deleteSpy).not.toHaveBeenCalled();
+  });
+
   it('should render submit mode without admin actions', () => {
     const duplicate = {
       paymentRequestByUser: {
