@@ -21,7 +21,10 @@
     <ul class="duplicate-list">
       @for (duplicate of duplicates; track duplicate.paymentRequestByUser.id) {
         <li class="duplicate-list__item">
-          <div class="duplicate-list__comparison">
+          <div
+            class="duplicate-list__comparison"
+            [class.duplicate-list__comparison--paired]="sourceInvoice"
+          >
             @if (sourceInvoice) {
               <div class="duplicate-list__invoice-summary">
                 <span class="duplicate-list__card-title">Invoice being checked</span>

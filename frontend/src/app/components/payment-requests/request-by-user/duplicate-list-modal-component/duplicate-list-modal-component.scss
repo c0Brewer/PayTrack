@@ -37,11 +37,21 @@
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
 
+.duplicate-list__comparison--paired {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto auto auto;
+}
+
 .duplicate-list__invoice-summary {
   border-left: 3px solid v.$border-color;
   display: grid;
   gap: v.$size-xxs;
   padding: 0 0 0 v.$size-xs;
+}
+
+.duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
+  grid-row: 1 / span 4;
+  grid-template-rows: subgrid;
 }
 
 .duplicate-list__card-title {
@@ -176,6 +186,16 @@
 }
 
 @media (max-width: 420px) {
+  .duplicate-list__comparison--paired {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
+    grid-row: auto;
+    grid-template-rows: none;
+  }
+
   .duplicate-list__details {
     grid-template-columns: 1fr;
   }
