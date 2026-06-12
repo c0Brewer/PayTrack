@@ -93,8 +93,13 @@ describe('DuplicateListModalComponent', () => {
     expect(spy).toHaveBeenCalledOnce();
   });
 
-  it('should emit source invoice view and delete events when source invoice has an id', () => {
+  it('should emit source invoice view and delete events after source invoice is selected', () => {
     const invoice = { id: 1, invoiceNumber: 'INV-1' } as PaymentRequestByUserDto;
+    const duplicate = {
+      paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
+      score: 60,
+      matchedFields: ['invoiceNumber'],
+    } as DuplicatePaymentRequestByUserDto;
     const openSpy = vi.fn();
     const deleteSpy = vi.fn();
     component.openDetail.subscribe(openSpy);
@@ -102,14 +107,43 @@ describe('DuplicateListModalComponent', () => {
     fixture.componentRef.setInput('sourceInvoice', invoice);
     fixture.detectChanges();
 
-    component.onOpenSourceDetail();
-    component.onDeleteSourceInvoice();
+    component.selectInvoice(duplicate, 'source');
+    component.onOpenSelectedDetail(duplicate);
+    component.onRequestDeleteSelectedInvoice(duplicate);
+    component.onConfirmDeleteSelectedInvoice();
 
     expect(openSpy).toHaveBeenCalledWith(invoice);
     expect(deleteSpy).toHaveBeenCalledWith(invoice);
   });
 
-  it('should not emit source invoice actions when source invoice is only a preview', () => {
+  it('should emit matching invoice view and delete events after matching invoice is selected', () => {
+    const duplicate = {
+      paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' } as PaymentRequestByUserDto,
+      score: 60,
+      matchedFields: ['invoiceNumber'],
+    } as DuplicatePaymentRequestByUserDto;
+    const openSpy = vi.fn();
+    const deleteSpy = vi.fn();
+    component.openDetail.subscribe(openSpy);
+    component.deleteInvoice.subscribe(deleteSpy);
+
+    component.selectInvoice(duplicate, 'matching');
+    component.onOpenSelectedDetail(duplicate);
+    component.onRequestDeleteSelectedInvoice(duplicate);
+    expect(component.pendingDeleteInvoice).toBe(duplicate.paymentRequestByUser);
+
+    component.onConfirmDeleteSelectedInvoice();
+
+    expect(openSpy).toHaveBeenCalledWith(duplicate.paymentRequestByUser);
+    expect(deleteSpy).toHaveBeenCalledWith(duplicate.paymentRequestByUser);
+  });
+
+  it('should not select source invoice when source invoice is only a preview', () => {
+    const duplicate = {
+      paymentRequestByUser: { id: 2, invoiceNumber: 'INV-2' },
+      score: 60,
+      matchedFields: ['invoiceNumber'],
+    } as DuplicatePaymentRequestByUserDto;
     const openSpy = vi.fn();
     const deleteSpy = vi.fn();
     component.openDetail.subscribe(openSpy);
@@ -117,8 +151,9 @@ describe('DuplicateListModalComponent', () => {
     fixture.componentRef.setInput('sourceInvoice', { invoiceNumber: 'INV-1' });
     fixture.detectChanges();
 
-    component.onOpenSourceDetail();
-    component.onDeleteSourceInvoice();
+    component.selectInvoice(duplicate, 'source');
+    component.onOpenSelectedDetail(duplicate);
+    component.onRequestDeleteSelectedInvoice(duplicate);
 
     expect(openSpy).not.toHaveBeenCalled();
     expect(deleteSpy).not.toHaveBeenCalled();

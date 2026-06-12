@@ -172,13 +172,14 @@ describe('AdminInvoicesOverviewComponent', () => {
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).not.toHaveBeenCalled();
   });
 
-  it('should delete duplicate invoice after confirmation', () => {
+  it('should delete duplicate invoice without browser confirmation', () => {
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, 'confirm');
     const invoice = { id: 2, invoiceNumber: 'INV-2' } as PaymentRequestByUserDto;
 
     component.onDeleteDuplicateInvoice(invoice);
 
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(paymentServiceMock.deletePaymentRequestByUser).toHaveBeenCalledWith(2);
     expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice deleted.');
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
