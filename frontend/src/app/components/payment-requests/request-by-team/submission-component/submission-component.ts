@@ -251,7 +251,6 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
           this.form.reset();
           this.typeaheadRef.reset();
           this.isSubmitting = false;
-          window.location.reload();
         },
         error: (err: Error) => {
           this.notificationService.showError(err.message ?? 'Submission failed.');
