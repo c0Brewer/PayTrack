@@ -1,6 +1,10 @@
+//AI helped with the test cases
+
 using System.Text;
 using FluentAssertions;
 using Moq;
+using PayTrack.Application.Dto.PaymentRequestByTeam;
+using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
@@ -86,6 +90,131 @@ namespace PayTrack.Tests.UnitTests.Services
             csv.Should().Contain("Income,200.00");
             csv.Should().Contain("Expenses,50.00");
             csv.Should().Contain("Net,150.00");
+        }
+
+        [Fact]
+        public async Task ExportFinancialDataAsync_ShouldUseSubmittedInvoicesSourceAndInvoiceFilters()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var capturedQuery = new GetPaymentRequestByUserQuery();
+            var transactions = new List<PaymentRequestByUser>
+            {
+                new PaymentRequestByUser
+                {
+                    Id = 4,
+                    InvoiceNumber = "INV-44",
+                    Amount = 80,
+                    PurposeOfPayment = "Tools",
+                    PaymentDirection = PaymentDirection.Out,
+                    Status = TransactionStatus.Paid,
+                    TeamId = 2,
+                    UserId = 5,
+                    CreatedAt = new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc),
+                },
+            };
+
+            repoMock
+                .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByUserQuery>()))
+                .Callback<GetPaymentRequestByUserQuery>(query => capturedQuery = query)
+                .ReturnsAsync((transactions, transactions.Count));
+
+            var service = new FinancialExportService(repoMock.Object);
+
+            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            {
+                Source = FinancialExportSource.SubmittedInvoices,
+                Format = FinancialExportFormat.Csv,
+                InvoiceNumber = "INV-44",
+                PayoutType = PayoutType.AlreadyPaid,
+                BankAccountId = 12,
+                TeamId = 2,
+                UserId = 5,
+                Limit = 10,
+                Offset = 20,
+            });
+
+            result.FileName.Should().StartWith("submitted-invoices-export-");
+            result.FileName.Should().EndWith(".csv");
+            capturedQuery.InvoiceNumber.Should().Be("INV-44");
+            capturedQuery.PayoutType.Should().Be(PayoutType.AlreadyPaid);
+            capturedQuery.BankAccountId.Should().Be(12);
+            capturedQuery.TeamId.Should().Be(2);
+            capturedQuery.UserId.Should().Be(5);
+            capturedQuery.IncludeTeam.Should().BeTrue();
+            capturedQuery.IncludeBudget.Should().BeTrue();
+            capturedQuery.IncludeBankAccount.Should().BeTrue();
+            capturedQuery.Limit.Should().BeNull();
+            capturedQuery.Offset.Should().BeNull();
+            repoMock.Verify(r => r.GetAllAsync(It.IsAny<GetTransactionQuery>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ExportFinancialDataAsync_ShouldUsePaymentRequestsSourceAndVisibleStatuses()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var capturedQuery = new GetPaymentRequestByTeamQuery();
+            var transactions = new List<PaymentRequestByTeam>
+            {
+                new PaymentRequestByTeam
+                {
+                    Id = 1,
+                    Amount = 100,
+                    PaymentDirection = PaymentDirection.In,
+                    Status = TransactionStatus.Submitted,
+                    TeamId = 1,
+                    UserId = 1,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 2,
+                    Amount = 40,
+                    PaymentDirection = PaymentDirection.In,
+                    Status = TransactionStatus.Paid,
+                    TeamId = 1,
+                    UserId = 1,
+                    CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 3,
+                    Amount = 20,
+                    PaymentDirection = PaymentDirection.In,
+                    Status = TransactionStatus.Approved,
+                    TeamId = 1,
+                    UserId = 1,
+                    CreatedAt = new DateTime(2026, 1, 3, 0, 0, 0, DateTimeKind.Utc),
+                },
+            };
+
+            repoMock
+                .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
+                .Callback<GetPaymentRequestByTeamQuery>(query => capturedQuery = query)
+                .ReturnsAsync((transactions, transactions.Count));
+
+            var service = new FinancialExportService(repoMock.Object);
+
+            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            {
+                Source = FinancialExportSource.PaymentRequests,
+                Format = FinancialExportFormat.Csv,
+                RequestById = 8,
+                TeamId = 1,
+            });
+
+            result.FileName.Should().StartWith("payment-requests-export-");
+            result.FileName.Should().EndWith(".csv");
+            capturedQuery.RequestById.Should().Be(8);
+            capturedQuery.TeamId.Should().Be(1);
+            capturedQuery.Status.Should().BeNull();
+            capturedQuery.IncludeTeam.Should().BeTrue();
+            capturedQuery.IncludeBudget.Should().BeTrue();
+
+            var csv = Encoding.UTF8.GetString(result.Content);
+            csv.Should().Contain("Income,In,Submitted,100.00");
+            csv.Should().Contain("Income,In,Paid,40.00");
+            csv.Should().NotContain("Approved,20.00");
+            csv.Should().Contain("Income,140.00");
         }
 
         [Fact]

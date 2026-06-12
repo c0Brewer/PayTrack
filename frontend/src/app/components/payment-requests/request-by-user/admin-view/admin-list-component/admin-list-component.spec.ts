@@ -4,11 +4,14 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
+  FinancialExportFormat,
+  FinancialExportSource,
   PaymentRequestByUserDto,
 } from '../../../../../types/exporter';
 
@@ -28,6 +31,10 @@ describe('RequestsComponent', () => {
   const notificationMock = {
     showError: vi.fn(),
     showSuccess: vi.fn(),
+  };
+
+  const financialExportServiceMock = {
+    downloadFinancialData: vi.fn(),
   };
 
   const routerMock = {
@@ -53,11 +60,13 @@ describe('RequestsComponent', () => {
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
     paymentServiceMock.deletePaymentRequestByUser.mockReturnValue(of(undefined));
     paymentServiceMock.dismissDuplicatePaymentRequestByUser.mockReturnValue(of(undefined));
+    financialExportServiceMock.downloadFinancialData.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [RequestsComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: FinancialExportService, useValue: financialExportServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -119,6 +128,29 @@ describe('RequestsComponent', () => {
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
   });
 
+  it('should export submitted invoices with current filters and without pagination', () => {
+    component.filterOptions = {
+      TeamId: 3,
+      InvoiceNumber: 'INV-7',
+      Limit: 25,
+      Offset: 50,
+    };
+
+    component.exportFinancialData(FinancialExportFormat.Csv);
+
+    expect(financialExportServiceMock.downloadFinancialData).toHaveBeenCalledWith(
+      {
+        TeamId: 3,
+        InvoiceNumber: 'INV-7',
+        Source: FinancialExportSource.SubmittedInvoices,
+        Limit: undefined,
+        Offset: undefined,
+      },
+      FinancialExportFormat.Csv,
+    );
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Financial export downloaded.');
+  });
+
   it('should navigate to detail page on open detail', () => {
     const invoice = { id: 1, invoiceNumber: 'INV-001' } as PaymentRequestByUserDto;
 
@@ -172,13 +204,14 @@ describe('RequestsComponent', () => {
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).not.toHaveBeenCalled();
   });
 
-  it('should delete duplicate invoice after confirmation', () => {
+  it('should delete duplicate invoice without browser confirmation', () => {
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, 'confirm');
     const invoice = { id: 2, invoiceNumber: 'INV-2' } as PaymentRequestByUserDto;
 
     component.onDeleteDuplicateInvoice(invoice);
 
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(paymentServiceMock.deletePaymentRequestByUser).toHaveBeenCalledWith(2);
     expect(notificationMock.showSuccess).toHaveBeenCalledWith('Invoice deleted.');
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();

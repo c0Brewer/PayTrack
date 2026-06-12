@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { FinancialExportFormat } from '../../types/exporter';
+import { FinancialExportFormat, FinancialExportSource } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
 import { FinancialExportService } from './financial-export-service';
@@ -64,6 +64,7 @@ describe('FinancialExportService', () => {
         {
           TeamId: 7,
           CostCentreId: 4,
+          Source: FinancialExportSource.SubmittedInvoices,
           MinPaidAt: '2026-01-01',
           MaxPaidAt: undefined,
           PurposeOfPayment: '',
@@ -81,6 +82,7 @@ describe('FinancialExportService', () => {
     expect(String(url)).toContain('Format=1');
     expect(String(url)).toContain('TeamId=7');
     expect(String(url)).toContain('CostCentreId=4');
+    expect(String(url)).toContain('Source=1');
     expect(String(url)).toContain('MinPaidAt=2026-01-01');
     expect(String(url)).not.toContain('MaxPaidAt');
     expect(String(url)).not.toContain('PurposeOfPayment');

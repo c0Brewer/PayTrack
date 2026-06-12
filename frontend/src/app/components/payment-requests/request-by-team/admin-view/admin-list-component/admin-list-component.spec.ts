@@ -3,11 +3,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import { UserService } from '../../../../../services/user/user-service';
-import { PaymentRequestByTeamDto, TransactionStatus } from '../../../../../types/exporter';
+import {
+  FinancialExportFormat,
+  FinancialExportSource,
+  PaymentRequestByTeamDto,
+  TransactionStatus,
+} from '../../../../../types/exporter';
 
 import { TeamRequestsComponent } from './admin-list-component';
 
@@ -21,6 +27,11 @@ describe('TeamRequestsComponent', () => {
 
   const notificationMock = {
     showError: vi.fn(),
+    showSuccess: vi.fn(),
+  };
+
+  const financialExportServiceMock = {
+    downloadFinancialData: vi.fn(),
   };
 
   const routerMock = {
@@ -41,11 +52,13 @@ describe('TeamRequestsComponent', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    financialExportServiceMock.downloadFinancialData.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [TeamRequestsComponent],
       providers: [
         { provide: PaymentRequestByTeamService, useValue: paymentServiceMock },
+        { provide: FinancialExportService, useValue: financialExportServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -123,6 +136,29 @@ describe('TeamRequestsComponent', () => {
     expect(component.limit).toBe(25);
     expect(component.page).toBe(0);
     expect(paymentServiceMock.getPaymentRequestsByTeam).toHaveBeenCalled();
+  });
+
+  it('should export payment requests with current filters and without pagination', () => {
+    component.filterOptions = {
+      TeamId: 4,
+      Status: TransactionStatus.Paid,
+      Limit: 25,
+      Offset: 50,
+    };
+
+    component.exportFinancialData(FinancialExportFormat.Pdf);
+
+    expect(financialExportServiceMock.downloadFinancialData).toHaveBeenCalledWith(
+      {
+        TeamId: 4,
+        Status: TransactionStatus.Paid,
+        Source: FinancialExportSource.PaymentRequests,
+        Limit: undefined,
+        Offset: undefined,
+      },
+      FinancialExportFormat.Pdf,
+    );
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Financial export downloaded.');
   });
 
   it('should navigate to detail page on onOpenDetail', () => {
