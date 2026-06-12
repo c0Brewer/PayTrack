@@ -5,7 +5,8 @@
   width: 100%;
 }
 
-:host-context(.my-invoices) {
+:host-context(.my-invoices),
+:host-context(.requests) {
   .invoice-table-wrapper {
     overflow-x: auto;
   }
@@ -41,7 +42,8 @@
 }
 
 @media (max-width: 767.98px) {
-  :host-context(.my-invoices) {
+  :host-context(.my-invoices),
+  :host-context(.requests) {
     .invoice-table-wrapper {
       overflow-x: visible;
     }
