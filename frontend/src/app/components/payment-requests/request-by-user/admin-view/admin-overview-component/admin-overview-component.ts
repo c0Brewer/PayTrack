@@ -266,6 +266,11 @@ export class AdminInvoicesOverviewComponent implements OnInit {
   }
 
   navigateBankStatementUpload(): void {
-    this.router.navigate(['/bank-statement-upload']);
+    this.router.navigate(['/bank-statement-upload'], {
+      state: {
+        returnTo: '/requests',
+        backLabel: 'Back to Invoices',
+      },
+    });
   }
 }

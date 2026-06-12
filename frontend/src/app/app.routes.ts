@@ -7,10 +7,9 @@ import { UnauthorizedComponent } from './components/general/unauthorized-compone
 import { HomeComponent } from './components/home/home-component/home-component';
 import { InitialLoginBankAccountComponent } from './components/inital-login-bank-account/initial-login-bank-account-component/initial-login-bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
-import { BankStatementImportComponent } from './components/payment-requests/bank-statement-import-component/bank-statement-import-component';
+import { BankStatementDetailComponent } from './components/payment-requests/bank-statement-detail-component/bank-statement-detail-component';
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
 import { TeamRequestAdminOverviewComponent } from './components/payment-requests/request-by-team/admin-view/admin-overview-component/admin-overview-component';
-import { TeamRequestBankStatementDetailComponent } from './components/payment-requests/request-by-team/admin-view/bank-statement-detail-component/bank-statement-detail-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
 import { TeamRequestTeamDetailPageComponent } from './components/payment-requests/request-by-team/team-view/team-detail-page-component/team-detail-page-component';
 import { TeamRequestTeamOverviewComponent } from './components/payment-requests/request-by-team/team-view/team-overview-component/team-overview-component';
@@ -63,6 +62,11 @@ export const routes: Routes = [
     path: 'requests',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: AdminInvoicesOverviewComponent,
+  },
+  {
+    path: 'bank-statement-upload',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: BankStatementDetailComponent,
   },
   {
     path: 'requests/:id',
@@ -120,19 +124,9 @@ export const routes: Routes = [
     component: PaymentRequestByTeamComponent,
   },
   {
-    path: 'bank-statement-upload',
-    canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: BankStatementImportComponent,
-  },
-  {
     path: 'payment-requests-by-team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: TeamRequestAdminOverviewComponent,
-  },
-  {
-    path: 'payment-requests-by-team/bank-statement-upload',
-    canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: TeamRequestBankStatementDetailComponent,
   },
   {
     path: 'payment-requests-by-team/:id',
