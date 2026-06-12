@@ -117,8 +117,8 @@ export class AdminInvoicesOverviewComponent implements OnInit {
     return this.statInvoices.reduce((total, invoice) => total + invoice.amount, 0);
   }
 
-  getSubmittedRequestCount(): number {
-    return this.statInvoices.filter((invoice) => invoice.status === TransactionStatus.Submitted)
+  getDeclinedRequestCount(): number {
+    return this.statInvoices.filter((invoice) => invoice.status === TransactionStatus.Declined)
       .length;
   }
 

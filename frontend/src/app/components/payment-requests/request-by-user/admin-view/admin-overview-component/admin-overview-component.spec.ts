@@ -104,14 +104,14 @@ describe('AdminInvoicesOverviewComponent', () => {
 
   it('should compute overview stats from loaded stat invoices', () => {
     component.statInvoices = [
-      { id: 1, amount: 100, status: TransactionStatus.Submitted },
+      { id: 1, amount: 100, status: TransactionStatus.Declined },
       { id: 2, amount: 200, status: TransactionStatus.Paid },
       { id: 3, amount: 300, status: TransactionStatus.Paid },
       { id: 4, amount: 400, status: TransactionStatus.Approved },
     ] as PaymentRequestByUserDto[];
 
     expect(component.getTotalAmount()).toBe(1000);
-    expect(component.getSubmittedRequestCount()).toBe(1);
+    expect(component.getDeclinedRequestCount()).toBe(1);
     expect(component.getPaidRequestCount()).toBe(2);
   });
 
