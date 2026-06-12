@@ -28,13 +28,24 @@
                 <span class="duplicate-list__invoice">Invoice: {{ sourceInvoice.invoiceNumber || '-' }}</span>
                 <span class="duplicate-list__amount">{{ (sourceInvoice.amount ?? 0) | euro }}</span>
                 <div class="duplicate-list__details">
-                  <span>User: {{ getInvoiceUserName(sourceInvoice) }}</span>
-                  <span>Team: {{ getInvoiceTeamName(sourceInvoice) }}</span>
-                  <span>
-                    Paid at:
-                    {{ sourceInvoice.paidAt ? (sourceInvoice.paidAt | date: 'mediumDate') : '-' }}
-                  </span>
-                  <span>Purpose: {{ sourceInvoice.purposeOfPayment || '-' }}</span>
+                  <div class="duplicate-list__detail">
+                    <span class="duplicate-list__detail-label">User</span>
+                    <span class="duplicate-list__detail-value">{{ getInvoiceUserName(sourceInvoice) }}</span>
+                  </div>
+                  <div class="duplicate-list__detail">
+                    <span class="duplicate-list__detail-label">Team</span>
+                    <span class="duplicate-list__detail-value">{{ getInvoiceTeamName(sourceInvoice) }}</span>
+                  </div>
+                  <div class="duplicate-list__detail">
+                    <span class="duplicate-list__detail-label">Paid at</span>
+                    <span class="duplicate-list__detail-value">
+                      {{ sourceInvoice.paidAt ? (sourceInvoice.paidAt | date: 'mediumDate') : '-' }}
+                    </span>
+                  </div>
+                  <div class="duplicate-list__detail">
+                    <span class="duplicate-list__detail-label">Purpose</span>
+                    <span class="duplicate-list__detail-value">{{ sourceInvoice.purposeOfPayment || '-' }}</span>
+                  </div>
                 </div>
               </div>
             }
@@ -48,13 +59,24 @@
                 {{ duplicate.paymentRequestByUser.amount | euro }}
               </span>
               <div class="duplicate-list__details">
-                <span>User: {{ getDuplicateUserName(duplicate) }}</span>
-                <span>Team: {{ getDuplicateTeamName(duplicate) }}</span>
-                <span>
-                  Paid at:
-                  {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
-                </span>
-                <span>Purpose: {{ duplicate.paymentRequestByUser.purposeOfPayment || '-' }}</span>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">User</span>
+                  <span class="duplicate-list__detail-value">{{ getDuplicateUserName(duplicate) }}</span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Team</span>
+                  <span class="duplicate-list__detail-value">{{ getDuplicateTeamName(duplicate) }}</span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Paid at</span>
+                  <span class="duplicate-list__detail-value">
+                    {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
+                  </span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Purpose</span>
+                  <span class="duplicate-list__detail-value">{{ duplicate.paymentRequestByUser.purposeOfPayment || '-' }}</span>
+                </div>
               </div>
             </div>
           </div>
