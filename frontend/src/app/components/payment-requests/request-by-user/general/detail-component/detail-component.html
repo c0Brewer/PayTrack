@@ -53,7 +53,9 @@
           </tr>
           <tr>
             <th>Finance Paid At</th>
-            <td>{{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '-' }}</td>
+            <td>
+              {{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '-' }}
+            </td>
           </tr>
           <tr>
             <th>Payment Reference</th>
@@ -72,17 +74,25 @@
         </tbody>
       </table>
 
-      @if (canManageStatus && (canApprove(invoice.status) || canRequestChanges(invoice.status) || canDecline(invoice.status))) {
+      @if (
+        canManageStatus &&
+        (canApprove(invoice.status) ||
+          canRequestChanges(invoice.status) ||
+          canDecline(invoice.status))
+      ) {
         <div class="status-actions">
           @if (canApprove(invoice.status)) {
             <form class="status-form" (ngSubmit)="onApprove()">
               <h3>Approve</h3>
               <label>
-                <span>Cost Centre</span>
-                <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
-                  <option [ngValue]="null">Select cost centre</option>
-                  @for (costCentre of costCentres; track costCentre.id) {
-                    <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+                <span>Budget</span>
+                <select name="approvalBudgetId" [(ngModel)]="approvalBudgetId" required>
+                  <option [ngValue]="null">Select budget</option>
+                  @for (budget of budgets; track budget.id) {
+                    <option [ngValue]="budget.id">
+                      {{ budget.name }} ({{ budget.periodStart | date: 'mediumDate' }} -
+                      {{ budget.periodEnd | date: 'mediumDate' }})
+                    </option>
                   }
                 </select>
               </label>
@@ -91,13 +101,21 @@
                 <textarea
                   name="approvalReason"
                   [(ngModel)]="approvalReason"
+                  minlength="3"
                   maxlength="1000"
                 ></textarea>
+                @if (isReasonTooShort(approvalReason)) {
+                  <span class="field-error">Reason must be at least 3 characters long.</span>
+                }
               </label>
               <button
                 class="approve-btn"
                 type="submit"
-                [disabled]="statusActionPending === 'approve' || !approvalCostCentreId"
+                [disabled]="
+                  statusActionPending === 'approve' ||
+                  !approvalBudgetId ||
+                  !isOptionalReasonValid(approvalReason)
+                "
               >
                 <span class="material-symbols-outlined">check_circle</span>
                 {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
@@ -113,9 +131,13 @@
                 <textarea
                   name="changeRequestReason"
                   [(ngModel)]="changeRequestReason"
+                  minlength="3"
                   maxlength="1000"
                   required
                 ></textarea>
+                @if (isReasonTooShort(changeRequestReason)) {
+                  <span class="field-error">Reason must be at least 3 characters long.</span>
+                }
               </label>
               <label>
                 <span>Contact User</span>
@@ -128,7 +150,9 @@
               <button
                 class="request-changes-btn"
                 type="submit"
-                [disabled]="statusActionPending === 'requestChanges' || !changeRequestReason.trim()"
+                [disabled]="
+                  statusActionPending === 'requestChanges' || !isReasonValid(changeRequestReason)
+                "
               >
                 <span class="material-symbols-outlined">edit_note</span>
                 {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
@@ -144,14 +168,18 @@
                 <textarea
                   name="declineReason"
                   [(ngModel)]="declineReason"
+                  minlength="3"
                   maxlength="1000"
                   required
                 ></textarea>
+                @if (isReasonTooShort(declineReason)) {
+                  <span class="field-error">Reason must be at least 3 characters long.</span>
+                }
               </label>
               <button
                 class="decline-btn"
                 type="submit"
-                [disabled]="statusActionPending === 'decline' || !declineReason.trim()"
+                [disabled]="statusActionPending === 'decline' || !isReasonValid(declineReason)"
               >
                 <span class="material-symbols-outlined">cancel</span>
                 {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
@@ -171,9 +199,15 @@
                 type="text"
                 name="paymentReference"
                 [(ngModel)]="paymentReference"
+                minlength="3"
                 maxlength="255"
                 required
               />
+              @if (isReasonTooShort(paymentReference)) {
+                <span class="field-error"
+                  >Payment reference must be at least 3 characters long.</span
+                >
+              }
             </label>
             <label>
               <span>Payment Date</span>
@@ -190,15 +224,24 @@
               <textarea
                 name="paymentPurpose"
                 [(ngModel)]="paymentPurpose"
+                minlength="3"
                 maxlength="500"
                 required
               ></textarea>
+              @if (isReasonTooShort(paymentPurpose)) {
+                <span class="field-error">Purpose must be at least 3 characters long.</span>
+              }
             </label>
           </div>
           <button
             class="mark-paid-btn"
             type="submit"
-            [disabled]="markingPaid || !paymentReference.trim() || !paymentPurpose.trim() || !paymentDate"
+            [disabled]="
+              markingPaid ||
+              !isReasonValid(paymentReference) ||
+              !isReasonValid(paymentPurpose) ||
+              !paymentDate
+            "
           >
             <span class="material-symbols-outlined">payments</span>
             {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
@@ -231,7 +274,7 @@
                     {{ getStatusLabel(entry.toStatus) }}
                   </span>
                 </td>
-                <td>{{ entry.changedBy?.name ?? ('User #' + entry.changedById) }}</td>
+                <td>{{ entry.changedBy?.name ?? 'User #' + entry.changedById }}</td>
                 <td>{{ entry.changedAt | date: 'medium' }}</td>
                 <td>{{ entry.comment }}</td>
               </tr>

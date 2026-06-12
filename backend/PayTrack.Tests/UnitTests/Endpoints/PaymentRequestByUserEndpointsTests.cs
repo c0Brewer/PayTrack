@@ -360,12 +360,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
             _factory.ServiceMock
-                .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "ok"))
+                .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "approved"))
                 .ReturnsAsync(updated);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
-            var dto = new ApprovePaymentRequestByUserDto(5, "ok");
+            var dto = new ApprovePaymentRequestByUserDto(5, "approved");
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/approve", dto);

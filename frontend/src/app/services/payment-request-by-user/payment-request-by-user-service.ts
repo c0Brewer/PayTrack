@@ -51,7 +51,7 @@ export class PaymentRequestByUserService {
         },
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -72,7 +72,7 @@ export class PaymentRequestByUserService {
         },
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -191,7 +191,7 @@ export class PaymentRequestByUserService {
         body: updateRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -212,7 +212,7 @@ export class PaymentRequestByUserService {
         body: markPaidRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -233,7 +233,7 @@ export class PaymentRequestByUserService {
         body: approveRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -254,7 +254,7 @@ export class PaymentRequestByUserService {
         body: declineRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -275,7 +275,7 @@ export class PaymentRequestByUserService {
         body: requestChangesRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -297,6 +297,21 @@ export class PaymentRequestByUserService {
     });
 
     return from(promise);
+  }
+
+  private getErrorMessage(error: unknown): string {
+    const problem = error as {
+      detail?: string | null;
+      title?: string | null;
+      errors?: Record<string, string[]>;
+    };
+    const validationMessage = problem.errors
+      ? Object.values(problem.errors)
+          .flat()
+          .find((message) => !!message)
+      : undefined;
+
+    return problem.detail ?? validationMessage ?? problem.title ?? 'Unexpected Error';
   }
 
   public downloadReceipt(id: number): Observable<Blob> {

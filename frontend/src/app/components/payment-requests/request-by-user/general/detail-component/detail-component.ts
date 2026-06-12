@@ -5,7 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import {
   ApprovePaymentRequestByUserDto,
-  CostCentreDto,
+  BudgetDto,
   DeclinePaymentRequestByUserDto,
   MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
@@ -39,7 +39,7 @@ export class InvoiceDetailComponent {
   @Input() markingPaid: boolean = false;
   @Input() canManageStatus: boolean = false;
   @Input() statusActionPending: string | null = null;
-  @Input() costCentres: CostCentreDto[] = [];
+  @Input() budgets: BudgetDto[] = [];
   @Output() downloadReceipt = new EventEmitter<void>();
   @Output() approve = new EventEmitter<ApprovePaymentRequestByUserDto>();
   @Output() decline = new EventEmitter<DeclinePaymentRequestByUserDto>();
@@ -54,7 +54,7 @@ export class InvoiceDetailComponent {
   paymentPurpose: string = '';
   paymentDate: string = new Date().toISOString().split('T')[0];
   maxPaymentDate: string = new Date().toISOString().split('T')[0];
-  approvalCostCentreId: number | null = null;
+  approvalBudgetId: number | null = null;
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
@@ -90,19 +90,33 @@ export class InvoiceDetailComponent {
     return status !== TransactionStatus.Paid && status !== TransactionStatus.Declined;
   }
 
+  isReasonValid(reason: string): boolean {
+    return reason.trim().length >= 3;
+  }
+
+  isReasonTooShort(reason: string): boolean {
+    const length = reason.trim().length;
+    return length > 0 && length < 3;
+  }
+
+  isOptionalReasonValid(reason: string): boolean {
+    const length = reason.trim().length;
+    return length === 0 || length >= 3;
+  }
+
   onApprove(): void {
-    if (!this.approvalCostCentreId) {
+    if (!this.approvalBudgetId || !this.isOptionalReasonValid(this.approvalReason)) {
       return;
     }
 
     this.approve.emit({
-      costCentreId: this.approvalCostCentreId,
+      budgetId: this.approvalBudgetId,
       reason: this.approvalReason.trim() || null,
     });
   }
 
   onDecline(): void {
-    if (!this.declineReason.trim()) {
+    if (!this.isReasonValid(this.declineReason)) {
       return;
     }
 
@@ -112,7 +126,7 @@ export class InvoiceDetailComponent {
   }
 
   onRequestChanges(): void {
-    if (!this.changeRequestReason.trim()) {
+    if (!this.isReasonValid(this.changeRequestReason)) {
       return;
     }
 
@@ -123,7 +137,11 @@ export class InvoiceDetailComponent {
   }
 
   onMarkPaid(): void {
-    if (!this.paymentReference.trim() || !this.paymentPurpose.trim() || !this.paymentDate) {
+    if (
+      !this.isReasonValid(this.paymentReference) ||
+      !this.isReasonValid(this.paymentPurpose) ||
+      !this.paymentDate
+    ) {
       return;
     }
 

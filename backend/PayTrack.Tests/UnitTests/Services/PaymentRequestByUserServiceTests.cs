@@ -632,7 +632,9 @@ namespace PayTrack.Tests.UnitTests.Services
 
         [Theory]
         [InlineData("", "Reimbursement May", "Payment reference is required")]
+        [InlineData("AB", "Reimbursement May", "Payment reference must be at least 3 characters long")]
         [InlineData("REF-123", " ", "Purpose of payment is required")]
+        [InlineData("REF-123", "AB", "Purpose of payment must be at least 3 characters long")]
         public async Task MarkAsPaid_ShouldThrow_WhenRequiredPaymentFieldIsMissing(
             string paymentReference,
             string purposeOfPayment,
@@ -708,7 +710,7 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task Approve_ShouldAssignCostCentreStatusAndHistory_WhenSubmitted()
+        public async Task Approve_ShouldAssignBudgetStatusAndHistory_WhenSubmitted()
         {
             var repoMock = new Mock<ITransactionRepository>();
             var teamMock = new Mock<ITeamService>();
@@ -733,13 +735,9 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()))
                 .ReturnsAsync((PaymentRequestByUser p) => p);
 
-            costCentreMock
-                .Setup(c => c.GetByIdAsync(7))
-                .ReturnsAsync(new CostCentre { Id = 7, Name = "Operations" });
-
             budgetMock
-                .Setup(b => b.GetBudgetsAsync(It.IsAny<PayTrack.Application.Dto.Budget.GetBudgetQuery>()))
-                .ReturnsAsync(([new Budget { Id = 9, TeamId = 3, CostCentreId = 7, Name = "Ops budget" }], 1));
+                .Setup(b => b.GetByIdAsync(9))
+                .ReturnsAsync(new Budget { Id = 9, TeamId = 3, CostCentreId = 7, Name = "Ops budget" });
 
             var service = new PaymentRequestByUserService(
                 repoMock.Object,
@@ -749,7 +747,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 costCentreMock.Object,
                 budgetMock.Object);
 
-            var result = await service.ApprovePaymentRequestByUserAsync(1, 42, 7, " approved ");
+            var result = await service.ApprovePaymentRequestByUserAsync(1, 42, 9, " approved ");
 
             result.Status.Should().Be(TransactionStatus.Approved);
             result.BudgetId.Should().Be(9);
@@ -761,7 +759,43 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task Approve_ShouldThrow_WhenCostCentreIsMissing()
+        public async Task Approve_ShouldThrow_WhenOptionalReasonIsTooShort()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var budgetMock = new Mock<IBudgetService>();
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(new PaymentRequestByUser
+                {
+                    Id = 1,
+                    TeamId = 3,
+                    InvoiceNumber = "123",
+                    Status = TransactionStatus.Submitted,
+                    StatusHistory = []
+                });
+            budgetMock
+                .Setup(b => b.GetByIdAsync(9))
+                .ReturnsAsync(new Budget { Id = 9, TeamId = 3, CostCentreId = 7, Name = "Ops budget" });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                budgetMock.Object);
+
+            Func<Task> act = async () =>
+                await service.ApprovePaymentRequestByUserAsync(1, 42, 9, "no");
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Reason must be at least 3 characters long");
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Approve_ShouldThrow_WhenBudgetIsMissing()
         {
             var repoMock = new Mock<ITransactionRepository>();
             repoMock
@@ -787,14 +821,14 @@ namespace PayTrack.Tests.UnitTests.Services
 
             await act.Should()
                 .ThrowAsync<InvalidStateException>()
-                .WithMessage("Cost centre is required");
+                .WithMessage("Budget is required");
         }
 
         [Fact]
-        public async Task Approve_ShouldThrow_WhenCostCentreDoesNotExist()
+        public async Task Approve_ShouldThrow_WhenBudgetDoesNotExist()
         {
             var repoMock = new Mock<ITransactionRepository>();
-            var costCentreMock = new Mock<ICostCentreService>();
+            var budgetMock = new Mock<IBudgetService>();
             repoMock
                 .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
                 .ReturnsAsync(new PaymentRequestByUser
@@ -804,24 +838,60 @@ namespace PayTrack.Tests.UnitTests.Services
                     Status = TransactionStatus.Submitted,
                     StatusHistory = []
                 });
-            costCentreMock
-                .Setup(c => c.GetByIdAsync(7))
-                .ReturnsAsync((CostCentre?)null);
+            budgetMock
+                .Setup(b => b.GetByIdAsync(7))
+                .ReturnsAsync((Budget?)null);
 
             var service = new PaymentRequestByUserService(
                 repoMock.Object,
                 new Mock<ITeamService>().Object,
                 new Mock<IFileRepository>().Object,
                 new Mock<IBankAccountService>().Object,
-                costCentreMock.Object,
-                new Mock<IBudgetService>().Object);
+                new Mock<ICostCentreService>().Object,
+                budgetMock.Object);
 
             Func<Task> act = async () =>
                 await service.ApprovePaymentRequestByUserAsync(1, 42, 7, null);
 
             await act.Should()
                 .ThrowAsync<NotFoundException>()
-                .WithMessage("Cost centre not found");
+                .WithMessage("Budget not found");
+            repoMock.Verify(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Approve_ShouldThrow_WhenBudgetBelongsToAnotherTeam()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var budgetMock = new Mock<IBudgetService>();
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(new PaymentRequestByUser
+                {
+                    Id = 1,
+                    TeamId = 3,
+                    InvoiceNumber = "123",
+                    Status = TransactionStatus.Submitted,
+                    StatusHistory = []
+                });
+            budgetMock
+                .Setup(b => b.GetByIdAsync(7))
+                .ReturnsAsync(new Budget { Id = 7, TeamId = 4, CostCentreId = 2, Name = "Other team" });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                budgetMock.Object);
+
+            Func<Task> act = async () =>
+                await service.ApprovePaymentRequestByUserAsync(1, 42, 7, null);
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Budget does not belong to the invoice team");
             repoMock.Verify(r => r.UpdateAsync(It.IsAny<PaymentRequestByUser>()), Times.Never);
         }
 
@@ -863,6 +933,36 @@ namespace PayTrack.Tests.UnitTests.Services
             result.StatusHistory.Single().FromStatus.Should().Be(TransactionStatus.Submitted);
             result.StatusHistory.Single().ToStatus.Should().Be(TransactionStatus.ChangesRequested);
             result.StatusHistory.Single().Comment.Should().Be("upload clearer receipt");
+        }
+
+        [Fact]
+        public async Task RequestChanges_ShouldThrow_WhenReasonIsTooShort()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(new PaymentRequestByUser
+                {
+                    Id = 1,
+                    InvoiceNumber = "123",
+                    Status = TransactionStatus.Submitted,
+                    StatusHistory = []
+                });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            Func<Task> act = async () =>
+                await service.RequestChangesPaymentRequestByUserAsync(1, 42, "no");
+
+            await act.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("Reason must be at least 3 characters long");
         }
 
         [Fact]

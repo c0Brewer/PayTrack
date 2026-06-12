@@ -165,20 +165,31 @@ describe('InvoiceDetailComponent', () => {
     expect(component.canDecline(TransactionStatus.Declined)).toBe(false);
   });
 
-  it('should emit approve with trimmed optional reason when cost centre is selected', () => {
+  it('should emit approve with trimmed optional reason when budget is selected', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.approvalReason = ' approved ';
 
     component.onApprove();
 
-    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+    expect(emitted).toHaveBeenCalledWith({ budgetId: 12, reason: 'approved' });
   });
 
-  it('should not emit approve without cost centre', () => {
+  it('should not emit approve without budget', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
+
+    component.onApprove();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should not emit approve with a short optional reason', () => {
+    const emitted = vi.fn();
+    component.approve.subscribe(emitted);
+    component.approvalBudgetId = 12;
+    component.approvalReason = 'no';
 
     component.onApprove();
 
@@ -199,6 +210,16 @@ describe('InvoiceDetailComponent', () => {
     const emitted = vi.fn();
     component.decline.subscribe(emitted);
     component.declineReason = ' ';
+
+    component.onDecline();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should not emit decline with a reason shorter than three characters', () => {
+    const emitted = vi.fn();
+    component.decline.subscribe(emitted);
+    component.declineReason = 'no';
 
     component.onDecline();
 
@@ -242,6 +263,16 @@ describe('InvoiceDetailComponent', () => {
     expect(emitted).not.toHaveBeenCalled();
   });
 
+  it('should not emit request changes with a reason shorter than three characters', () => {
+    const emitted = vi.fn();
+    component.requestChanges.subscribe(emitted);
+    component.changeRequestReason = 'no';
+
+    component.onRequestChanges();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
   it('should emit mark paid with trimmed values and ISO payment date', () => {
     const emitted = vi.fn();
     component.markPaid.subscribe(emitted);
@@ -274,7 +305,14 @@ describe('InvoiceDetailComponent', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.costCentres = [{ id: 12, name: 'CC-Finance' }];
+    component.budgets = [
+      {
+        id: 12,
+        name: 'Finance 2026',
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
+    ] as typeof component.budgets;
 
     fixture.detectChanges();
 
@@ -282,6 +320,54 @@ describe('InvoiceDetailComponent', () => {
     expect(fixture.nativeElement.querySelector('.approve-btn')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.request-changes-btn')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.decline-btn')).not.toBeNull();
+  });
+
+  it('should show a validation message and disable actions for short reasons', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.approvalBudgetId = 12;
+    component.approvalReason = 'x';
+    component.changeRequestReason = 'no';
+    component.declineReason = 'x';
+
+    fixture.detectChanges();
+
+    const errors = fixture.nativeElement.querySelectorAll('.field-error');
+    const requestChangesButton = fixture.nativeElement.querySelector(
+      '.request-changes-btn',
+    ) as HTMLButtonElement;
+    const declineButton = fixture.nativeElement.querySelector('.decline-btn') as HTMLButtonElement;
+
+    expect(errors).toHaveLength(3);
+    expect(errors[0].textContent).toContain('at least 3 characters');
+    expect(
+      (fixture.nativeElement.querySelector('.approve-btn') as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(requestChangesButton.disabled).toBe(true);
+    expect(declineButton.disabled).toBe(true);
+  });
+
+  it('should show validation messages and disable mark paid for short payment fields', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canMarkPaid = true;
+    component.paymentReference = 'AB';
+    component.paymentPurpose = 'x';
+    component.paymentDate = '2026-02-03';
+
+    fixture.detectChanges();
+
+    const errors = fixture.nativeElement.querySelectorAll('.payment-grid .field-error');
+    const markPaidButton = fixture.nativeElement.querySelector(
+      '.mark-paid-btn',
+    ) as HTMLButtonElement;
+
+    expect(errors).toHaveLength(2);
+    expect(markPaidButton.disabled).toBe(true);
   });
 
   it('should render contact method selection for request changes', () => {
@@ -360,7 +446,7 @@ describe('InvoiceDetailComponent', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.changeRequestReason = 'missing receipt';
     component.declineReason = 'duplicate';
     component.statusActionPending = 'requestChanges';

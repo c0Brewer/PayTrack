@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -216,9 +215,19 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException("Payment reference is required");
             }
 
+            if (paymentReference.Trim().Length < 3)
+            {
+                throw new InvalidStateException("Payment reference must be at least 3 characters long");
+            }
+
             if (string.IsNullOrWhiteSpace(purposeOfPayment))
             {
                 throw new InvalidStateException("Purpose of payment is required");
+            }
+
+            if (purposeOfPayment.Trim().Length < 3)
+            {
+                throw new InvalidStateException("Purpose of payment must be at least 3 characters long");
             }
 
             if (paymentDate.Date > DateTime.Today)
@@ -245,7 +254,7 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
             int id,
             int changedById,
-            int costCentreId,
+            int budgetId,
             string? reason)
         {
             var transaction = await this.repo.GetByIdAsync(
@@ -253,22 +262,18 @@ namespace PayTrack.Application.Services.Implementation
                     new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
                 ?? throw new NotFoundException("Transaction not found");
 
-            if (costCentreId <= 0)
+            if (budgetId <= 0)
             {
-                throw new InvalidStateException("Cost centre is required");
+                throw new InvalidStateException("Budget is required");
             }
 
-            var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
-                ?? throw new NotFoundException("Cost centre not found");
+            var budget = await this.budgetService.GetByIdAsync(budgetId)
+                ?? throw new NotFoundException("Budget not found");
 
-            var (budgets, _) = await this.budgetService.GetBudgetsAsync(new GetBudgetQuery
+            if (budget.TeamId != transaction.TeamId)
             {
-                TeamId = transaction.TeamId,
-                CostCentreId = costCentre.Id,
-                Limit = 1,
-            });
-            var budget = budgets.FirstOrDefault()
-                ?? throw new NotFoundException("Budget for cost centre and team not found");
+                throw new InvalidStateException("Budget does not belong to the invoice team");
+            }
 
             transaction.BudgetId = budget.Id;
 
@@ -558,12 +563,29 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException(errorMessage);
             }
 
-            return reason.Trim();
+            var normalizedReason = reason.Trim();
+            if (normalizedReason.Length < 3)
+            {
+                throw new InvalidStateException("Reason must be at least 3 characters long");
+            }
+
+            return normalizedReason;
         }
 
         private static string? NormalizeOptionalReason(string? reason)
         {
-            return string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return null;
+            }
+
+            var normalizedReason = reason.Trim();
+            if (normalizedReason.Length < 3)
+            {
+                throw new InvalidStateException("Reason must be at least 3 characters long");
+            }
+
+            return normalizedReason;
         }
 
         private static string GetContentTypeFromPath(string filePath)

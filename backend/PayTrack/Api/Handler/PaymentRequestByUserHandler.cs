@@ -204,7 +204,7 @@ namespace PayTrack.Api.Handler
             var updatedPaymentRequestByUser = await paymentRequestByUserService.ApprovePaymentRequestByUserAsync(
                 id,
                 currentUser.Id,
-                approveDto.CostCentreId,
+                approveDto.BudgetId,
                 approveDto.Reason);
 
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);

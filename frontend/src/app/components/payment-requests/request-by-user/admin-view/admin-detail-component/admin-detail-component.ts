@@ -1,12 +1,12 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { BudgetService } from '../../../../../services/budget/budget-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
   ApprovePaymentRequestByUserDto,
-  CostCentreDto,
+  BudgetDto,
   DeclinePaymentRequestByUserDto,
   GetPaymentRequestsByUserByIdOptions,
   MarkPaymentRequestByUserAsPaidDto,
@@ -37,7 +37,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly service: PaymentRequestByUserService,
-    private readonly costCentreService: CostCentreService,
+    private readonly budgetService: BudgetService,
     private readonly notificationService: NotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -52,7 +52,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   markingPaid: boolean = false;
   statusActionPending: string | null = null;
-  costCentres: CostCentreDto[] = [];
+  budgets: BudgetDto[] = [];
   modalType: 'email' | 'slack' | null = null;
   changeRequestNotificationReason: string | null = null;
   pendingChangeRequest: RequestChangesPaymentRequestByUserDto | null = null;
@@ -60,16 +60,6 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   canUndoLastStatusChange: boolean = false;
 
   ngOnInit(): void {
-    this.costCentreService.getCostCentres({ Limit: 100 }).subscribe({
-      next: (data) => {
-        this.costCentres = data.items?.filter((costCentre) => costCentre.isActive !== false) ?? [];
-        this.cdr.detectChanges();
-      },
-      error: (err: Error) => {
-        this.notificationService.showError('Could not load cost centres: ' + err.message);
-      },
-    });
-
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('id'));
 
@@ -258,6 +248,9 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     this.service.getPaymentRequestsByUserById(id, this.invoiceIncludes).subscribe({
       next: (data) => {
         this.invoice = data;
+        if (data.team?.id) {
+          this.loadBudgets(data.team.id);
+        }
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -265,6 +258,18 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
         this.notificationService.showError('Could not load invoice: ' + err.message);
         this.loading = false;
         this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadBudgets(teamId: number): void {
+    this.budgetService.getBudgets({ TeamId: teamId, Limit: 100 }).subscribe({
+      next: (data) => {
+        this.budgets = data.items ?? [];
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load budgets: ' + err.message);
       },
     });
   }

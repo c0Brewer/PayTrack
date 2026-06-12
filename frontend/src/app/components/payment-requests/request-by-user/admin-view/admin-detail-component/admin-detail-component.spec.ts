@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { BudgetService } from '../../../../../services/budget/budget-service';
 import { ExternalNotificationService } from '../../../../../services/external-notification/external-notification-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -25,8 +25,8 @@ describe('RequestDetailComponent', () => {
     undoLastStatusChange: vi.fn(),
   };
 
-  const costCentreServiceMock = {
-    getCostCentres: vi.fn(),
+  const budgetServiceMock = {
+    getBudgets: vi.fn(),
   };
 
   const notificationMock = {
@@ -56,7 +56,7 @@ describe('RequestDetailComponent', () => {
     invoiceNumber: 'INV-007',
     status: 0,
     amount: 100,
-    transaction: { team: { name: 'Finance' }, costCentre: { name: 'CC-01' } },
+    team: { id: 3, name: 'Finance' },
     purposeOfPayment: 'Office supplies',
     payoutType: 0,
     comment: '',
@@ -71,13 +71,13 @@ describe('RequestDetailComponent', () => {
     vi.clearAllMocks();
     URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
     URL.revokeObjectURL = vi.fn();
-    costCentreServiceMock.getCostCentres.mockReturnValue(of({ items: [] }));
+    budgetServiceMock.getBudgets.mockReturnValue(of({ items: [] }));
 
     await TestBed.configureTestingModule({
       imports: [RequestDetailComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: serviceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: BudgetService, useValue: budgetServiceMock },
         { provide: ExternalNotificationService, useValue: externalNotificationMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: ActivatedRoute, useValue: routeMock },
@@ -120,13 +120,17 @@ describe('RequestDetailComponent', () => {
     });
   });
 
-  it('should load active cost centres on init', () => {
-    costCentreServiceMock.getCostCentres.mockReturnValue(
+  it('should load budgets for the invoice team on init', () => {
+    const budget = {
+      id: 9,
+      name: 'Operations 2026',
+      teamId: 3,
+      periodStart: '2026-01-01T00:00:00Z',
+      periodEnd: '2026-12-31T00:00:00Z',
+    };
+    budgetServiceMock.getBudgets.mockReturnValue(
       of({
-        items: [
-          { id: 1, name: 'Active' },
-          { id: 2, name: 'Inactive', isActive: false },
-        ],
+        items: [budget],
       }),
     );
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
@@ -134,8 +138,8 @@ describe('RequestDetailComponent', () => {
 
     component.ngOnInit();
 
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledWith({ Limit: 100 });
-    expect(component.costCentres).toEqual([{ id: 1, name: 'Active' }]);
+    expect(budgetServiceMock.getBudgets).toHaveBeenCalledWith({ TeamId: 3, Limit: 100 });
+    expect(component.budgets).toEqual([budget]);
   });
 
   it('should call downloadReceipt with the route id on init', () => {
@@ -258,11 +262,11 @@ describe('RequestDetailComponent', () => {
     serviceMock.approvePaymentRequestByUser.mockReturnValue(of({ id: 7 }));
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
 
-    component.onApprove({ costCentreId: 5, reason: 'ok' });
+    component.onApprove({ budgetId: 5, reason: 'valid reason' });
 
     expect(serviceMock.approvePaymentRequestByUser).toHaveBeenCalledWith(7, {
-      costCentreId: 5,
-      reason: 'ok',
+      budgetId: 5,
+      reason: 'valid reason',
     });
     expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
       IncludeUser: true,

@@ -2251,7 +2251,7 @@ export interface components {
     schemas: {
         ApprovePaymentRequestByUserDto: {
             /** Format: int32 */
-            costCentreId: number;
+            budgetId: number;
             reason?: string | null;
         };
         BankAccountDto: {

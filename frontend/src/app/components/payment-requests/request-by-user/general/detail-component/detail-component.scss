@@ -102,6 +102,12 @@
     min-height: 84px;
     resize: vertical;
   }
+
+  .field-error {
+    color: #b91c1c;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
 }
 
 .payment-grid {
@@ -133,6 +139,12 @@
   textarea {
     min-height: 84px;
     resize: vertical;
+  }
+
+  .field-error {
+    color: #b91c1c;
+    font-size: 0.875rem;
+    font-weight: 400;
   }
 }
 

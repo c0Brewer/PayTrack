@@ -346,7 +346,7 @@ describe('PaymentRequestByUserService', () => {
 
   it('should approve payment request', async () => {
     const apiResponse = { id: 1 } as PaymentRequestByUserDto;
-    const request = { costCentreId: 5, reason: 'ok' };
+    const request = { budgetId: 5, reason: 'approved' };
 
     vi.spyOn(client, 'POST').mockResolvedValue({
       data: apiResponse,
@@ -361,6 +361,23 @@ describe('PaymentRequestByUserService', () => {
       body: request,
     });
     expect(result).toEqual(apiResponse);
+  });
+
+  it('should expose backend validation messages for status changes', async () => {
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: null,
+      error: {
+        title: 'One or more validation errors occurred.',
+        errors: {
+          Reason: ['The field Reason must be a string with a minimum length of 3.'],
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await expect(
+      firstValueFrom(service.declinePaymentRequestByUser(1, { reason: 'no' })),
+    ).rejects.toThrow('minimum length of 3');
   });
 
   it('should decline payment request', async () => {

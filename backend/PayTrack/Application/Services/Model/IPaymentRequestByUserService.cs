@@ -136,13 +136,13 @@ namespace PayTrack.Application.Services.Model
         /// </summary>
         /// <param name="id">The id of the PaymentRequestByUser to approve.</param>
         /// <param name="changedById">Id of the user who changed the status.</param>
-        /// <param name="costCentreId">Cost centre assigned by finance.</param>
+        /// <param name="budgetId">Budget assigned by finance.</param>
         /// <param name="reason">Optional reason or comment.</param>
         /// <returns>Instance of updated PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
             int id,
             int changedById,
-            int costCentreId,
+            int budgetId,
             string? reason);
 
         /// <summary>
