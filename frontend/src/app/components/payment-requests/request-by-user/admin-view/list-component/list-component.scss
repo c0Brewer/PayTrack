@@ -65,6 +65,22 @@
         display: grid;
       }
 
+      .status-badge,
+      .user-col {
+        min-width: 0;
+        width: auto;
+      }
+
+      .status-badge .status {
+        justify-self: end;
+        max-width: min(14rem, 100%);
+      }
+
+      .user-col {
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+
       .actions-col {
         min-width: 0;
         width: 100%;
@@ -93,6 +109,7 @@
     justify-content: center;
     max-width: 100%;
     text-align: center;
+    word-break: normal;
     white-space: normal;
   }
   thead {
