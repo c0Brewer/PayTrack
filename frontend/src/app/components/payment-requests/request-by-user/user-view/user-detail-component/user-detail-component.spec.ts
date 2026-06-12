@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../../../types/exporter';
+import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { MyInvoiceDetailComponent } from './user-detail-component';
 
@@ -96,6 +96,73 @@ describe('MyInvoiceDetailComponent', () => {
     component.ngOnInit();
     expect(component.invoice).toEqual(mockInvoice);
     expect(component.loading).toBe(false);
+  });
+
+  it('should return the latest change request message for an invoice requiring changes', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.ChangesRequested,
+      statusHistory: [
+        {
+          fromStatus: TransactionStatus.Submitted,
+          toStatus: TransactionStatus.ChangesRequested,
+          changedById: 1,
+          changedAt: '2026-01-02T00:00:00Z',
+          comment: 'First request',
+        },
+        {
+          fromStatus: TransactionStatus.Review,
+          toStatus: TransactionStatus.ChangesRequested,
+          changedById: 1,
+          changedAt: '2026-01-03T00:00:00Z',
+          comment: 'Please upload the complete receipt',
+        },
+      ],
+    } as unknown as PaymentRequestByUserDto;
+
+    expect(component.latestChangeRequestMessage).toBe('Please upload the complete receipt');
+  });
+
+  it('should not return an old change request message when the invoice no longer requires changes', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+      statusHistory: [
+        {
+          fromStatus: TransactionStatus.Submitted,
+          toStatus: TransactionStatus.ChangesRequested,
+          changedById: 1,
+          changedAt: '2026-01-02T00:00:00Z',
+          comment: 'Old request',
+        },
+      ],
+    } as unknown as PaymentRequestByUserDto;
+
+    expect(component.latestChangeRequestMessage).toBeNull();
+  });
+
+  it('should render the latest change request message', () => {
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(
+      of({
+        ...mockInvoice,
+        status: TransactionStatus.ChangesRequested,
+        statusHistory: [
+          {
+            fromStatus: TransactionStatus.Submitted,
+            toStatus: TransactionStatus.ChangesRequested,
+            changedById: 1,
+            changedAt: '2026-01-02T00:00:00Z',
+            comment: 'Please upload the complete receipt',
+          },
+        ],
+      } as unknown as PaymentRequestByUserDto),
+    );
+
+    fixture.detectChanges();
+
+    const message = fixture.nativeElement.querySelector('.change-request-message');
+    expect(message).not.toBeNull();
+    expect(message.textContent).toContain('Please upload the complete receipt');
   });
 
   it('should show error and clear loading when invoice load fails', () => {
@@ -240,5 +307,24 @@ describe('MyInvoiceDetailComponent', () => {
   it('onBack navigates to /my-invoices', () => {
     component.onBack();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices']);
+  });
+
+  it('onEdit navigates to edit route when changes were requested', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.ChangesRequested,
+    } as PaymentRequestByUserDto;
+
+    component.onEdit();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 5, 'edit']);
+  });
+
+  it('onEdit does not navigate for other statuses', () => {
+    component.invoice = mockInvoice;
+
+    component.onEdit();
+
+    expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 });

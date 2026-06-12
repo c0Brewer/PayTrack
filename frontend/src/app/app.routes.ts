@@ -52,6 +52,11 @@ export const routes: Routes = [
     component: MyInvoiceDetailComponent,
   },
   {
+    path: 'my-invoices/:id/edit',
+    canActivate: [authGuard],
+    component: ReceiptSubmitComponent,
+  },
+  {
     path: 'submit',
     canActivate: [authGuard],
     component: ReceiptSubmitComponent,

@@ -285,6 +285,67 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
+        public async Task Resubmit_ReturnsOkAndUsesCurrentUser()
+        {
+            var user = new User { Id = 7, Role = Role.RegularUser };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = user.Id,
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Review
+            };
+            _factory.AuthServiceMock.Setup(service => service.GetCurrentUser()).ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(service => service.ResubmitPaymentRequestByUserAsync(
+                    1,
+                    user.Id,
+                    It.IsAny<int>(),
+                    It.IsAny<decimal>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<PayoutType>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<IFormFile?>()))
+                .ReturnsAsync(updated);
+
+            using var form = new MultipartFormDataContent
+            {
+                { new StringContent("2"), "Transaction.TeamId" },
+                { new StringContent("42"), "Transaction.Amount" },
+                { new StringContent("Travel"), "Transaction.PurposeOfPayment" },
+                { new StringContent("2026-05-01T00:00:00Z"), "Transaction.PaidAt" },
+                { new StringContent("INV-1"), "InvoiceNumber" },
+                { new StringContent("Corrected"), "Comment" },
+                { new StringContent(((int)PayoutType.External).ToString()), "PayoutType" },
+                { new StringContent("0"), "BankAccountId" }
+            };
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/resubmit", form);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, responseBody);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Review);
+            _factory.ServiceMock.Verify(service => service.ResubmitPaymentRequestByUserAsync(
+                1,
+                user.Id,
+                2,
+                42,
+                "Travel",
+                It.IsAny<DateTime>(),
+                "INV-1",
+                "Corrected",
+                PayoutType.External,
+                0,
+                null));
+        }
+
+        [Fact]
         public async Task Approve_ReturnsOk()
         {
             // Arrange

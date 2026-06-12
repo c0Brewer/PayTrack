@@ -1,3 +1,19 @@
+@if (latestChangeRequestMessage) {
+  <section class="change-request-message" aria-labelledby="change-request-title">
+    <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
+    <div>
+      <h2 id="change-request-title">Changes requested</h2>
+      <p>{{ latestChangeRequestMessage }}</p>
+    </div>
+  </section>
+  <div class="change-request-actions">
+    <button type="button" class="btn" (click)="onEdit()">
+      <span class="material-symbols-outlined">edit</span>
+      Edit Invoice
+    </button>
+  </div>
+}
+
 <app-invoice-detail-component
   [invoice]="invoice"
   [showUserName]="false"

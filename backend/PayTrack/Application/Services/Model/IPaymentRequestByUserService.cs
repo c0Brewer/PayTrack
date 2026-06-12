@@ -88,6 +88,34 @@ namespace PayTrack.Application.Services.Model
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
 
         /// <summary>
+        /// Updates an invoice after changes were requested and returns it to finance review.
+        /// </summary>
+        /// <param name="id">The invoice id.</param>
+        /// <param name="userId">The id of the user resubmitting the invoice.</param>
+        /// <param name="teamId">The selected team id.</param>
+        /// <param name="amount">The updated amount.</param>
+        /// <param name="purposeOfPayment">The updated purpose of payment.</param>
+        /// <param name="paidAt">The updated invoice date.</param>
+        /// <param name="invoiceNumber">The updated invoice number.</param>
+        /// <param name="comment">The updated optional comment.</param>
+        /// <param name="payoutType">The updated payout type.</param>
+        /// <param name="bankAccountId">The updated optional bank account id.</param>
+        /// <param name="receipt">An optional replacement receipt.</param>
+        /// <returns>The updated invoice in review.</returns>
+        Task<PaymentRequestByUser> ResubmitPaymentRequestByUserAsync(
+            int id,
+            int userId,
+            int teamId,
+            decimal amount,
+            string purposeOfPayment,
+            DateTime paidAt,
+            string invoiceNumber,
+            string? comment,
+            PayoutType payoutType,
+            int? bankAccountId,
+            IFormFile? receipt);
+
+        /// <summary>
         /// Marks a PaymentRequestByUser as paid and stores the status history entry.
         /// </summary>
         /// <param name="id">The id of the PaymentRequestByUser to mark as paid.</param>

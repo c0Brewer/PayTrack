@@ -5,7 +5,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { Role, UserDto } from '../../../types/exporter';
+import { Role, TransactionStatus, UserDto } from '../../../types/exporter';
 
 import { NavbarComponent } from './navbar-component';
 
@@ -104,5 +104,34 @@ describe('NavbarComponent', () => {
     });
 
     expect(component.hasNoBankAccounts).toBe(false);
+  });
+
+  it('should show the number of invoices with requested changes in the navigation', async () => {
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ totalCount: 3 }));
+    fixture.detectChanges();
+
+    authServiceMock.currentUser$.next({
+      id: 7,
+      name: 'Test User',
+      email: 'test@example.com',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+      team: { id: 1, name: 'Team' },
+      bankInformationSkipped: false,
+      hasBankInformation: false,
+      bankAccounts: [],
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith({
+      Status: TransactionStatus.ChangesRequested,
+      UserId: 7,
+      Limit: 1,
+    });
+
+    const myInvoicesLink = fixture.nativeElement.querySelector('a[href="/my-invoices"]');
+    expect(myInvoicesLink.querySelector('.nav-badge').textContent.trim()).toBe('3');
   });
 });

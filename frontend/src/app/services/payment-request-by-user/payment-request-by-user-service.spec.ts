@@ -103,6 +103,41 @@ describe('PaymentRequestByUserService', () => {
     );
   });
 
+  it('should resubmit an edited payment request via fetch', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: 'corrected',
+      receipt: '',
+      payoutType: 1,
+      bankAccountId: 0,
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'corrected purpose',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+    const apiResponse = { id: 7 } as PaymentRequestByUserDto;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    const result = await firstValueFrom(service.resubmitPaymentRequestByUser(7, dto, null));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/7/resubmit', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/7/resubmit';
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: { Authorization: 'Bearer test-token' },
+      }),
+    );
+    expect(result).toEqual(apiResponse);
+  });
+
   // -----------------------
   // GET LIST
   // -----------------------

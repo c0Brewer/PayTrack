@@ -2,14 +2,14 @@
 
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../../services/team/team-service';
-import { PayoutType } from '../../../../types/exporter';
+import { PaymentRequestByUserDto, PayoutType, TransactionStatus } from '../../../../types/exporter';
 
 import { ReceiptSubmitComponent } from './submission-component';
 
@@ -19,6 +19,8 @@ describe('ReceiptSubmitComponent', () => {
   const paymentServiceMock = {
     createPaymentRequestByUser: vi.fn(),
     getDuplicatePaymentRequestsByUser: vi.fn(),
+    getPaymentRequestsByUserById: vi.fn(),
+    resubmitPaymentRequestByUser: vi.fn(),
   };
 
   const teamServiceMock = {
@@ -38,6 +40,12 @@ describe('ReceiptSubmitComponent', () => {
     navigate: vi.fn(),
   };
 
+  const routeMock = {
+    snapshot: {
+      paramMap: convertToParamMap({}),
+    },
+  };
+
   const setValidFormValues = (): void => {
     component.form.setValue({
       invoiceNumber: 'INV-1',
@@ -55,6 +63,8 @@ describe('ReceiptSubmitComponent', () => {
   beforeEach(async () => {
     paymentServiceMock.createPaymentRequestByUser.mockReset();
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReset();
+    paymentServiceMock.getPaymentRequestsByUserById.mockReset();
+    paymentServiceMock.resubmitPaymentRequestByUser.mockReset();
     teamServiceMock.getTeams.mockReset();
     bankAccountServiceMock.getBankAccounts.mockReset();
     notificationMock.showSuccess.mockReset();
@@ -64,6 +74,7 @@ describe('ReceiptSubmitComponent', () => {
     teamServiceMock.getTeams.mockReturnValue(of({ items: [] }));
     bankAccountServiceMock.getBankAccounts.mockReturnValue(of([]));
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
+    routeMock.snapshot.paramMap = convertToParamMap({});
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
@@ -72,6 +83,7 @@ describe('ReceiptSubmitComponent', () => {
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
@@ -438,5 +450,66 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
+  });
+
+  it('should load and prefill an invoice with requested changes in edit mode', () => {
+    routeMock.snapshot.paramMap = convertToParamMap({ id: '7' });
+    paymentServiceMock.getPaymentRequestsByUserById.mockReturnValue(
+      of({
+        id: 7,
+        invoiceNumber: 'INV-7',
+        comment: 'Updated note',
+        payoutType: PayoutType.External,
+        team: { id: 2, name: 'Team' },
+        amount: 42,
+        purposeOfPayment: 'Travel',
+        paidAt: '2026-05-01T00:00:00Z',
+        status: TransactionStatus.ChangesRequested,
+        statusHistory: [
+          {
+            fromStatus: TransactionStatus.Submitted,
+            toStatus: TransactionStatus.ChangesRequested,
+            changedById: 1,
+            changedAt: '2026-05-02T00:00:00Z',
+            comment: 'Please correct the amount',
+          },
+        ],
+      } as unknown as PaymentRequestByUserDto),
+    );
+
+    component.ngOnInit();
+
+    expect(component.isEditMode).toBe(true);
+    expect(component.form.get('invoiceNumber')?.value).toBe('INV-7');
+    expect(component.form.get('receipt')?.hasError('required')).toBe(false);
+    expect(component.changeRequestMessage).toBe('Please correct the amount');
+  });
+
+  it('should resubmit an edited invoice without requiring a replacement receipt', () => {
+    component.ngOnInit();
+    component.isEditMode = true;
+    component.editingInvoiceId = 7;
+    component.form.get('receipt')?.clearValidators();
+    component.form.get('receipt')?.updateValueAndValidity();
+    setValidFormValues();
+    component.form.get('receipt')?.setValue(null);
+    paymentServiceMock.resubmitPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.resubmitPaymentRequestByUser).toHaveBeenCalledWith(
+      7,
+      expect.any(Object),
+      null,
+    );
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 7]);
+  });
+
+  it('should navigate back to invoice detail when editing is cancelled', () => {
+    component.editingInvoiceId = 7;
+
+    component.onCancelEdit();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 7]);
   });
 });

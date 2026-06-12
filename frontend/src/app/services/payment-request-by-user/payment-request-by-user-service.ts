@@ -36,6 +36,11 @@ export class PaymentRequestByUserService {
     return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
   }
 
+  private getResubmitUrl(id: number): string {
+    const path = `/api/v1/transaction/user/${id}/resubmit`;
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   public getPaymentRequestsByUser(
     queryOptions: GetPaymentRequestsByUserOptions,
   ): Observable<PaginatedPaymentRequestByUserDto> {
@@ -99,6 +104,42 @@ export class PaymentRequestByUserService {
       headers: {
         // NOTE: do NOT set Content-Type here — browser sets it with the boundary
         Authorization: `Bearer ${this.authService.getToken()}`, // however you handle auth
+      },
+      body: fd,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.json() as Promise<PaymentRequestByUserDto>;
+    });
+
+    return from(promise);
+  }
+
+  public resubmitPaymentRequestByUser(
+    id: number,
+    updateRequest: CreatePaymentRequestByUserDto,
+    file: File | null,
+  ): Observable<PaymentRequestByUserDto> {
+    const fd = new FormData();
+
+    if (file) fd.append('receipt', file);
+    fd.append('invoiceNumber', updateRequest.invoiceNumber);
+    fd.append('comment', updateRequest.comment ?? '');
+    fd.append('payoutType', String(updateRequest.payoutType));
+    if (updateRequest.bankAccountId != null) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
+    fd.append('transaction.amount', String(updateRequest.transaction.amount));
+    fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
+    fd.append('transaction.paidAt', updateRequest.transaction.paidAt);
+
+    const promise = fetch(this.getResubmitUrl(id), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
       },
       body: fd,
     }).then(async (res) => {

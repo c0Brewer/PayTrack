@@ -36,6 +36,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin);
 
+            group.MapPost("/user/{id:int}/resubmit", PaymentRequestByUserHandler.ResubmitPaymentRequestByUserAsync)
+                .DisableAntiforgery();
+
             group.MapPost("/user/{id:int}/mark-paid", PaymentRequestByUserHandler.MarkPaymentRequestByUserAsPaidAsync)
                 .RequireRole(Role.Admin);
 

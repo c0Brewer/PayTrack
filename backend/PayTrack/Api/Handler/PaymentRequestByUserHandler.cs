@@ -265,6 +265,41 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Updates an invoice after requested changes and returns it to finance review.
+        /// </summary>
+        /// <param name="id">Id of the invoice to resubmit.</param>
+        /// <param name="resubmitDto">Updated invoice data.</param>
+        /// <param name="receipt">Optional replacement receipt.</param>
+        /// <param name="authService">Dependency-injected authentication service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-injected invoice service.</param>
+        /// <returns>The updated invoice.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> ResubmitPaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromForm] ResubmitPaymentRequestByUserDto resubmitDto,
+            [FromForm] IFormFile? receipt,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser()
+                ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.ResubmitPaymentRequestByUserAsync(
+                id,
+                currentUser.Id,
+                resubmitDto.Transaction.TeamId,
+                resubmitDto.Transaction.Amount,
+                resubmitDto.Transaction.PurposeOfPayment,
+                resubmitDto.Transaction.PaidAt,
+                resubmitDto.InvoiceNumber,
+                resubmitDto.Comment,
+                resubmitDto.PayoutType,
+                resubmitDto.BankAccountId,
+                receipt);
+
+            return TypedResults.Ok(PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser));
+        }
+
+        /// <summary>
         /// Undoes the latest status change for a PaymentRequestByUser.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to update.</param>

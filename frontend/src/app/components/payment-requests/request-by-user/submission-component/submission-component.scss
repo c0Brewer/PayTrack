@@ -1,22 +1,21 @@
 @use 'variables' as v;
 
-
-#invoice-page{
+#invoice-page {
   p:first-of-type {
     color: v.$TUR-primary-grey;
     font-size: 1.2rem;
   }
 }
 
-.form-actions{
+.form-actions {
   display: flex;
   justify-content: flex-end;
-  button{
+  button {
     background-color: rgb(235 106 0);
     color: white;
     font-size: 1.2rem;
   }
-  button:hover{
+  button:hover {
     cursor: pointer;
     background-color: rgb(214 98 2);
   }
@@ -34,10 +33,10 @@
   line-height: 1;
 }
 
-.input-wrapper{
+.input-wrapper {
   input,
   select,
-  textarea{
+  textarea {
     width: 100%;
     border: 1px solid white;
     background-color: v.$TUR-secondary-background;
@@ -46,7 +45,9 @@
     border-radius: 0.2rem;
     font-size: 1rem;
   }
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     border-color: v.$TUR-primary-orange;
     box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
     outline: none;
@@ -59,17 +60,15 @@
     resize: vertical;
   }
 
-
-  label{
-    .required{
+  label {
+    .required {
       color: #ef4444;
     }
     margin-top: 0.5rem;
   }
-
 }
 
-.error-msg{
+.error-msg {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -199,7 +198,7 @@
   display: flex;
   justify-content: space-between;
 
-  button{
+  button {
     align-items: center;
     display: inline-flex;
     gap: 0.45rem;
@@ -207,7 +206,7 @@
     color: v.$TUR-primary-orange;
     background-color: transparent;
   }
-  button:hover{
+  button:hover {
     cursor: pointer;
     color: #b85402;
   }
@@ -379,5 +378,24 @@
   &:hover {
     background: #b85402;
     cursor: pointer;
+  }
+}
+.change-request-message {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #d97706;
+  border-radius: 4px;
+  background: #fffbeb;
+  color: #78350f;
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 1rem;
   }
 }

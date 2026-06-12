@@ -1329,6 +1329,145 @@ namespace PayTrack.Tests.UnitTests.Services
             service.ValidateAccessToInvoice(invoice, user).Should().BeFalse();
         }
 
+        [Fact]
+        public async Task Resubmit_ShouldUpdateInvoiceAndReturnItToReview()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var invoice = new PaymentRequestByUser
+            {
+                Id = 7,
+                UserId = 5,
+                InvoiceNumber = "OLD",
+                Status = TransactionStatus.ChangesRequested,
+                ReceiptUrl = "existing.pdf"
+            };
+
+            repoMock
+                .Setup(repository => repository.GetByIdAsync(
+                    7,
+                    It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(invoice);
+            repoMock
+                .Setup(repository => repository.UpdateAsync(invoice))
+                .ReturnsAsync(invoice);
+            teamMock
+                .Setup(service => service.GetTeamByIdAsync(2))
+                .ReturnsAsync(new Team { Id = 2 });
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                teamMock.Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            var result = await service.ResubmitPaymentRequestByUserAsync(
+                7,
+                5,
+                2,
+                42,
+                "Travel",
+                DateTime.Today,
+                "INV-7",
+                "Updated",
+                PayoutType.External,
+                null,
+                null);
+
+            result.Status.Should().Be(TransactionStatus.Review);
+            result.Amount.Should().Be(42);
+            result.InvoiceNumber.Should().Be("INV-7");
+            result.ReceiptUrl.Should().Be("existing.pdf");
+            result.StatusHistory.Should().ContainSingle(entry =>
+                entry.FromStatus == TransactionStatus.ChangesRequested
+                && entry.ToStatus == TransactionStatus.Review
+                && entry.ChangedById == 5);
+        }
+
+        [Fact]
+        public async Task Resubmit_ShouldRejectNonOwner()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var invoice = new PaymentRequestByUser
+            {
+                Id = 7,
+                UserId = 99,
+                InvoiceNumber = "INV-7",
+                Status = TransactionStatus.ChangesRequested
+            };
+            repoMock
+                .Setup(repository => repository.GetByIdAsync(
+                    7,
+                    It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(invoice);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            Func<Task> act = async () => await service.ResubmitPaymentRequestByUserAsync(
+                7,
+                5,
+                2,
+                42,
+                "Travel",
+                DateTime.Today,
+                "INV-7",
+                null,
+                PayoutType.External,
+                null,
+                null);
+
+            await act.Should().ThrowAsync<ForbiddenException>();
+        }
+
+        [Fact]
+        public async Task Resubmit_ShouldRejectInvoiceWithoutRequestedChanges()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var invoice = new PaymentRequestByUser
+            {
+                Id = 7,
+                UserId = 5,
+                InvoiceNumber = "INV-7",
+                Status = TransactionStatus.Submitted
+            };
+            repoMock
+                .Setup(repository => repository.GetByIdAsync(
+                    7,
+                    It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(invoice);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object);
+
+            Func<Task> act = async () => await service.ResubmitPaymentRequestByUserAsync(
+                7,
+                5,
+                2,
+                42,
+                "Travel",
+                DateTime.Today,
+                "INV-7",
+                null,
+                PayoutType.External,
+                null,
+                null);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
+        }
+
         private static PaymentRequestByUserService BuildService()
         {
             return new PaymentRequestByUserService(

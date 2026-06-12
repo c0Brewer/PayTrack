@@ -22,6 +22,7 @@ export class NavbarComponent {
   protected readonly mobileMenuOpen = signal(false);
   protected readonly submittedCount = signal(0);
   protected readonly teamRequestCount = signal(0);
+  protected readonly invoiceChangesRequestedCount = signal(0);
   public hasNoBankAccounts = false;
 
   constructor(
@@ -65,6 +66,23 @@ export class NavbarComponent {
       )
       .subscribe({
         next: (result) => this.teamRequestCount.set(result?.totalCount ?? 0),
+        error: () => {},
+      });
+
+    this.currentUser$
+      .pipe(
+        filter((user) => !!user),
+        take(1),
+        switchMap((user) =>
+          this.paymentRequestService.getPaymentRequestsByUser({
+            Status: TransactionStatus.ChangesRequested,
+            UserId: user!.id,
+            Limit: 1,
+          }),
+        ),
+      )
+      .subscribe({
+        next: (result) => this.invoiceChangesRequestedCount.set(result?.totalCount ?? 0),
         error: () => {},
       });
   }

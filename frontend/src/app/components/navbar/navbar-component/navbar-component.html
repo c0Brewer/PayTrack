@@ -48,6 +48,9 @@
           (click)="closeMobileMenu()"
           ><span class="material-symbols-outlined">description</span>
           My Invoices
+          @if (invoiceChangesRequestedCount() > 0) {
+            <span class="nav-badge">{{ invoiceChangesRequestedCount() }}</span>
+          }
         </a>
         <a
           routerLink="/my-team-requests"
@@ -75,7 +78,11 @@
             <span class="material-symbols-outlined">manage_accounts</span>
             Cost Centre Management</a
           >
-          <a routerLink="/create-payment-request" routerLinkActive="is-active" (click)="closeMobileMenu()">
+          <a
+            routerLink="/create-payment-request"
+            routerLinkActive="is-active"
+            (click)="closeMobileMenu()"
+          >
             <span class="material-symbols-outlined">add_card</span>
             Create Payment Request</a
           >
@@ -83,7 +90,11 @@
             <span class="material-symbols-outlined">calendar_month</span>
             Season Management</a
           >
-          <a routerLink="/payment-requests-by-team" routerLinkActive="is-active" (click)="closeMobileMenu()">
+          <a
+            routerLink="/payment-requests-by-team"
+            routerLinkActive="is-active"
+            (click)="closeMobileMenu()"
+          >
             <span class="material-symbols-outlined">receipt_long</span>
             View Payment Requests</a
           >

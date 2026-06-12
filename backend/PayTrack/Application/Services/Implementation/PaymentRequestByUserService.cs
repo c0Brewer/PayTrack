@@ -324,6 +324,88 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> ResubmitPaymentRequestByUserAsync(
+            int id,
+            int userId,
+            int teamId,
+            decimal amount,
+            string purposeOfPayment,
+            DateTime paidAt,
+            string invoiceNumber,
+            string? comment,
+            PayoutType payoutType,
+            int? bankAccountId,
+            IFormFile? receipt)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (transaction.UserId != userId)
+            {
+                throw new ForbiddenException("You do not have permission to edit this invoice.");
+            }
+
+            if (transaction.Status != TransactionStatus.ChangesRequested)
+            {
+                throw new InvalidStateException("Only invoices with requested changes can be edited");
+            }
+
+            var team = await this.teamService.GetTeamByIdAsync(teamId)
+                ?? throw new NotFoundException("Team could not be found");
+
+            if (paidAt.Date > DateTime.Today)
+            {
+                throw new InvalidStateException("Paid at cannot be in the future!");
+            }
+
+            if (payoutType == PayoutType.User)
+            {
+                if (!bankAccountId.HasValue)
+                {
+                    throw new InvalidStateException("If the money should be paid out to you, you must specify a bankAccount");
+                }
+
+                var bankAccounts = await this.bankAccountService.GetBankAccountsAsync(userId)
+                    ?? throw new NotFoundException("Bank Accounts could not be found");
+
+                if (!bankAccounts.Any(bankAccount => bankAccount.Id == bankAccountId.Value))
+                {
+                    throw new InvalidStateException("Could not find specified bank account");
+                }
+            }
+            else
+            {
+                bankAccountId = null;
+            }
+
+            transaction.TeamId = team.Id;
+            transaction.Amount = amount;
+            transaction.PurposeOfPayment = purposeOfPayment;
+            transaction.PaidAt = paidAt.ToUniversalTime();
+            transaction.InvoiceNumber = invoiceNumber;
+            transaction.Comment = comment;
+            transaction.PayoutType = payoutType;
+            transaction.BankAccountId = bankAccountId;
+
+            if (receipt != null)
+            {
+                transaction.ReceiptUrl = await this.fileRepo.SaveFile(
+                    receipt,
+                    $"invoice_{transaction.InvoiceNumber}_{DateTime.UtcNow:yyyyMMdd_HHmmss}");
+            }
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Review,
+                userId,
+                "Invoice resubmitted after requested changes");
+
+            return await this.repo.UpdateAsync(transaction);
+        }
+
+        /// <inheritdoc/>
         public async Task<PaymentRequestByUser> UndoLastStatusChangeAsync(
             int id,
             int changedById)
