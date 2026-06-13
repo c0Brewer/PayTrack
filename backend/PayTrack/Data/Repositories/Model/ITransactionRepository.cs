@@ -96,6 +96,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="paidAt">Paid-at day.</param>
         /// <param name="invoiceNumber">Optional invoice number.</param>
         /// <param name="paymentRequestByUserId">Optional source payment request id. Dismissed pairs with this id are excluded.</param>
+        /// <param name="includeOtherUsers">Whether candidates from other users may be returned.</param>
         /// <returns>List of potential duplicate candidates.</returns>
         Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(
             int userId,
@@ -103,7 +104,8 @@ namespace PayTrack.Data.Repositories.Model
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null);
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false);
 
         /// <summary>
         /// Updates a PaymentRequestByUser using the given input.
