@@ -42,6 +42,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IHomeDashboardService, HomeDashboardService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
@@ -188,6 +189,7 @@ var apiV1 = app
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
+apiV1.MapDashboardEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
