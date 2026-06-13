@@ -48,7 +48,9 @@ export class SystemSettingService {
     );
   }
 
-  updateNotificationChannelGroups(dto: UpdateNotificationChannelGroupsRequestDto): Observable<void> {
+  updateNotificationChannelGroups(
+    dto: UpdateNotificationChannelGroupsRequestDto,
+  ): Observable<void> {
     return from(
       this.raw.PUT(`${BASE}/notification-channels`, { body: dto }).then(({ error }) => {
         if (error) throw new Error(error.detail ?? 'Failed to update notification channels');

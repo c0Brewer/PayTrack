@@ -168,5 +168,10 @@ export type NotificationChannelGroupsDto = {
   reminders: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
-export type ReminderScheduleDto = { daysBeforeDue: number[]; runAtHourUtc: number; runAtMinuteUtc: number; emailDelayMs: number };
+export type ReminderScheduleDto = {
+  daysBeforeDue: number[];
+  runAtHourUtc: number;
+  runAtMinuteUtc: number;
+  emailDelayMs: number;
+};
 export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;

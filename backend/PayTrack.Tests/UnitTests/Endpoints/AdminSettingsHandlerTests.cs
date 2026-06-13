@@ -72,6 +72,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         [Fact]
         public async Task UpdateCsvColumns_CallsServiceWithCorrectArguments()
         {
+            this.factory.ServiceMock.Invocations.Clear();
+
             this.factory.ServiceMock
                 .Setup(s => s.UpdateCsvColumnSettingsAsync(It.IsAny<UpdateCsvColumnSettingsRequestDto>(), It.IsAny<int>()))
                 .Returns(Task.CompletedTask);
@@ -139,7 +141,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         {
             this.factory.ServiceMock
                 .Setup(s => s.GetReminderScheduleAsync())
-                .ReturnsAsync(new ReminderScheduleDto([7, 2, 1], 8));
+                .ReturnsAsync(new ReminderScheduleDto([7, 2, 1], 8, 0, 500));
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -165,7 +167,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var response = await client.PutAsJsonAsync(
                 "api/v1/admin/settings/reminder-schedule",
-                new UpdateReminderScheduleRequestDto([7, 2, 1], 10));
+                new UpdateReminderScheduleRequestDto([7, 2, 1], 10, 0, 500));
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
@@ -178,7 +180,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var response = await client.PutAsJsonAsync(
                 "api/v1/admin/settings/reminder-schedule",
-                new UpdateReminderScheduleRequestDto([7], 99));
+                new UpdateReminderScheduleRequestDto([7], 99, 0, 500));
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }

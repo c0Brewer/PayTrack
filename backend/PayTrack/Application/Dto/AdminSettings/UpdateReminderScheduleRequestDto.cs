@@ -13,7 +13,7 @@ namespace PayTrack.Application.Dto.AdminSettings
     [ExcludeFromCodeCoverage]
     public record UpdateReminderScheduleRequestDto(
         [Required] int[] DaysBeforeDue,
-        [Required][Range(0, 23)] int RunAtHourUtc,
-        [Required][Range(0, 59)] int RunAtMinuteUtc,
-        [Required][Range(0, int.MaxValue)] int EmailDelayMs);
+        [Required][property: Range(0, 23)] int RunAtHourUtc,
+        [Required][property: Range(0, 59)] int RunAtMinuteUtc,
+        [Required][property: Range(0, int.MaxValue)] int EmailDelayMs);
 }

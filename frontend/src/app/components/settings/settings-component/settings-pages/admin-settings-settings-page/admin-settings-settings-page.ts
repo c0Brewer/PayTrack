@@ -53,7 +53,12 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     );
   }
 
-  reminderSettings: ReminderScheduleDto = { daysBeforeDue: [7, 2, 1], runAtHourUtc: 8, runAtMinuteUtc: 0, emailDelayMs: 500 };
+  reminderSettings: ReminderScheduleDto = {
+    daysBeforeDue: [7, 2, 1],
+    runAtHourUtc: 8,
+    runAtMinuteUtc: 0,
+    emailDelayMs: 500,
+  };
   reminderDaysInput = '7, 2, 1';
   reminderTimeInput = '08:00';
   reminderEmailDelayInput = 500;
@@ -84,7 +89,9 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
     const valid = parts.length > 0 && parts.every((s) => /^\d+$/.test(s) && parseInt(s, 10) >= 0);
-    this.reminderDaysError = valid ? '' : 'Enter one or more non-negative integers, separated by commas.';
+    this.reminderDaysError = valid
+      ? ''
+      : 'Enter one or more non-negative integers, separated by commas.';
   }
 
   private validateReminderTime(): void {
@@ -238,16 +245,19 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     this.validateReminderEmailDelay();
     if (this.reminderDaysError || this.reminderTimeError || this.reminderEmailDelayError) return;
 
-    const days = this.reminderDaysInput
-      .split(',')
-      .map((s) => parseInt(s.trim(), 10));
+    const days = this.reminderDaysInput.split(',').map((s) => parseInt(s.trim(), 10));
     const [hourStr, minuteStr] = this.reminderTimeInput.split(':');
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
 
     this.reminderSaving = true;
     this.systemSettingService
-      .updateReminderSchedule({ daysBeforeDue: days, runAtHourUtc: hour, runAtMinuteUtc: minute, emailDelayMs: this.reminderEmailDelayInput })
+      .updateReminderSchedule({
+        daysBeforeDue: days,
+        runAtHourUtc: hour,
+        runAtMinuteUtc: minute,
+        emailDelayMs: this.reminderEmailDelayInput,
+      })
       .subscribe({
         next: () => {
           this.reminderSettings.daysBeforeDue = days;
