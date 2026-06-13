@@ -1,12 +1,6 @@
 @use 'variables' as v;
 
 
-#invoice-page{
-  p:first-of-type {
-    color: v.$TUR-primary-grey;
-    font-size: 1.2rem;
-  }
-}
 
 .offline-queue {
   display: flex;

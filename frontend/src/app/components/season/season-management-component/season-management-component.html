@@ -1,5 +1,10 @@
 <div class="main-page-container season-management">
-  <h2 class="m-0">Season Management</h2>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Season Management</h1>
+    <p class="mb-0 text-body-secondary">
+      Manage reimbursement seasons and control when they are active.
+    </p>
+  </div>
   <app-season-form-component (createSeason)="createSeason($event)" />
   <app-season-list-component [seasons]="seasons" />
 </div>

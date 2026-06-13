@@ -1,6 +1,10 @@
-<div id="payment-request-page">
-  <h1>Create Payment Request</h1>
-  <p>Assign a payment request to a user on behalf of the finance team.</p>
+<div id="payment-request-page" class="main-page-container">
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Create Payment Request</h1>
+    <p class="mb-0 text-body-secondary">
+      Assign a payment request to a user on behalf of the finance team.
+    </p>
+  </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <div class="row gx-4 gx-xl-5 gy-4 mt-1">

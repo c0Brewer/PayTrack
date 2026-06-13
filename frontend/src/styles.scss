@@ -565,6 +565,12 @@ textarea:focus,
 }
 
 
+.main-page-container{
+  p:first-of-type {
+    color: v.$TUR-primary-grey;
+    font-size: 1.2rem;
+  }
+}
 
 
 /* filter toolbar*/
