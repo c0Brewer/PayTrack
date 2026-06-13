@@ -134,9 +134,6 @@
                 type="button"
                 class="duplicate-list__button"
                 appDisableOfflineAction
-                [disabled]="
-                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
-                "
                 [disabled]="isDuplicateActionPending(duplicate)"
                 (click)="onDismissDuplicate(duplicate)"
               >
@@ -146,10 +143,6 @@
                 type="button"
                 class="duplicate-list__button duplicate-list__button--danger"
                 appDisableOfflineAction
-                [disabled]="
-                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
-                "
-                (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
                 [disabled]="!getSelectedInvoice(duplicate) || isDuplicateActionPending(duplicate)"
                 (click)="onRequestDeleteSelectedInvoice(duplicate)"
               >

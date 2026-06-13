@@ -496,24 +496,6 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.form.get('receipt')?.setErrors(null);
     this.form.markAsPristine();
     this.changeDetectorRef.detectChanges();
-          this.form.reset();
-          this.selectedFile = null;
-          this.selectedFileName = '';
-          this.duplicateCandidates = [];
-          this.duplicateSourceInvoice = null;
-          this.isDuplicateModalOpen = false;
-          this.pendingSubmissionPayload = null;
-          this.pendingSubmissionFile = null;
-          this.isSubmitting = false;
-          this.changeDetectorRef.detectChanges();
-          this.router.navigate(['/']);
-        },
-        error: (err: Error) => {
-          this.notificationService.showError(err.message ?? 'Submission failed.');
-          this.isSubmitting = false;
-          this.changeDetectorRef.detectChanges();
-        },
-      });
   }
 
   toPayoutType(value: unknown): PayoutType | null {
