@@ -165,10 +165,26 @@
             </div>
           }
         </a>
-        <button class="sidebar__logout" (click)="logout()">
+        <button class="sidebar__logout" (click)="openSignOutModal()">
           <span class="material-symbols-outlined">logout</span> Sign Out
         </button>
       </div>
     </div>
   </nav>
+
+  @if (signOutModalOpen()) {
+    <app-modal-component title="Sign Out" icon="logout" (closeEvent)="closeSignOutModal()">
+      <p class="signout-modal__text">Are you sure you want to sign out?</p>
+
+      <div class="signout-modal__actions">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="closeSignOutModal()">
+          <span class="material-symbols-outlined">cancel</span>
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="logout()">
+          <span class="material-symbols-outlined">logout</span>
+          Sign Out</button>
+      </div>
+    </app-modal-component>
+  }
 }

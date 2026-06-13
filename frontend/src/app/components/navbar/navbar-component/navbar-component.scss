@@ -213,6 +213,16 @@
   line-height: 1;
 }
 
+.signout-modal__text {
+  margin: 0 0 v.$size-m;
+}
+
+.signout-modal__actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
+}
+
 @media (max-width: 767.98px) {
   .sidebar {
     align-items: stretch;

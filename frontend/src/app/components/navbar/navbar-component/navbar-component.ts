@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith, switchMap, take } from 'rxjs';
 
+import { ModalComponent } from '../../general/modal-component/modal-component';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
@@ -11,7 +12,7 @@ import { Role, TransactionStatus } from '../../../types/exporter';
 
 @Component({
   selector: 'app-navbar-component',
-  imports: [AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [AsyncPipe, ModalComponent, RouterLink, RouterLinkActive],
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })
@@ -22,6 +23,7 @@ export class NavbarComponent {
   protected readonly mobileMenuOpen = signal(false);
   protected readonly managementMenuOpen = signal(false);
   protected readonly requestsMenuOpen = signal(false);
+  protected readonly signOutModalOpen = signal(false);
   protected readonly currentUrl = signal('');
   protected readonly submittedCount = signal(0);
   protected readonly teamRequestCount = signal(0);
@@ -102,6 +104,14 @@ export class NavbarComponent {
     this.requestsMenuOpen.update((isOpen) => !isOpen);
   }
 
+  openSignOutModal(): void {
+    this.signOutModalOpen.set(true);
+  }
+
+  closeSignOutModal(): void {
+    this.signOutModalOpen.set(false);
+  }
+
   isManagementMenuExpanded(): boolean {
     return this.managementMenuOpen() || this.isManagementRouteActive();
   }
@@ -130,6 +140,7 @@ export class NavbarComponent {
   }
 
   logout(): void {
+    this.closeSignOutModal();
     this.closeMobileMenu();
     this.authService.logout();
   }
