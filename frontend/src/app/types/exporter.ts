@@ -157,3 +157,16 @@ export type BankStatementMatchResponseDto = components['schemas']['BankStatement
 export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
 export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];
 export type TransactionDto = components['schemas']['TransactionDto'];
+
+// Admin Settings
+export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
+export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelGroupsDto = {
+  creation: NotificationChannelDto;
+  confirmation: NotificationChannelDto;
+  reminders: NotificationChannelDto;
+};
+export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
+export type ReminderScheduleDto = { daysBeforeDue: number[]; runAtHourUtc: number; runAtMinuteUtc: number; emailDelayMs: number };
+export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;

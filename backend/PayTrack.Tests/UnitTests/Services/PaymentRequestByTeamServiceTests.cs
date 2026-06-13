@@ -1,12 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Services.Model;
-using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -20,10 +18,27 @@ namespace PayTrack.Tests.UnitTests.Services
             Mock<IUserService> userMock,
             Mock<IBudgetService> budgetMock,
             Mock<INotificationDispatchService>? notificationsMock = null,
-            PaymentRequestNotificationSettings? notifSettings = null)
+            bool creationEmail = true,
+            bool creationSlack = false,
+            bool confirmationEmail = true,
+            bool confirmationSlack = false)
         {
             notificationsMock ??= new Mock<INotificationDispatchService>();
-            var settings = Options.Create(notifSettings ?? new PaymentRequestNotificationSettings());
+
+            var systemSettingsMock = new Mock<ISystemSettingService>();
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, It.IsAny<bool>()))
+                .ReturnsAsync(creationEmail);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, It.IsAny<bool>()))
+                .ReturnsAsync(creationSlack);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, It.IsAny<bool>()))
+                .ReturnsAsync(confirmationEmail);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, It.IsAny<bool>()))
+                .ReturnsAsync(confirmationSlack);
+
             var logger = new Mock<ILogger<PaymentRequestByTeamService>>();
             return new PaymentRequestByTeamService(
                 repoMock.Object,
@@ -31,7 +46,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 userMock.Object,
                 budgetMock.Object,
                 notificationsMock.Object,
-                settings,
+                systemSettingsMock.Object,
                 logger.Object);
         }
 
@@ -764,12 +779,7 @@ namespace PayTrack.Tests.UnitTests.Services
             userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(creatingUser);
             repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam());
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, creationEmail: false, creationSlack: true);
 
             await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
 
@@ -823,12 +833,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Slack error"));
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnCreation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, creationEmail: false, creationSlack: true);
 
             var result = await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "test", DateTime.Today.AddDays(7));
 
@@ -891,12 +896,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
                 .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, confirmationEmail: false, confirmationSlack: true);
 
             await service.MarkAsPaidAsync(5, 42, null);
 
@@ -970,12 +970,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Slack error"));
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnConfirmation = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, confirmationEmail: false, confirmationSlack: true);
 
             var result = await service.MarkAsPaidAsync(5, 42, null);
 

@@ -1,0 +1,179 @@
+@use 'variables' as v;
+
+.admin-settings {
+  &__state {
+    color: v.$text-muted;
+    font-size: v.$font-xs;
+    padding: v.$size-xxs 0;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-m;
+  }
+
+  &__field-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-m;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-xxxs;
+    min-width: 200px;
+  }
+
+  &__label {
+    color: v.$text-color;
+    font-size: v.$font-xs;
+    font-weight: v.$font-semibold;
+  }
+
+  &__hint {
+    color: v.$text-muted;
+    font-size: v.$font-xxs;
+    margin: 0;
+  }
+
+  &__input {
+    border: 1px solid v.$border-color;
+    border-radius: 0.375rem;
+    color: v.$text-color;
+    font-size: v.$font-xs;
+    padding: v.$size-xxs v.$size-xs;
+
+    &:focus {
+      border-color: v.$TUR-primary-orange;
+      outline: none;
+    }
+
+    &--narrow {
+      max-width: 120px;
+    }
+
+    &--time {
+      max-width: 150px;
+    }
+
+    &--error {
+      border-color: v.$accent-color;
+    }
+  }
+
+  &__field-error {
+    color: v.$accent-color;
+    font-size: v.$font-xxs;
+    margin: 0;
+  }
+
+  &__channels-table {
+    border-collapse: collapse;
+    font-size: v.$font-xs;
+    width: 100%;
+
+    &__event-col {
+      width: 60%;
+    }
+
+    th {
+      align-items: center;
+      color: v.$text-muted;
+      font-weight: v.$font-semibold;
+      padding: v.$size-xxs v.$size-s v.$size-xxs 0;
+      text-align: left;
+
+      .material-symbols-outlined {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: v.$size-xxxs;
+      }
+    }
+
+    td {
+      padding: v.$size-xxs v.$size-s v.$size-xxs 0;
+    }
+
+    tbody tr {
+      border-top: 1px solid v.$border-color;
+    }
+  }
+
+  &__toggle {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+
+    &__input {
+      height: 0;
+      opacity: 0;
+      position: absolute;
+      width: 0;
+
+      &:checked + .admin-settings__toggle__track {
+        background: v.$success-color;
+
+        &::after {
+          transform: translateX(16px);
+        }
+      }
+    }
+
+    &__track {
+      background: v.$gray-300;
+      border-radius: 9999px;
+      height: 20px;
+      position: relative;
+      transition: background 0.2s ease;
+      width: 36px;
+
+      &::after {
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        content: '';
+        height: 16px;
+        left: 2px;
+        position: absolute;
+        top: 2px;
+        transition: transform 0.2s ease;
+        width: 16px;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__save-btn {
+    align-items: center;
+    background: v.$TUR-primary-orange;
+    border: none;
+    border-radius: 0.375rem;
+    color: white;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: v.$font-xs;
+    font-weight: v.$font-semibold;
+    gap: v.$size-xxxs;
+    padding: v.$size-xxs v.$size-s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .material-symbols-outlined {
+      font-size: 1rem;
+    }
+  }
+}

@@ -53,20 +53,12 @@ builder.Services.AddScoped<ISeasonService, SeasonService>();
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
-builder.Services.AddOptions<ReminderSettings>()
-    .BindConfiguration("Reminders")
-    .Validate(s => s.RunAtHourUtc is >= 0 and <= 23, "Reminders:RunAtHourUtc must be between 0 and 23.")
-    .Validate(s => s.RunAtMinuteUtc is >= 0 and <= 59, "Reminders:RunAtMinuteUtc must be between 0 and 59.")
-    .Validate(s => s.DaysBeforeDue.All(d => d >= 0), "Reminders:DaysBeforeDue must contain only non-negative values.")
-    .Validate(s => s.DaysBeforeDue.Distinct().Count() == s.DaysBeforeDue.Length, "Reminders:DaysBeforeDue must not contain duplicate values.")
-    .Validate(s => s.EmailDelayMs >= 0, "Reminders:EmailDelayMs must be non-negative.")
-    .ValidateOnStart();
-builder.Services.Configure<PaymentRequestNotificationSettings>(builder.Configuration.GetSection("PaymentRequestNotifications"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
 builder.Services.AddHostedService<PaymentReminderHostedService>();
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -77,6 +69,7 @@ builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -194,6 +187,7 @@ apiV1.MapBankAccountEndpoints();
 apiV1.MapBudgetEndpoints();
 apiV1.MapSeasonEndpoints();
 apiV1.MapNotificationEndpoints();
+apiV1.MapAdminSettingsEndpoints();
 
 if (hasFrontendBundle)
 {

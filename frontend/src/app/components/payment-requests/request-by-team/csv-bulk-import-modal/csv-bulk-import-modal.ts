@@ -23,6 +23,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import {
   BudgetDto,
   CostCentreDto,
@@ -34,10 +35,6 @@ import {
   TypeaheadItem,
   TypeaheadSelectComponent,
 } from '../../../general/typeahead-select-component/typeahead-select-component';
-
-// TODO: These column names should eventually be configurable by admins in the settings page.
-const CSV_COL_NAME = 'Name';
-const CSV_COL_SUMME = 'Summe';
 
 type ImportStep = 'configure' | 'preview' | 'results';
 
@@ -85,6 +82,9 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   step: ImportStep = 'configure';
   configForm!: FormGroup;
 
+  private csvColName = 'Name';
+  private csvColSumme = 'Summe';
+
   budgets: BudgetDto[] = [];
   parsedRows: ParsedRow[] = [];
   previewRows: PreviewRow[] = [];
@@ -99,11 +99,11 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly paymentRequestByTeamService: PaymentRequestByTeamService,
     private readonly notificationService: NotificationService,
+    private readonly systemSettingService: SystemSettingService,
   ) {}
 
   ngOnInit(): void {
     this.buildConfigForm();
-    this.parseCsvFile();
     this.configForm
       .get('teamId')!
       .valueChanges.pipe(takeUntil(this.destroy$))
@@ -115,6 +115,17 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         }
         this.cdr.detectChanges();
       });
+
+    this.systemSettingService.getCsvColumnSettings().subscribe({
+      next: (settings) => {
+        this.csvColName = settings.nameColumn;
+        this.csvColSumme = settings.summeColumn;
+        this.parseCsvFile();
+      },
+      error: () => {
+        this.parseCsvFile();
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -146,13 +157,13 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
 
         const headerRowIndex = rows.findIndex(
           (row) =>
-            row.some((cell) => normalize(cell) === CSV_COL_NAME) &&
-            row.some((cell) => normalize(cell) === CSV_COL_SUMME),
+            row.some((cell) => normalize(cell) === this.csvColName) &&
+            row.some((cell) => normalize(cell) === this.csvColSumme),
         );
 
         if (headerRowIndex === -1) {
           this.notificationService.showError(
-            `CSV format error: could not find "${CSV_COL_NAME}" and "${CSV_COL_SUMME}" header columns.`,
+            `CSV format error: could not find "${this.csvColName}" and "${this.csvColSumme}" header columns.`,
           );
           this.closeEvent.emit();
           this.cdr.detectChanges();
@@ -160,8 +171,8 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         }
 
         const headers = rows[headerRowIndex];
-        const nameIdx = headers.findIndex((cell) => normalize(cell) === CSV_COL_NAME);
-        const summeIdx = headers.findIndex((cell) => normalize(cell) === CSV_COL_SUMME);
+        const nameIdx = headers.findIndex((cell) => normalize(cell) === this.csvColName);
+        const summeIdx = headers.findIndex((cell) => normalize(cell) === this.csvColSumme);
 
         this.parsedRows = rows
           .slice(headerRowIndex + 1)
