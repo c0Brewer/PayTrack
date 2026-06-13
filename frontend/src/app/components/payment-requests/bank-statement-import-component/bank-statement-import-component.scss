@@ -3,17 +3,16 @@
 // ── Upload zone ───────────────────────────────────────────────────────────────
 
 .upload-zone {
+  background-color: rgba(v.$TUR-primary-orange, 0.03);
   border: 2px dashed v.$TUR-border-color;
   border-radius: 12px;
   cursor: pointer;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease;
+  border-color: v.$TUR-primary-orange;
 
-  &:hover {
-    background-color: rgba(v.$TUR-primary-orange, 0.03);
-    border-color: v.$TUR-primary-orange;
-  }
+
 
   &--dragging {
     background-color: rgba(v.$TUR-primary-orange, 0.05);
@@ -98,6 +97,10 @@
   justify-content: flex-end;
   margin-top: v.$size-s;
 }
+.import-actions-upload button:disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto;
+}
 
 // ── Result list ───────────────────────────────────────────────────────────────
 
@@ -125,6 +128,10 @@
 
   &--skipped {
     border-left-color: v.$gray-300;
+  }
+  &--skipped .result-item__icon,
+  &--skipped .result-item__body,
+  &--skipped .result-item__details {
     opacity: 0.55;
   }
 }
@@ -520,4 +527,8 @@
       transform: rotate(90deg);
     }
   }
+}
+
+.skip-or-undo-button{
+  height: 2.4rem;
 }

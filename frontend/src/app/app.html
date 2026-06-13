@@ -5,10 +5,12 @@
     </aside>
 
     <main class="app-shell__content">
+      <app-offline-status-component />
       <router-outlet />
     </main>
   </div>
 } @else {
+  <app-offline-status-component />
   <router-outlet />
 }
 

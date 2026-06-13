@@ -114,7 +114,8 @@
       <button
         type="button"
         class="btn btn-primary"
-        [disabled]="parsedRows.length === 0"
+        appDisableOfflineAction
+        [disabled]="parsedRows.length === 0 || offlineService.isOffline()"
         (click)="onNextClicked()"
       >
         Next: Preview ({{ parsedRows.length }})
@@ -140,9 +141,9 @@
         }
       </ul>
       <div class="modal-actions">
-        <button type="button" class="btn btn-primary" (click)="onWarningOkClicked()">
-          OK, Continue to Preview
-        </button>
+      <button type="button" class="btn btn-primary" (click)="onWarningOkClicked()">
+        OK, Continue to Preview
+      </button>
       </div>
     </app-modal-component>
   }
@@ -203,7 +204,8 @@
       <button
         type="button"
         class="btn btn-primary"
-        [disabled]="!canSubmit"
+        appDisableOfflineAction
+        [disabled]="!canSubmit || offlineService.isOffline()"
         (click)="onSubmitAll()"
       >
         @if (isSubmitting) {

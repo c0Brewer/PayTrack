@@ -93,6 +93,37 @@
                 </button>
               </div>
             }
+            <div class="duplicate-list__actions">
+              <button
+                type="button"
+                class="duplicate-list__button"
+                (click)="onOpenDetail(duplicate.paymentRequestByUser)"
+              >
+                View
+              </button>
+              <button
+                type="button"
+                class="duplicate-list__button"
+                appDisableOfflineAction
+                [disabled]="
+                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
+                "
+                (click)="onDismissDuplicate(duplicate)"
+              >
+                Dismiss warning
+              </button>
+              <button
+                type="button"
+                class="duplicate-list__button duplicate-list__button--danger"
+                appDisableOfflineAction
+                [disabled]="
+                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
+                "
+                (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
+              >
+                Delete invoice
+              </button>
+            </div>
           }
         </li>
       }
@@ -104,7 +135,13 @@
   @if (mode === 'submit' && !loading) {
     <div class="duplicate-modal__actions">
       <button type="button" class="duplicate-modal__cancel" (click)="onClose()">Cancel</button>
-      <button type="button" class="duplicate-modal__submit" (click)="onSubmitRegardless()">
+      <button
+        type="button"
+        class="duplicate-modal__submit"
+        appDisableOfflineAction
+        [disabled]="offlineService.isOffline()"
+        (click)="onSubmitRegardless()"
+      >
         Submit Regardless
       </button>
     </div>
