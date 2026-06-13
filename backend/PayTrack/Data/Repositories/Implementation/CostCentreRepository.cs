@@ -28,12 +28,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                dbQuery = dbQuery.Where(c => c.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
+                dbQuery = dbQuery.Where(c => EF.Functions.ILike(c.Name, $"%{query.Name}%"));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.Description))
             {
-                dbQuery = dbQuery.Where(c => c.Description != null && c.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+                dbQuery = dbQuery.Where(c => c.Description != null && EF.Functions.ILike(c.Description, $"%{query.Description}%"));
             }
 
             if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
