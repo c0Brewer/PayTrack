@@ -3,6 +3,7 @@ import createClient from 'openapi-fetch';
 
 import { environment } from '../environments/environment';
 
+import { ensureOnlineForMutation } from './services/offline/offline-utils';
 import type { paths } from './types/api-types.ts';
 
 const PUBLIC_ROUTES: (keyof paths)[] = ['/api/v1/auth/google'];
@@ -35,6 +36,10 @@ export function initClientInterceptors(logout: () => void, router: Router): void
   client.use({
     onRequest({ request }) {
       if (isPublicRoute(request.url)) return request; // skip check entirely
+
+      if (request.method !== 'GET') {
+        ensureOnlineForMutation();
+      }
 
       const token = localStorage.getItem('jwt');
       if (!token) {

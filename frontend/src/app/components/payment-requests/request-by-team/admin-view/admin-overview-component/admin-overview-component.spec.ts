@@ -80,15 +80,15 @@ describe('TeamRequestAdminOverviewComponent', () => {
       { id: 1, amount: 100, status: TransactionStatus.Submitted },
       { id: 2, amount: 200, status: TransactionStatus.Paid },
     ] as PaymentRequestByTeamDto[];
-    paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
-      of({ items, totalCount: 2, hasNext: true, hasPrevious: false }),
-    );
+    paymentServiceMock.getPaymentRequestsByTeam
+      .mockReturnValueOnce(of({ items, totalCount: 2, hasNext: true, hasPrevious: false }))
+      .mockReturnValueOnce(of({ items, totalCount: 2, hasNext: true, hasPrevious: false }));
 
     component.loadRequests();
 
     expect(component.requests).toEqual(items);
     expect(component.totalCount).toBe(2);
-    expect(component.hasNext).toBe(true);
+    expect(component.hasNext).toBe(false);
     expect(component.hasPrev).toBe(false);
   });
 

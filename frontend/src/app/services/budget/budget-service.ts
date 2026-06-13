@@ -10,6 +10,7 @@ import {
   ProblemDetails,
   UpdateBudgetRequestDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,7 @@ export class BudgetService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getBudget(id: number): Observable<BudgetDto> {
@@ -36,10 +37,12 @@ export class BudgetService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createBudget(request: CreateBudgetRequestDto): Observable<BudgetDto> {
+    ensureOnlineForMutation();
+
     const promise: Promise<BudgetDto> = client
       .POST('/api/v1/budget', { body: request })
       .then(({ data, error }) => {
@@ -52,6 +55,8 @@ export class BudgetService {
   }
 
   public updateBudget(id: number, request: UpdateBudgetRequestDto): Observable<BudgetDto> {
+    ensureOnlineForMutation();
+
     const promise: Promise<BudgetDto> = client
       .PUT('/api/v1/budget/{id}', { params: { path: { id } }, body: request })
       .then(({ data, error }) => {
@@ -64,6 +69,8 @@ export class BudgetService {
   }
 
   public deleteBudget(id: number): Observable<void> {
+    ensureOnlineForMutation();
+
     const promise: Promise<void> = client
       .DELETE('/api/v1/budget/{id}', { params: { path: { id } } })
       .then(({ error }) => {
