@@ -573,6 +573,22 @@ textarea:focus,
   transform: translateX(2px);
 }
 
+@media (max-width: 767.98px) {
+  .icon-hover-btn {
+    gap: 0.4rem;
+  }
+
+  .icon-hover-btn .btn-text {
+    max-width: 4rem;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .icon-hover-btn .material-symbols-outlined {
+    transform: translateX(2px);
+  }
+}
+
 
 .main-page-container{
   p:first-of-type {
