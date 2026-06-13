@@ -105,6 +105,37 @@
   margin-top: v.$size-s;
   padding-top: v.$size-s;
 }
+
+.sidebar__dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+}
+
+.sidebar__dropdown-toggle {
+  text-align: left;
+}
+
+.sidebar__dropdown-toggle.is-active {
+  background: rgba(v.$TUR-primary-orange, 1);
+  color: white;
+}
+
+.sidebar__dropdown-chevron {
+  margin-left: auto;
+}
+
+.sidebar__dropdown-menu {
+  display: none;
+  flex-direction: column;
+  gap: v.$size-xxs;
+  padding-left: v.$size-m;
+}
+
+.sidebar__dropdown-menu--open {
+  display: flex;
+}
+
 .sidebar__logo img {
   padding-bottom: 2rem;
   border-bottom: 3px solid v.$TUR-primary-orange;

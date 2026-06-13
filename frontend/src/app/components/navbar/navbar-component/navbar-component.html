@@ -66,36 +66,82 @@
 
       @if (user?.role === role.ADMIN && user?.isActive) {
         <div class="sidebar__admin">
-          <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">manage_accounts</span>
-            User Management</a
-          >
-          <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
-            ><span class="material-symbols-outlined">groups</span> Team Management</a
-          >
-          <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">manage_accounts</span>
-            Cost Centre Management</a
-          >
-          <a routerLink="/create-payment-request" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">add_card</span>
-            Create Payment Request</a
-          >
-          <a routerLink="/season" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">calendar_month</span>
-            Season Management</a
-          >
-          <a routerLink="/payment-requests-by-team" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">receipt_long</span>
-            View Payment Requests</a
-          >
-          <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined">description</span>
-            View Submitted Invoices
-            @if (submittedCount() > 0) {
-              <span class="nav-badge">{{ submittedCount() }}</span>
-            }
-          </a>
+          <div class="sidebar__dropdown">
+            <button
+              type="button"
+              class="sidebar__dropdown-toggle"
+              [class.is-active]="isManagementMenuExpanded()"
+              [attr.aria-expanded]="isManagementMenuExpanded()"
+              (click)="toggleManagementMenu()"
+            >
+              <span class="material-symbols-outlined">admin_panel_settings</span>
+              Management
+              <span class="material-symbols-outlined sidebar__dropdown-chevron">
+                {{ isManagementMenuExpanded() ? 'expand_less' : 'expand_more' }}
+              </span>
+            </button>
+
+            <div
+              class="sidebar__dropdown-menu"
+              [class.sidebar__dropdown-menu--open]="isManagementMenuExpanded()"
+            >
+              <a routerLink="/user" routerLinkActive="is-active" (click)="closeMobileMenu()">
+                <span class="material-symbols-outlined">manage_accounts</span>
+                User</a
+              >
+              <a routerLink="/team" routerLinkActive="is-active" (click)="closeMobileMenu()"
+                ><span class="material-symbols-outlined">groups</span> Team</a
+              >
+              <a routerLink="/cost-centre" routerLinkActive="is-active" (click)="closeMobileMenu()">
+                <span class="material-symbols-outlined">account_balance</span>
+                Cost Centre</a
+              >
+              <a routerLink="/season" routerLinkActive="is-active" (click)="closeMobileMenu()">
+                <span class="material-symbols-outlined">calendar_month</span>
+                Seasons</a
+              >
+            </div>
+          </div>
+          <div class="sidebar__dropdown">
+            <button
+              type="button"
+              class="sidebar__dropdown-toggle"
+              [class.is-active]="isRequestsMenuExpanded()"
+              [attr.aria-expanded]="isRequestsMenuExpanded()"
+              (click)="toggleRequestsMenu()"
+            >
+              <span class="material-symbols-outlined">receipt_long</span>
+              Requests
+              <span class="material-symbols-outlined sidebar__dropdown-chevron">
+                {{ isRequestsMenuExpanded() ? 'expand_less' : 'expand_more' }}
+              </span>
+            </button>
+
+            <div
+              class="sidebar__dropdown-menu"
+              [class.sidebar__dropdown-menu--open]="isRequestsMenuExpanded()"
+            >
+              <a routerLink="/create-payment-request" routerLinkActive="is-active" (click)="closeMobileMenu()">
+                <span class="material-symbols-outlined">add_card</span>
+                Create Payment Request</a
+              >
+              <a
+                routerLink="/payment-requests-by-team"
+                routerLinkActive="is-active"
+                (click)="closeMobileMenu()"
+              >
+                <span class="material-symbols-outlined">receipt_long</span>
+                View Payment Requests</a
+              >
+              <a routerLink="/requests" routerLinkActive="is-active" (click)="closeMobileMenu()">
+                <span class="material-symbols-outlined">description</span>
+                View Submitted Invoices
+                @if (submittedCount() > 0) {
+                  <span class="nav-badge">{{ submittedCount() }}</span>
+                }
+              </a>
+            </div>
+          </div>
         </div>
       }
 

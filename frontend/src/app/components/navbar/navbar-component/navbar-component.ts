@@ -1,8 +1,8 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { filter, switchMap, take } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter, startWith, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
@@ -20,6 +20,9 @@ export class NavbarComponent {
   currentUser$;
   protected readonly role = Role;
   protected readonly mobileMenuOpen = signal(false);
+  protected readonly managementMenuOpen = signal(false);
+  protected readonly requestsMenuOpen = signal(false);
+  protected readonly currentUrl = signal('');
   protected readonly submittedCount = signal(0);
   protected readonly teamRequestCount = signal(0);
   public hasNoBankAccounts = false;
@@ -28,13 +31,25 @@ export class NavbarComponent {
     private readonly authService: AuthService,
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly teamRequestService: PaymentRequestByTeamService,
+    private readonly router: Router,
   ) {
     this.loggedIn$ = this.authService.loggedIn$;
     this.currentUser$ = this.authService.currentUser$;
+    this.currentUrl.set(this.router.url);
 
     this.currentUser$.pipe(takeUntilDestroyed()).subscribe((user) => {
       this.hasNoBankAccounts = !!user && (user.bankAccounts?.length ?? 0) === 0;
     });
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        startWith(null),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.currentUrl.set(this.router.url);
+      });
   }
 
   ngOnInit(): void {
@@ -75,6 +90,43 @@ export class NavbarComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+    this.managementMenuOpen.set(false);
+    this.requestsMenuOpen.set(false);
+  }
+
+  toggleManagementMenu(): void {
+    this.managementMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  toggleRequestsMenu(): void {
+    this.requestsMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  isManagementMenuExpanded(): boolean {
+    return this.managementMenuOpen() || this.isManagementRouteActive();
+  }
+
+  isRequestsMenuExpanded(): boolean {
+    return this.requestsMenuOpen() || this.isRequestsRouteActive();
+  }
+
+  private isManagementRouteActive(): boolean {
+    const url = this.currentUrl();
+    return (
+      url.startsWith('/user') ||
+      url.startsWith('/team') ||
+      url.startsWith('/cost-centre') ||
+      url.startsWith('/season')
+    );
+  }
+
+  private isRequestsRouteActive(): boolean {
+    const url = this.currentUrl();
+    return (
+      url.startsWith('/create-payment-request') ||
+      url.startsWith('/payment-requests-by-team') ||
+      url.startsWith('/requests')
+    );
   }
 
   logout(): void {
