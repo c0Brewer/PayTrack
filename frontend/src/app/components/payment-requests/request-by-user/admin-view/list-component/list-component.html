@@ -10,7 +10,7 @@
         <th>Team</th>
         <th>Payout Type</th>
         <th>Status</th>
-        <th>User</th>
+        <th class="user-col">User</th>
         <th>Duplicate</th>
         <th class="actions-col">Actions</th>
       </tr>
@@ -31,12 +31,12 @@
               {{ getTransactionStatusLabel(invoice.status) }}
             </span>
           </td>
-          <td data-label="User">{{ invoice.user?.name ?? '—' }}</td>
-          <td data-label="Duplicate">
+          <td data-label="User" class="user-col">{{ invoice.user?.name ?? '—' }}</td>
+          <td data-label="Duplicate" class="text-center">
             @if (invoice.hasPotentialDuplicate) {
               <button
                 type="button"
-                class="duplicate-badge"
+                class="duplicate-badge d-inline-flex align-items-center justify-content-center gap-1 p-2"
                 title="Potential duplicates found"
                 aria-label="Show potential duplicate invoices"
                 (click)="onOpenDuplicates(invoice)"

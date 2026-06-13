@@ -10,6 +10,7 @@ import {
   GetCostCentreOptions,
   UpdateCostCentreRequestDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,7 @@ export class CostCentreService {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
       });
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getCostCentre(id: number): Observable<CostCentreDto> {
@@ -34,10 +35,12 @@ export class CostCentreService {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
       });
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createCostCentre(request: CreateCostCentreRequestDto): Observable<CostCentreDto> {
+    ensureOnlineForMutation();
+
     const promise: Promise<CostCentreDto> = client
       .POST('/api/v1/cost-centre', { body: request })
       .then(({ data, error }) => {
@@ -51,13 +54,15 @@ export class CostCentreService {
     id: number,
     request: UpdateCostCentreRequestDto,
   ): Observable<CostCentreDto> {
+    ensureOnlineForMutation();
+
     const promise: Promise<CostCentreDto> = client
       .PUT('/api/v1/cost-centre/{id}', { params: { path: { id } }, body: request })
       .then(({ data, error }) => {
         if (error) throw new Error(error.detail ?? 'Unexpected Error');
         return data;
       });
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getDeletePreview(id: number): Observable<DeleteCostCentrePreviewDto> {
@@ -71,6 +76,8 @@ export class CostCentreService {
   }
 
   public deleteCostCentre(id: number): Observable<CostCentreDto | null> {
+    ensureOnlineForMutation();
+
     const promise: Promise<CostCentreDto | null> = client
       .DELETE('/api/v1/cost-centre/{id}', { params: { path: { id } } })
       .then(({ data, error }) => {
