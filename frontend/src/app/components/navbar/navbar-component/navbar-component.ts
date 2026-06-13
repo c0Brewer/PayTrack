@@ -4,11 +4,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith, switchMap, take } from 'rxjs';
 
-import { ModalComponent } from '../../general/modal-component/modal-component';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { Role, TransactionStatus } from '../../../types/exporter';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-navbar-component',
