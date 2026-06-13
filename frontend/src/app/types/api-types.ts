@@ -2519,27 +2519,27 @@ export interface components {
         BankStatementMatchResponseDto: {
             results?: components["schemas"]["BankStatementMatchResultDto"][] | null;
         };
-        BankStatementMatchedTransactionDto: {
-            /** Format: int32 */
-            id: number;
-            /** Format: double */
-            amount: number;
-            purposeOfPayment?: string | null;
-            paymentReference?: string | null;
-            status: components["schemas"]["TransactionStatus"];
-            /** Format: date-time */
-            paidAt?: string | null;
-            userName?: string | null;
-            teamName?: string | null;
-            invoiceNumber?: string | null;
-            bankAccount?: components["schemas"]["BankAccountDto"];
-        };
         BankStatementMatchResultDto: {
             entry?: components["schemas"]["BankStatementEntryDto"];
             hasMatch?: boolean;
             matchedTransaction?: components["schemas"]["BankStatementMatchedTransactionDto"];
             /** Format: int32 */
             matchScore?: number;
+        };
+        BankStatementMatchedTransactionDto: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: double */
+            amount?: number;
+            purposeOfPayment?: string | null;
+            paymentReference?: string | null;
+            status?: components["schemas"]["TransactionStatus"];
+            /** Format: date-time */
+            paidAt?: string | null;
+            userName?: string | null;
+            teamName?: string | null;
+            invoiceNumber?: string | null;
+            bankAccount?: components["schemas"]["BankAccountDto"];
         };
         BankStatementUpdateRequestDto: {
             entryId?: string | null;
