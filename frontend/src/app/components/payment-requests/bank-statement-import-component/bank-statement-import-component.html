@@ -1,8 +1,10 @@
-<div class="main-page-container cost-centre-management">
-  <div class="w-100 mb-4">
-    <h2 class="m-0 mb-2">Bank Statement Import</h2>
-    <p>Upload your bank export and reconcile it with your invoices.</p>
-  </div>
+<div class="cost-centre-management">
+  @if (showPageHeader()) {
+    <div class="w-100 mb-4">
+      <h2 class="m-0 mb-2">Bank Statement Import</h2>
+      <p>Upload your bank export and reconcile it with your invoices.</p>
+    </div>
+  }
 
   <!-- ── PHASE 1: UPLOAD ──────────────────────────────────────────────────── -->
   @if (phase() === 'upload') {
@@ -53,8 +55,9 @@
     <div class="import-actions-upload">
       <button
         type="button"
-        class="btn btn-primary"
-        [disabled]="!parsedEntries().length || isLoading()"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+        appDisableOfflineAction
+        [disabled]="!parsedEntries().length || isLoading() || offlineService.isOffline()"
         (click)="submitForMatching()"
       >
         @if (isLoading()) {
@@ -73,33 +76,33 @@
   <!-- ── PHASE 2: REVIEW ──────────────────────────────────────────────────── -->
   @if (phase() === 'review') {
     <div class="mb-4 row g-3 align-items-stretch">
-      <app-stat-box-component
-        header="Total Cost Centres"
-        [content]="matchedCount()"
-        icon="check_circle"
-        iconColor="#10b981"
-        iconBackgroundColor="#ECFDF5"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
-      <app-stat-box-component
-        header="Skipped"
-        [content]="skippedCount()"
-        icon="skip_next"
-        iconColor="#3b82f6"
-        iconBackgroundColor="#EFF6FF"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
-      <app-stat-box-component
-        header="Unmatched"
-        [content]="unmatchedCount()"
-        icon="no_accounts"
-        iconColor="#eb6a00"
-        iconBackgroundColor="#fff4ea"
-        size="small"
-        class="col-12 col-sm-6 col-xl-3"
-      />
+        <app-stat-box-component
+          header="Total Cost Centres"
+          [content]="matchedCount()"
+          icon="check_circle"
+          iconColor="#10b981"
+          iconBackgroundColor="#ECFDF5"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Skipped"
+          [content]="skippedCount()"
+          icon="skip_next"
+          iconColor="#3b82f6"
+          iconBackgroundColor="#EFF6FF"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Unmatched"
+          [content]="unmatchedCount()"
+          icon="no_accounts"
+          iconColor="#eb6a00"
+          iconBackgroundColor="#fff4ea"
+          size="small"
+          class="col-12 col-md-4"
+        />
     </div>
 
     <!-- Results -->
@@ -188,9 +191,10 @@
               @if (result.hasMatch) {
                 <button
                   type="button"
-                  class="btn btn-secondary"
+                  class="btn btn-secondary skip-or-undo-button d-inline-flex align-items-center justify-content-center gap-1 p-2"
                   (click)="toggleSkip(result._entryId)"
                 >
+                  <span class="material-symbols-outlined">{{ result.skipped ? 'undo' : 'skip_next' }}</span>
                   {{ result.skipped ? 'Undo' : 'Skip' }}
                 </button>
               }
@@ -338,11 +342,14 @@
 
     <!-- Actions -->
     <div class="import-actions-review">
-      <button type="button" class="btn btn-secondary" (click)="reset()">Start over</button>
+      <button type="button" class="btn btn-secondary" (click)="reset()">
+        <span class="material-symbols-outlined">repeat</span>
+        Start over</button>
       <button
         type="button"
-        class="btn btn-primary"
-        [disabled]="isLoading() || matchedCount() === 0"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+        appDisableOfflineAction
+        [disabled]="isLoading() || matchedCount() === 0 || offlineService.isOffline()"
         (click)="confirmUpdates()"
       >
         @if (isLoading()) {
@@ -351,6 +358,7 @@
           >
           Updating…
         } @else {
+          <span class="material-symbols-outlined">update</span>
           Confirm {{ matchedCount() }} Update{{ matchedCount() === 1 ? '' : 's' }}
         }
       </button>
@@ -368,7 +376,7 @@
           nonApprovedMatches().length === 1 ? '' : 's'
         }}
         {{ nonApprovedMatches().length === 1 ? 'has' : 'have' }} a status other than
-        <strong>Approved</strong>. Marking them as Paid now may be premature.
+        <strong>Approved</strong>. <br><br>Marking them as Paid now may be premature.
       </p>
       <ul class="warning-modal-list">
         @for (r of nonApprovedMatches(); track r._entryId) {
@@ -382,10 +390,18 @@
         }
       </ul>
       <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="showNonApprovedWarning.set(false)">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showNonApprovedWarning.set(false)">
+          <span class="material-symbols-outlined">redo</span>
           Re-check entries
         </button>
-        <button type="button" class="btn btn-warning" (click)="confirmAnyway()">
+        <button
+          type="button"
+          class="btn btn-danger d-inline-flex align-items-center justify-content-center gap-1 p-2"
+          appDisableOfflineAction
+          [disabled]="offlineService.isOffline()"
+          (click)="confirmAnyway()"
+        >
+          <span class="material-symbols-outlined">warning</span>
           Submit anyway
         </button>
       </div>
@@ -415,10 +431,18 @@
         }
       </ul>
       <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="showFinalConfirm.set(false)">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showFinalConfirm.set(false)">
+          <span class="material-symbols-outlined">cancel</span>
           Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="proceedWithSubmit()">
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+          appDisableOfflineAction
+          [disabled]="offlineService.isOffline()"
+          (click)="proceedWithSubmit()"
+        >
+          <span class="material-symbols-outlined">check</span>
           Confirm &amp; Submit
         </button>
       </div>

@@ -28,7 +28,7 @@
     width: min(100%, 36rem);
 
     .modal-header {
-      align-items: center;
+      align-items: flex-start;
       background: v.$background-light;
       border-bottom: 1px solid v.$TUR-border-color;
       display: flex;
@@ -64,9 +64,8 @@
       font-size: v.$font-l;
       font-weight: v.$font-bold;
       line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
+      white-space: normal;
     }
 
     .close {

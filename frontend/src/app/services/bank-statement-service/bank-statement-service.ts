@@ -8,6 +8,7 @@ import {
   BankStatementUpdateRequestDto,
   TransactionDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,8 @@ export class BankStatementService {
    * POST — send raw bank statement entries and get back match candidates.
    */
   public getMatches(entries: BankStatementEntryDto[]): Observable<BankStatementMatchResponseDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/bank-statement-matches', {
         body: entries,
@@ -37,6 +40,8 @@ export class BankStatementService {
    * PUT — confirm which matches should be written back to the system.
    */
   public applyUpdates(updates: BankStatementUpdateRequestDto[]): Observable<TransactionDto[]> {
+    ensureOnlineForMutation();
+
     const promise = client
       .PUT('/api/v1/transaction/bank-statement-matches', {
         body: updates,
