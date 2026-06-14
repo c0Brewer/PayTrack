@@ -283,8 +283,8 @@ export class BankStatementImportComponent {
     this.sortMode.update((m) => (m === 'score' ? 'original' : 'score'));
   }
 
-  getStatusLabel(status: TransactionStatus): string {
-    return TransactionStatusLabels[status] ?? 'Unknown';
+  getStatusLabel(status: TransactionStatus | undefined): string {
+    return status === undefined ? 'Unknown' : (TransactionStatusLabels[status] ?? 'Unknown');
   }
 
   formatIban(value: string): string {
