@@ -62,7 +62,6 @@ namespace PayTrack.Application.Services.Implementation
                     text = await RunTesseractAsync(inputPath, cancellationToken);
                 }
 
-                Console.WriteLine(text);
                 return this.receiptParser.Parse(text);
             }
             catch (OperationCanceledException)
