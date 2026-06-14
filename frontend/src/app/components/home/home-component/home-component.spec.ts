@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject } from 'rxjs';
+import { of } from 'rxjs';
 import { vi } from 'vitest';
 
-import { AuthService } from '../../../services/auth/auth-service';
+import { HomeDashboardService } from '../../../services/home/home-dashboard-service';
 import { NotificationService } from '../../../services/notification/notification-service';
+import { Role } from '../../../types/exporter';
 
 import { HomeComponent } from './home-component';
 
@@ -11,10 +12,33 @@ describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
 
-  const authServiceMock = {
-    loggedIn$: new BehaviorSubject(false),
-    currentUser$: new BehaviorSubject(null),
-    logout: vi.fn(),
+  const homeDashboardServiceMock = {
+    getHomeDashboard: vi.fn().mockReturnValue(
+      of({
+        user: { id: 1, name: 'Alex', role: Role.REGULAR_USER },
+        invoices: {
+          openCount: 0,
+          submittedCount: 0,
+          paidCount: 0,
+          openAmount: 0,
+          lastPaidAt: null,
+          recent: [],
+        },
+        paymentRequests: {
+          openCount: 0,
+          submittedCount: 0,
+          paidCount: 0,
+          openAmount: 0,
+          lastPaidAt: null,
+          recent: [],
+        },
+        actions: {
+          missingBankAccount: false,
+          bankInformationSkipped: false,
+          needsAttentionCount: 0,
+        },
+      }),
+    ),
   };
 
   const notificationServiceMock = {
@@ -25,7 +49,7 @@ describe('HomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
       providers: [
-        { provide: AuthService, useValue: authServiceMock },
+        { provide: HomeDashboardService, useValue: homeDashboardServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
       ],
     }).compileComponents();

@@ -322,7 +322,7 @@ describe('ReceiptSubmitComponent', () => {
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
       TeamId: 1,
       Amount: 100,
-      PaidAt: '2025-01-01T00:00:00.000Z',
+      PaidAt: '2025-01-01',
       InvoiceNumber: 'INV-1',
     });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
@@ -346,7 +346,7 @@ describe('ReceiptSubmitComponent', () => {
         teamId: 1,
         amount: 100,
         purposeOfPayment: 'test',
-        paidAt: '2025-01-01T00:00:00.000Z',
+        paidAt: '2025-01-01',
       },
     };
 
