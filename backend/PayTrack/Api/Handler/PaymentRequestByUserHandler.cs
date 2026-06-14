@@ -117,7 +117,7 @@ namespace PayTrack.Api.Handler
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The extracted invoice fields and their confidence values.</returns>
         public static async Task<Ok<ReceiptExtractionDto>> ExtractReceiptAsync(
-            [FromForm] IFormFile receipt,
+            IFormFile receipt,
             IReceiptExtractionService receiptExtractionService,
             CancellationToken cancellationToken)
         {
