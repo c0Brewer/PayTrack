@@ -42,6 +42,20 @@ export type RequestChangesPaymentRequestByUserDto =
   components['schemas']['RequestChangesPaymentRequestByUserDto'];
 export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
+export type ReceiptExtractionFieldDto<T> = {
+  value: T | null;
+  confidence: number;
+  sourceText?: string | null;
+};
+export type ReceiptExtractionDto = {
+  extractionSucceeded?: boolean;
+  message?: string | null;
+  amount: ReceiptExtractionFieldDto<number>;
+  invoiceDate: ReceiptExtractionFieldDto<string>;
+  invoiceNumber: ReceiptExtractionFieldDto<string>;
+  extractionMethod?: string | null;
+  warnings?: string[] | null;
+};
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
