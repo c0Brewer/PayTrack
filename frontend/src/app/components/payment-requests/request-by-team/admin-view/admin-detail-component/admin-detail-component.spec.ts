@@ -294,12 +294,18 @@ describe('TeamRequestAdminDetailComponent', () => {
 
   describe('canDelete', () => {
     it('returns true when status is Submitted', () => {
-      component.request = { ...mockRequest, status: TransactionStatus.Submitted } as unknown as PaymentRequestByTeamDto;
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Submitted,
+      } as unknown as PaymentRequestByTeamDto;
       expect(component.canDelete).toBe(true);
     });
 
     it('returns false when status is Approved', () => {
-      component.request = { ...mockRequest, status: TransactionStatus.Approved } as unknown as PaymentRequestByTeamDto;
+      component.request = {
+        ...mockRequest,
+        status: TransactionStatus.Approved,
+      } as unknown as PaymentRequestByTeamDto;
       expect(component.canDelete).toBe(false);
     });
 
