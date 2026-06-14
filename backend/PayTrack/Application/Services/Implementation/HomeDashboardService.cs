@@ -45,7 +45,7 @@ namespace PayTrack.Application.Services.Implementation
                 Invoices: BuildInvoiceSection(invoices),
                 PaymentRequests: BuildPaymentRequestSection(paymentRequests),
                 Actions: new HomeDashboardActionsDto(
-                    MissingBankAccount: currentUser.BankAccounts.Count == 0 && !currentUser.BankInformationSkipped,
+                    MissingBankAccount: currentUser.BankAccounts.Count == 0,
                     BankInformationSkipped: currentUser.BankInformationSkipped,
                     NeedsAttentionCount: needsAttentionCount));
         }
