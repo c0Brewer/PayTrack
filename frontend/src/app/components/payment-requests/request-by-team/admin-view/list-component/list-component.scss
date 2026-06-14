@@ -2,17 +2,66 @@
 
 .team-request-table-wrapper {
   border-radius: v.$size-xs;
-  overflow-x: auto;
   width: 100%;
 }
 
-@media (max-width: 767.98px) {
+:host-context(.team-requests) {
   .team-request-table-wrapper {
-    overflow-x: visible;
+    overflow-x: auto;
   }
 
   .team-request-table {
-    min-width: 0;
+    min-width: 82rem;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  :host-context(.team-requests) {
+    .team-request-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .team-request-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
   }
 }
 
@@ -21,7 +70,6 @@
   width: 100%;
   border-collapse: collapse;
   font-size: v.$font-s;
-  background: v.$background-light;
   border-radius: v.$size-xs;
   overflow: hidden;
 
@@ -42,14 +90,14 @@
       padding: v.$size-s;
       border-bottom: 1px solid v.$border-color;
       vertical-align: middle;
-
-      &:last-child {
-        border-bottom: none;
-      }
     }
 
     tr {
       transition: background 0.15s ease;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:hover {
@@ -58,7 +106,9 @@
   }
 
   .actions-col {
+    display: table-cell;
     min-width: 5.5rem;
+    text-align: right;
     white-space: nowrap;
     width: 5.5rem;
   }

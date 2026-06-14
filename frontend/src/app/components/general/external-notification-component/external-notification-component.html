@@ -19,8 +19,11 @@
   </label>
 
   <div class="modal-actions">
-    <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
-    <button type="button" class="btn btn-primary" [disabled]="sending" (click)="onSend()">
+    <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onClose()">
+      <span class="material-symbols-outlined">cancel</span>
+      Cancel</button>
+    <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" [disabled]="sending" (click)="onSend()">
+      <span class="material-symbols-outlined">send</span>
       {{ sending ? 'Sending…' : 'Send' }}
     </button>
   </div>

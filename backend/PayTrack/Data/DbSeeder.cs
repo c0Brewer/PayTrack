@@ -195,6 +195,262 @@ public static class DbSeeder
             db.Teams.Add(archivedKartingTeam);
         }
 
+        var adminUser = await db.User.FirstOrDefaultAsync(u => u.Email == "admin@paytrack.local");
+        if (adminUser is null)
+        {
+            adminUser = new User
+            {
+                Name = "Admin User",
+                Email = "admin@paytrack.local",
+                Role = Role.Admin,
+                Team = chassisTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(adminUser);
+        }
+
+        var financeAdminUser = await db.User.FirstOrDefaultAsync(u => u.Email == "finance.admin@paytrack.local");
+        if (financeAdminUser is null)
+        {
+            financeAdminUser = new User
+            {
+                Name = "Finance Admin",
+                Email = "finance.admin@paytrack.local",
+                Role = Role.Admin,
+                Team = financeTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(financeAdminUser);
+        }
+
+        var teamLeadUser = await db.User.FirstOrDefaultAsync(u => u.Email == "lead@paytrack.local");
+        if (teamLeadUser is null)
+        {
+            teamLeadUser = new User
+            {
+                Name = "Team Lead",
+                Email = "lead@paytrack.local",
+                Role = Role.TeamLead,
+                Team = electronicsTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(teamLeadUser);
+        }
+
+        var chassisLeadUser = await db.User.FirstOrDefaultAsync(u => u.Email == "chassis.lead@paytrack.local");
+        if (chassisLeadUser is null)
+        {
+            chassisLeadUser = new User
+            {
+                Name = "Chassis Lead",
+                Email = "chassis.lead@paytrack.local",
+                Role = Role.TeamLead,
+                Team = chassisTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(chassisLeadUser);
+        }
+
+        var chassisMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "chassis.member@paytrack.local");
+        if (chassisMemberUser is null)
+        {
+            chassisMemberUser = new User
+            {
+                Name = "Chassis Member",
+                Email = "chassis.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = chassisTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(chassisMemberUser);
+        }
+
+        var electronicsMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "electronics.member@paytrack.local");
+        if (electronicsMemberUser is null)
+        {
+            electronicsMemberUser = new User
+            {
+                Name = "Electronics Member",
+                Email = "electronics.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = electronicsTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(electronicsMemberUser);
+        }
+
+        var suspensionMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "suspension.member@paytrack.local");
+        if (suspensionMemberUser is null)
+        {
+            suspensionMemberUser = new User
+            {
+                Name = "Suspension Member",
+                Email = "suspension.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = suspensionTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(suspensionMemberUser);
+        }
+
+        var aeroMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "aero.member@paytrack.local");
+        if (aeroMemberUser is null)
+        {
+            aeroMemberUser = new User
+            {
+                Name = "Aero Member",
+                Email = "aero.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = aerodynamicsTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(aeroMemberUser);
+        }
+
+        var embeddedMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "embedded.member@paytrack.local");
+        if (embeddedMemberUser is null)
+        {
+            embeddedMemberUser = new User
+            {
+                Name = "Embedded Member",
+                Email = "embedded.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = softwareTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(embeddedMemberUser);
+        }
+
+        var batteryMemberUser = await db.User.FirstOrDefaultAsync(u => u.Email == "battery.member@paytrack.local");
+        if (batteryMemberUser is null)
+        {
+            batteryMemberUser = new User
+            {
+                Name = "Battery Member",
+                Email = "battery.member@paytrack.local",
+                Role = Role.RegularUser,
+                Team = batteryTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(batteryMemberUser);
+        }
+
+        var inactiveUser = await db.User.FirstOrDefaultAsync(u => u.Email == "inactive@paytrack.local");
+        if (inactiveUser is null)
+        {
+            inactiveUser = new User
+            {
+                Name = "Inactive User",
+                Email = "inactive@paytrack.local",
+                Role = Role.RegularUser,
+                Team = chassisTeam,
+                IsActive = false,
+            };
+
+            db.User.Add(inactiveUser);
+        }
+
+        var unassignedUser = await db.User.FirstOrDefaultAsync(u => u.Email == "unassigned@paytrack.local");
+        if (unassignedUser is null)
+        {
+            unassignedUser = new User
+            {
+                Name = "Unassigned User",
+                Email = "unassigned@paytrack.local",
+                Role = Role.RegularUser,
+                IsActive = true,
+            };
+
+            db.User.Add(unassignedUser);
+        }
+
+        // Duplicate-name pair — used to test ambiguous CSV matching.
+        var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
+        if (alexTaylor1 is null)
+        {
+            alexTaylor1 = new User
+            {
+                Name = "Alex Taylor",
+                Email = "alex.taylor@paytrack.local",
+                Role = Role.RegularUser,
+                Team = powertrainTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(alexTaylor1);
+        }
+
+        var alexTaylor2 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor2@paytrack.local");
+        if (alexTaylor2 is null)
+        {
+            alexTaylor2 = new User
+            {
+                Name = "Alex Taylor",
+                Email = "alex.taylor2@paytrack.local",
+                Role = Role.RegularUser,
+                Team = driverlessTeam,
+                IsActive = true,
+            };
+
+            db.User.Add(alexTaylor2);
+        }
+
+        await db.SaveChangesAsync();
+
+        if (!await db.BankAccounts.AnyAsync(b => b.User == adminUser && b.Iban == "AT611904300234573201"))
+        {
+            db.BankAccounts.Add(new BankAccount
+            {
+                User = adminUser,
+                Iban = "AT611904300234573201",
+                Bic = "BKAUATWW",
+                AccountHolder = "Admin User",
+            });
+        }
+
+        if (!await db.BankAccounts.AnyAsync(b => b.User == teamLeadUser && b.Iban == "AT483200000012345864"))
+        {
+            db.BankAccounts.Add(new BankAccount
+            {
+                User = teamLeadUser,
+                Iban = "AT483200000012345864",
+                Bic = "RLNWATWW",
+                AccountHolder = "Team Lead",
+            });
+        }
+
+        if (!await db.BankAccounts.AnyAsync(b => b.User == chassisMemberUser && b.Iban == "AT026000000012345678"))
+        {
+            db.BankAccounts.Add(new BankAccount
+            {
+                User = chassisMemberUser,
+                Iban = "AT026000000012345678",
+                Bic = "OPSKATWW",
+                AccountHolder = "Chassis Member",
+            });
+        }
+
+        if (!await db.BankAccounts.AnyAsync(b => b.User == electronicsMemberUser && b.Iban == "AT611904300234573202"))
+        {
+            db.BankAccounts.Add(new BankAccount
+            {
+                User = electronicsMemberUser,
+                Iban = "AT611904300234573202",
+                Bic = "BKAUATWW",
+                AccountHolder = "Electronics Member",
+            });
+        }
+
         var currentSeason = await db.Seasons.FirstOrDefaultAsync(c => c.Name == "S25/26");
         if (currentSeason is null)
         {

@@ -11,6 +11,7 @@ import {
   PaginatedPaymentRequestByTeamDto,
   PaymentRequestByTeamDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +31,7 @@ export class PaymentRequestByTeamService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getPaymentRequestsByTeamById(
@@ -49,12 +50,14 @@ export class PaymentRequestByTeamService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createPaymentRequestByTeam(
     payload: CreatePaymentRequestByTeamDto,
   ): Observable<PaymentRequestByTeamDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/team', { body: payload })
       .then(({ data, error }) => {
@@ -69,6 +72,8 @@ export class PaymentRequestByTeamService {
     id: number,
     payload: MarkAsPaidPaymentRequestByTeamDto,
   ): Observable<PaymentRequestByTeamDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/team/{id}/mark-as-paid', {
         params: { path: { id } },

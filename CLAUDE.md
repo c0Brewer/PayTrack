@@ -4,7 +4,7 @@ Payment request and transaction tracking app for teams and cost centres.
 
 ## Stack
 
-- **Frontend:** Angular 17+ (standalone components, signals), TypeScript, SCSS, Bootstrap 5.3.8
+- **Frontend:** Angular 21 (standalone components, signals), TypeScript, SCSS, Bootstrap 5.3.8
 - **Backend:** .NET (C#), REST API at `/api/v1/`
 - **Icons:** Google Material Symbols Outlined — `<span class="material-symbols-outlined">icon_name</span>`
 - **No Tailwind in new code** — migrating toward component-scoped SCSS
@@ -13,7 +13,7 @@ Payment request and transaction tracking app for teams and cost centres.
 
 | Path | Purpose |
 |---|---|
-| `components/` | Feature components grouped by domain (payment-requests, team, settings, home, general) |
+| `components/` | Feature components grouped by domain (payment-requests, team, settings, bankaccount, cost-centre, user-management, navbar, home, general) |
 | `components/general/` | Reusable UI primitives: box, stat-box, notification |
 | `services/` | Angular services per domain |
 | `types/api-types.ts` | OpenAPI-generated DTOs — source of truth for all data shapes |
@@ -44,11 +44,13 @@ Angular patterns (signals, control flow, inputs): `docs/frontend/patterns.md`
 
 ## Key entities
 
-`Transaction` is an **abstract base class**. Concrete types: `PaymentRequestByUser` (has `InvoiceNumber`, `PaymentDirection`), `PaymentRequestByTeam`.
+`Transaction` is an **abstract base class** (TPH). Concrete types: `PaymentRequestByUser` (has `InvoiceNumber`, `PaymentDirection`), `PaymentRequestByTeam`, `PaymentManual` (admin-created).
 
 Important fields: `Id`, `UserId`, `TeamId`, `Amount` (decimal), `PurposeOfPayment`, `PaymentReference`, `Status` (TransactionStatus enum), `PaidAt` (DateTime?), `StatusHistory` (ICollection).
 
-**Enums:** `TransactionStatus`: 0=Submitted, 1=Approved, 2=Rejected, 3=Paid, 4=Reimbursed · `PaymentDirection`: `In`, `Out`
+**Enums:** `TransactionStatus`: 0=Submitted, 1=Approved, 2=Rejected, 3=Paid, 4=Reimbursed · `PaymentDirection`: `In`, `Out` · `Role`: 0=RegularUser, 1=TeamLead, 2=Admin
+
+Other key entities: `Budget` (links Team + CostCentre + Season with a target amount and period), `Season` (groups budgets), `CostCentre`, `BankAccount` (per-user IBAN records), `SystemSetting` (key-value store for admin-configurable runtime settings).
 
 Test patterns (xUnit, Moq, WebApplicationFactory): `docs/backend/testing.md`
 
