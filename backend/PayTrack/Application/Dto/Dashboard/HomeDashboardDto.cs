@@ -13,8 +13,7 @@ namespace PayTrack.Application.Dto.Dashboard
         HomeDashboardUserDto User,
         HomeDashboardSectionDto Invoices,
         HomeDashboardSectionDto PaymentRequests,
-        HomeDashboardActionsDto Actions,
-        HomeDashboardAdminDto? Admin);
+        HomeDashboardActionsDto Actions);
 
     /// <summary>
     /// Minimal user information shown on the home dashboard.
@@ -55,13 +54,5 @@ namespace PayTrack.Application.Dto.Dashboard
     public sealed record class HomeDashboardActionsDto(
         bool MissingBankAccount,
         bool BankInformationSkipped,
-        int PendingDuplicates,
         int NeedsAttentionCount);
-
-    /// <summary>
-    /// Admin-only dashboard summary.
-    /// </summary>
-    public sealed record class HomeDashboardAdminDto(
-        int SubmittedInvoicesAwaitingReview,
-        int PaymentRequestsAwaitingReview);
 }

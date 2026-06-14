@@ -40,24 +40,6 @@ namespace PayTrack.Application.Services.Implementation
             var needsAttentionCount = invoices.Count(invoice => invoice.Status is TransactionStatus.ChangesRequested or TransactionStatus.Declined)
                 + paymentRequests.Count(paymentRequest => paymentRequest.Status is TransactionStatus.ChangesRequested or TransactionStatus.Declined);
 
-            HomeDashboardAdminDto? admin = null;
-            if (currentUser.Role == Role.Admin)
-            {
-                var (submittedInvoices, submittedInvoicesCount) = await this.paymentRequestByUserService.GetAllAsync(new GetPaymentRequestByUserQuery
-                {
-                    Status = TransactionStatus.Submitted,
-                });
-
-                var (submittedPaymentRequests, submittedPaymentRequestsCount) = await this.paymentRequestByTeamService.GetAllAsync(new GetPaymentRequestByTeamQuery
-                {
-                    Status = TransactionStatus.Submitted,
-                });
-
-                admin = new HomeDashboardAdminDto(
-                    SubmittedInvoicesAwaitingReview: submittedInvoicesCount > 0 ? submittedInvoicesCount : submittedInvoices.Count,
-                    PaymentRequestsAwaitingReview: submittedPaymentRequestsCount > 0 ? submittedPaymentRequestsCount : submittedPaymentRequests.Count);
-            }
-
             return new HomeDashboardDto(
                 User: new HomeDashboardUserDto(currentUser.Id, currentUser.Name, currentUser.Role),
                 Invoices: BuildInvoiceSection(invoices),
@@ -65,9 +47,7 @@ namespace PayTrack.Application.Services.Implementation
                 Actions: new HomeDashboardActionsDto(
                     MissingBankAccount: currentUser.BankAccounts.Count == 0 && !currentUser.BankInformationSkipped,
                     BankInformationSkipped: currentUser.BankInformationSkipped,
-                    PendingDuplicates: invoices.Count(invoice => invoice.HasPotentialDuplicate),
-                    NeedsAttentionCount: needsAttentionCount),
-                Admin: admin);
+                    NeedsAttentionCount: needsAttentionCount));
         }
 
         private static HomeDashboardSectionDto BuildInvoiceSection(List<PaymentRequestByUser> invoices)
