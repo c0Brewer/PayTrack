@@ -49,6 +49,8 @@ builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<IGoogleDriveArchiveClient, GoogleDriveArchiveClient>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+builder.Services.AddScoped<IReceiptExtractionService, ReceiptExtractionService>();
+builder.Services.AddSingleton<IReceiptParser, ReceiptParser>();
 
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
