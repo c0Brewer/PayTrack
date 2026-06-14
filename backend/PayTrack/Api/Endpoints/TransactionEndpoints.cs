@@ -35,7 +35,7 @@ namespace PayTrack.Api.Endpoints
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
 
             group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery().RequireActiveUser(); // Needed because of the way the file upload works. This is intentional
-            
+
             group.MapPost("/user/receipt/extract", PaymentRequestByUserHandler.ExtractReceiptAsync)
                 .DisableAntiforgery() // JWT-authenticated multipart upload; no CSRF token needed.
                 .RequireActiveUser();
