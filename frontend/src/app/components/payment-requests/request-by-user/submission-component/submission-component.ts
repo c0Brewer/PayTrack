@@ -40,13 +40,24 @@ function maxDateValidator(maxDate: Date): ValidatorFn {
       return null;
     }
 
-    const selected = new Date(control.value);
-    const latestAllowed = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+    const selected = new Date(`${control.value}T00:00:00`);
+    const latestAllowed = startOfLocalDay(maxDate);
 
     return selected > latestAllowed
-      ? { maxDate: { max: latestAllowed.toISOString().slice(0, 10) } }
+      ? { maxDate: { max: toLocalDateInputValue(latestAllowed) } }
       : null;
   };
+}
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function toLocalDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 @Component({
@@ -74,7 +85,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   selectedFile: File | null = null;
   selectedFileName = '';
-  maxInvoiceDate = new Date().toISOString().split('T')[0];
+  maxInvoiceDate = toLocalDateInputValue(new Date());
   duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
   isDuplicateModalOpen = false;
   pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
@@ -304,7 +315,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         teamId: Number(v.teamId),
         amount: Number(v.amount),
         purposeOfPayment: v.purposeOfPayment,
-        paidAt: new Date(v.paidAt).toISOString(),
+        paidAt: v.paidAt,
       },
     };
 
@@ -462,9 +473,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   }
 
   private applyOfflineDraftToForm(draft: OfflineInvoiceSubmissionDraft): void {
-    const paidAt = draft.payload.transaction.paidAt
-      ? new Date(draft.payload.transaction.paidAt).toISOString().slice(0, 10)
-      : '';
+    const paidAt = draft.payload.transaction.paidAt ?? '';
 
     this.form.patchValue({
       invoiceNumber: draft.payload.invoiceNumber,
