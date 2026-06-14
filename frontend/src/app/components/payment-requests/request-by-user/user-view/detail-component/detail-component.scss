@@ -64,9 +64,22 @@
   }
 
   .status-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: v.$size-s;
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: v.$size-s;
+      min-height: 0;
+    }
+
+    &__actions {
+      align-items: end;
+      display: flex;
+      min-height: 2.75rem;
+    }
   }
 
   .history-table-wrapper {

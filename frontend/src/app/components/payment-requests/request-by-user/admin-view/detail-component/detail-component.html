@@ -83,83 +83,102 @@
           @if (canApprove(invoice.status)) {
             <form class="status-form col-12 col-xl-4" (ngSubmit)="onApprove()">
               <h4>Approve</h4>
-              <label>
-                <span>Cost Centre</span>
-                <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
-                  <option [ngValue]="null">Select cost centre</option>
-                  @for (costCentre of costCentres; track costCentre.id) {
-                    <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
-                  }
-                </select>
-              </label>
-              <label>
-                <span>Reason</span>
-                <textarea name="approvalReason" [(ngModel)]="approvalReason" maxlength="1000"></textarea>
-              </label>
-              <button
-                class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'approve' ||
-                  !approvalCostCentreId ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">check_circle</span>
-                {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
-              </button>
+              <div class="status-form__content">
+                <label>
+                  <span>Cost Centre</span>
+                  <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
+                    <option [ngValue]="null">Select cost centre</option>
+                    @for (costCentre of costCentres; track costCentre.id) {
+                      <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+                    }
+                  </select>
+                </label>
+                <label>
+                  <span>Reason</span>
+                  <textarea name="approvalReason" [(ngModel)]="approvalReason" maxlength="1000" placeholder="Enter a reason..."></textarea>
+                </label>
+              </div>
+              <div class="status-form__actions">
+                <button
+                  class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+                  type="submit"
+                  appDisableOfflineAction
+                  [disabled]="
+                    statusActionPending === 'approve' ||
+                    !approvalCostCentreId ||
+                    offlineService.isOffline()
+                  "
+                >
+                  <span class="material-symbols-outlined">check_circle</span>
+                  {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
+                </button>
+              </div>
             </form>
           }
 
           @if (canRequestChanges(invoice.status)) {
             <form class="status-form col-12 col-xl-4" (ngSubmit)="onRequestChanges()">
               <h4>Request Changes</h4>
-              <label>
-                <span>Reason</span>
-                <textarea
-                  name="changeRequestReason"
-                  [(ngModel)]="changeRequestReason"
-                  maxlength="1000"
-                  required
-                ></textarea>
-              </label>
-              <button
-                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'requestChanges' ||
-                  !changeRequestReason.trim() ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">edit_note</span>
-                {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
-              </button>
+              <div class="status-form__content">
+                <label>
+                  <span>Reason</span>
+                  <textarea
+                    name="changeRequestReason"
+                    [(ngModel)]="changeRequestReason"
+                    placeholder="Enter a reason..."
+                    rows="6"
+                    maxlength="1000"
+                    required
+                  ></textarea>
+                </label>
+              </div>
+              <div class="status-form__actions">
+                <button
+                  class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+                  type="submit"
+                  appDisableOfflineAction
+                  [disabled]="
+                    statusActionPending === 'requestChanges' ||
+                    !changeRequestReason.trim() ||
+                    offlineService.isOffline()
+                  "
+                >
+                  <span class="material-symbols-outlined">edit_note</span>
+                  {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
+                </button>
+              </div>
             </form>
           }
 
           @if (canDecline(invoice.status)) {
             <form class="status-form col-12 col-xl-4" (ngSubmit)="onDecline()">
               <h4>Decline</h4>
-              <label>
-                <span>Reason</span>
-                <textarea name="declineReason" [(ngModel)]="declineReason" maxlength="1000" required></textarea>
-              </label>
-              <button
-                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'decline' ||
-                  !declineReason.trim() ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">cancel</span>
-                {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
-              </button>
+              <div class="status-form__content">
+                <label>
+                  <span>Reason</span>
+                  <textarea
+                    name="declineReason"
+                    [(ngModel)]="declineReason"
+                    maxlength="1000"
+                    placeholder="Enter a reason..."
+                    rows="6" required></textarea>
+                </label>
+              </div>
+              <div class="status-form__actions">
+                <button
+                  class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+                  type="submit"
+                  appDisableOfflineAction
+                  [disabled]="
+                    statusActionPending === 'decline' ||
+                    !declineReason.trim() ||
+                    offlineService.isOffline()
+                  "
+                >
+                  <span class="material-symbols-outlined">cancel</span>
+                  {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
+                </button>
+              </div>
             </form>
           }
         </div>
