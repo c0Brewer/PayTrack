@@ -260,7 +260,8 @@ namespace PayTrack.Application.Services.Implementation
             var wasDeleted = await this.repo.DeletePaymentRequestByTeamAsync(id);
             if (!wasDeleted)
             {
-                throw new NotFoundException("PaymentRequestByTeam could not be found");
+                throw new InvalidStateException(
+                    "Cannot delete a payment request that is not in Submitted status.");
             }
 
             var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();

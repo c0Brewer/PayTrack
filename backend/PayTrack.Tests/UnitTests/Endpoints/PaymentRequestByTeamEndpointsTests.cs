@@ -435,6 +435,30 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
+
+        [Fact]
+        public async Task Delete_ReturnsNoContent_WithNoBody()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(7, null))
+                .Returns(Task.CompletedTask);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/7");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
     }
     public class PaymentRequestByTeamApiFactory : WebApplicationFactory<Program>
     {

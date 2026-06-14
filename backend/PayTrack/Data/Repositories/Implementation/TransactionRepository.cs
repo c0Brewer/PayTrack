@@ -364,22 +364,11 @@ namespace PayTrack.Data.Repositories.Implementation
         /// <inheritdoc/>
         public async Task<bool> DeletePaymentRequestByTeamAsync(int id)
         {
-            var transaction = await this.context.PaymentRequestsByTeam.FindAsync(id);
+            int deleted = await this.context.PaymentRequestsByTeam
+                .Where(t => t.Id == id && t.Status == TransactionStatus.Submitted)
+                .ExecuteDeleteAsync();
 
-            if (transaction is null)
-            {
-                return false;
-            }
-
-            this.context.PaymentRequestsByTeam.Remove(transaction);
-            int res = await this.context.SaveChangesAsync();
-
-            if (res < 1)
-            {
-                throw new InternalErrorException($"Deleting PaymentRequestByTeam did not end as expected. Deleted {res} transactions.");
-            }
-
-            return true;
+            return deleted > 0;
         }
 
         /// <inheritdoc/>

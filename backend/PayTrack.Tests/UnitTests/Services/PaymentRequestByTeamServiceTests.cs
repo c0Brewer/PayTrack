@@ -1075,6 +1075,36 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task Delete_ShouldThrow_WhenDeleteReturnsFalse_DueToConcurrentStatusChange()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                Status = TransactionStatus.Submitted,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(false);
+
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(7);
+
+            await act.Should().ThrowAsync<InvalidStateException>();
+        }
+
+        [Fact]
         public async Task Delete_ShouldCallRepository_WhenStatusIsSubmitted()
         {
             var repoMock = new Mock<ITransactionRepository>();
