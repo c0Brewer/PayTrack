@@ -8,6 +8,10 @@ namespace PayTrack.Tests.UnitTests.Services
 {
     public class ReceiptExtractionServiceTests
     {
+        private readonly ReceiptExtractionService service = new(
+            new ReceiptParser(),
+            NullLogger<ReceiptExtractionService>.Instance);
+
         [Fact]
         public async Task ExtractAsync_ExtractsFieldsFromTextBasedPdf()
         {
@@ -20,11 +24,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 Headers = new HeaderDictionary(),
                 ContentType = "application/pdf",
             };
-            var service = new ReceiptExtractionService(
-                new ReceiptParser(),
-                NullLogger<ReceiptExtractionService>.Instance);
-
-            var result = await service.ExtractAsync(formFile);
+            var result = await this.service.ExtractAsync(formFile);
 
             result.ExtractionSucceeded.Should().BeTrue();
             result.Amount.Value.Should().NotBeNull();
@@ -37,14 +37,52 @@ namespace PayTrack.Tests.UnitTests.Services
         {
             await using var stream = new MemoryStream([1, 2, 3]);
             var formFile = new FormFile(stream, 0, stream.Length, "receipt", "invoice.txt");
-            var service = new ReceiptExtractionService(
-                new ReceiptParser(),
-                NullLogger<ReceiptExtractionService>.Instance);
 
-            var act = () => service.ExtractAsync(formFile);
+            var act = () => this.service.ExtractAsync(formFile);
 
             await act.Should().ThrowAsync<InvalidFileException>()
                 .WithMessage("*PDF, JPG, JPEG, and PNG*");
+        }
+
+        [Fact]
+        public async Task ExtractAsync_RejectsEmptyFile()
+        {
+            await using var stream = new MemoryStream();
+            var formFile = new FormFile(stream, 0, 0, "receipt", "invoice.pdf");
+
+            var act = () => this.service.ExtractAsync(formFile);
+
+            await act.Should().ThrowAsync<InvalidFileException>()
+                .WithMessage("*empty*");
+        }
+
+        [Fact]
+        public async Task ExtractAsync_RejectsFileLargerThanTenMegabytes()
+        {
+            await using var stream = new MemoryStream([1]);
+            var formFile = new FormFile(stream, 0, (10 * 1024 * 1024) + 1, "receipt", "invoice.pdf");
+
+            var act = () => this.service.ExtractAsync(formFile);
+
+            await act.Should().ThrowAsync<InvalidFileException>()
+                .WithMessage("*10 MB*");
+        }
+
+        [Theory]
+        [InlineData("invoice.pdf")]
+        [InlineData("invoice.PNG")]
+        public async Task ExtractAsync_ReturnsFailureWhenSupportedFileCannotBeRead(string fileName)
+        {
+            await using var stream = new MemoryStream([1, 2, 3]);
+            var formFile = new FormFile(stream, 0, stream.Length, "receipt", fileName);
+
+            var result = await this.service.ExtractAsync(formFile);
+
+            result.ExtractionSucceeded.Should().BeFalse();
+            result.Message.Should().Contain("manually");
+            result.Amount.Value.Should().BeNull();
+            result.InvoiceDate.Value.Should().BeNull();
+            result.InvoiceNumber.Value.Should().BeNull();
         }
     }
 }

@@ -69,5 +69,42 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Amount.Value.Should().BeNull();
             result.Message.Should().NotBeNullOrWhiteSpace();
         }
+
+        [Fact]
+        public void Parse_UsesFallbackCandidatesWhenLabelsAreMissing()
+        {
+            const string Text = """
+                Example Store
+                2026-06-10
+                Item 19.99 EUR
+                Card payment 1 234,56 EUR
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.ExtractionSucceeded.Should().BeTrue();
+            result.Amount.Value.Should().Be(1234.56m);
+            result.Amount.Confidence.Should().Be(0.45m);
+            result.InvoiceDate.Value.Should().Be(new DateTime(2026, 6, 10));
+            result.InvoiceDate.Confidence.Should().Be(0.55m);
+            result.InvoiceNumber.Value.Should().BeNull();
+        }
+
+        [Fact]
+        public void Parse_IgnoresExcludedAmountsAndInvalidDates()
+        {
+            const string Text = """
+                Example Store
+                Invoice Date: 31/02/2026
+                Subtotal EUR 100,00
+                Tax EUR 20,00
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.ExtractionSucceeded.Should().BeFalse();
+            result.Amount.Value.Should().BeNull();
+            result.InvoiceDate.Value.Should().BeNull();
+        }
     }
 }
