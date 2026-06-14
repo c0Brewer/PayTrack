@@ -16,6 +16,7 @@ describe('TeamRequestAdminDetailComponent', () => {
   const serviceMock = {
     getPaymentRequestsByTeamById: vi.fn(),
     markAsPaid: vi.fn(),
+    deletePaymentRequestByTeam: vi.fn(),
   };
 
   const notificationMock = {
@@ -288,6 +289,83 @@ describe('TeamRequestAdminDetailComponent', () => {
       );
       expect(component.markAsPaidLoading).toBe(false);
       expect(component.showMarkAsPaidModal).toBe(true);
+    });
+  });
+
+  describe('canDelete', () => {
+    it('returns true when status is Submitted', () => {
+      component.request = { ...mockRequest, status: TransactionStatus.Submitted } as unknown as PaymentRequestByTeamDto;
+      expect(component.canDelete).toBe(true);
+    });
+
+    it('returns false when status is Approved', () => {
+      component.request = { ...mockRequest, status: TransactionStatus.Approved } as unknown as PaymentRequestByTeamDto;
+      expect(component.canDelete).toBe(false);
+    });
+
+    it('returns false when request is null', () => {
+      component.request = null;
+      expect(component.canDelete).toBe(false);
+    });
+  });
+
+  describe('openDeleteModal / cancelDelete', () => {
+    it('resets reason and shows modal on open', () => {
+      component.deleteReason = 'old reason';
+      component.openDeleteModal();
+      expect(component.showDeleteModal).toBe(true);
+      expect(component.deleteReason).toBe('');
+    });
+
+    it('hides modal on cancel', () => {
+      component.showDeleteModal = true;
+      component.cancelDelete();
+      expect(component.showDeleteModal).toBe(false);
+    });
+  });
+
+  describe('confirmDelete', () => {
+    it('does nothing when request is null', () => {
+      component.request = null;
+      component.confirmDelete();
+      expect(serviceMock.deletePaymentRequestByTeam).not.toHaveBeenCalled();
+    });
+
+    it('calls service with id and reason, shows success and navigates on success', () => {
+      component.request = mockRequest;
+      component.deleteReason = 'Budget cut';
+      serviceMock.deletePaymentRequestByTeam.mockReturnValue(of(undefined));
+
+      component.confirmDelete();
+
+      expect(serviceMock.deletePaymentRequestByTeam).toHaveBeenCalledWith(5, 'Budget cut');
+      expect(notificationMock.showSuccess).toHaveBeenCalledWith('Payment request deleted.');
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/payment-requests-by-team']);
+    });
+
+    it('passes null as reason when deleteReason is empty', () => {
+      component.request = mockRequest;
+      component.deleteReason = '';
+      serviceMock.deletePaymentRequestByTeam.mockReturnValue(of(undefined));
+
+      component.confirmDelete();
+
+      expect(serviceMock.deletePaymentRequestByTeam).toHaveBeenCalledWith(5, null);
+    });
+
+    it('shows error and clears loading on failure', () => {
+      component.request = mockRequest;
+      component.deleteReason = '';
+      serviceMock.deletePaymentRequestByTeam.mockReturnValue(
+        throwError(() => new Error('server error')),
+      );
+
+      component.confirmDelete();
+
+      expect(notificationMock.showError).toHaveBeenCalledWith(
+        'Could not delete payment request: server error',
+      );
+      expect(component.deleteLoading).toBe(false);
     });
   });
 });
