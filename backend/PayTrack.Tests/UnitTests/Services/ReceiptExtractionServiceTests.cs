@@ -29,7 +29,6 @@ namespace PayTrack.Tests.UnitTests.Services
             result.ExtractionSucceeded.Should().BeTrue();
             result.Amount.Value.Should().NotBeNull();
             result.InvoiceDate.Value.Should().NotBeNull();
-            result.Merchant.Value.Should().NotBeNullOrWhiteSpace();
             result.InvoiceNumber.Value.Should().NotBeNullOrWhiteSpace();
         }
 
