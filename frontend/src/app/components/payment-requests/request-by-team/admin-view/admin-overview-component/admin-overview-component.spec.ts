@@ -101,7 +101,7 @@ describe('TeamRequestAdminOverviewComponent', () => {
 
     expect(component.requests).toEqual(items);
     expect(component.totalCount).toBe(2);
-    expect(component.hasNext).toBe(false);
+    expect(component.hasNext).toBe(true);
     expect(component.hasPrev).toBe(false);
   });
 
@@ -155,6 +155,9 @@ describe('TeamRequestAdminOverviewComponent', () => {
         Source: FinancialExportSource.PaymentRequests,
         Limit: undefined,
         Offset: undefined,
+        VisibleStatusesOnly: true,
+        SortBy: undefined,
+        SortDirection: undefined,
       },
       FinancialExportFormat.Pdf,
     );
