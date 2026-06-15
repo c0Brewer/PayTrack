@@ -1447,15 +1447,16 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    InvoiceNumber?: string;
-                    PayoutType?: components["schemas"]["PayoutType"];
-                    BankAccountId?: number;
                     IncludeBankAccount?: boolean;
                     UserId?: number;
+                    RequestById?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
                     CostCentreId?: number;
@@ -1466,12 +1467,15 @@ export interface paths {
                     MaxPaidAt?: string;
                     MinDueDate?: string;
                     MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                     IncludeBudget?: boolean;
                     Format?: components["schemas"]["FinancialExportFormat"];
+                    Source?: components["schemas"]["FinancialExportSource"];
                 };
                 header?: never;
                 path?: never;
@@ -1569,6 +1573,8 @@ export interface paths {
                     MaxPaidAt?: string;
                     MinDueDate?: string;
                     MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
@@ -2084,12 +2090,16 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    RequestById?: number;
+                    VisibleStatusesOnly?: boolean;
                     UserId?: number;
+                    RequestById?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
                     CostCentreId?: number;
@@ -2100,12 +2110,15 @@ export interface paths {
                     MaxPaidAt?: string;
                     MinDueDate?: string;
                     MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                     IncludeBudget?: boolean;
                     Format?: components["schemas"]["FinancialExportFormat"];
+                    Source?: components["schemas"]["FinancialExportSource"];
                 };
                 header?: never;
                 path?: never;
@@ -2751,6 +2764,10 @@ export interface components {
          * @enum {integer}
          */
         FinancialExportFormat: 1 | 2;
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
         FinancialExportSource: 0 | 1 | 2;
         GoogleAuthCallbackDto: {
             code: string;

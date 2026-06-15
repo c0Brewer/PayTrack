@@ -176,13 +176,13 @@ export type FinancialExportQueryOptions = Omit<
   'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
 > &
   SortQueryOptions & {
-  Source?: FinancialExportSource;
-  InvoiceNumber?: string;
-  PayoutType?: PayoutType;
-  BankAccountId?: number;
-  RequestById?: number;
-  VisibleStatusesOnly?: boolean;
-};
+    Source?: FinancialExportSource;
+    InvoiceNumber?: string;
+    PayoutType?: PayoutType;
+    BankAccountId?: number;
+    RequestById?: number;
+    VisibleStatusesOnly?: boolean;
+  };
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
