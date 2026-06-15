@@ -289,8 +289,6 @@ export class BankStatementImportComponent {
     }
 
     return TransactionStatusLabels[status] ?? 'Unknown';
-  getStatusLabel(status: TransactionStatus | undefined): string {
-    return status !== undefined ? (TransactionStatusLabels[status] ?? 'Unknown') : 'Unknown';
   }
 
   formatIban(value: string): string {

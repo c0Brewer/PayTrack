@@ -12,12 +12,12 @@ import {
   SortDirection,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
-import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
-import { TeamRequestListComponent } from '../../general/list-component/list-component';
+import { TeamRequestAdminFilterComponent } from '../filter-component/filter-component';
+import { TeamRequestAdminListComponent } from '../list-component/list-component';
 
 @Component({
   selector: 'app-team-requests-component',
-  imports: [PaginationComponent, TeamRequestFilterComponent, TeamRequestListComponent],
+  imports: [PaginationComponent, TeamRequestAdminFilterComponent, TeamRequestAdminListComponent],
   templateUrl: './admin-list-component.html',
   styleUrl: './admin-list-component.scss',
 })

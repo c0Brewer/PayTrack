@@ -17,22 +17,22 @@
     </div>
   </div>
 
-  <app-team-request-filter-component
+  <app-team-request-admin-filter-component
     [limitSelection]="limitSelection"
     [limit]="limit"
     [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onUpdateLimit($event)"
-  ></app-team-request-filter-component>
+  ></app-team-request-admin-filter-component>
 
-  <app-team-request-list-component
+  <app-team-request-admin-list-component
     [requests]="requests"
     [showUserColumn]="true"
     [sortBy]="sortBy"
     [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
     (sortChange)="onSortChange($event)"
-  ></app-team-request-list-component>
+  ></app-team-request-admin-list-component>
 
   <app-pagination-component
     [hasNext]="hasNext"
