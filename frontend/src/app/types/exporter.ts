@@ -181,6 +181,7 @@ export type FinancialExportQueryOptions = Omit<
   PayoutType?: PayoutType;
   BankAccountId?: number;
   RequestById?: number;
+  VisibleStatusesOnly?: boolean;
 };
 
 // Bank Account

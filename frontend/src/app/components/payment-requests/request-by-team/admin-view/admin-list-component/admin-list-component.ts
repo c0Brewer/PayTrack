@@ -42,7 +42,7 @@ export class TeamRequestsComponent implements OnInit {
 
   filterOptions: GetPaymentRequestsByTeamOptions = {
     IncludeTeam: true,
-    VisibleStatusesOnly: false,
+    VisibleStatusesOnly: true,
   };
   isExporting: boolean = false;
   sortBy: string | null = null;
@@ -57,7 +57,7 @@ export class TeamRequestsComponent implements OnInit {
     const query: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
       IncludeTeam: true,
-      VisibleStatusesOnly: false,
+      VisibleStatusesOnly: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
       SortBy: this.sortBy ?? undefined,
@@ -111,6 +111,9 @@ export class TeamRequestsComponent implements OnInit {
           Source: FinancialExportSource.PaymentRequests,
           Limit: undefined,
           Offset: undefined,
+          VisibleStatusesOnly: true,
+          SortBy: this.sortBy ?? undefined,
+          SortDirection: this.sortDirection ?? undefined,
         },
         format,
       )

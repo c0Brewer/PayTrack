@@ -28,8 +28,6 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transactions = await this.GetTransactionsForExportAsync(query);
             var rows = transactions
-                .OrderBy(transaction => transaction.PaidAt ?? transaction.CreatedAt)
-                .ThenBy(transaction => transaction.Id)
                 .Select(ToExportRow)
                 .ToList();
 
@@ -77,6 +75,8 @@ namespace PayTrack.Application.Services.Implementation
                 MaxPaidAt = query.MaxPaidAt,
                 MinDueDate = query.MinDueDate,
                 MaxDueDate = query.MaxDueDate,
+                SortBy = query.SortBy,
+                SortDirection = query.SortDirection,
                 IncludeTeam = true,
                 IncludeBudget = true,
             };
@@ -104,6 +104,8 @@ namespace PayTrack.Application.Services.Implementation
                 MaxPaidAt = query.MaxPaidAt,
                 MinDueDate = query.MinDueDate,
                 MaxDueDate = query.MaxDueDate,
+                SortBy = query.SortBy,
+                SortDirection = query.SortDirection,
                 IncludeTeam = true,
                 IncludeBudget = true,
                 IncludeBankAccount = true,
@@ -130,8 +132,11 @@ namespace PayTrack.Application.Services.Implementation
                 MaxPaidAt = query.MaxPaidAt,
                 MinDueDate = query.MinDueDate,
                 MaxDueDate = query.MaxDueDate,
+                SortBy = query.SortBy,
+                SortDirection = query.SortDirection,
                 IncludeTeam = true,
                 IncludeBudget = true,
+                VisibleStatusesOnly = true,
             };
         }
 

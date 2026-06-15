@@ -139,6 +139,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 BankAccountId = 12,
                 TeamId = 2,
                 UserId = 5,
+                SortBy = "InvoiceNumber",
+                SortDirection = "Asc",
                 Limit = 10,
                 Offset = 20,
             });
@@ -150,6 +152,8 @@ namespace PayTrack.Tests.UnitTests.Services
             capturedQuery.BankAccountId.Should().Be(12);
             capturedQuery.TeamId.Should().Be(2);
             capturedQuery.UserId.Should().Be(5);
+            capturedQuery.SortBy.Should().Be("InvoiceNumber");
+            capturedQuery.SortDirection.Should().Be("Asc");
             capturedQuery.IncludeTeam.Should().BeTrue();
             capturedQuery.IncludeBudget.Should().BeTrue();
             capturedQuery.IncludeBankAccount.Should().BeTrue();
@@ -185,6 +189,20 @@ namespace PayTrack.Tests.UnitTests.Services
                 new PaymentRequestByTeam
                 {
                     Id = 1,
+                    Amount = 40,
+                    PaymentDirection = PaymentDirection.In,
+                    Status = TransactionStatus.Paid,
+                    TeamId = 1,
+                    Team = new Team { Id = 1, Name = "Powertrain" },
+                    UserId = 1,
+                    User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
+                    PurposeOfPayment = "Workshop fee",
+                    CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                    DueDate = new DateTime(2026, 2, 15, 0, 0, 0, DateTimeKind.Utc),
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 2,
                     Amount = 100,
                     PaymentDirection = PaymentDirection.In,
                     Status = TransactionStatus.Submitted,
@@ -201,20 +219,6 @@ namespace PayTrack.Tests.UnitTests.Services
                         Name = "Income Budget",
                         CostCentre = new CostCentre { Id = 1, Name = "Membership" },
                     },
-                },
-                new PaymentRequestByTeam
-                {
-                    Id = 2,
-                    Amount = 40,
-                    PaymentDirection = PaymentDirection.In,
-                    Status = TransactionStatus.Paid,
-                    TeamId = 1,
-                    Team = new Team { Id = 1, Name = "Powertrain" },
-                    UserId = 1,
-                    User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
-                    PurposeOfPayment = "Workshop fee",
-                    CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
-                    DueDate = new DateTime(2026, 2, 15, 0, 0, 0, DateTimeKind.Utc),
                 },
                 new PaymentRequestByTeam
                 {
@@ -243,6 +247,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 Format = FinancialExportFormat.Csv,
                 RequestById = 8,
                 TeamId = 1,
+                SortBy = "DueDate",
+                SortDirection = "Desc",
             });
 
             result.FileName.Should().StartWith("payment-requests-export-");
@@ -250,19 +256,27 @@ namespace PayTrack.Tests.UnitTests.Services
             capturedQuery.RequestById.Should().Be(8);
             capturedQuery.TeamId.Should().Be(1);
             capturedQuery.Status.Should().BeNull();
+            capturedQuery.SortBy.Should().Be("DueDate");
+            capturedQuery.SortDirection.Should().Be("Desc");
             capturedQuery.IncludeTeam.Should().BeTrue();
             capturedQuery.IncludeBudget.Should().BeTrue();
+            capturedQuery.VisibleStatusesOnly.Should().BeTrue();
 
             var csv = Encoding.UTF8.GetString(result.Content);
             csv.Should().Contain("Amount,Due Date,Purpose,Team/Cost Centre,Status,User");
-            csv.Should().Contain("100.00,31.01.2026,Membership fee,Powertrain / Membership,Submitted,Member One");
             csv.Should().Contain("40.00,15.02.2026,Workshop fee,Powertrain,Paid,Member One");
+            csv.Should().Contain("100.00,31.01.2026,Membership fee,Powertrain / Membership,Submitted,Member One");
+            csv.IndexOf("40.00,15.02.2026", StringComparison.Ordinal)
+                .Should()
+                .BeLessThan(csv.IndexOf("100.00,31.01.2026", StringComparison.Ordinal));
             csv.Should().NotContain("Approved,20.00");
 
             var pdfResult = await service.ExportFinancialDataAsync(new GetTransactionQuery
             {
                 Source = FinancialExportSource.PaymentRequests,
                 Format = FinancialExportFormat.Pdf,
+                SortBy = "DueDate",
+                SortDirection = "Desc",
             });
             var pdf = Encoding.ASCII.GetString(pdfResult.Content);
             pdf.Should().Contain("Amount");
@@ -271,6 +285,9 @@ namespace PayTrack.Tests.UnitTests.Services
             pdf.Should().Contain("Team/Cost Centre");
             pdf.Should().Contain("Status");
             pdf.Should().Contain("Member One");
+            pdf.IndexOf("Workshop fee", StringComparison.Ordinal)
+                .Should()
+                .BeLessThan(pdf.IndexOf("Membership fee", StringComparison.Ordinal));
         }
 
         [Fact]

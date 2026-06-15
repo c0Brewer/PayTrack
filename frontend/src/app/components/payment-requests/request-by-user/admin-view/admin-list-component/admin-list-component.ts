@@ -122,6 +122,8 @@ export class RequestsComponent implements OnInit {
           Source: FinancialExportSource.SubmittedInvoices,
           Limit: undefined,
           Offset: undefined,
+          SortBy: this.sortBy ?? undefined,
+          SortDirection: this.sortDirection ?? undefined,
         },
         format,
       )
