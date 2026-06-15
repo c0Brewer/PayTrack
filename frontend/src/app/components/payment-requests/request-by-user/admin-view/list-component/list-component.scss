@@ -1,0 +1,206 @@
+@use 'variables' as v;
+
+.invoice-table-wrapper {
+  border-radius: v.$size-xs;
+  width: 100%;
+}
+
+:host-context(.my-invoices),
+:host-context(.requests) {
+  .invoice-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .invoice-table {
+    min-width: 82rem;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .status-badge {
+      min-width: 8.5rem;
+      width: 8.5rem;
+    }
+
+    .user-col {
+      min-width: 9rem;
+      width: 9rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  :host-context(.my-invoices),
+  :host-context(.requests) {
+    .invoice-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .invoice-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .status-badge,
+      .user-col {
+        min-width: 0;
+        width: auto;
+      }
+
+      .status-badge .status {
+        justify-self: end;
+        max-width: min(14rem, 100%);
+      }
+
+      .user-col {
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
+  }
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  border-radius: v.$size-xs;
+  overflow: hidden;
+
+  .status-badge {
+    text-align: center;
+  }
+
+  .status-badge .status {
+    display: inline-flex;
+    justify-content: center;
+    max-width: 100%;
+    text-align: center;
+    word-break: normal;
+    white-space: normal;
+  }
+  thead {
+    background: v.$background-dark;
+
+    th {
+      text-align: left;
+      padding: v.$size-s;
+      font-weight: v.$font-semibold;
+      color: v.$text-light;
+      border-bottom: 1px solid v.$border-color;
+    }
+  }
+
+  tbody {
+    td {
+      padding: v.$size-s;
+      border-bottom: 1px solid v.$border-color;
+      vertical-align: middle;
+    }
+
+    tr {
+      transition: background 0.15s ease;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background: v.$gray-100;
+    }
+  }
+
+  /* ---------- ACTIONS ---------- */
+
+  .actions-col {
+    display: table-cell;
+    min-width: 5.5rem;
+    text-align: right;
+    white-space: nowrap;
+    width: 5.5rem;
+  }
+
+  .view-btn,
+  .duplicate-badge {
+    align-items: center;
+    display: inline-flex;
+    gap: v.$size-xxs;
+    justify-content: center;
+    padding: v.$size-xxs v.$size-s;
+    border: 1px solid v.$border-color;
+    background: v.$background-light;
+    font-size: v.$font-xs;
+    border-radius: v.$size-xs;
+    color: v.$text-color;
+    cursor: pointer;
+    line-height: 1.2;
+    min-height: 1.75rem;
+    white-space: nowrap;
+    transition:
+      transform 0.1s ease,
+      box-shadow 0.1s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px v.$shadow-color;
+    }
+  }
+
+  .duplicate-badge {
+    border-color: v.$TUR-primary-orange;
+    color: v.$TUR-primary-orange;
+    font-weight: v.$font-semibold;
+
+    &:hover {
+      background: v.$TUR-primary-orange;
+      border-color: v.$TUR-primary-orange;
+      color: white;
+    }
+
+    .material-symbols-outlined {
+      font-size: 1rem;
+      line-height: 1;
+    }
+  }
+
+  .duplicate-empty {
+    color: v.$text-muted;
+  }
+}

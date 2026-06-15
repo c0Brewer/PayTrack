@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  inject,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -18,9 +19,11 @@ import {
 } from '@angular/forms';
 import { Subject, forkJoin, map, takeUntil } from 'rxjs';
 
+import { DisableOfflineActionDirective } from '../../../../directives/disable-offline-action.directive';
 import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
+import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
@@ -56,11 +59,14 @@ function minDateValidator(min: Date): ValidatorFn {
     BoxComponent,
     TypeaheadSelectComponent,
     CsvBulkImportModalComponent,
+    DisableOfflineActionDirective,
   ],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })
 export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
+  protected readonly offlineService = inject(OfflineService);
+
   @ViewChild(TypeaheadSelectComponent) private readonly typeaheadRef!: TypeaheadSelectComponent;
   @ViewChild('csvFileInput') private readonly csvFileInputRef!: ElementRef<HTMLInputElement>;
 

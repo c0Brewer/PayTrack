@@ -85,13 +85,13 @@ namespace PayTrack.Data.Repositories.Implementation
             // Filter by Name
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.Name, $"%{query.Name}%"));
+                dbQuery = dbQuery.Where(t => t.Name.ToLower().Contains(query.Name.ToLower()));
             }
 
             // Filter by Description
             if (!string.IsNullOrWhiteSpace(query?.Description))
             {
-                dbQuery = dbQuery.Where(t => t.Description != null && t.Description.Contains(query.Description));
+                dbQuery = dbQuery.Where(t => t.Description != null && t.Description.ToLower().Contains(query.Description.ToLower()));
             }
 
             // Filter by active status

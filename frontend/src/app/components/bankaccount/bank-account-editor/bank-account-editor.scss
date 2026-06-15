@@ -27,22 +27,6 @@ label {
 }
 
 
-input {
-  background: v.$TUR-secondary-background;
-  border: 1px solid v.$TUR-border-color;
-  border-radius: 0.45rem;
-  color: v.$text-color;
-  font-size: v.$font-s;
-  min-height: 2.6rem;
-  padding: 0 0.8rem;
-}
-
-input:focus {
-  border-color: v.$TUR-primary-orange;
-  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
-  outline: none;
-}
-
 .actions {
   display: flex;
   gap: v.$size-xs;
@@ -50,34 +34,6 @@ input:focus {
   margin-top: v.$size-xs;
 }
 
-button {
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: v.$font-bold;
-  min-height: 2.5rem;
-  padding: 0.5rem 0.95rem;
-}
-
-button[type='submit'] {
-  background: v.$TUR-primary-orange;
-  color: #fff;
-}
-
-button[type='submit']:hover {
-  background: #d66202;
-}
-
-button.secondary {
-  background: v.$background-light;
-  border-color: v.$TUR-border-color;
-  color: v.$text-light;
-}
-
-button.secondary:hover {
-  border-color: v.$TUR-primary-orange;
-  color: v.$TUR-primary-orange;
-}
 
 @media (max-width: 767.98px) {
   .actions {

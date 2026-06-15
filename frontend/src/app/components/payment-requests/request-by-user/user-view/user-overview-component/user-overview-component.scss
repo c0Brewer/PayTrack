@@ -1,0 +1,7 @@
+@use 'variables' as v;
+
+.my-invoices {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
+}

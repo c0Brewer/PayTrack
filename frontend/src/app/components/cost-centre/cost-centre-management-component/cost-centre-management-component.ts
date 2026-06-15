@@ -14,7 +14,7 @@ import {
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { CostCentreDeleteComponent } from '../cost-centre-delete-component/cost-centre-delete-component';
-import { CostCentreEditComponent } from '../cost-centre-edit-component/cost-centre-edit-component';
+import { CostCentreEditModalComponent } from '../cost-centre-edit-modal-component/cost-centre-edit-modal-component';
 import { CostCentreFilterComponent } from '../cost-centre-filter-component/cost-centre-filter-component';
 import { CostCentreListComponent } from '../cost-centre-list-component/cost-centre-list-component';
 
@@ -23,7 +23,7 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
   imports: [
     CostCentreListComponent,
     CostCentreFilterComponent,
-    CostCentreEditComponent,
+    CostCentreEditModalComponent,
     CostCentreDeleteComponent,
     PaginationComponent,
     StatBoxComponent,

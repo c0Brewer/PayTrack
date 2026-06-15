@@ -74,45 +74,34 @@ describe('SeasonManagementComponent', () => {
     );
   });
 
-  it('createSeason should trim input, create a season, reset the form, and reload', () => {
+  it('createSeason should create a season and reload', () => {
     const loadSpy = vi.spyOn(component, 'loadSeasons');
-    component.newSeasonName = '  2027  ';
 
-    component.createSeason();
+    component.createSeason('2027');
 
     expect(seasonServiceMock.createSeason).toHaveBeenCalledWith({ name: '2027' });
     expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Season created successfully');
-    expect(component.newSeasonName).toBe('');
     expect(loadSpy).toHaveBeenCalledOnce();
-  });
-
-  it('createSeason should do nothing for blank names', () => {
-    component.newSeasonName = '   ';
-
-    component.createSeason();
-
-    expect(seasonServiceMock.createSeason).not.toHaveBeenCalled();
   });
 
   it('createSeason should show error when API throws', () => {
     seasonServiceMock.createSeason.mockReturnValueOnce(
       throwError(() => new Error('Create failed')),
     );
-    component.newSeasonName = '2027';
 
-    component.createSeason();
+    component.createSeason('2027');
 
     expect(notificationServiceMock.showError).toHaveBeenCalledWith(
       'Could not create season: Create failed',
     );
   });
 
-  it('should render season names and budget counts', () => {
+  it('should pass seasons to the season list component', () => {
     component.seasons = mockSeasons;
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('2025');
-    expect(fixture.nativeElement.textContent).toContain('2026');
-    expect(fixture.nativeElement.textContent).toContain('1');
+    const list = fixture.nativeElement.querySelector('app-season-list-component');
+
+    expect(list).not.toBeNull();
   });
 });

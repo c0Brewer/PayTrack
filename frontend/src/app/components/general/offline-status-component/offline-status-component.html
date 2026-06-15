@@ -1,0 +1,6 @@
+@if (offlineService.isOffline()) {
+  <div class="offline-banner" role="status" aria-live="polite">
+    <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+    <span>{{ offlineService.bannerMessage() }}</span>
+  </div>
+}

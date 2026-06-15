@@ -1,0 +1,62 @@
+@use 'variables' as v;
+
+.team-request-detail {
+  h3 {
+    margin: 0 0 v.$size-s;
+  }
+
+  .info-table {
+    border-collapse: collapse;
+    font-size: v.$font-s;
+    margin-bottom: 0;
+    width: 100%;
+
+    th {
+      color: v.$text-muted;
+      font-weight: v.$font-medium;
+      padding: v.$size-xs v.$size-m v.$size-xs 0;
+      text-align: left;
+      width: 180px;
+    }
+
+    td {
+      padding: v.$size-xs 0;
+    }
+  }
+
+  .request-info-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .status-history-box {
+    margin-bottom: v.$size-l;
+  }
+
+  .history-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    min-width: 42rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .team-request-detail {
+    .info-table {
+      th {
+        display: block;
+        padding: v.$size-xs 0 0;
+        width: auto;
+      }
+
+      td {
+        display: block;
+        padding: 0 0 v.$size-xs;
+      }
+    }
+  }
+}

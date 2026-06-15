@@ -146,6 +146,8 @@ export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestD
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
+export type MarkAsPaidPaymentRequestByTeamDto =
+  components['schemas']['MarkAsPaidPaymentRequestByTeamDto'];
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =

@@ -12,6 +12,7 @@ using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.User;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -196,6 +197,87 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         // ----------------------------
+        // MARK AS PAID
+        // ----------------------------
+        [Fact]
+        public async Task MarkAsPaid_ReturnsOk()
+        {
+            // Arrange
+            var updated = new PaymentRequestByTeam { Id = 7, Status = TransactionStatus.Paid };
+
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.MarkAsPaidAsync(7, 1, It.IsAny<string?>()))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto("Payment manually approved and processed.");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/7/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByTeamDto>();
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(7);
+
+            _factory.ServiceMock.Verify(
+                s => s.MarkAsPaidAsync(7, 1, "Payment manually approved and processed."),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ReturnsNotFound_WhenCurrentUserIsNull()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync((User?)null);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto(null);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/1/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ReturnsBadRequest_WhenInvalidState()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.MarkAsPaidAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+                .ThrowsAsync(new InvalidStateException("Cannot mark a transaction as Paid when its current status is Paid."));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new MarkAsPaidPaymentRequestByTeamDto(null);
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/transaction/team/1/mark-as-paid", dto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        // ----------------------------
         // UPDATE
         // ----------------------------
         [Fact]
@@ -229,6 +311,153 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var result = await response.Content.ReadFromJsonAsync<PaymentRequestByTeamDto>();
             result!.Amount.Should().Be(999);
+        }
+
+        // ----------------------------
+        // DELETE
+        // ----------------------------
+        [Fact]
+        public async Task Delete_ReturnsNoContent()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(7, "Budget cut"))
+                .Returns(Task.CompletedTask);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new DeletePaymentRequestByTeamDto("Budget cut");
+
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/7")
+            {
+                Content = JsonContent.Create(dto),
+            };
+
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            _factory.ServiceMock.Verify(
+                s => s.DeletePaymentRequestByTeamAsync(7, "Budget cut"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsBadRequest_WhenInvalidState()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(It.IsAny<int>(), It.IsAny<string?>()))
+                .ThrowsAsync(new InvalidStateException("Cannot delete a payment request that is not in Submitted status."));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new DeletePaymentRequestByTeamDto(null);
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/1")
+            {
+                Content = JsonContent.Create(dto),
+            };
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsNotFound_WhenMissing()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(It.IsAny<int>(), It.IsAny<string?>()))
+                .ThrowsAsync(new NotFoundException("PaymentRequestByTeam could not be found"));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new DeletePaymentRequestByTeamDto(null);
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/999")
+            {
+                Content = JsonContent.Create(dto),
+            };
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsNoContent_WithNullReason()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(7, null))
+                .Returns(Task.CompletedTask);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var dto = new DeletePaymentRequestByTeamDto(null);
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/7")
+            {
+                Content = JsonContent.Create(dto),
+            };
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsNoContent_WithNoBody()
+        {
+            // Arrange
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser())
+                .ReturnsAsync(new User { Id = 1, Role = Role.Admin });
+
+            _factory.ServiceMock
+                .Setup(s => s.DeletePaymentRequestByTeamAsync(7, null))
+                .Returns(Task.CompletedTask);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/v1/transaction/team/7");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
     }
     public class PaymentRequestByTeamApiFactory : WebApplicationFactory<Program>

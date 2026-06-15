@@ -47,3 +47,7 @@ Financial classification entity. Budgets are linked to a Cost Centre; transactio
 ## Season
 
 Time-bounded planning period. Budgets belong to a Season.
+
+## Deactivated User
+
+A **User** with `IsActive = false`. A Deactivated User may still log in and read their own transaction history, but may not submit new invoices or exercise any admin capabilities regardless of their assigned role. Deactivation is enforced per-request (not just at login), so it takes effect immediately without requiring the user to re-authenticate.

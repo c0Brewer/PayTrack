@@ -288,7 +288,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task GetDuplicatePaymentRequests_ReturnsOk()
         {
             // Arrange
-            var user = new User { Id = 123 };
+            var user = new User { Id = 123, Role = Role.Admin };
             var paidAt = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
             var matches = new List<DuplicatePaymentRequestByUserMatch>
             {
@@ -317,7 +317,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .Returns(true);
 
             _factory.ServiceMock
-                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7))
+                .Setup(s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7, It.IsAny<bool>()))
                 .ReturnsAsync(matches);
 
             var client = _factory.CreateClient();
@@ -337,7 +337,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             dto[0].MatchedFields.Should().Contain("invoiceNumber");
 
             _factory.ServiceMock.Verify(
-                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7),
+                s => s.GetDuplicatePaymentRequestsByUserAsync(user.Id, 99, 100, It.Is<DateTime>(d => d.Date == paidAt.Date), "INV-100", 7, true),
                 Times.Once);
         }
 
@@ -388,6 +388,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         [Fact]
         public async Task DeletePaymentRequest_ReturnsNoContent()
         {
+            _factory.AuthServiceMock
+                .Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 

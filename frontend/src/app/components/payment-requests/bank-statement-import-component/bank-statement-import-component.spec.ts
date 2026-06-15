@@ -316,6 +316,7 @@ describe('BankStatementImportComponent', () => {
       bankStatementServiceMock.applyUpdates.mockReturnValue(of([mockTransaction]));
 
       component.confirmUpdates();
+      component.proceedWithSubmit();
       await fixture.whenStable();
 
       expect(component.phase()).toBe('upload');
@@ -330,6 +331,7 @@ describe('BankStatementImportComponent', () => {
       ]);
 
       component.confirmUpdates();
+      component.proceedWithSubmit();
       await fixture.whenStable();
 
       const payload = bankStatementServiceMock.applyUpdates.mock.calls[0][0];
@@ -351,6 +353,7 @@ describe('BankStatementImportComponent', () => {
       );
 
       component.confirmUpdates();
+      component.proceedWithSubmit();
       await fixture.whenStable();
 
       expect(notificationServiceMock.showError).toHaveBeenCalledWith('Update failed');

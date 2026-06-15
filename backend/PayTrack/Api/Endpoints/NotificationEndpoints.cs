@@ -26,6 +26,7 @@ namespace PayTrack.Api.Endpoints
                 .MapGroup($"/{GroupRoute}")
                 .WithTags(GroupName)
                 .RequireAuthorization()
+                .RequireActiveUser()
                 .RequireRole(Role.Admin);
 
             group.MapPost("/email", NotificationHandler.SendEmailNotificationAsync);

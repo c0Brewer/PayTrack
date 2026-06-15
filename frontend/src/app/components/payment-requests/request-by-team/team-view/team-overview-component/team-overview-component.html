@@ -1,0 +1,60 @@
+<div class="main-page-container team-requests">
+  <h2 class="m-0">My Payment Requests</h2>
+
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component
+      header="Total Requests"
+      [content]="totalCount"
+      icon="docs"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Total Amount"
+      [content]="getTotalAmount() | euro"
+      icon="trending_up"
+      iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Submitted"
+      [content]="getSubmittedRequestCount()"
+      icon="send"
+      iconColor="#F59E0B"
+      iconBackgroundColor="#FFFBEB"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Paid"
+      [content]="getPaidRequestCount()"
+      icon="paid"
+      iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+  </div>
+  <app-team-request-team-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
+  ></app-team-request-team-filter-component>
+
+  <app-team-request-team-list-component
+    [requests]="requests"
+    (openDetail)="onOpenDetail($event)"
+  ></app-team-request-team-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

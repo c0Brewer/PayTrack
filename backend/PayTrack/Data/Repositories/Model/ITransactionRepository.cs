@@ -96,6 +96,7 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="paidAt">Paid-at day.</param>
         /// <param name="invoiceNumber">Optional invoice number.</param>
         /// <param name="paymentRequestByUserId">Optional source payment request id. Dismissed pairs with this id are excluded.</param>
+        /// <param name="includeOtherUsers">Whether candidates from other users may be returned.</param>
         /// <returns>List of potential duplicate candidates.</returns>
         Task<List<PaymentRequestByUser>> GetPotentialDuplicatesAsync(
             int userId,
@@ -103,7 +104,8 @@ namespace PayTrack.Data.Repositories.Model
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null);
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false);
 
         /// <summary>
         /// Updates a PaymentRequestByUser using the given input.
@@ -127,11 +129,34 @@ namespace PayTrack.Data.Repositories.Model
         Task<PaymentRequestByTeam> UpdateAsync(PaymentRequestByTeam transaction);
 
         /// <summary>
+        /// Atomically updates a PaymentRequestByTeam and persists a status history entry in a single SaveChanges call.
+        /// </summary>
+        /// <param name="transaction">The transaction to update.</param>
+        /// <param name="history">The status history entry to add.</param>
+        /// <returns>The updated transaction.</returns>
+        Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history);
+
+        /// <summary>
+        /// Returns all PaymentRequestByTeam entries whose due date falls on <paramref name="dueDate"/>
+        /// and whose status is not Paid or Declined. Includes the User navigation property.
+        /// </summary>
+        /// <param name="dueDate">The date to match against DueDate (time portion is ignored).</param>
+        /// <returns>List of matching PaymentRequestByTeam entries.</returns>
+        Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate);
+
+        /// <summary>
         /// Deletes a PaymentRequestByUser by id.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
         /// <returns><c>true</c> if an invoice was deleted; otherwise <c>false</c>.</returns>
         Task<bool> DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByTeam by id.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByTeam to delete.</param>
+        /// <returns><c>true</c> if an entry was deleted; otherwise <c>false</c>.</returns>
+        Task<bool> DeletePaymentRequestByTeamAsync(int id);
 
         /// <summary>
         /// Stores that a potential duplicate pair has been reviewed and dismissed.

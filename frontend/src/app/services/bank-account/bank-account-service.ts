@@ -7,6 +7,7 @@ import {
   CreateBankAccountRequestDto,
   UpdateBankAccountRequestDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 export type { BankAccountDto, CreateBankAccountRequestDto, UpdateBankAccountRequestDto };
 
@@ -24,10 +25,12 @@ export class BankAccountService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise, 'Failed to load bank accounts'));
   }
 
   public createBankAccount(request: CreateBankAccountRequestDto): Observable<BankAccountDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/bankaccount', {
         params: {},
@@ -46,6 +49,8 @@ export class BankAccountService {
     id: number,
     request: UpdateBankAccountRequestDto,
   ): Observable<BankAccountDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .PUT('/api/v1/bankaccount/{id}', {
         params: {
@@ -63,6 +68,8 @@ export class BankAccountService {
   }
 
   public deleteBankAccount(id: number): Observable<void> {
+    ensureOnlineForMutation();
+
     const promise = client
       .DELETE('/api/v1/bankaccount/{id}', {
         params: {

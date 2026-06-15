@@ -1,0 +1,90 @@
+@use 'variables' as v;
+
+.box {
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  overflow: hidden;
+}
+
+/* AI generated CSS based on my design via a screenshot*/
+.season-list__title {
+  border-bottom: 1px solid v.$TUR-border-color;
+  color: v.$text-color;
+  font-size: v.$font-m;
+  font-weight: v.$font-semibold;
+  margin: 0;
+  padding: v.$size-m;
+}
+
+.season-list__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.season-list__row {
+  align-items: center;
+  border-bottom: 1px solid v.$TUR-border-color;
+  display: grid;
+  gap: v.$size-s;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 6.25rem;
+  padding: v.$size-m;
+}
+
+.season-list__row:last-child {
+  border-bottom: 0;
+}
+
+.season-list__icon {
+  align-items: center;
+  background: #fff7ed;
+  border-radius: 0.5rem;
+  color: v.$TUR-primary-orange;
+  display: inline-flex;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+
+  .material-symbols-outlined {
+    font-size: 1.35rem;
+  }
+}
+
+.season-list__content {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+  min-width: 0;
+}
+
+.season-list__name {
+  color: v.$text-color;
+  font-size: v.$font-m;
+  font-weight: v.$font-semibold;
+  line-height: 1.25;
+}
+
+.season-list__meta {
+  color: v.$text-muted;
+  font-size: v.$font-s;
+  font-weight: v.$font-medium;
+  line-height: 1.25;
+}
+
+.season-list__empty {
+  color: v.$text-muted;
+  padding: v.$size-m;
+}
+
+@media (max-width: 575.98px) {
+  .season-list__row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .season-list__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}

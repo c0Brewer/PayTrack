@@ -36,6 +36,7 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = ApplySorting(dbQuery, query);
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
+            // Could potentially add other ordering logic here as well
             var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
@@ -50,7 +51,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.InvoiceNumber))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.InvoiceNumber, $"%{query.InvoiceNumber}%"));
+                dbQuery = dbQuery.Where(t => t.InvoiceNumber.ToLower().Contains(query.InvoiceNumber.ToLower()));
             }
 
             if (query?.PayoutType.HasValue == true)
@@ -74,6 +75,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Include(t => t.BankAccount);
             }
 
+            // Could potentially add other ordering logic here as well
             var items = await dbQuery.ToListAsync();
             await this.SetPotentialDuplicateFlagsAsync(items);
 
@@ -103,6 +105,7 @@ namespace PayTrack.Data.Repositories.Implementation
             dbQuery = ApplySorting(dbQuery, query);
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
+            // Could potentially add other ordering logic here as well
             var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
@@ -238,7 +241,8 @@ namespace PayTrack.Data.Repositories.Implementation
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null)
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false)
         {
             var paidAtDayStart = DateTime.SpecifyKind(paidAt.Date, DateTimeKind.Utc);
             var paidAtDayEnd = paidAtDayStart.AddDays(1);
@@ -249,12 +253,19 @@ namespace PayTrack.Data.Repositories.Implementation
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
                     paymentRequestByUser.PaidAt.HasValue &&
-                    (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
-                        && (paymentRequestByUser.Amount == amount
-                            || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
-                    || (hasInvoiceNumber
-                        && paymentRequestByUser.InvoiceNumber != null
-                        && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)));
+                    (includeOtherUsers
+                        ? (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
+                            && (paymentRequestByUser.Amount == amount
+                                || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
+                            || (hasInvoiceNumber
+                                && paymentRequestByUser.InvoiceNumber != null
+                                && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber))
+                        : (paymentRequestByUser.UserId == userId
+                            && (paymentRequestByUser.Amount == amount
+                                || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)
+                                || (hasInvoiceNumber
+                                    && paymentRequestByUser.InvoiceNumber != null
+                                    && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)))));
 
             if (paymentRequestByUserId.HasValue)
             {
@@ -316,6 +327,37 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<PaymentRequestByTeam> UpdateAndAddStatusHistoryAsync(PaymentRequestByTeam transaction, TransactionStatusHistory history)
+        {
+            this.context.PaymentRequestsByTeam.Update(transaction);
+            this.context.TransactionStatusHistories.Add(history);
+            int res = await this.context.SaveChangesAsync();
+
+            if (res < 2)
+            {
+                throw new InternalErrorException($"Updating transaction and saving status history did not end as expected. Saved {res} entries.");
+            }
+
+            return transaction;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<PaymentRequestByTeam>> GetPaymentRequestsByTeamDueOnAsync(DateTime dueDate)
+        {
+            var dueDateUtc = DateTime.SpecifyKind(dueDate.Date, DateTimeKind.Utc);
+            var nextDay = dueDateUtc.AddDays(1);
+
+            return await this.context.PaymentRequestsByTeam
+                .Where(t =>
+                    t.DueDate >= dueDateUtc &&
+                    t.DueDate < nextDay &&
+                    t.Status != TransactionStatus.Paid &&
+                    t.Status != TransactionStatus.Declined)
+                .Include(t => t.User)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeletePaymentRequestByUserAsync(int id)
         {
             var transaction = await this.context.PaymentRequestsByUser.FindAsync(id);
@@ -334,6 +376,16 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeletePaymentRequestByTeamAsync(int id)
+        {
+            int deleted = await this.context.PaymentRequestsByTeam
+                .Where(t => t.Id == id && t.Status == TransactionStatus.Submitted)
+                .ExecuteDeleteAsync();
+
+            return deleted > 0;
         }
 
         /// <inheritdoc/>
@@ -374,6 +426,8 @@ namespace PayTrack.Data.Repositories.Implementation
         private static IQueryable<T> ApplyBasePreFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
             where T : Transaction
         {
+            dbQuery = dbQuery.OrderByDescending(t => t.CreatedAt);
+
             if (query?.UserId.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.UserId == query.UserId.Value);
@@ -391,13 +445,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.PurposeOfPayment))
             {
-                var purposeLower = query.PurposeOfPayment.ToLower();
-                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(purposeLower));
+                dbQuery = dbQuery.Where(t => t.PurposeOfPayment != null && t.PurposeOfPayment.ToLower().Contains(query.PurposeOfPayment.ToLower()));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.PaymentReference))
             {
-                dbQuery = dbQuery.Where(t => EF.Functions.Like(t.PaymentReference, $"%{query.PaymentReference}%"));
+                dbQuery = dbQuery.Where(t => t.PaymentReference != null && t.PaymentReference.ToLower().Contains(query.PaymentReference.ToLower()));
             }
 
             if (query?.Status.HasValue == true)

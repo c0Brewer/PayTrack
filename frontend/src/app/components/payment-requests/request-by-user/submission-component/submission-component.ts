@@ -1,12 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  AbstractControl,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
+import {
+  OfflineInvoiceSubmissionDraft,
+  OfflineInvoiceSubmissionItem,
+  OfflineInvoiceSubmissionQueueService,
+} from '../../../../services/offline/offline-invoice-submission-queue.service';
+import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
@@ -17,7 +31,25 @@ import {
   BankAccount,
 } from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
-import { DuplicateListModalComponent } from '../duplicate-list-modal-component/duplicate-list-modal-component';
+import {
+  type DuplicateInvoiceSummary,
+  DuplicateListModalComponent,
+} from '../duplicate-list-modal-component/duplicate-list-modal-component';
+
+function maxDateValidator(maxDate: Date): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) {
+      return null;
+    }
+
+    const selected = new Date(control.value);
+    const latestAllowed = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+
+    return selected > latestAllowed
+      ? { maxDate: { max: latestAllowed.toISOString().slice(0, 10) } }
+      : null;
+  };
+}
 
 @Component({
   selector: 'app-receipt-submit-component',
@@ -27,16 +59,24 @@ import { DuplicateListModalComponent } from '../duplicate-list-modal-component/d
   styleUrl: './submission-component.scss',
 })
 export class ReceiptSubmitComponent implements OnInit, OnDestroy {
+  protected readonly offlineService = inject(OfflineService);
+  protected readonly offlineInvoiceSubmissionQueueService = inject(
+    OfflineInvoiceSubmissionQueueService,
+  );
+
   form!: FormGroup;
   teams: TeamDto[] = [];
   bankAccounts: BankAccount[] = [];
   isSubmitting = false;
   selectedFile: File | null = null;
   selectedFileName = '';
+  maxInvoiceDate = new Date().toISOString().split('T')[0];
   duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
+  duplicateSourceInvoice: DuplicateInvoiceSummary | null = null;
   isDuplicateModalOpen = false;
   pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
   pendingSubmissionFile: File | null = null;
+  currentUserName = 'Current user';
 
   readonly PayoutType = PayoutType;
 
@@ -66,6 +106,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
+    this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
   }
@@ -85,7 +126,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       teamId: [null, Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
-      paidAt: ['', Validators.required],
+      paidAt: ['', [Validators.required, maxDateValidator(new Date())]],
       receipt: [null, Validators.required],
     });
 
@@ -135,6 +176,12 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
+  }
+
+  private loadCurrentUserName(): void {
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUserName = user?.name ?? 'Current user';
+    });
   }
 
   private loadBankAccounts(): void {
@@ -224,6 +271,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const errors = control.errors!;
     if (errors['required']) return 'This field is required.';
     if (errors['min']) return `Minimum value is ${errors['min'].min}.`;
+    if (errors['maxDate']) return 'Invoice date cannot be in the future.';
     if (errors['maxlength'])
       return `Maximum length is ${errors['maxlength'].requiredLength} characters.`;
     if (errors['invalidType']) return 'Only PDF, JPG, or PNG files are allowed.';
@@ -264,6 +312,11 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         paidAt: new Date(v.paidAt).toISOString(),
       },
     };
+
+    if (this.offlineService.isOffline()) {
+      void this.queueOfflineSubmission(payload, this.selectedFile);
+      return;
+    }
 
     this.paymentRequestByUserService
       .getDuplicatePaymentRequestsByUser({
@@ -333,15 +386,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.notificationService.showSuccess('Invoice submitted successfully.');
-          this.form.reset();
-          this.selectedFile = null;
-          this.selectedFileName = '';
-          this.duplicateCandidates = [];
-          this.isDuplicateModalOpen = false;
-          this.pendingSubmissionPayload = null;
-          this.pendingSubmissionFile = null;
-          this.isSubmitting = false;
-          this.changeDetectorRef.detectChanges();
+          this.resetSubmissionState();
           this.router.navigate(['/']);
         },
         error: (err: Error) => {
@@ -352,10 +397,119 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       });
   }
 
+  async loadPendingSubmission(item: OfflineInvoiceSubmissionItem): Promise<void> {
+    const draft = await this.offlineInvoiceSubmissionQueueService.getSubmissionDraft(item.id);
+    if (!draft) {
+      this.notificationService.showError('The offline invoice draft could not be loaded.');
+      return;
+    }
+
+    this.applyOfflineDraftToForm(draft);
+    await this.offlineInvoiceSubmissionQueueService.removeSubmission(item.id);
+    this.notificationService.showSuccess('Offline invoice draft loaded into the form.');
+  }
+
+  async removePendingSubmission(item: OfflineInvoiceSubmissionItem): Promise<void> {
+    await this.offlineInvoiceSubmissionQueueService.removeSubmission(item.id);
+    this.notificationService.showSuccess('Pending offline invoice removed.');
+  }
+
+  getPendingStatusLabel(status: OfflineInvoiceSubmissionItem['status']): string {
+    return status === 'pending' ? 'Stored Offline' : 'Stored Offline';
+  }
+
+  getPendingStatusClass(status: OfflineInvoiceSubmissionItem['status']): string {
+    return status === 'pending'
+      ? 'offline-queue__badge offline-queue__badge--pending'
+      : 'offline-queue__badge offline-queue__badge--pending';
+  }
+
+  getTeamName(teamId: number): string {
+    return this.teams.find((team) => team.id === teamId)?.name ?? `Team #${teamId}`;
+  }
+
+  private async queueOfflineSubmission(
+    payload: CreatePaymentRequestByUserDto,
+    file: File,
+  ): Promise<void> {
+    try {
+      await this.offlineInvoiceSubmissionQueueService.queueSubmission(payload, file);
+      this.notificationService.showSuccess(
+        'Invoice saved locally. It will be synchronized once the connection is restored.',
+        5000,
+      );
+      this.resetSubmissionState();
+    } catch (error) {
+      this.notificationService.showError(
+        error instanceof Error ? error.message : 'Could not save invoice offline.',
+      );
+      this.isSubmitting = false;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  private resetSubmissionState(): void {
+    this.form.reset();
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      const userTeamId = user?.team?.id;
+      if (userTeamId != null) {
+        this.form.get('teamId')?.setValue(userTeamId);
+      }
+    });
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.duplicateCandidates = [];
+    this.isDuplicateModalOpen = false;
+    this.pendingSubmissionPayload = null;
+    this.pendingSubmissionFile = null;
+    this.isSubmitting = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private applyOfflineDraftToForm(draft: OfflineInvoiceSubmissionDraft): void {
+    const paidAt = draft.payload.transaction.paidAt
+      ? new Date(draft.payload.transaction.paidAt).toISOString().slice(0, 10)
+      : '';
+
+    this.form.patchValue({
+      invoiceNumber: draft.payload.invoiceNumber,
+      comment: draft.payload.comment ?? '',
+      payoutType: draft.payload.payoutType,
+      bankAccountId: draft.payload.bankAccountId,
+      creditorName: draft.payload.creditorName,
+      teamId: draft.payload.transaction.teamId,
+      amount: draft.payload.transaction.amount,
+      purposeOfPayment: draft.payload.transaction.purposeOfPayment,
+      paidAt,
+      receipt: draft.file.name,
+    });
+
+    this.selectedFile = draft.file;
+    this.selectedFileName = draft.file.name;
+    this.form.get('receipt')?.setErrors(null);
+    this.form.markAsPristine();
+    this.changeDetectorRef.detectChanges();
+  }
+
   toPayoutType(value: unknown): PayoutType | null {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  private buildDuplicateSourceInvoice(
+    payload: CreatePaymentRequestByUserDto,
+  ): DuplicateInvoiceSummary {
+    const team = this.teams.find((candidate) => candidate.id === payload.transaction.teamId);
+
+    return {
+      invoiceNumber: payload.invoiceNumber,
+      amount: payload.transaction.amount,
+      paidAt: payload.transaction.paidAt,
+      purposeOfPayment: payload.transaction.purposeOfPayment,
+      user: { name: this.currentUserName },
+      team: { name: team?.name ?? 'Unknown team' },
+    };
   }
 
   getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {

@@ -22,7 +22,7 @@ using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
-LoadGoogleConfigFromDotEnv(builder);
+LoadSecretsFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
 
@@ -54,9 +54,19 @@ builder.Services.AddScoped<IFinancialExportService, FinancialExportService>();
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
+builder.Services.AddOptions<ReminderSettings>()
+    .BindConfiguration("Reminders")
+    .Validate(s => s.RunAtHourUtc is >= 0 and <= 23, "Reminders:RunAtHourUtc must be between 0 and 23.")
+    .Validate(s => s.RunAtMinuteUtc is >= 0 and <= 59, "Reminders:RunAtMinuteUtc must be between 0 and 59.")
+    .Validate(s => s.DaysBeforeDue.All(d => d >= 0), "Reminders:DaysBeforeDue must contain only non-negative values.")
+    .Validate(s => s.DaysBeforeDue.Distinct().Count() == s.DaysBeforeDue.Length, "Reminders:DaysBeforeDue must not contain duplicate values.")
+    .Validate(s => s.EmailDelayMs >= 0, "Reminders:EmailDelayMs must be non-negative.")
+    .ValidateOnStart();
+builder.Services.Configure<PaymentRequestNotificationSettings>(builder.Configuration.GetSection("PaymentRequestNotifications"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddHostedService<PaymentReminderHostedService>();
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 
 // Repositories
@@ -193,18 +203,51 @@ if (hasFrontendBundle)
 
 await app.RunAsync();
 
-static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
+static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
 {
-    var dotEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
-
-    if (!File.Exists(dotEnvPath))
-    {
-        return;
-    }
-
     var values = new Dictionary<string, string?>();
 
-    foreach (var rawLine in File.ReadLines(dotEnvPath))
+    var rootEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
+    if (File.Exists(rootEnvPath))
+    {
+        foreach (var (key, value) in ParseDotEnvFile(rootEnvPath))
+        {
+            switch (key)
+            {
+                case "GOOGLE_CLIENT_ID":
+                    values["Authentication:Google:ClientId"] = value;
+                    break;
+                case "GOOGLE_CLIENT_SECRET":
+                    values["Authentication:Google:ClientSecret"] = value;
+                    break;
+                case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
+                    values["GoogleDrive:ServiceAccountKeyBase64"] = value;
+                    break;
+                case "JWT_SECRET":
+                    values["JWT:Secret"] = value;
+                    break;
+                case "EMAIL_SMTP_USER":
+                    values["Email:SmtpUser"] = value;
+                    break;
+                case "EMAIL_SMTP_PASSWORD":
+                    values["Email:SmtpPassword"] = value;
+                    break;
+                case "SLACK_BOT_TOKEN":
+                    values["Slack:BotToken"] = value;
+                    break;
+            }
+        }
+    }
+
+    if (values.Count > 0)
+    {
+        builder.Configuration.AddInMemoryCollection(values);
+    }
+}
+
+static IEnumerable<(string Key, string Value)> ParseDotEnvFile(string path)
+{
+    foreach (var rawLine in File.ReadLines(path))
     {
         var line = rawLine.Trim();
 
@@ -217,22 +260,6 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
         var key = line[..separatorIndex].Trim();
         var value = line[(separatorIndex + 1)..].Trim().Trim('"');
 
-        switch (key)
-        {
-            case "GOOGLE_CLIENT_ID":
-                values["Authentication:Google:ClientId"] = value;
-                break;
-            case "GOOGLE_CLIENT_SECRET":
-                values["Authentication:Google:ClientSecret"] = value;
-                break;
-            case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
-                values["GoogleDrive:ServiceAccountKeyBase64"] = value;
-                break;
-        }
-    }
-
-    if (values.Count > 0)
-    {
-        builder.Configuration.AddInMemoryCollection(values);
+        yield return (key, value);
     }
 }

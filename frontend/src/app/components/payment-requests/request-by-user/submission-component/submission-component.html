@@ -1,6 +1,86 @@
 <div id="invoice-page" class="main-page-container">
   <h1>Invoice Submission</h1>
   <p>Upload your invoice and provide the details.</p>
+
+  @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
+    <app-box-component
+      title="Offline Upload Queue"
+      [subtitle]="
+        offlineInvoiceSubmissionQueueService.items().length > 0
+          ? 'Invoices saved offline stay on this device until you restore them into the form.'
+          : ''
+      "
+      [size]="offlineInvoiceSubmissionQueueService.items().length > 0 ? 'medium' : 'small'"
+    >
+      <div class="offline-queue">
+        @if (offlineService.isOffline()) {
+          <p class="offline-queue__notice">
+            You are offline. New invoices will be stored locally on this device until you come
+            back online and restore them into the form.
+          </p>
+        } @else {
+          <p class="offline-queue__notice">
+            You are back online. Restore a saved invoice draft into the form and submit it through
+            the normal flow.
+          </p>
+        }
+
+        @if (offlineInvoiceSubmissionQueueService.items().length > 0) {
+          <div class="offline-queue__list">
+            @for (item of offlineInvoiceSubmissionQueueService.items(); track item.id) {
+              <article class="offline-queue__item">
+                <div class="offline-queue__item-header">
+                  <div>
+                    <h3>{{ item.invoiceNumber }}</h3>
+                    <p>
+                      {{ item.amount | number: '1.2-2' }} EUR • {{ getTeamName(item.teamId) }} •
+                      {{ item.fileName }}
+                    </p>
+                  </div>
+                  <span [class]="getPendingStatusClass(item.status)">
+                    {{ getPendingStatusLabel(item.status) }}
+                  </span>
+                </div>
+
+                <p class="offline-queue__meta">
+                  Saved {{ item.createdAt | date: 'medium' }}
+                  @if (item.lastAttemptAt) {
+                    <span> • Last attempt {{ item.lastAttemptAt | date: 'medium' }}</span>
+                  }
+                </p>
+
+                @if (item.lastError) {
+                  <p class="offline-queue__error">
+                    {{ item.lastError }}
+                  </p>
+                }
+
+                <div class="offline-queue__actions">
+                  <button
+                    type="button"
+                    class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+                    [disabled]="offlineService.isOffline()"
+                    (click)="loadPendingSubmission(item)"
+                  ><span class="material-symbols-outlined">input</span>
+                    Plug into Form
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+                    (click)="removePendingSubmission(item)"
+                  >
+                    <span class="material-symbols-outlined">delete</span>
+                    Remove Local Copy
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+    </app-box-component>
+  }
+
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <div class="row gx-4 gx-xl-5 gy-4 mt-1">
       <div class="col-12 col-xl-6">
@@ -37,6 +117,7 @@
                 id="paidAt"
                 type="date"
                 formControlName="paidAt"
+                [max]="maxInvoiceDate"
                 [class.is-invalid]="isInvalid('paidAt')"
               />
               <br />
@@ -274,13 +355,19 @@
         </app-box-component>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1" [disabled]="isSubmitting">
+        <button
+          type="submit"
+          class="btn btn-primary d-inline-flex align-items-center gap-1"
+          [disabled]="isSubmitting"
+        >
           @if (!isSubmitting) {
-            <span class="material-symbols-outlined">check_circle</span>
-            Submit Invoice
+            <span class="material-symbols-outlined">{{
+              offlineService.isOffline() ? 'cloud_upload' : 'check_circle'
+            }}</span>
+            {{ offlineService.isOffline() ? 'Save Offline for Sync' : 'Submit Invoice' }}
           }
           @if (isSubmitting) {
-            <span>Submitting…</span>
+            <span>{{ offlineService.isOffline() ? 'Saving locally…' : 'Submitting…' }}</span>
           }
         </button>
       </div>
@@ -290,6 +377,7 @@
   <app-duplicate-list-modal-component
     [visible]="isDuplicateModalOpen"
     mode="submit"
+    [sourceInvoice]="duplicateSourceInvoice"
     [duplicates]="duplicateCandidates"
     (closeModal)="onDuplicateModalCancel()"
     (submitRegardless)="onDuplicateModalSubmitRegardless()"

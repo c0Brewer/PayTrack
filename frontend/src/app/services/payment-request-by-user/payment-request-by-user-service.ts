@@ -19,6 +19,7 @@ import {
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -48,7 +49,7 @@ export class PaymentRequestByUserService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getPaymentRequestsByUserById(
@@ -69,13 +70,15 @@ export class PaymentRequestByUserService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createPaymentRequestByUser(
     updateRequest: CreatePaymentRequestByUserDto,
     file: File,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     // DISCLAIMER: This method is intentionally not using the client for requests.
     // This is not the standard and is only needed for this method because of file
     // upload. Do not copy!!
@@ -112,7 +115,7 @@ export class PaymentRequestByUserService {
       return res.json() as Promise<PaymentRequestByUserDto>;
     });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getDuplicatePaymentRequestsByUser(
@@ -140,6 +143,8 @@ export class PaymentRequestByUserService {
   }
 
   public deletePaymentRequestByUser(id: number): Observable<void> {
+    ensureOnlineForMutation();
+
     const promise = fetch(this.getApiUrl(`/api/v1/transaction/user/${id}`), {
       method: 'DELETE',
       headers: {
@@ -159,6 +164,8 @@ export class PaymentRequestByUserService {
     paymentRequestByUserId: number,
     duplicatePaymentRequestByUserId: number,
   ): Observable<void> {
+    ensureOnlineForMutation();
+
     const promise = fetch(
       this.getApiUrl(
         `/api/v1/transaction/user/${paymentRequestByUserId}/duplicate/${duplicatePaymentRequestByUserId}/dismiss`,
@@ -183,6 +190,8 @@ export class PaymentRequestByUserService {
     id: number,
     updateRequest: UpdatePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .PUT('/api/v1/transaction/user/{id}', {
         params: {
@@ -204,6 +213,8 @@ export class PaymentRequestByUserService {
     id: number,
     markPaidRequest: MarkPaymentRequestByUserAsPaidDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/mark-paid', {
         params: {
@@ -225,6 +236,8 @@ export class PaymentRequestByUserService {
     id: number,
     approveRequest: ApprovePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/approve', {
         params: {
@@ -246,6 +259,8 @@ export class PaymentRequestByUserService {
     id: number,
     declineRequest: DeclinePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/decline', {
         params: {
@@ -267,6 +282,8 @@ export class PaymentRequestByUserService {
     id: number,
     requestChangesRequest: RequestChangesPaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/request-changes', {
         params: {
