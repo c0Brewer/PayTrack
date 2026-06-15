@@ -138,6 +138,10 @@
   cursor: pointer;
   font-size: v.$font-xs;
 
+  &:hover:not(:disabled) {
+    background: v.$background-dark;
+  }
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
