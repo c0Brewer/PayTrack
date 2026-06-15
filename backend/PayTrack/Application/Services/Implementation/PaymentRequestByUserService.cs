@@ -17,7 +17,9 @@ namespace PayTrack.Application.Services.Implementation
         IFileRepository _fileRepo,
         IBankAccountService _bankAccountService,
         ICostCentreService _costCentreService,
-        IBudgetService _budgetService) : IPaymentRequestByUserService
+        IBudgetService _budgetService,
+        INotificationDispatchService? _notificationDispatchService = null,
+        ILogger<PaymentRequestByUserService>? _logger = null) : IPaymentRequestByUserService
     {
         private const int DuplicateMatchThreshold = 1;
         private const int MaxDuplicateResults = 10;
@@ -31,6 +33,8 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IBankAccountService bankAccountService = _bankAccountService;
         private readonly ICostCentreService costCentreService = _costCentreService;
         private readonly IBudgetService budgetService = _budgetService;
+        private readonly INotificationDispatchService? notificationDispatchService = _notificationDispatchService;
+        private readonly ILogger<PaymentRequestByUserService>? logger = _logger;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -207,7 +211,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (string.IsNullOrWhiteSpace(paymentReference))
@@ -247,7 +255,7 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 $"Payment reference: {transaction.PaymentReference}");
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -259,7 +267,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (budgetId <= 0)
@@ -283,7 +295,7 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 NormalizeOptionalReason(reason));
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -294,7 +306,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
@@ -304,7 +320,7 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -315,7 +331,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
@@ -325,7 +345,7 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -344,7 +364,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (transaction.UserId != userId)
@@ -407,7 +431,7 @@ namespace PayTrack.Application.Services.Implementation
                 userId,
                 "Invoice resubmitted after requested changes");
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -417,7 +441,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             var latestStatusChange = transaction.StatusHistory
@@ -427,7 +455,7 @@ namespace PayTrack.Application.Services.Implementation
 
             UndoStatusChange(transaction, latestStatusChange.FromStatus, changedById);
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -500,6 +528,21 @@ namespace PayTrack.Application.Services.Implementation
                 (TransactionStatus.Approved, TransactionStatus.Paid) => true,
                 _ => false,
             };
+        }
+
+        private static string GetStatusLabel(TransactionStatus status)
+        {
+            return status switch
+            {
+                TransactionStatus.ChangesRequested => "Changes requested",
+                TransactionStatus.Review => "In review",
+                _ => status.ToString(),
+            };
+        }
+
+        private static string FormatNotificationComment(string? comment)
+        {
+            return string.IsNullOrWhiteSpace(comment) ? string.Empty : $"Comment: {comment.Trim()}";
         }
 
         private static void AddStatusHistory(
@@ -597,6 +640,58 @@ namespace PayTrack.Application.Services.Implementation
                 ".pdf" => "application/pdf",
                 _ => "application/octet-stream",
             };
+        }
+
+        private async Task<PaymentRequestByUser> SaveStatusChangeAndNotifyAsync(
+            PaymentRequestByUser transaction)
+        {
+            var updatedTransaction = await this.repo.UpdateAsync(transaction);
+            await this.NotifyUserAboutStatusChangeAsync(updatedTransaction);
+            return updatedTransaction;
+        }
+
+        private async Task NotifyUserAboutStatusChangeAsync(PaymentRequestByUser transaction)
+        {
+            if (this.notificationDispatchService == null
+                || transaction.User == null
+                || string.IsNullOrWhiteSpace(transaction.User.Email))
+            {
+                return;
+            }
+
+            var statusLabel = GetStatusLabel(transaction.Status);
+            var latestComment = transaction.StatusHistory
+                .OrderByDescending(entry => entry.ChangedAt)
+                .FirstOrDefault()
+                ?.Comment;
+            var subject = $"Invoice {transaction.InvoiceNumber} status changed to {statusLabel}";
+            var body = $"""
+                Hello {transaction.User.Name},
+
+                the status of invoice {transaction.InvoiceNumber} has changed.
+
+                New status: {statusLabel}
+                {FormatNotificationComment(latestComment)}
+
+                Best regards,
+                PayTrack
+                """;
+
+            try
+            {
+                await this.notificationDispatchService.SendEmailAsync(
+                    transaction.User.Email,
+                    subject,
+                    body);
+            }
+            catch (Exception exception)
+            {
+                this.logger?.LogError(
+                    exception,
+                    "Sending status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                    transaction.InvoiceNumber,
+                    transaction.User.Email);
+            }
         }
 
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(

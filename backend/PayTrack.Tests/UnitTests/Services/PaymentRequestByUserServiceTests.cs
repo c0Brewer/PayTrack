@@ -591,6 +591,113 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task MarkAsPaid_ShouldSendStatusChangeEmail()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(
+                    1,
+                    It.Is<GetPaymentRequestByUserQueryById>(query =>
+                        query.IncludeUser == true
+                        && query.IncludeStatusHistory == true)))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object);
+
+            await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            notificationMock.Verify(service => service.SendEmailAsync(
+                "alice@example.com",
+                "Invoice INV-1 status changed to Paid",
+                It.Is<string>(body =>
+                    body.Contains("Hello Alice")
+                    && body.Contains("New status: Paid")
+                    && body.Contains("Payment reference: REF-123"))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldRemainSuccessful_WhenStatusEmailFails()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+            notificationMock
+                .Setup(service => service.SendEmailAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP unavailable"));
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object);
+
+            var result = await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+        }
+
+        [Fact]
         public async Task MarkAsPaid_ShouldThrow_WhenInvoiceIsNotApproved()
         {
             var repoMock = new Mock<ITransactionRepository>();
@@ -936,6 +1043,55 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task RequestChanges_ShouldSendEmailWithReadableStatusAndReason()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Submitted,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object);
+
+            await service.RequestChangesPaymentRequestByUserAsync(
+                1,
+                42,
+                "Upload a clearer receipt");
+
+            notificationMock.Verify(service => service.SendEmailAsync(
+                "alice@example.com",
+                "Invoice INV-1 status changed to Changes requested",
+                It.Is<string>(body =>
+                    body.Contains("New status: Changes requested")
+                    && body.Contains("Comment: Upload a clearer receipt"))),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task RequestChanges_ShouldThrow_WhenReasonIsTooShort()
         {
             var repoMock = new Mock<ITransactionRepository>();
@@ -1087,6 +1243,63 @@ namespace PayTrack.Tests.UnitTests.Services
             result.StatusHistory.Last().ToStatus.Should().Be(TransactionStatus.Approved);
             result.StatusHistory.Last().ChangedById.Should().Be(42);
             result.StatusHistory.Last().Comment.Should().Be("Undo status change");
+        }
+
+        [Fact]
+        public async Task UndoLastStatusChange_ShouldSendStatusChangeEmail()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Declined,
+                StatusHistory =
+                [
+                    new TransactionStatusHistory
+                    {
+                        TransactionId = 1,
+                        FromStatus = TransactionStatus.Approved,
+                        ToStatus = TransactionStatus.Declined,
+                        ChangedById = 7,
+                        ChangedAt = DateTime.UtcNow.AddMinutes(-1),
+                        Comment = "Duplicate invoice"
+                    }
+                ]
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object);
+
+            await service.UndoLastStatusChangeAsync(1, 42);
+
+            notificationMock.Verify(service => service.SendEmailAsync(
+                "alice@example.com",
+                "Invoice INV-1 status changed to Approved",
+                It.Is<string>(body =>
+                    body.Contains("New status: Approved")
+                    && body.Contains("Comment: Undo status change"))),
+                Times.Once);
         }
 
         [Fact]

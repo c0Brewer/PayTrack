@@ -380,6 +380,30 @@ describe('PaymentRequestByUserService', () => {
     ).rejects.toThrow('minimum length of 3');
   });
 
+  it('should use the problem title when no detailed status error is available', async () => {
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: null,
+      error: { title: 'Status update rejected' },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await expect(
+      firstValueFrom(service.declinePaymentRequestByUser(1, { reason: 'duplicate' })),
+    ).rejects.toThrow('Status update rejected');
+  });
+
+  it('should use the default message when a status error has no message', async () => {
+    vi.spyOn(client, 'POST').mockResolvedValue({
+      data: null,
+      error: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await expect(
+      firstValueFrom(service.declinePaymentRequestByUser(1, { reason: 'duplicate' })),
+    ).rejects.toThrow('Unexpected Error');
+  });
+
   it('should decline payment request', async () => {
     const apiResponse = { id: 1 } as PaymentRequestByUserDto;
     const request = { reason: 'duplicate' };
