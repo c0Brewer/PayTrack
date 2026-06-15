@@ -11,6 +11,7 @@ import {
   TeamDtoPaginatedResponse,
   UpdateTeamDto,
 } from '../../types/exporter';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +30,7 @@ export class TeamService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getTeamById(teamId: number, options?: GetTeamByIdOptions): Observable<TeamDto> {
@@ -48,10 +49,12 @@ export class TeamService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createTeam(createRequest: CreateTeamRequestDto): Observable<TeamDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/team', {
         body: createRequest,
@@ -66,6 +69,8 @@ export class TeamService {
   }
 
   public updateTeam(teamId: number, updateRequest: UpdateTeamDto): Observable<TeamDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .PUT('/api/v1/team/{id}', {
         params: {
@@ -80,7 +85,7 @@ export class TeamService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getDeleteImpact(teamId: number): Observable<DeleteTeamImpactDto> {
@@ -102,6 +107,8 @@ export class TeamService {
   }
 
   public deleteTeam(teamId: number): Observable<TeamDto | null> {
+    ensureOnlineForMutation();
+
     const promise = client
       .DELETE('/api/v1/team/{id}', {
         params: {

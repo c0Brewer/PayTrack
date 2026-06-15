@@ -79,6 +79,10 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
 
+            group.MapDelete("/team/{id:int}", PaymentRequestByTeamHandler.DeletePaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+
             /*
              * Bankstatement Matching
              */

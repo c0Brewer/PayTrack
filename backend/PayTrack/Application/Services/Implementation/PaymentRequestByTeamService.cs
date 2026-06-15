@@ -246,6 +246,68 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task DeletePaymentRequestByTeamAsync(int id, string? reason = null)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById { IncludeUser = true })
+                ?? throw new NotFoundException("PaymentRequestByTeam could not be found");
+
+            if (transaction.Status != TransactionStatus.Submitted)
+            {
+                throw new InvalidStateException(
+                    $"Cannot delete a payment request that is not in Submitted status.");
+            }
+
+            var wasDeleted = await this.repo.DeletePaymentRequestByTeamAsync(id);
+            if (!wasDeleted)
+            {
+                throw new InvalidStateException(
+                    "Cannot delete a payment request that is not in Submitted status.");
+            }
+
+            var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+            var ch = this.notifSettings.OnDeletion;
+
+            if (ch.SendEmail)
+            {
+                try
+                {
+                    var subject = $"Payment Request Deleted: {transaction.PurposeOfPayment}";
+                    var body =
+                        $"Dear {transaction.User.Name},\n\n" +
+                        $"Your payment request has been deleted by an administrator.\n\n" +
+                        $"Amount: {transaction.Amount:C2}\n" +
+                        $"Purpose: {transaction.PurposeOfPayment}\n" +
+                        (normalizedReason is not null ? $"Reason: {normalizedReason}\n\n" : "\n") +
+                        $"If you have questions, please contact your administrator.\n\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-request-deleted email to {Email}.", transaction.User.Email);
+                }
+            }
+
+            if (ch.SendSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"Payment Request Deleted: {transaction.PurposeOfPayment}\n" +
+                        $"Amount: {transaction.Amount:C2}" +
+                        (normalizedReason is not null ? $" · Reason: {normalizedReason}" : string.Empty);
+
+                    await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-request-deleted Slack notification to {Email}.", transaction.User.Email);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         public bool ValidateQuery(GetPaymentRequestByTeamQuery query, User currentUser)
         {
             return currentUser.Role switch

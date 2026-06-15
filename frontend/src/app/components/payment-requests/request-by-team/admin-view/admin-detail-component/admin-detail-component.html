@@ -1,43 +1,150 @@
-<app-team-request-admin-detail-view-component
-  [request]="request"
-  [loading]="loading"
-  (back)="onBack()"
-/>
-
-@if (!loading && request) {
-  <div class="actions-container">
-    <div class="actions-card">
-      <h2>Actions</h2>
-
-      @if (request.status === transactionStatus.Paid) {
-        <p class="actions-done">Status is set to "Paid", no more actions required.</p>
-      } @else {
-        <div class="actions-buttons">
+<div class="main-page-container invoice-detail">
+  @if (loading) {
+    <p>Loading...</p>
+  } @else if (request) {
+    <app-detail-component
+      [title]="'Payment Request #' + request.id"
+      [subtitle]="request.purposeOfPayment || 'No purpose set.'"
+      eyebrow="Payment Request"
+      icon="receipt_long"
+      backLabel="Back"
+      [statusLabel]="getStatusLabel(request.status)"
+      statusVariant="neutral"
+      (backClick)="onBack()"
+    >
+      <div detail-actions class="notification-actions">
+        @if (request.status !== transactionStatus.Paid) {
           <button
             type="button"
-            class="btn btn-primary"
-            [disabled]="!canMarkAsPaid"
+            class="btn btn-primary d-inline-flex align-items-center gap-1"
+            appDisableOfflineAction
+            [disabled]="!canMarkAsPaid || offlineService.isOffline()"
             (click)="openMarkAsPaidModal()"
           >
             <span class="material-symbols-outlined">payments</span>
             Mark as Paid
           </button>
+        }
 
-          @if (request.user?.email) {
-            <button type="button" class="btn btn-secondary" (click)="openEmailModal()">
-              <span class="material-symbols-outlined">mail</span>
-              Send Email
-            </button>
-            <button type="button" class="btn btn-secondary" (click)="openSlackModal()">
-              <span class="material-symbols-outlined">chat</span>
-              Send Slack
-            </button>
-          }
-        </div>
+        @if (request.user?.email) {
+          <button
+            type="button"
+            class="btn btn-secondary d-inline-flex align-items-center gap-1"
+            (click)="openEmailModal()"
+          >
+            <span class="material-symbols-outlined">mail</span>
+            Send Email
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary d-inline-flex align-items-center gap-1"
+            (click)="openSlackModal()"
+          >
+            <span class="material-symbols-outlined">chat</span>
+            Send Slack
+          </button>
+        }
+
+        @if (canDelete) {
+          <button
+            type="button"
+            class="btn btn-danger d-inline-flex align-items-center gap-1"
+            (click)="openDeleteModal()"
+          >
+            <span class="material-symbols-outlined">delete</span>
+            Delete
+          </button>
+        }
+      </div>
+
+      <div detail-meta class="invoice-info-card">
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <th>Status</th>
+              <td>
+                <span [class]="'status ' + getStatusClass(request.status)">
+                  {{ getStatusLabel(request.status) }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>Amount</th>
+              <td>{{ request.amount | euro }}</td>
+            </tr>
+            <tr>
+              <th>Due Date</th>
+              <td>{{ request.dueDate ? (request.dueDate | date: 'mediumDate') : '—' }}</td>
+            </tr>
+            <tr>
+              <th>Purpose</th>
+              <td>{{ request.purposeOfPayment ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Team</th>
+              <td>{{ request.team?.name ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>User</th>
+              <td>{{ request.user?.name ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Cost Centre</th>
+              <td>{{ request.budget?.name ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Payment Reference</th>
+              <td>{{ request.paymentReference || '—' }}</td>
+            </tr>
+            <tr>
+              <th>Created At</th>
+              <td>{{ request.createdAt | date: 'mediumDate' }}</td>
+            </tr>
+            <tr>
+              <th>Paid At</th>
+              <td>{{ request.paidAt ? (request.paidAt | date: 'mediumDate') : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      @if ((request.statusHistory?.length ?? 0) > 0) {
+        <app-box-component title="Status History" size="large" class="status-history-box">
+          <div class="history-table-wrapper">
+            <table class="info-table history-table">
+              <thead>
+                <tr>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Changed At</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of request.statusHistory ?? []; track entry.changedAt) {
+                  <tr>
+                    <td>
+                      <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                        {{ getStatusLabel(entry.fromStatus) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                        {{ getStatusLabel(entry.toStatus) }}
+                      </span>
+                    </td>
+                    <td>{{ entry.changedAt | date: 'medium' }}</td>
+                    <td>{{ entry.comment || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </app-box-component>
       }
-    </div>
-  </div>
-}
+    </app-detail-component>
+  }
+</div>
 
 @if (showMarkAsPaidModal) {
   <app-modal-component title="Mark as Paid" icon="payments" (closeEvent)="cancelMarkAsPaid()">
@@ -48,8 +155,43 @@
     </label>
     <div class="modal-actions">
       <button type="button" class="btn btn-secondary" (click)="cancelMarkAsPaid()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="markAsPaidLoading" (click)="confirmMarkAsPaid()">
+      <button
+        type="button"
+        class="btn btn-primary"
+        appDisableOfflineAction
+        [disabled]="markAsPaidLoading || offlineService.isOffline()"
+        (click)="confirmMarkAsPaid()"
+      >
         {{ markAsPaidLoading ? 'Processing…' : 'Confirm' }}
+      </button>
+    </div>
+  </app-modal-component>
+}
+
+@if (showDeleteModal) {
+  <app-modal-component title="Delete Payment Request" icon="delete" (closeEvent)="cancelDelete()">
+    <p>
+      Are you sure you want to <strong>permanently delete</strong> this payment request? This action
+      cannot be undone.
+    </p>
+    <label>
+      Reason (optional)
+      <textarea
+        [(ngModel)]="deleteReason"
+        rows="3"
+        maxlength="1000"
+        placeholder="Enter a reason for the deletion…"
+      ></textarea>
+    </label>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="deleteLoading"
+        (click)="confirmDelete()"
+      >
+        {{ deleteLoading ? 'Deleting…' : 'Delete' }}
       </button>
     </div>
   </app-modal-component>

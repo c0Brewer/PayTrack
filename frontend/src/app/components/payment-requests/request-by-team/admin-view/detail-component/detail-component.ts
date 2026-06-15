@@ -8,10 +8,11 @@ import {
   TransactionStatusCssClass,
   TransactionStatusLabels,
 } from '../../../../../types/exporter';
+import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-team-request-admin-detail-view-component',
-  imports: [DatePipe, EuroPipe],
+  imports: [DatePipe, EuroPipe, BoxComponent],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })

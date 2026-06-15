@@ -1,7 +1,7 @@
-.requests {
-  padding: 1.5rem;
+@use 'variables' as v;
 
-  h2 {
-    margin-bottom: 1rem;
-  }
+.requests {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-m;
 }

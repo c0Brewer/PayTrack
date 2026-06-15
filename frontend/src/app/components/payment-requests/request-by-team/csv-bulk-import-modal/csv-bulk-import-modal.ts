@@ -4,6 +4,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  inject,
   OnDestroy,
   OnInit,
   Output,
@@ -20,8 +21,10 @@ import {
 import Papa from 'papaparse';
 import { Subject, takeUntil } from 'rxjs';
 
+import { DisableOfflineActionDirective } from '../../../../directives/disable-offline-action.directive';
 import { EuroPipe } from '../../../../pipes/euro.pipe';
 import { NotificationService } from '../../../../services/notification/notification-service';
+import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
 import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import {
@@ -48,6 +51,7 @@ interface PreviewRow {
   amount: number;
   userId: number | null;
   displayName: string | null;
+  displayEmail: string | null;
   isAutoMatched: boolean;
   status: 'pending' | 'success' | 'error';
   errorMessage?: string;
@@ -65,11 +69,20 @@ function minDateValidator(min: Date): ValidatorFn {
 @Component({
   selector: 'app-csv-bulk-import-modal',
   standalone: true,
-  imports: [CommonModule, EuroPipe, ReactiveFormsModule, ModalComponent, TypeaheadSelectComponent],
+  imports: [
+    CommonModule,
+    EuroPipe,
+    ReactiveFormsModule,
+    ModalComponent,
+    TypeaheadSelectComponent,
+    DisableOfflineActionDirective,
+  ],
   templateUrl: './csv-bulk-import-modal.html',
   styleUrl: './csv-bulk-import-modal.scss',
 })
 export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
+  protected readonly offlineService = inject(OfflineService);
+
   @Input({ required: true }) file!: File;
   @Input({ required: true }) teams!: TeamDto[];
   @Input({ required: true }) costCentres!: CostCentreDto[];
@@ -195,10 +208,17 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   }
 
   private buildPreviewRows(): void {
-    const savedAssignments = new Map<string, { userId: number; displayName: string }>();
+    const savedAssignments = new Map<
+      string,
+      { userId: number; displayName: string; displayEmail: string | null }
+    >();
     for (const row of this.previewRows) {
       if (!row.isAutoMatched && row.userId !== null) {
-        savedAssignments.set(row.rawName, { userId: row.userId, displayName: row.displayName! });
+        savedAssignments.set(row.rawName, {
+          userId: row.userId,
+          displayName: row.displayName!,
+          displayEmail: row.displayEmail,
+        });
       }
     }
 
@@ -226,6 +246,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
             amount: row.amount,
             userId: saved.userId,
             displayName: saved.displayName,
+            displayEmail: saved.displayEmail,
             isAutoMatched: false,
             status: 'pending' as const,
           };
@@ -237,6 +258,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         amount: row.amount,
         userId: isAutoMatched ? (match!.id as number) : null,
         displayName: isAutoMatched ? match!.primaryText : null,
+        displayEmail: isAutoMatched ? (match!.secondaryText ?? null) : null,
         isAutoMatched,
         status: 'pending' as const,
       };
@@ -279,11 +301,13 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   onUserAssigned(index: number, item: TypeaheadItem): void {
     this.previewRows[index].userId = item.id as number;
     this.previewRows[index].displayName = item.primaryText;
+    this.previewRows[index].displayEmail = item.secondaryText ?? null;
   }
 
   onUserCleared(index: number): void {
     this.previewRows[index].userId = null;
     this.previewRows[index].displayName = null;
+    this.previewRows[index].displayEmail = null;
   }
 
   get allRowsAssigned(): boolean {

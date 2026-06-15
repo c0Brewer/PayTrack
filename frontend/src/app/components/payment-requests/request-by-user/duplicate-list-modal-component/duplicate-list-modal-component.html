@@ -57,7 +57,10 @@
               <button
                 type="button"
                 class="duplicate-list__button"
-                [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
+                appDisableOfflineAction
+                [disabled]="
+                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
+                "
                 (click)="onDismissDuplicate(duplicate)"
               >
                 Dismiss warning
@@ -65,7 +68,10 @@
               <button
                 type="button"
                 class="duplicate-list__button duplicate-list__button--danger"
-                [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
+                appDisableOfflineAction
+                [disabled]="
+                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
+                "
                 (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
               >
                 Delete invoice
@@ -82,7 +88,13 @@
   @if (mode === 'submit' && !loading) {
     <div class="duplicate-modal__actions">
       <button type="button" class="duplicate-modal__cancel" (click)="onClose()">Cancel</button>
-      <button type="button" class="duplicate-modal__submit" (click)="onSubmitRegardless()">
+      <button
+        type="button"
+        class="duplicate-modal__submit"
+        appDisableOfflineAction
+        [disabled]="offlineService.isOffline()"
+        (click)="onSubmitRegardless()"
+      >
         Submit Regardless
       </button>
     </div>
