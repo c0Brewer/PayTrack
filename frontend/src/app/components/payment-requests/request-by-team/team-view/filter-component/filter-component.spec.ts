@@ -94,7 +94,9 @@ describe('TeamRequestTeamFilterComponent', () => {
     vi.useFakeTimers();
     fixture.detectChanges();
 
-    component.onStatusChange({ target: { value: String(TransactionStatus.Paid) } } as unknown as Event);
+    component.onStatusChange({
+      target: { value: String(TransactionStatus.Paid) },
+    } as unknown as Event);
     vi.advanceTimersByTime(100);
     vi.useRealTimers();
 
