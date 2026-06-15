@@ -39,12 +39,17 @@
   </div>
   <app-user-invoice-filter-component
     [limitSelection]="limitSelection"
+    [limit]="limit"
     (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
   ></app-user-invoice-filter-component>
 
   <app-user-invoice-list-component
     [invoices]="invoices"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
   ></app-user-invoice-list-component>
 
   <app-pagination-component

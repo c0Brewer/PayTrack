@@ -46,7 +46,10 @@
 
   <app-team-request-team-list-component
     [requests]="requests"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
   ></app-team-request-team-list-component>
 
   <app-pagination-component

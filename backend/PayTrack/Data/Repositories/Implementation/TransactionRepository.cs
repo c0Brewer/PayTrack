@@ -540,6 +540,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 "purpose" or "purposeofpayment" => ApplyOrder(dbQuery, transaction => transaction.PurposeOfPayment, descending),
                 "status" => ApplyOrder(dbQuery, transaction => transaction.Status, descending),
                 "team" or "teamname" => ApplyOrder(dbQuery, transaction => transaction.Team.Name, descending),
+                "costcentre" or "costcentrename" => ApplyOrder(dbQuery, transaction => transaction.Budget == null ? null : transaction.Budget.Name, descending),
                 "user" or "username" => ApplyOrder(dbQuery, transaction => transaction.User.Name, descending),
                 _ => ApplyOrder(dbQuery, transaction => transaction.CreatedAt, true),
             };

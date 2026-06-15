@@ -6,6 +6,7 @@ import {
   PaymentRequestByUserDto,
   PayoutType,
   PayoutTypeLabels,
+  SortDirection,
   TransactionStatus,
   TransactionStatusCssClass,
   TransactionStatusLabels,
@@ -19,11 +20,29 @@ import {
 })
 export class UserInvoiceListComponent {
   @Input() invoices: PaymentRequestByUserDto[] = [];
+  @Input() sortBy: string | null = null;
+  @Input() sortDirection: SortDirection | null = null;
 
   @Output() openDetail = new EventEmitter<PaymentRequestByUserDto>();
+  @Output() sortChange = new EventEmitter<{ sortBy: string; sortDirection: SortDirection }>();
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.openDetail.emit(invoice);
+  }
+
+  onSort(sortBy: string): void {
+    const sortDirection: SortDirection =
+      this.sortBy === sortBy && this.sortDirection === 'Asc' ? 'Desc' : 'Asc';
+
+    this.sortChange.emit({ sortBy, sortDirection });
+  }
+
+  getSortIcon(sortBy: string): string {
+    if (this.sortBy !== sortBy) {
+      return '';
+    }
+
+    return this.sortDirection === 'Asc' ? 'arrow_upward' : 'arrow_downward';
   }
 
   getPayoutTypeLabel(type: PayoutType): string {
