@@ -39,7 +39,7 @@
 
 .duplicate-list__comparison--paired {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto auto auto;
 }
 
 .duplicate-list__invoice-summary {
@@ -50,7 +50,7 @@
 }
 
 .duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
-  grid-row: 1 / span 4;
+  grid-row: 1 / span 7;
   grid-template-rows: subgrid;
 }
 
@@ -86,17 +86,9 @@
   font-weight: v.$font-semibold;
 }
 
-.duplicate-list__details {
-  color: v.$text-muted;
-  display: grid;
-  font-size: v.$font-xs;
-  gap: v.$size-xs;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: v.$size-xxs;
-}
-
 .duplicate-list__detail {
   display: grid;
+  font-size: v.$font-xs;
   gap: 0.125rem;
   min-width: 0;
 }
@@ -113,11 +105,18 @@
 }
 
 .duplicate-list__meta {
+  align-items: center;
   color: v.$text-muted;
   display: flex;
   flex-wrap: wrap;
-  gap: v.$size-xs v.$size-s;
   font-size: v.$font-xs;
+  gap: v.$size-xs v.$size-s;
+}
+
+.duplicate-list__meta-label {
+  color: v.$text-muted;
+  flex-shrink: 0;
+  font-weight: v.$font-semibold;
 }
 
 .duplicate-list__match {
@@ -231,9 +230,5 @@
   .duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
     grid-row: auto;
     grid-template-rows: none;
-  }
-
-  .duplicate-list__details {
-    grid-template-columns: 1fr;
   }
 }
