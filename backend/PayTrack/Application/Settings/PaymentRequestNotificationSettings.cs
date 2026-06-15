@@ -19,5 +19,10 @@ namespace PayTrack.Application.Settings
         /// Gets or sets the channels used when a payment request is confirmed as paid.
         /// </summary>
         public NotificationChannelSettings OnConfirmation { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the channels used when a payment request is deleted.
+        /// </summary>
+        public NotificationChannelSettings OnDeletion { get; set; } = new();
     }
 }

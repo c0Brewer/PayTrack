@@ -362,6 +362,16 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        public async Task<bool> DeletePaymentRequestByTeamAsync(int id)
+        {
+            int deleted = await this.context.PaymentRequestsByTeam
+                .Where(t => t.Id == id && t.Status == TransactionStatus.Submitted)
+                .ExecuteDeleteAsync();
+
+            return deleted > 0;
+        }
+
+        /// <inheritdoc/>
         public async Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId)
         {
             var (firstId, secondId) = NormalizeDuplicatePair(paymentRequestByUserId, duplicatePaymentRequestByUserId);
