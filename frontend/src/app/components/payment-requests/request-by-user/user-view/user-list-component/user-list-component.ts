@@ -100,6 +100,12 @@ export class MyInvoicesComponent implements OnInit {
     this.loadInvoices();
   }
 
+  onUpdateLimit(newLimit: number): void {
+    this.limit = newLimit;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.router.navigate(['/my-invoices', invoice.id]);
   }

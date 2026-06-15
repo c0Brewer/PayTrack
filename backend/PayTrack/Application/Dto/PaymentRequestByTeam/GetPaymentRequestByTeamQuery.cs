@@ -11,5 +11,9 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
     /// </summary>
     public class GetPaymentRequestByTeamQuery : GetTransactionQuery
     {
+        /// <summary>
+        /// Whether to include only statuses visible in the payment requests table.
+        /// </summary>
+        public bool? VisibleStatusesOnly { get; init; }
     }
 }

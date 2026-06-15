@@ -106,6 +106,12 @@ export class RequestsComponent implements OnInit {
     this.loadInvoices();
   }
 
+  onUpdateLimit(newLimit: number): void {
+    this.limit = newLimit;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
   exportFinancialData(format: FinancialExportFormat): void {
     this.isExporting = true;
 

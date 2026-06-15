@@ -57,6 +57,10 @@ export type SortQueryOptions = {
   SortDirection?: SortDirection;
 };
 
+export type PaymentRequestByTeamQueryExtras = {
+  VisibleStatusesOnly?: boolean;
+};
+
 export enum PayoutType {
   User = 0,
   NotYetPaid = 1,
@@ -145,7 +149,9 @@ export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTea
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
-  paths['/api/v1/transaction/team']['get']['parameters']['query'] & SortQueryOptions;
+  paths['/api/v1/transaction/team']['get']['parameters']['query'] &
+    SortQueryOptions &
+    PaymentRequestByTeamQueryExtras;
 export type GetPaymentRequestsByTeamByIdOptions =
   paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
 

@@ -19,8 +19,10 @@
 
   <app-invoice-filter-component
     [limitSelection]="limitSelection"
+    [limit]="limit"
     [showUserFilter]="true"
     (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
   ></app-invoice-filter-component>
 
   <app-invoice-list-component

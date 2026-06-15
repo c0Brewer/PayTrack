@@ -92,6 +92,11 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.RequestedById == query.RequestById.Value);
             }
 
+            if (query?.VisibleStatusesOnly == true && !query.Status.HasValue)
+            {
+                dbQuery = dbQuery.Where(t => t.Status == TransactionStatus.Submitted || t.Status == TransactionStatus.Paid);
+            }
+
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 

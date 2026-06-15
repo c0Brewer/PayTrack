@@ -10,8 +10,6 @@ import {
   GetPaymentRequestsByTeamOptions,
   PaymentRequestByTeamDto,
   SortDirection,
-  TEAM_REQUEST_ALLOWED_STATUSES,
-  TransactionStatus,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { TeamRequestFilterComponent } from '../../general/filter-component/filter-component';
@@ -44,6 +42,7 @@ export class TeamRequestsComponent implements OnInit {
 
   filterOptions: GetPaymentRequestsByTeamOptions = {
     IncludeTeam: true,
+    VisibleStatusesOnly: false,
   };
   isExporting: boolean = false;
   sortBy: string | null = null;
@@ -58,6 +57,7 @@ export class TeamRequestsComponent implements OnInit {
     const query: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
       IncludeTeam: true,
+      VisibleStatusesOnly: false,
       Limit: this.limit,
       Offset: this.page * this.limit,
       SortBy: this.sortBy ?? undefined,
@@ -67,9 +67,7 @@ export class TeamRequestsComponent implements OnInit {
     this.paymentRequestByTeamService.getPaymentRequestsByTeam(query).subscribe({
       next: (data) => {
         if (data?.items) {
-          this.requests = data.items.filter((r) =>
-            TEAM_REQUEST_ALLOWED_STATUSES.includes(r.status as TransactionStatus),
-          );
+          this.requests = data.items;
           this.totalCount = data.totalCount;
           this.hasNext = data.hasNext ?? false;
           this.hasPrev = data.hasPrevious ?? false;
@@ -85,7 +83,7 @@ export class TeamRequestsComponent implements OnInit {
   }
 
   updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
-    this.filterOptions = { ...this.filterOptions, ...options };
+    this.filterOptions = { ...this.filterOptions, ...options, VisibleStatusesOnly: false };
     this.page = 0;
     this.loadRequests();
   }
