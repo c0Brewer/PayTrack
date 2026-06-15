@@ -44,11 +44,18 @@ export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
 
 export type GetPaymentRequestsByUserOptions =
-  paths['/api/v1/transaction/user']['get']['parameters']['query'];
+  paths['/api/v1/transaction/user']['get']['parameters']['query'] & SortQueryOptions;
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
 export type GetDuplicatePaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user/duplicate']['get']['parameters']['query'];
+
+export type SortDirection = 'Asc' | 'Desc';
+
+export type SortQueryOptions = {
+  SortBy?: string;
+  SortDirection?: SortDirection;
+};
 
 export enum PayoutType {
   User = 0,
@@ -138,7 +145,7 @@ export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTea
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
-  paths['/api/v1/transaction/team']['get']['parameters']['query'];
+  paths['/api/v1/transaction/team']['get']['parameters']['query'] & SortQueryOptions;
 export type GetPaymentRequestsByTeamByIdOptions =
   paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
 
@@ -161,7 +168,8 @@ export type GetFinancialExportOptions = NonNullable<
 export type FinancialExportQueryOptions = Omit<
   GetFinancialExportOptions,
   'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
-> & {
+> &
+  SortQueryOptions & {
   Source?: FinancialExportSource;
   InvoiceNumber?: string;
   PayoutType?: PayoutType;

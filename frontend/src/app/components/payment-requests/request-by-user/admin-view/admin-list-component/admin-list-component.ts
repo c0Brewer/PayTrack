@@ -10,6 +10,7 @@ import {
   FinancialExportSource,
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
+  SortDirection,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
 import { DuplicateListModalComponent } from '../../duplicate-list-modal-component/duplicate-list-modal-component';
@@ -56,6 +57,8 @@ export class RequestsComponent implements OnInit {
   isDuplicateModalLoading: boolean = false;
   duplicateActionInvoiceId: number | null = null;
   isExporting: boolean = false;
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
   FinancialExportFormat = FinancialExportFormat;
 
   ngOnInit(): void {
@@ -68,6 +71,8 @@ export class RequestsComponent implements OnInit {
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
@@ -90,6 +95,13 @@ export class RequestsComponent implements OnInit {
 
   updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
     this.page = 0;
     this.loadInvoices();
   }

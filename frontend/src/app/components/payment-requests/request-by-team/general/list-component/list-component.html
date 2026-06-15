@@ -1,15 +1,45 @@
 <table class="team-request-table">
   <thead>
     <tr>
-      <th>Amount</th>
-      <th>Due Date</th>
-      <th>Purpose</th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Amount')">
+          Amount
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('DueDate')">
+          Due Date
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('DueDate') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Purpose')">
+          Purpose
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+        </button>
+      </th>
       @if (showTeamColumn) {
-        <th>Team</th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Team')">
+            Team
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Team') }}</span>
+          </button>
+        </th>
       }
-      <th>Status</th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Status')">
+          Status
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+        </button>
+      </th>
       @if (showUserColumn) {
-        <th>User</th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('User')">
+            User
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('User') }}</span>
+          </button>
+        </th>
       }
       <th class="actions-col">Actions</th>
     </tr>

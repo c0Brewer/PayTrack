@@ -28,7 +28,10 @@
   <app-team-request-list-component
     [requests]="requests"
     [showUserColumn]="true"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
   ></app-team-request-list-component>
 
   <app-pagination-component

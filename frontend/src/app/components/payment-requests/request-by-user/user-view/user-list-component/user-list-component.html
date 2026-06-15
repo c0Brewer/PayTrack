@@ -9,7 +9,10 @@
   <app-invoice-list-component
     [invoices]="invoices"
     [showUserNameColumn]="false"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
   ></app-invoice-list-component>
 
   <app-pagination-component

@@ -8,6 +8,7 @@ import { PaymentRequestByUserService } from '../../../../../services/payment-req
 import {
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
+  SortDirection,
   UserDto,
 } from '../../../../../types/exporter';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
@@ -42,6 +43,8 @@ export class MyInvoicesComponent implements OnInit {
   filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
   };
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
 
   private currentUser: UserDto | null = null;
 
@@ -62,6 +65,8 @@ export class MyInvoicesComponent implements OnInit {
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
@@ -84,6 +89,13 @@ export class MyInvoicesComponent implements OnInit {
 
   updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
     this.page = 0;
     this.loadInvoices();
   }

@@ -27,8 +27,11 @@
     [invoices]="invoices"
     [showUserNameColumn]="true"
     [showDuplicateIndicator]="true"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
     (openDuplicates)="onOpenDuplicates($event)"
+    (sortChange)="onSortChange($event)"
   ></app-invoice-list-component>
 
   <app-duplicate-list-modal-component

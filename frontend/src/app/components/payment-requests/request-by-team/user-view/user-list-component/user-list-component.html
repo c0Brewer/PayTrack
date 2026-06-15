@@ -14,7 +14,10 @@
     [requests]="requests"
     [showTeamColumn]="false"
     [showUserColumn]="false"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
     (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
   ></app-team-request-list-component>
 
   <app-pagination-component
