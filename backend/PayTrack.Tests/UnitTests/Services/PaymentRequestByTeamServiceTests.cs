@@ -21,7 +21,9 @@ namespace PayTrack.Tests.UnitTests.Services
             bool creationEmail = true,
             bool creationSlack = false,
             bool confirmationEmail = true,
-            bool confirmationSlack = false)
+            bool confirmationSlack = false,
+            bool deletionEmail = true,
+            bool deletionSlack = false)
         {
             notificationsMock ??= new Mock<INotificationDispatchService>();
 
@@ -38,6 +40,12 @@ namespace PayTrack.Tests.UnitTests.Services
             systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, It.IsAny<bool>()))
                 .ReturnsAsync(confirmationSlack);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, It.IsAny<bool>()))
+                .ReturnsAsync(deletionEmail);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, It.IsAny<bool>()))
+                .ReturnsAsync(deletionSlack);
 
             var logger = new Mock<ILogger<PaymentRequestByTeamService>>();
             return new PaymentRequestByTeamService(
@@ -1195,12 +1203,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
                 .ReturnsAsync(true);
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = false },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, deletionEmail: false, deletionSlack: false);
 
             await service.DeletePaymentRequestByTeamAsync(7);
 
@@ -1308,12 +1311,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
                 .ReturnsAsync(true);
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, deletionEmail: false, deletionSlack: true);
 
             await service.DeletePaymentRequestByTeamAsync(7);
 
@@ -1356,12 +1354,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Slack error"));
 
-            var settings = new PaymentRequestNotificationSettings
-            {
-                OnDeletion = new NotificationChannelSettings { SendEmail = false, SendSlack = true },
-            };
-
-            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, settings);
+            var service = BuildService(repoMock, teamMock, userMock, budgetMock, notificationsMock, deletionEmail: false, deletionSlack: true);
 
             Func<Task> act = async () => await service.DeletePaymentRequestByTeamAsync(7);
 

@@ -33,6 +33,12 @@ namespace PayTrack.Application.Services.Model
         /// <summary>Notification channels: send Slack for due-date reminders.</summary>
         public const string NotificationsRemindersSlack = "notifications.reminders.slack";
 
+        /// <summary>Notification channels: send email when a payment request is deleted.</summary>
+        public const string NotificationsDeletionEmail = "notifications.deletion.email";
+
+        /// <summary>Notification channels: send Slack when a payment request is deleted.</summary>
+        public const string NotificationsDeletionSlack = "notifications.deletion.slack";
+
         /// <summary>Reminder schedule: comma-separated list of days before due date (e.g. "7,2,1").</summary>
         public const string RemindersDaysBeforeDue = "reminders.days-before-due";
 

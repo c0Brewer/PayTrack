@@ -33,11 +33,13 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     creation: { sendEmail: true, sendSlack: false },
     confirmation: { sendEmail: true, sendSlack: false },
     reminders: { sendEmail: true, sendSlack: false },
+    deletion: { sendEmail: true, sendSlack: false },
   };
   private notifOriginal: NotificationChannelGroupsDto = {
     creation: { sendEmail: true, sendSlack: false },
     confirmation: { sendEmail: true, sendSlack: false },
     reminders: { sendEmail: true, sendSlack: false },
+    deletion: { sendEmail: true, sendSlack: false },
   };
   notifLoading = false;
   notifSaving = false;
@@ -49,7 +51,9 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
       this.notifSettings.confirmation.sendEmail !== this.notifOriginal.confirmation.sendEmail ||
       this.notifSettings.confirmation.sendSlack !== this.notifOriginal.confirmation.sendSlack ||
       this.notifSettings.reminders.sendEmail !== this.notifOriginal.reminders.sendEmail ||
-      this.notifSettings.reminders.sendSlack !== this.notifOriginal.reminders.sendSlack
+      this.notifSettings.reminders.sendSlack !== this.notifOriginal.reminders.sendSlack ||
+      this.notifSettings.deletion.sendEmail !== this.notifOriginal.deletion.sendEmail ||
+      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack
     );
   }
 
@@ -174,11 +178,13 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           creation: { ...data.creation },
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
+          deletion: { ...data.deletion },
         };
         this.notifOriginal = {
           creation: { ...data.creation },
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
+          deletion: { ...data.deletion },
         };
         this.notifLoading = false;
         this.cdr.detectChanges();
@@ -199,6 +205,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           creation: { ...this.notifSettings.creation },
           confirmation: { ...this.notifSettings.confirmation },
           reminders: { ...this.notifSettings.reminders },
+          deletion: { ...this.notifSettings.deletion },
         };
         this.notifSaving = false;
         this.notificationService.showSuccess('Notification channel settings saved.');

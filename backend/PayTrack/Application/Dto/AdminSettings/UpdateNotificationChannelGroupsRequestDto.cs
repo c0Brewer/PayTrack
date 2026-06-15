@@ -14,5 +14,6 @@ namespace PayTrack.Application.Dto.AdminSettings
     public record UpdateNotificationChannelGroupsRequestDto(
         [Required] NotificationChannelDto Creation,
         [Required] NotificationChannelDto Confirmation,
-        [Required] NotificationChannelDto Reminders);
+        [Required] NotificationChannelDto Reminders,
+        [Required] NotificationChannelDto Deletion);
 }

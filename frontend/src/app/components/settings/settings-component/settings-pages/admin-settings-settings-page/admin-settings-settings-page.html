@@ -150,6 +150,31 @@
                   </label>
                 </td>
               </tr>
+              <tr>
+                <td>Payment Deleted</td>
+                <td>
+                  <label class="admin-settings__toggle">
+                    <input
+                      type="checkbox"
+                      class="admin-settings__toggle__input"
+                      [(ngModel)]="notifSettings.deletion.sendEmail"
+                      name="deletionEmail"
+                    />
+                    <span class="admin-settings__toggle__track"></span>
+                  </label>
+                </td>
+                <td>
+                  <label class="admin-settings__toggle">
+                    <input
+                      type="checkbox"
+                      class="admin-settings__toggle__input"
+                      [(ngModel)]="notifSettings.deletion.sendSlack"
+                      name="deletionSlack"
+                    />
+                    <span class="admin-settings__toggle__track"></span>
+                  </label>
+                </td>
+              </tr>
             </tbody>
           </table>
           <div class="admin-settings__actions">

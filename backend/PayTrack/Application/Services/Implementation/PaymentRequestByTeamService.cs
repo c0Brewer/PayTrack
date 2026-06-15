@@ -265,9 +265,10 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
-            var ch = this.notifSettings.OnDeletion;
+            var sendDeletionEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, true);
+            var sendDeletionSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, false);
 
-            if (ch.SendEmail)
+            if (sendDeletionEmail)
             {
                 try
                 {
@@ -289,7 +290,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendDeletionSlack)
             {
                 try
                 {
