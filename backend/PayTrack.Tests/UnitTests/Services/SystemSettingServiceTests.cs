@@ -83,7 +83,7 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllSixKeys()
+        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllEightKeys()
         {
             var repoMock = new Mock<ISystemSettingRepository>();
             var service = BuildService(repoMock);
@@ -91,7 +91,8 @@ namespace PayTrack.Tests.UnitTests.Services
             var dto = new UpdateNotificationChannelGroupsRequestDto(
                 Creation: new NotificationChannelDto(true, false),
                 Confirmation: new NotificationChannelDto(false, true),
-                Reminders: new NotificationChannelDto(true, true));
+                Reminders: new NotificationChannelDto(true, true),
+                Deletion: new NotificationChannelDto(false, false));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -101,6 +102,8 @@ namespace PayTrack.Tests.UnitTests.Services
             repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsConfirmationSlack, "True", 5), Times.Once);
             repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsRemindersEmail, "True", 5), Times.Once);
             repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsRemindersSlack, "True", 5), Times.Once);
+            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsDeletionEmail, "False", 5), Times.Once);
+            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsDeletionSlack, "False", 5), Times.Once);
         }
 
         // ── GetReminderScheduleAsync ───────────────────────────────────────────────

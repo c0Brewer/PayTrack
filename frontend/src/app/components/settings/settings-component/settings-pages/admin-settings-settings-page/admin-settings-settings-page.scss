@@ -69,6 +69,29 @@
     margin: 0;
   }
 
+  &__channels-group {
+    & + & {
+      border-top: 1px solid v.$border-color;
+      margin-top: v.$size-m;
+      padding-top: v.$size-m;
+    }
+
+    &__title {
+      color: v.$text-muted;
+      font-size: v.$font-xs;
+      font-weight: v.$font-semibold;
+      letter-spacing: 0.05em;
+      margin: 0 0 v.$size-xs;
+      text-transform: uppercase;
+    }
+
+    &__empty {
+      color: v.$text-muted;
+      font-size: v.$font-xs;
+      margin: 0;
+    }
+  }
+
   &__channels-table {
     border-collapse: collapse;
     font-size: v.$font-xs;

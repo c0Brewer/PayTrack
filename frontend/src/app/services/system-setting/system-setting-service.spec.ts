@@ -41,8 +41,11 @@ describe('SystemSettingService', () => {
     });
 
     it('should throw with the error detail when API returns error', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: { detail: 'Failed to load CSV column settings' } } as any);
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Failed to load CSV column settings' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       await expect(firstValueFrom(service.getCsvColumnSettings())).rejects.toThrow(
         'Failed to load CSV column settings',
@@ -56,7 +59,9 @@ describe('SystemSettingService', () => {
       vi.spyOn(client, 'PUT').mockResolvedValue({ error: null } as any);
 
       await expect(
-        firstValueFrom(service.updateCsvColumnSettings({ nameColumn: 'Bezeichnung', summeColumn: 'Betrag' })),
+        firstValueFrom(
+          service.updateCsvColumnSettings({ nameColumn: 'Bezeichnung', summeColumn: 'Betrag' }),
+        ),
       ).resolves.toBeUndefined();
     });
 
@@ -76,6 +81,7 @@ describe('SystemSettingService', () => {
         creation: { sendEmail: true, sendSlack: false },
         confirmation: { sendEmail: false, sendSlack: true },
         reminders: { sendEmail: true, sendSlack: true },
+        deletion: { sendEmail: false, sendSlack: false },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
@@ -86,8 +92,11 @@ describe('SystemSettingService', () => {
     });
 
     it('should throw when API returns error', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: { detail: 'Failed to load notification channels' } } as any);
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Failed to load notification channels' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       await expect(firstValueFrom(service.getNotificationChannelGroups())).rejects.toThrow(
         'Failed to load notification channels',
@@ -106,14 +115,17 @@ describe('SystemSettingService', () => {
             creation: { sendEmail: true, sendSlack: false },
             confirmation: { sendEmail: true, sendSlack: false },
             reminders: { sendEmail: true, sendSlack: false },
+            deletion: { sendEmail: false, sendSlack: false },
           }),
         ),
       ).resolves.toBeUndefined();
     });
 
     it('should throw when API returns error', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'PUT').mockResolvedValue({ error: { detail: 'Failed to update notification channels' } } as any);
+      vi.spyOn(client, 'PUT').mockResolvedValue({
+        error: { detail: 'Failed to update notification channels' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       await expect(
         firstValueFrom(
@@ -121,6 +133,7 @@ describe('SystemSettingService', () => {
             creation: { sendEmail: true, sendSlack: false },
             confirmation: { sendEmail: true, sendSlack: false },
             reminders: { sendEmail: true, sendSlack: false },
+            deletion: { sendEmail: false, sendSlack: false },
           }),
         ),
       ).rejects.toThrow('Failed to update notification channels');
@@ -144,8 +157,11 @@ describe('SystemSettingService', () => {
     });
 
     it('should throw when API returns error', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'GET').mockResolvedValue({ data: null, error: { detail: 'Failed to load reminder schedule' } } as any);
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Failed to load reminder schedule' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       await expect(firstValueFrom(service.getReminderSchedule())).rejects.toThrow(
         'Failed to load reminder schedule',
@@ -171,8 +187,10 @@ describe('SystemSettingService', () => {
     });
 
     it('should throw when API returns error', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client, 'PUT').mockResolvedValue({ error: { detail: 'Failed to update reminder schedule' } } as any);
+      vi.spyOn(client, 'PUT').mockResolvedValue({
+        error: { detail: 'Failed to update reminder schedule' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       await expect(
         firstValueFrom(

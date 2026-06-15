@@ -28,6 +28,7 @@ const defaultNotifSettings = {
   creation: { sendEmail: true, sendSlack: false },
   confirmation: { sendEmail: true, sendSlack: false },
   reminders: { sendEmail: true, sendSlack: false },
+  deletion: { sendEmail: false, sendSlack: false },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
@@ -41,17 +42,24 @@ describe('AdminSettingsSettingsPageComponent', () => {
   let fixture: ComponentFixture<AdminSettingsSettingsPageComponent>;
 
   beforeEach(async () => {
-    mockSystemSettingService.getCsvColumnSettings.mockReset().mockReturnValue(of({ ...defaultCsvSettings }));
+    mockSystemSettingService.getCsvColumnSettings
+      .mockReset()
+      .mockReturnValue(of({ ...defaultCsvSettings }));
     mockSystemSettingService.updateCsvColumnSettings.mockReset().mockReturnValue(of(undefined));
     mockSystemSettingService.getNotificationChannelGroups.mockReset().mockReturnValue(
       of({
         creation: { ...defaultNotifSettings.creation },
         confirmation: { ...defaultNotifSettings.confirmation },
         reminders: { ...defaultNotifSettings.reminders },
+        deletion: { ...defaultNotifSettings.deletion },
       }),
     );
-    mockSystemSettingService.updateNotificationChannelGroups.mockReset().mockReturnValue(of(undefined));
-    mockSystemSettingService.getReminderSchedule.mockReset().mockReturnValue(of({ ...defaultReminderSettings }));
+    mockSystemSettingService.updateNotificationChannelGroups
+      .mockReset()
+      .mockReturnValue(of(undefined));
+    mockSystemSettingService.getReminderSchedule
+      .mockReset()
+      .mockReturnValue(of({ ...defaultReminderSettings }));
     mockSystemSettingService.updateReminderSchedule.mockReset().mockReturnValue(of(undefined));
     mockNotificationService.showSuccess.mockReset();
     mockNotificationService.showError.mockReset();
@@ -157,12 +165,15 @@ describe('AdminSettingsSettingsPageComponent', () => {
 
       component.saveCsvSettings();
 
-      expect(mockSystemSettingService.updateCsvColumnSettings).toHaveBeenCalledWith(
-        { nameColumn: 'Bezeichnung', summeColumn: 'Betrag' },
-      );
+      expect(mockSystemSettingService.updateCsvColumnSettings).toHaveBeenCalledWith({
+        nameColumn: 'Bezeichnung',
+        summeColumn: 'Betrag',
+      });
       expect(component.csvDirty).toBe(false);
       expect(component.csvSaving).toBe(false);
-      expect(mockNotificationService.showSuccess).toHaveBeenCalledWith('CSV column settings saved.');
+      expect(mockNotificationService.showSuccess).toHaveBeenCalledWith(
+        'CSV column settings saved.',
+      );
     });
 
     it('should show error notification and clear saving flag on failure', () => {
@@ -185,6 +196,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
         creation: { sendEmail: false, sendSlack: true },
         confirmation: { sendEmail: true, sendSlack: false },
         reminders: { sendEmail: false, sendSlack: false },
+        deletion: { sendEmail: false, sendSlack: false },
       };
 
       component.saveNotifSettings();

@@ -60,123 +60,131 @@
         <p class="admin-settings__state">Loading...</p>
       } @else {
         <form class="admin-settings__form" (ngSubmit)="saveNotifSettings()">
-          <table class="admin-settings__channels-table">
-            <thead>
-              <tr>
-                <th class="admin-settings__channels-table__event-col">Event</th>
-                <th>
-                  <span class="material-symbols-outlined">mail</span>
-                  Email
-                </th>
-                <th>
-                  <span class="material-symbols-outlined">chat</span>
-                  Slack
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>New Payment Request</td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.creation.sendEmail"
-                      name="creationEmail"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.creation.sendSlack"
-                      name="creationSlack"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-              </tr>
-              <tr>
-                <td>Payment Confirmed</td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.confirmation.sendEmail"
-                      name="confirmationEmail"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.confirmation.sendSlack"
-                      name="confirmationSlack"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-              </tr>
-              <tr>
-                <td>Payment Reminder</td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.reminders.sendEmail"
-                      name="remindersEmail"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.reminders.sendSlack"
-                      name="remindersSlack"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-              </tr>
-              <tr>
-                <td>Payment Deleted</td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.deletion.sendEmail"
-                      name="deletionEmail"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-                <td>
-                  <label class="admin-settings__toggle">
-                    <input
-                      type="checkbox"
-                      class="admin-settings__toggle__input"
-                      [(ngModel)]="notifSettings.deletion.sendSlack"
-                      name="deletionSlack"
-                    />
-                    <span class="admin-settings__toggle__track"></span>
-                  </label>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="admin-settings__channels-group">
+            <h4 class="admin-settings__channels-group__title">Payment Requests</h4>
+            <table class="admin-settings__channels-table">
+              <thead>
+                <tr>
+                  <th class="admin-settings__channels-table__event-col">Event</th>
+                  <th>
+                    <span class="material-symbols-outlined">mail</span>
+                    Email
+                  </th>
+                  <th>
+                    <span class="material-symbols-outlined">chat</span>
+                    Slack
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Creation</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendEmail"
+                        name="creationEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendSlack"
+                        name="creationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mark as Paid</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendEmail"
+                        name="confirmationEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendSlack"
+                        name="confirmationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Automatic Reminders</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendEmail"
+                        name="remindersEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendSlack"
+                        name="remindersSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Deletion</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendEmail"
+                        name="deletionEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendSlack"
+                        name="deletionSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-settings__channels-group">
+            <h4 class="admin-settings__channels-group__title">Invoice Submissions</h4>
+            <p class="admin-settings__channels-group__empty">No notification events configured yet.</p>
+          </div>
           <div class="admin-settings__actions">
             <button type="submit" class="admin-settings__save-btn" [disabled]="notifSaving || !notifDirty">
               @if (notifSaving) {
