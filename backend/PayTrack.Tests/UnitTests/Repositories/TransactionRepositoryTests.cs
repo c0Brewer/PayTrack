@@ -751,6 +751,110 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetAllPaymentRequestByUser_ShouldSortByInvoiceNumberBeforePagination()
+        {
+            await using var context = GetInMemoryDbContext("SortInvoices");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, InvoiceNumber = "INV-001" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, InvoiceNumber = "INV-003" },
+                new PaymentRequestByUser { Id = 3, UserId = 1, TeamId = 1, Amount = 100, InvoiceNumber = "INV-002" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (descResult, descCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
+            {
+                SortBy = "InvoiceNumber",
+                SortDirection = "Desc",
+                Offset = 0,
+                Limit = 2,
+            });
+            var (ascResult, ascCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
+            {
+                SortBy = "InvoiceNumber",
+                SortDirection = "Asc",
+                Offset = 0,
+                Limit = 2,
+            });
+
+            descCount.Should().Be(3);
+            descResult.Select(t => t.InvoiceNumber).Should().Equal("INV-003", "INV-002");
+            ascCount.Should().Be(3);
+            ascResult.Select(t => t.InvoiceNumber).Should().Equal("INV-001", "INV-002");
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_ShouldSortByDueDateBeforePagination()
+        {
+            await using var context = GetInMemoryDbContext("SortTeamRequests");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 100, DueDate = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 100, DueDate = new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc) });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (descResult, descCount) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery
+            {
+                SortBy = "DueDate",
+                SortDirection = "Desc",
+                Offset = 0,
+                Limit = 2,
+            });
+            var (ascResult, ascCount) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery
+            {
+                SortBy = "DueDate",
+                SortDirection = "Asc",
+                Offset = 0,
+                Limit = 2,
+            });
+
+            descCount.Should().Be(3);
+            descResult.Select(t => t.Id).Should().Equal(2, 3);
+            ascCount.Should().Be(3);
+            ascResult.Select(t => t.Id).Should().Equal(1, 3);
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequestByTeam_ShouldFilterVisibleStatusesBeforePagination()
+        {
+            await using var context = GetInMemoryDbContext("VisibleTeamRequestStatuses");
+
+            context.User.Add(new User { Id = 1, Email = "test@123", Name = "test123" });
+            context.Teams.Add(new Team { Id = 1, Name = "test123" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, Status = TransactionStatus.Approved },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, Status = TransactionStatus.Paid },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, Status = TransactionStatus.Submitted });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var (result, count) = await repo.GetAllAsync(new GetPaymentRequestByTeamQuery
+            {
+                VisibleStatusesOnly = true,
+                SortBy = "Amount",
+                SortDirection = "Asc",
+                Offset = 0,
+                Limit = 1,
+            });
+
+            count.Should().Be(2);
+            result.Should().ContainSingle();
+            result.Single().Id.Should().Be(2);
+        }
+
+        [Fact]
         public async Task GetAllTransactions_ShouldFilterByCostCentre()
         {
             await using var context = GetInMemoryDbContext("FilterByCostCentre");
