@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Dto.PaymentRequestByUser;
@@ -32,10 +33,10 @@ namespace PayTrack.Data.Repositories.Implementation
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
+            dbQuery = ApplySorting(dbQuery, query);
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
-            // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
         }
@@ -65,6 +66,7 @@ namespace PayTrack.Data.Repositories.Implementation
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
+            dbQuery = ApplySorting(dbQuery, query);
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
             if (query?.IncludeBankAccount.HasValue == true)
@@ -72,8 +74,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Include(t => t.BankAccount);
             }
 
-            // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
             await this.SetPotentialDuplicateFlagsAsync(items);
 
             return (items, totalCount);
@@ -94,10 +95,10 @@ namespace PayTrack.Data.Repositories.Implementation
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
+            dbQuery = ApplySorting(dbQuery, query);
             dbQuery = ApplyBasePostFilters(dbQuery, query);
 
-            // Could potentially add other ordering logic here as well
-            var items = await dbQuery.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            var items = await dbQuery.ToListAsync();
 
             return (items, totalCount);
         }
@@ -451,6 +452,50 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return dbQuery;
+        }
+
+        private static IQueryable<T> ApplySorting<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
+            where T : Transaction
+        {
+            var sortBy = query?.SortBy?.Trim();
+            var descending = !string.Equals(query?.SortDirection, "Asc", StringComparison.OrdinalIgnoreCase);
+
+            if (string.IsNullOrWhiteSpace(sortBy))
+            {
+                return ApplyOrder(dbQuery, transaction => transaction.CreatedAt, true);
+            }
+
+            return sortBy.ToLowerInvariant() switch
+            {
+                "amount" => ApplyOrder(dbQuery, transaction => transaction.Amount, descending),
+                "createdat" or "submitted" => ApplyOrder(dbQuery, transaction => transaction.CreatedAt, descending),
+                "duedate" => ApplyOrder(dbQuery, transaction => transaction.DueDate, descending),
+                "invoice" or "invoicenumber" => ApplyOrder(
+                    dbQuery,
+                    transaction => EF.Property<string>(transaction, nameof(PaymentRequestByUser.InvoiceNumber)),
+                    descending),
+                "paidat" => ApplyOrder(dbQuery, transaction => transaction.PaidAt, descending),
+                "payouttype" => ApplyOrder(
+                    dbQuery,
+                    transaction => EF.Property<PayoutType>(transaction, nameof(PaymentRequestByUser.PayoutType)),
+                    descending),
+                "purpose" or "purposeofpayment" => ApplyOrder(dbQuery, transaction => transaction.PurposeOfPayment, descending),
+                "status" => ApplyOrder(dbQuery, transaction => transaction.Status, descending),
+                "team" or "teamname" => ApplyOrder(dbQuery, transaction => transaction.Team.Name, descending),
+                "user" or "username" => ApplyOrder(dbQuery, transaction => transaction.User.Name, descending),
+                _ => ApplyOrder(dbQuery, transaction => transaction.CreatedAt, true),
+            };
+        }
+
+        private static IOrderedQueryable<T> ApplyOrder<T, TKey>(
+            IQueryable<T> dbQuery,
+            Expression<Func<T, TKey>> keySelector,
+            bool descending)
+            where T : Transaction
+        {
+            return descending
+                ? dbQuery.OrderByDescending(keySelector).ThenByDescending(transaction => transaction.Id)
+                : dbQuery.OrderBy(keySelector).ThenBy(transaction => transaction.Id);
         }
 
         private static IQueryable<T> ApplyBasePostFilters<T>(IQueryable<T> dbQuery, GetTransactionQuery? query)
