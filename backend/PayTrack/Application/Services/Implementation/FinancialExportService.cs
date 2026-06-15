@@ -41,12 +41,12 @@ namespace PayTrack.Application.Services.Implementation
             return format switch
             {
                 FinancialExportFormat.Csv => new FinancialExportResult(
-                    Encoding.UTF8.GetBytes(BuildCsv(rows)),
+                    Encoding.UTF8.GetBytes(BuildCsv(rows, query.Source)),
                     CsvContentType,
                     $"{filePrefix}-{timestamp}.csv"),
 
                 FinancialExportFormat.Pdf => new FinancialExportResult(
-                    BuildPdf(rows, title),
+                    BuildPdf(rows, title, query.Source),
                     PdfContentType,
                     $"{filePrefix}-{timestamp}.pdf"),
 
@@ -137,22 +137,31 @@ namespace PayTrack.Application.Services.Implementation
 
         private static FinancialExportRow ToExportRow(Transaction transaction)
         {
+            var invoiceNumber = transaction is PaymentRequestByUser paymentRequestByUser
+                ? paymentRequestByUser.InvoiceNumber
+                : null;
+            var payoutType = transaction is PaymentRequestByUser userPaymentRequest
+                ? GetPayoutTypeLabel(userPaymentRequest.PayoutType)
+                : null;
+
             return new FinancialExportRow(
                 transaction.Id,
+                invoiceNumber,
                 GetTransactionType(transaction),
                 transaction.PaymentDirection.ToString(),
-                transaction.Status.ToString(),
+                GetTransactionStatusLabel(transaction.Status),
                 transaction.Amount,
                 transaction.PurposeOfPayment,
                 transaction.PaymentReference,
                 transaction.Team?.Name ?? transaction.TeamId.ToString(CultureInfo.InvariantCulture),
                 transaction.Budget?.CostCentre.Name,
                 transaction.Budget?.Name,
-                transaction.User?.Email ?? transaction.UserId.ToString(CultureInfo.InvariantCulture),
+                transaction.User?.Name ?? transaction.User?.Email ?? transaction.UserId.ToString(CultureInfo.InvariantCulture),
                 transaction.CreatedAt,
                 transaction.PaidAt,
                 transaction.FinancePaidAt,
-                transaction.DueDate);
+                transaction.DueDate,
+                payoutType);
         }
 
         private static string GetTransactionType(Transaction transaction)
@@ -165,7 +174,19 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static string BuildCsv(IReadOnlyCollection<FinancialExportRow> rows)
+        private static string BuildCsv(
+            IReadOnlyCollection<FinancialExportRow> rows,
+            FinancialExportSource? source)
+        {
+            return (source ?? FinancialExportSource.All) switch
+            {
+                FinancialExportSource.SubmittedInvoices => BuildSubmittedInvoicesCsv(rows),
+                FinancialExportSource.PaymentRequests => BuildPaymentRequestsCsv(rows),
+                _ => BuildAllTransactionsCsv(rows),
+            };
+        }
+
+        private static string BuildAllTransactionsCsv(IReadOnlyCollection<FinancialExportRow> rows)
         {
             var builder = new StringBuilder();
 
@@ -217,7 +238,82 @@ namespace PayTrack.Application.Services.Implementation
             return builder.ToString();
         }
 
-        private static byte[] BuildPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
+        private static string BuildSubmittedInvoicesCsv(IReadOnlyCollection<FinancialExportRow> rows)
+        {
+            var builder = new StringBuilder();
+
+            AppendCsvLine(
+                builder,
+                "Invoice Number",
+                "Submitted",
+                "Paid At",
+                "Amount",
+                "Purpose",
+                "Team/Cost Centre",
+                "Payout Type",
+                "Status",
+                "User");
+
+            foreach (var row in rows)
+            {
+                AppendCsvLine(
+                    builder,
+                    row.InvoiceNumber,
+                    FormatDisplayDate(row.CreatedAt),
+                    FormatDisplayDate(row.PaidAt),
+                    row.Amount.ToString("F2", CultureInfo.InvariantCulture),
+                    row.PurposeOfPayment,
+                    FormatTeamCostCentre(row),
+                    row.PayoutType,
+                    row.Status,
+                    row.User);
+            }
+
+            return builder.ToString();
+        }
+
+        private static string BuildPaymentRequestsCsv(IReadOnlyCollection<FinancialExportRow> rows)
+        {
+            var builder = new StringBuilder();
+
+            AppendCsvLine(
+                builder,
+                "Amount",
+                "Due Date",
+                "Purpose",
+                "Team/Cost Centre",
+                "Status",
+                "User");
+
+            foreach (var row in rows)
+            {
+                AppendCsvLine(
+                    builder,
+                    row.Amount.ToString("F2", CultureInfo.InvariantCulture),
+                    FormatDisplayDate(row.DueDate),
+                    row.PurposeOfPayment,
+                    FormatTeamCostCentre(row),
+                    row.Status,
+                    row.User);
+            }
+
+            return builder.ToString();
+        }
+
+        private static byte[] BuildPdf(
+            IReadOnlyCollection<FinancialExportRow> rows,
+            string title,
+            FinancialExportSource? source)
+        {
+            return (source ?? FinancialExportSource.All) switch
+            {
+                FinancialExportSource.SubmittedInvoices => BuildSubmittedInvoicesPdf(rows, title),
+                FinancialExportSource.PaymentRequests => BuildPaymentRequestsPdf(rows, title),
+                _ => BuildAllTransactionsPdf(rows, title),
+            };
+        }
+
+        private static byte[] BuildAllTransactionsPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
         {
             var lines = new List<string>
             {
@@ -233,6 +329,40 @@ namespace PayTrack.Application.Services.Implementation
 
             lines.AddRange(rows.Select(row =>
                 $"{FormatDate(row.PaidAt ?? row.CreatedAt),-10} {TrimForPdf(row.Type, 8),-8} {TrimForPdf(row.Direction, 3),-3} {TrimForPdf(row.Status, 18),-18} {row.Amount,10:F2}  {TrimForPdf($"{row.Team} / {row.CostCentre}", 42)}"));
+
+            return SimplePdfBuilder.Build(lines);
+        }
+
+        private static byte[] BuildSubmittedInvoicesPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
+        {
+            var lines = new List<string>
+            {
+                title,
+                $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
+                $"Rows: {rows.Count}",
+                string.Empty,
+                "Invoice Number  Submitted   Paid At     Amount      Purpose              Team/Cost Centre        Payout Type       Status             User",
+            };
+
+            lines.AddRange(rows.Select(row =>
+                $"{TrimForPdf(row.InvoiceNumber, 15),-15} {FormatDisplayDate(row.CreatedAt),-11} {FormatDisplayDate(row.PaidAt),-10} {row.Amount,10:F2}  {TrimForPdf(row.PurposeOfPayment, 20),-20} {TrimForPdf(FormatTeamCostCentre(row), 23),-23} {TrimForPdf(row.PayoutType, 17),-17} {TrimForPdf(row.Status, 18),-18} {TrimForPdf(row.User, 24)}"));
+
+            return SimplePdfBuilder.Build(lines);
+        }
+
+        private static byte[] BuildPaymentRequestsPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
+        {
+            var lines = new List<string>
+            {
+                title,
+                $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
+                $"Rows: {rows.Count}",
+                string.Empty,
+                "Amount      Due Date    Purpose                         Team/Cost Centre              Status             User",
+            };
+
+            lines.AddRange(rows.Select(row =>
+                $"{row.Amount,10:F2}  {FormatDisplayDate(row.DueDate),-10}  {TrimForPdf(row.PurposeOfPayment, 30),-30} {TrimForPdf(FormatTeamCostCentre(row), 29),-29} {TrimForPdf(row.Status, 18),-18} {TrimForPdf(row.User, 28)}"));
 
             return SimplePdfBuilder.Build(lines);
         }
@@ -292,6 +422,41 @@ namespace PayTrack.Application.Services.Implementation
             return value?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
         }
 
+        private static string FormatDisplayDate(DateTime? value)
+        {
+            return value?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? string.Empty;
+        }
+
+        private static string FormatTeamCostCentre(FinancialExportRow row)
+        {
+            if (string.IsNullOrWhiteSpace(row.CostCentre))
+            {
+                return row.Team;
+            }
+
+            return $"{row.Team} / {row.CostCentre}";
+        }
+
+        private static string GetPayoutTypeLabel(PayoutType payoutType)
+        {
+            return payoutType switch
+            {
+                PayoutType.User => "Pay to User",
+                PayoutType.NotYetPaid => "Pay to Supplier",
+                PayoutType.AlreadyPaid => "Already Paid",
+                _ => payoutType.ToString(),
+            };
+        }
+
+        private static string GetTransactionStatusLabel(TransactionStatus status)
+        {
+            return status switch
+            {
+                TransactionStatus.ChangesRequested => "Changes Requested",
+                _ => status.ToString(),
+            };
+        }
+
         private static string TrimForPdf(string? value, int maxLength)
         {
             if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
@@ -338,6 +503,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             public FinancialExportRow(
                 int id,
+                string? invoiceNumber,
                 string type,
                 string direction,
                 string status,
@@ -351,9 +517,11 @@ namespace PayTrack.Application.Services.Implementation
                 DateTime createdAt,
                 DateTime? paidAt,
                 DateTime? financePaidAt,
-                DateTime? dueDate)
+                DateTime? dueDate,
+                string? payoutType)
             {
                 this.Id = id;
+                this.InvoiceNumber = invoiceNumber;
                 this.Type = type;
                 this.Direction = direction;
                 this.Status = status;
@@ -368,9 +536,12 @@ namespace PayTrack.Application.Services.Implementation
                 this.PaidAt = paidAt;
                 this.FinancePaidAt = financePaidAt;
                 this.DueDate = dueDate;
+                this.PayoutType = payoutType;
             }
 
             public int Id { get; }
+
+            public string? InvoiceNumber { get; }
 
             public string Type { get; }
 
@@ -399,6 +570,8 @@ namespace PayTrack.Application.Services.Implementation
             public DateTime? FinancePaidAt { get; }
 
             public DateTime? DueDate { get; }
+
+            public string? PayoutType { get; }
         }
 
         private sealed class SimplePdfBuilder

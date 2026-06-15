@@ -108,8 +108,18 @@ namespace PayTrack.Tests.UnitTests.Services
                     PaymentDirection = PaymentDirection.Out,
                     Status = TransactionStatus.Paid,
                     TeamId = 2,
+                    Team = new Team { Id = 2, Name = "Electronics" },
                     UserId = 5,
+                    User = new User { Id = 5, Name = "Alice Admin", Email = "alice@paytrack.dev" },
                     CreatedAt = new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc),
+                    PaidAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc),
+                    PayoutType = PayoutType.AlreadyPaid,
+                    Budget = new Budget
+                    {
+                        Id = 2,
+                        Name = "Soldering",
+                        CostCentre = new CostCentre { Id = 2, Name = "Lab" },
+                    },
                 },
             };
 
@@ -146,6 +156,23 @@ namespace PayTrack.Tests.UnitTests.Services
             capturedQuery.Limit.Should().BeNull();
             capturedQuery.Offset.Should().BeNull();
             repoMock.Verify(r => r.GetAllAsync(It.IsAny<GetTransactionQuery>()), Times.Never);
+
+            var csv = Encoding.UTF8.GetString(result.Content);
+            csv.Should().Contain("Invoice Number,Submitted,Paid At,Amount,Purpose,Team/Cost Centre,Payout Type,Status,User");
+            csv.Should().Contain("INV-44,01.02.2026,03.02.2026,80.00,Tools,Electronics / Lab,Already Paid,Paid,Alice Admin");
+
+            var pdfResult = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            {
+                Source = FinancialExportSource.SubmittedInvoices,
+                Format = FinancialExportFormat.Pdf,
+            });
+            var pdf = Encoding.ASCII.GetString(pdfResult.Content);
+            pdf.Should().Contain("Invoice Number");
+            pdf.Should().Contain("Submitted");
+            pdf.Should().Contain("Paid At");
+            pdf.Should().Contain("Team/Cost Centre");
+            pdf.Should().Contain("Payout Type");
+            pdf.Should().Contain("Alice Admin");
         }
 
         [Fact]
@@ -162,8 +189,18 @@ namespace PayTrack.Tests.UnitTests.Services
                     PaymentDirection = PaymentDirection.In,
                     Status = TransactionStatus.Submitted,
                     TeamId = 1,
+                    Team = new Team { Id = 1, Name = "Powertrain" },
                     UserId = 1,
+                    User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
+                    PurposeOfPayment = "Membership fee",
                     CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    DueDate = new DateTime(2026, 1, 31, 0, 0, 0, DateTimeKind.Utc),
+                    Budget = new Budget
+                    {
+                        Id = 1,
+                        Name = "Income Budget",
+                        CostCentre = new CostCentre { Id = 1, Name = "Membership" },
+                    },
                 },
                 new PaymentRequestByTeam
                 {
@@ -172,8 +209,12 @@ namespace PayTrack.Tests.UnitTests.Services
                     PaymentDirection = PaymentDirection.In,
                     Status = TransactionStatus.Paid,
                     TeamId = 1,
+                    Team = new Team { Id = 1, Name = "Powertrain" },
                     UserId = 1,
+                    User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
+                    PurposeOfPayment = "Workshop fee",
                     CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                    DueDate = new DateTime(2026, 2, 15, 0, 0, 0, DateTimeKind.Utc),
                 },
                 new PaymentRequestByTeam
                 {
@@ -182,7 +223,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     PaymentDirection = PaymentDirection.In,
                     Status = TransactionStatus.Approved,
                     TeamId = 1,
+                    Team = new Team { Id = 1, Name = "Powertrain" },
                     UserId = 1,
+                    User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
                     CreatedAt = new DateTime(2026, 1, 3, 0, 0, 0, DateTimeKind.Utc),
                 },
             };
@@ -211,10 +254,23 @@ namespace PayTrack.Tests.UnitTests.Services
             capturedQuery.IncludeBudget.Should().BeTrue();
 
             var csv = Encoding.UTF8.GetString(result.Content);
-            csv.Should().Contain("Income,In,Submitted,100.00");
-            csv.Should().Contain("Income,In,Paid,40.00");
+            csv.Should().Contain("Amount,Due Date,Purpose,Team/Cost Centre,Status,User");
+            csv.Should().Contain("100.00,31.01.2026,Membership fee,Powertrain / Membership,Submitted,Member One");
+            csv.Should().Contain("40.00,15.02.2026,Workshop fee,Powertrain,Paid,Member One");
             csv.Should().NotContain("Approved,20.00");
-            csv.Should().Contain("Income,140.00");
+
+            var pdfResult = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            {
+                Source = FinancialExportSource.PaymentRequests,
+                Format = FinancialExportFormat.Pdf,
+            });
+            var pdf = Encoding.ASCII.GetString(pdfResult.Content);
+            pdf.Should().Contain("Amount");
+            pdf.Should().Contain("Due Date");
+            pdf.Should().Contain("Purpose");
+            pdf.Should().Contain("Team/Cost Centre");
+            pdf.Should().Contain("Status");
+            pdf.Should().Contain("Member One");
         }
 
         [Fact]
