@@ -32,7 +32,7 @@ export class TeamRequestListComponent {
 
   onSort(sortBy: string): void {
     const sortDirection: SortDirection =
-      this.sortBy === sortBy && this.sortDirection === 'Desc' ? 'Asc' : 'Desc';
+      this.sortBy === sortBy && this.sortDirection === 'Asc' ? 'Desc' : 'Asc';
 
     this.sortChange.emit({ sortBy, sortDirection });
   }
