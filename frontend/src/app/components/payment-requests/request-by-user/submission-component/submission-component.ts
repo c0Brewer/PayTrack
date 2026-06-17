@@ -123,6 +123,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       payoutType: [null, Validators.required],
       bankAccountId: [null, [Validators.required, Validators.min(1)]],
       creditorName: [null],
+      dueDate: [null],
       teamId: [null, Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       purposeOfPayment: ['', [Validators.required, Validators.maxLength(255)]],
@@ -136,6 +137,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe((value) => {
         const bankCtrl = this.form.get('bankAccountId');
         const creditorCtrl = this.form.get('creditorName');
+        const dueDateCtrl = this.form.get('dueDate');
 
         if (value === PayoutType.User) {
           bankCtrl?.setValidators([Validators.required, Validators.min(1)]);
@@ -147,11 +149,15 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
         if (value === PayoutType.NotYetPaid) {
           creditorCtrl?.setValidators([Validators.required, Validators.maxLength(255)]);
+          dueDateCtrl?.setValidators([Validators.required]);
         } else {
           creditorCtrl?.clearValidators();
           creditorCtrl?.setValue(null);
+          dueDateCtrl?.clearValidators();
+          dueDateCtrl?.setValue(null);
         }
         creditorCtrl?.updateValueAndValidity();
+        dueDateCtrl?.updateValueAndValidity();
       });
   }
 
@@ -304,6 +310,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       payoutType: payoutType,
       bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
       creditorName: payoutType === PayoutType.NotYetPaid ? v.creditorName : null,
+      dueDate: payoutType === PayoutType.NotYetPaid && v.dueDate ? new Date(v.dueDate).toISOString() : null,
       receipt: '', // ignored — real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),
@@ -471,12 +478,17 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       ? new Date(draft.payload.transaction.paidAt).toISOString().slice(0, 10)
       : '';
 
+    const dueDate = draft.payload.dueDate
+      ? new Date(draft.payload.dueDate).toISOString().slice(0, 10)
+      : '';
+
     this.form.patchValue({
       invoiceNumber: draft.payload.invoiceNumber,
       comment: draft.payload.comment ?? '',
       payoutType: draft.payload.payoutType,
       bankAccountId: draft.payload.bankAccountId,
       creditorName: draft.payload.creditorName,
+      dueDate,
       teamId: draft.payload.transaction.teamId,
       amount: draft.payload.transaction.amount,
       purposeOfPayment: draft.payload.transaction.purposeOfPayment,

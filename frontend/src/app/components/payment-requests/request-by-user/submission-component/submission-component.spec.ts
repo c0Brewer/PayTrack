@@ -55,6 +55,7 @@ describe('ReceiptSubmitComponent', () => {
       paidAt: '2025-01-01',
       receipt: 'ok.pdf',
       creditorName: '',
+      dueDate: null,
     });
   };
 

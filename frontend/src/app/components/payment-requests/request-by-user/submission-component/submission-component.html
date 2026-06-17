@@ -351,6 +351,21 @@
                 >
               }
             </div>
+            <div class="field input-wrapper payout-type__due-date">
+              <label for="dueDate">Due Date <span class="required">*</span></label>
+              <input
+                id="dueDate"
+                type="date"
+                formControlName="dueDate"
+                [class.is-invalid]="isInvalid('dueDate')"
+              />
+              @if (getError('dueDate')) {
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('dueDate') }}</span
+                >
+              }
+            </div>
           }
         </app-box-component>
       </div>
