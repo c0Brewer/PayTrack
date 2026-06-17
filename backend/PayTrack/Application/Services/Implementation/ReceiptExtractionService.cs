@@ -19,7 +19,7 @@ namespace PayTrack.Application.Services.Implementation
         IReceiptParser receiptParser,
         ILogger<ReceiptExtractionService> logger) : IReceiptExtractionService
     {
-        private const long MaximumFileSize = 10 * 1024 * 1024;
+        private const long MaximumFileSize = 20 * 1024 * 1024;
         private const int MinimumEmbeddedPdfTextLength = 40; // Below this threshold, treat the PDF as scanned and use OCR.
         private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -101,7 +101,7 @@ namespace PayTrack.Application.Services.Implementation
 
             if (receipt.Length > MaximumFileSize)
             {
-                throw new InvalidFileException("The receipt must not exceed 10 MB.");
+                throw new InvalidFileException("The receipt must not exceed 20 MB.");
             }
 
             if (!SupportedExtensions.Contains(Path.GetExtension(receipt.FileName)))

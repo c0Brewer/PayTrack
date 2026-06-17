@@ -57,15 +57,15 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task ExtractAsync_RejectsFileLargerThanTenMegabytes()
+        public async Task ExtractAsync_RejectsFileLargerThanTwentyMegabytes()
         {
             await using var stream = new MemoryStream([1]);
-            var formFile = new FormFile(stream, 0, (10 * 1024 * 1024) + 1, "receipt", "invoice.pdf");
+            var formFile = new FormFile(stream, 0, (20 * 1024 * 1024) + 1, "receipt", "invoice.pdf");
 
             var act = () => this.service.ExtractAsync(formFile);
 
             await act.Should().ThrowAsync<InvalidFileException>()
-                .WithMessage("*10 MB*");
+                .WithMessage("*20 MB*");
         }
 
         [Theory]
