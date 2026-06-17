@@ -76,8 +76,8 @@ namespace PayTrack.Application.Services.Implementation
 
             var candidates = lines
                 .Where(line => !ExcludedAmountLabelRegex().IsMatch(line))
-                .SelectMany(FindAmounts)
-                .Where(value => value > 0 && value < 10000000)
+                .SelectMany(line => FindAmounts(line, requireCurrencyMarker: true))
+                .Where(value => value is > 0 and < 10000000)
                 .ToArray();
 
             return candidates.Length == 0
@@ -87,11 +87,22 @@ namespace PayTrack.Application.Services.Implementation
 
         private static ExtractedReceiptFieldDto<DateTime?> ExtractDate(string[] lines)
         {
-            foreach (var line in lines.Where(line => DateLabelRegex().IsMatch(line)))
+            for (var index = 0; index < lines.Length; index++)
             {
+                var line = lines[index];
+                if (!DateLabelRegex().IsMatch(line))
+                {
+                    continue;
+                }
+
                 if (TryFindDate(line, out var date))
                 {
                     return new ExtractedReceiptFieldDto<DateTime?>(date, 0.92m);
+                }
+
+                if (index + 1 < lines.Length && TryFindDate(lines[index + 1], out date))
+                {
+                    return new ExtractedReceiptFieldDto<DateTime?>(date, 0.82m);
                 }
             }
 
@@ -108,30 +119,53 @@ namespace PayTrack.Application.Services.Implementation
 
         private static ExtractedReceiptFieldDto<string?> ExtractInvoiceNumber(string[] lines)
         {
-            foreach (var line in lines)
+            for (var index = 0; index < lines.Length; index++)
             {
+                var line = lines[index];
                 var match = InvoiceNumberRegex().Match(line);
-                if (!match.Success)
+                if (match.Success)
                 {
-                    continue;
+                    var value = CleanInvoiceNumber(match.Groups["value"].Value);
+                    if (IsPlausibleInvoiceNumber(value))
+                    {
+                        return new ExtractedReceiptFieldDto<string?>(value, 0.95m);
+                    }
                 }
 
-                var value = match.Groups["value"].Value.Trim().TrimEnd('.', ',', ';');
-                if (value.Length >= 3)
+                if (index + 1 < lines.Length && InvoiceNumberLabelRegex().IsMatch(line))
                 {
-                    return new ExtractedReceiptFieldDto<string?>(value, 0.95m);
+                    var value = CleanInvoiceNumber(lines[index + 1]);
+                    if (IsPlausibleInvoiceNumber(value))
+                    {
+                        return new ExtractedReceiptFieldDto<string?>(value, 0.85m);
+                    }
                 }
             }
 
             return new ExtractedReceiptFieldDto<string?>(null, 0);
         }
 
-        private static List<decimal> FindAmounts(string line)
+        private static string CleanInvoiceNumber(string value)
+        {
+            return value.Trim().TrimEnd('.', ',', ';');
+        }
+
+        private static bool IsPlausibleInvoiceNumber(string value)
+        {
+            return value.Length >= 3 && InvoiceNumberValueRegex().IsMatch(value);
+        }
+
+        private static List<decimal> FindAmounts(string line, bool requireCurrencyMarker = false)
         {
             var results = new List<decimal>();
 
             foreach (Match match in AmountRegex().Matches(line))
             {
+                if (requireCurrencyMarker && !HasCurrencyMarkerNear(line, match.Index, match.Length))
+                {
+                    continue;
+                }
+
                 if (TryParseAmount(match.Groups["amount"].Value, out var amount))
                 {
                     results.Add(amount);
@@ -139,6 +173,16 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return results;
+        }
+
+        private static bool HasCurrencyMarkerNear(string line, int startIndex, int length)
+        {
+            const int nearbyCharacters = 12;
+            var windowStart = Math.Max(0, startIndex - nearbyCharacters);
+            var windowEnd = Math.Min(line.Length, startIndex + length + nearbyCharacters);
+            var nearbyText = line[windowStart..windowEnd];
+
+            return CurrencyMarkerRegex().IsMatch(nearbyText);
         }
 
         private static bool TryParseAmount(string rawValue, out decimal amount)
@@ -199,11 +243,20 @@ namespace PayTrack.Application.Services.Implementation
         [GeneratedRegex(@"(?ix)\b(?:invoice\s+date|receipt\s+date|date\s+of\s+issue|issued|rechnungsdatum|belegdatum|ausstellungsdatum|datum)\b")]
         private static partial Regex DateLabelRegex();
 
-        [GeneratedRegex(@"(?ix)\b(?:(?:invoice|receipt)\s*(?:number|no\.?|\#)|(?:rechnung|beleg)\s*(?:snummer|nummer|nr\.?|\#)|quittung\s*(?:nummer|nr\.?|\#))\s*[:\-]?\s*(?<value>[A-Z0-9][A-Z0-9._\-/]{2,})")]
+        [GeneratedRegex(@"(?ix)\b(?:(?:invoice|receipt)\s*(?:number|no\.?|\#|id)|(?:rechnung|beleg)\s*(?:snummer|nummer|nr\.?|\#|id)|re\s*[-.]?\s*nr\.?|quittung\s*(?:nummer|nr\.?|\#|id))\s*[:#\-.]?\s*(?<value>[A-Z0-9][A-Z0-9._\-/\#]{2,})")]
         private static partial Regex InvoiceNumberRegex();
+
+        [GeneratedRegex(@"(?ix)\b(?:(?:invoice|receipt)\s*(?:number|no\.?|\#|id)|(?:rechnung|beleg)\s*(?:snummer|nummer|nr\.?|\#|id)|re\s*[-.]?\s*nr\.?|quittung\s*(?:nummer|nr\.?|\#|id))\b")]
+        private static partial Regex InvoiceNumberLabelRegex();
+
+        [GeneratedRegex(@"(?ix)^[A-Z0-9][A-Z0-9._\-/\#]{2,}$")]
+        private static partial Regex InvoiceNumberValueRegex();
 
         [GeneratedRegex(@"(?ix)(?<!\d)(?:EUR|USD|GBP|CHF|\$|€|£)?\s*(?<amount>\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d{2})|\d+[.,]\d{2})\s*(?:EUR|USD|GBP|CHF|\$|€|£)?(?!\d)")]
         private static partial Regex AmountRegex();
+
+        [GeneratedRegex(@"(?ix)(?:EUR|USD|GBP|CHF|€|\$|£)")]
+        private static partial Regex CurrencyMarkerRegex();
 
         [GeneratedRegex(@"(?ix)(?<!\d)(?:\d{1,2}[./-]\d{1,2}[./-]\d{4}|\d{4}-\d{1,2}-\d{1,2}|[A-Z]{3,9}\s+\d{1,2},\s+\d{4})(?!\d)")]
         private static partial Regex DateValueRegex();

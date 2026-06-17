@@ -49,6 +49,45 @@ namespace PayTrack.Tests.UnitTests.Services
             result.InvoiceNumber.Value.Should().Be("C-9918");
         }
 
+        [Theory]
+        [InlineData("Re-Nr. RE-2026/0042", "RE-2026/0042")]
+        [InlineData("Invoice ID: INV#2026-0042", "INV#2026-0042")]
+        public void Parse_ExtractsInvoiceNumberFromAdditionalLabels(string line, string expected)
+        {
+            var result = this.parser.Parse(line);
+
+            result.InvoiceNumber.Value.Should().Be(expected);
+            result.InvoiceNumber.Confidence.Should().Be(0.95m);
+        }
+
+        [Fact]
+        public void Parse_ExtractsInvoiceNumberFromLineAfterLabel()
+        {
+            const string Text = """
+                Rechnungsnummer:
+                260520
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.InvoiceNumber.Value.Should().Be("260520");
+            result.InvoiceNumber.Confidence.Should().Be(0.85m);
+        }
+
+        [Fact]
+        public void Parse_ExtractsDateFromLineAfterLabel()
+        {
+            const string Text = """
+                Rechnungsdatum:
+                25.05.2026
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.InvoiceDate.Value.Should().Be(new DateTime(2026, 5, 25));
+            result.InvoiceDate.Confidence.Should().Be(0.82m);
+        }
+
         [Fact]
         public void Parse_ReturnsNullableFieldsWhenTextHasNoInvoiceData()
         {
@@ -88,6 +127,38 @@ namespace PayTrack.Tests.UnitTests.Services
             result.InvoiceDate.Value.Should().Be(new DateTime(2026, 6, 10));
             result.InvoiceDate.Confidence.Should().Be(0.55m);
             result.InvoiceNumber.Value.Should().BeNull();
+        }
+
+        [Fact]
+        public void Parse_FallbackAmountIgnoresNumbersWithoutNearbyCurrency()
+        {
+            const string Text = """
+                Example Store
+                Article number 9999,99
+                IBAN AT61 1904 3002 3457,32
+                Item 19.99 EUR
+                Shipping EUR 4.50
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.Amount.Value.Should().Be(19.99m);
+            result.Amount.Confidence.Should().Be(0.45m);
+        }
+
+        [Fact]
+        public void Parse_FallbackAmountReturnsNullWhenNoCurrencyMarkerIsNearby()
+        {
+            const string Text = """
+                Example Store
+                Article number 9999,99
+                IBAN AT61 1904 3002 3457,32
+                """;
+
+            var result = this.parser.Parse(Text);
+
+            result.Amount.Value.Should().BeNull();
+            result.Amount.Confidence.Should().Be(0);
         }
 
         [Fact]
