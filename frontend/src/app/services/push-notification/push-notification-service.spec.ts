@@ -1,3 +1,5 @@
+//AI helped with the test cases
+
 import { PushNotificationService } from './push-notification-service';
 
 describe('PushNotificationService', () => {

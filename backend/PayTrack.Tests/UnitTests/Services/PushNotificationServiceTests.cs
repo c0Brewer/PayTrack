@@ -1,3 +1,5 @@
+//AI helped with the test cases
+
 using System.Net;
 using System.Security.Cryptography;
 using FluentAssertions;
