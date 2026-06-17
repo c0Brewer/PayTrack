@@ -54,6 +54,7 @@ interface PreviewRow {
   amount: number;
   userId: number | null;
   displayName: string | null;
+  displayEmail: string | null;
   isAutoMatched: boolean;
   status: 'pending' | 'success' | 'error';
   errorMessage?: string;
@@ -196,10 +197,17 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   }
 
   private buildPreviewRows(): void {
-    const savedAssignments = new Map<string, { userId: number; displayName: string }>();
+    const savedAssignments = new Map<
+      string,
+      { userId: number; displayName: string; displayEmail: string | null }
+    >();
     for (const row of this.previewRows) {
       if (!row.isAutoMatched && row.userId !== null) {
-        savedAssignments.set(row.rawName, { userId: row.userId, displayName: row.displayName! });
+        savedAssignments.set(row.rawName, {
+          userId: row.userId,
+          displayName: row.displayName!,
+          displayEmail: row.displayEmail,
+        });
       }
     }
 
@@ -227,6 +235,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
             amount: row.amount,
             userId: saved.userId,
             displayName: saved.displayName,
+            displayEmail: saved.displayEmail,
             isAutoMatched: false,
             status: 'pending' as const,
           };
@@ -238,6 +247,7 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
         amount: row.amount,
         userId: isAutoMatched ? (match!.id as number) : null,
         displayName: isAutoMatched ? match!.primaryText : null,
+        displayEmail: isAutoMatched ? (match!.secondaryText ?? null) : null,
         isAutoMatched,
         status: 'pending' as const,
       };
@@ -280,11 +290,13 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   onUserAssigned(index: number, item: TypeaheadItem): void {
     this.previewRows[index].userId = item.id as number;
     this.previewRows[index].displayName = item.primaryText;
+    this.previewRows[index].displayEmail = item.secondaryText ?? null;
   }
 
   onUserCleared(index: number): void {
     this.previewRows[index].userId = null;
     this.previewRows[index].displayName = null;
+    this.previewRows[index].displayEmail = null;
   }
 
   get allRowsAssigned(): boolean {

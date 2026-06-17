@@ -14,7 +14,7 @@ namespace PayTrack.Data.Helpers
         /// <summary>
         /// Minimum score required for a candidate to be treated as a duplicate.
         /// </summary>
-        public const int MatchThreshold = 6;
+        public const int MatchThreshold = 8;
 
         private const int ExactInvoiceNumberScore = 8;
         private const int SimilarInvoiceNumberScore = 3;

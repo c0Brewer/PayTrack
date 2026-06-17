@@ -176,21 +176,17 @@
         </thead>
         <tbody>
           @for (row of previewRows; track $index; let i = $index) {
-            <tr [class.row-unmatched]="!row.isAutoMatched">
+            <tr [class.row-unmatched]="row.userId === null">
               <td>{{ row.rawName }}</td>
               <td>
-                @if (row.isAutoMatched) {
-                  {{ row.displayName }}
-                } @else {
-                  <app-typeahead-select
-                    [items]="allUsers"
-                    placeholder="Search by name…"
-                    [isInvalid]="row.userId === null"
-                    [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName! } : null"
-                    (itemSelected)="onUserAssigned(i, $event)"
-                    (cleared)="onUserCleared(i)"
-                  />
-                }
+                <app-typeahead-select
+                  [items]="allUsers"
+                  placeholder="Search by name…"
+                  [isInvalid]="row.userId === null"
+                  [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName!, secondaryText: row.displayEmail ?? undefined } : null"
+                  (itemSelected)="onUserAssigned(i, $event)"
+                  (cleared)="onUserCleared(i)"
+                />
               </td>
               <td class="col-amount">{{ row.amount | euro }}</td>
             </tr>

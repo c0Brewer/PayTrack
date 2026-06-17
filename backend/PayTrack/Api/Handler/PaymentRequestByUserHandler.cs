@@ -9,6 +9,7 @@ using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Handler
 {
@@ -158,7 +159,8 @@ namespace PayTrack.Api.Handler
                     getDuplicatePaymentRequestsByUserDto.Amount,
                     getDuplicatePaymentRequestsByUserDto.PaidAt,
                     getDuplicatePaymentRequestsByUserDto.InvoiceNumber,
-                    getDuplicatePaymentRequestsByUserDto.PaymentRequestByUserId);
+                    getDuplicatePaymentRequestsByUserDto.PaymentRequestByUserId,
+                    user.Role == Role.Admin);
 
             var duplicatePaymentRequestsDto = PaymentRequestByUserMapper.DuplicateListToDto(duplicatePaymentRequests);
 

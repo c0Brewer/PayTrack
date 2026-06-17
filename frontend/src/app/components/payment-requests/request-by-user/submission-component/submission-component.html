@@ -406,6 +406,7 @@
   <app-duplicate-list-modal-component
     [visible]="isDuplicateModalOpen"
     mode="submit"
+    [sourceInvoice]="duplicateSourceInvoice"
     [duplicates]="duplicateCandidates"
     (closeModal)="onDuplicateModalCancel()"
     (submitRegardless)="onDuplicateModalSubmitRegardless()"

@@ -52,6 +52,10 @@ export class TeamRequestAdminDetailComponent implements OnInit {
   markAsPaidComment = 'Payment manually approved and processed.';
   markAsPaidLoading = false;
 
+  showDeleteModal = false;
+  deleteReason = '';
+  deleteLoading = false;
+
   protected readonly transactionStatus = TransactionStatus;
 
   ngOnInit(): void {
@@ -90,6 +94,10 @@ export class TeamRequestAdminDetailComponent implements OnInit {
     );
   }
 
+  get canDelete(): boolean {
+    return this.request?.status === TransactionStatus.Submitted;
+  }
+
   openMarkAsPaidModal(): void {
     this.markAsPaidComment = 'Payment manually approved and processed.';
     this.showMarkAsPaidModal = true;
@@ -97,6 +105,30 @@ export class TeamRequestAdminDetailComponent implements OnInit {
 
   cancelMarkAsPaid(): void {
     this.showMarkAsPaidModal = false;
+  }
+
+  openDeleteModal(): void {
+    this.deleteReason = '';
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.request) return;
+    this.deleteLoading = true;
+    this.service.deletePaymentRequestByTeam(this.request.id, this.deleteReason || null).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Payment request deleted.');
+        this.router.navigate(['/payment-requests-by-team']);
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not delete payment request: ' + err.message);
+        this.deleteLoading = false;
+      },
+    });
   }
 
   confirmMarkAsPaid(): void {
