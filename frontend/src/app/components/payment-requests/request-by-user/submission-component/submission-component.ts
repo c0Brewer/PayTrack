@@ -310,7 +310,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       payoutType: payoutType,
       bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
       creditorName: payoutType === PayoutType.NotYetPaid ? v.creditorName : null,
-      dueDate: payoutType === PayoutType.NotYetPaid && v.dueDate ? new Date(v.dueDate).toISOString() : null,
+      dueDate:
+        payoutType === PayoutType.NotYetPaid && v.dueDate
+          ? new Date(v.dueDate).toISOString()
+          : null,
       receipt: '', // ignored — real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),
