@@ -1,9 +1,9 @@
 import { Component, OnInit, computed, inject, input } from '@angular/core';
 
-import { UserDto } from '../../../../../types/exporter';
-import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PushNotificationService } from '../../../../../services/push-notification/push-notification-service';
+import { UserDto } from '../../../../../types/exporter';
+import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 
 @Component({
   selector: 'app-notifications-settings-page',

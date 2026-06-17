@@ -135,7 +135,11 @@ export class PushNotificationService {
       return 'unsupported-context';
     }
 
-    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (
+      !('Notification' in window) ||
+      !('serviceWorker' in navigator) ||
+      !('PushManager' in window)
+    ) {
       return 'unsupported-browser';
     }
 
@@ -154,7 +158,11 @@ export class PushNotificationService {
 
   private async ensureServiceWorkerRegistration(): Promise<ServiceWorkerRegistration> {
     const existingRegistration = await navigator.serviceWorker.getRegistration();
-    if (existingRegistration?.active || existingRegistration?.installing || existingRegistration?.waiting) {
+    if (
+      existingRegistration?.active ||
+      existingRegistration?.installing ||
+      existingRegistration?.waiting
+    ) {
       return existingRegistration;
     }
 
