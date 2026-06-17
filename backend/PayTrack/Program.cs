@@ -200,7 +200,6 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
 {
     var values = new Dictionary<string, string?>();
 
-    // Root .env: Google OAuth credentials shared with infrastructure tooling
     var rootEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
     if (File.Exists(rootEnvPath))
     {
@@ -217,18 +216,6 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
                 case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
                     values["GoogleDrive:ServiceAccountKeyBase64"] = value;
                     break;
-            }
-        }
-    }
-
-    // Backend .env: backend-specific secrets; overrides root .env on conflict
-    var backendEnvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
-    if (File.Exists(backendEnvPath))
-    {
-        foreach (var (key, value) in ParseDotEnvFile(backendEnvPath))
-        {
-            switch (key)
-            {
                 case "JWT_SECRET":
                     values["JWT:Secret"] = value;
                     break;
@@ -240,9 +227,6 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
                     break;
                 case "SLACK_BOT_TOKEN":
                     values["Slack:BotToken"] = value;
-                    break;
-                case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
-                    values["GoogleDrive:ServiceAccountKeyBase64"] = value;
                     break;
             }
         }

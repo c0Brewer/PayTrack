@@ -12,7 +12,6 @@ import {
 import { Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 
-import { DisableOfflineActionDirective } from '../../../../directives/disable-offline-action.directive';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
@@ -32,7 +31,10 @@ import {
   BankAccount,
 } from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
-import { DuplicateListModalComponent } from '../duplicate-list-modal-component/duplicate-list-modal-component';
+import {
+  type DuplicateInvoiceSummary,
+  DuplicateListModalComponent,
+} from '../duplicate-list-modal-component/duplicate-list-modal-component';
 
 function maxDateValidator(maxDate: Date): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -52,13 +54,7 @@ function maxDateValidator(maxDate: Date): ValidatorFn {
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    BoxComponent,
-    DuplicateListModalComponent,
-    DisableOfflineActionDirective,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, DuplicateListModalComponent],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })
@@ -76,9 +72,11 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   selectedFileName = '';
   maxInvoiceDate = new Date().toISOString().split('T')[0];
   duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
+  duplicateSourceInvoice: DuplicateInvoiceSummary | null = null;
   isDuplicateModalOpen = false;
   pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
   pendingSubmissionFile: File | null = null;
+  currentUserName = 'Current user';
 
   readonly PayoutType = PayoutType;
 
@@ -108,6 +106,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
+    this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
   }
@@ -177,6 +176,12 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         },
         error: () => this.notificationService.showError('Failed to load teams.'),
       });
+  }
+
+  private loadCurrentUserName(): void {
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUserName = user?.name ?? 'Current user';
+    });
   }
 
   private loadBankAccounts(): void {
@@ -490,6 +495,21 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  private buildDuplicateSourceInvoice(
+    payload: CreatePaymentRequestByUserDto,
+  ): DuplicateInvoiceSummary {
+    const team = this.teams.find((candidate) => candidate.id === payload.transaction.teamId);
+
+    return {
+      invoiceNumber: payload.invoiceNumber,
+      amount: payload.transaction.amount,
+      paidAt: payload.transaction.paidAt,
+      purposeOfPayment: payload.transaction.purposeOfPayment,
+      user: { name: this.currentUserName },
+      team: { name: team?.name ?? 'Unknown team' },
+    };
   }
 
   getDuplicateUserName(duplicate: DuplicatePaymentRequestByUserDto): string {

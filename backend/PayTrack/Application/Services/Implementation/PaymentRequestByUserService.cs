@@ -140,7 +140,8 @@ namespace PayTrack.Application.Services.Implementation
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null)
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false)
         {
             var matchUserId = userId;
             var matchTeamId = teamId;
@@ -171,9 +172,11 @@ namespace PayTrack.Application.Services.Implementation
                 matchAmount,
                 matchPaidAt,
                 matchInvoiceNumber,
-                paymentRequestByUserId);
+                paymentRequestByUserId,
+                includeOtherUsers);
 
             return duplicateCandidates
+                .Where(paymentRequestByUser => includeOtherUsers || paymentRequestByUser.UserId == matchUserId)
                 .Select(paymentRequestByUser => this.CreateDuplicateMatch(paymentRequestByUser, matchUserId, matchTeamId, matchAmount, matchPaidAt, matchInvoiceNumber))
                 .Where(duplicateMatch => duplicateMatch.Score >= DuplicatePaymentRequestByUserScorer.MatchThreshold)
                 .OrderByDescending(duplicateMatch => duplicateMatch.Score)
