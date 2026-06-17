@@ -73,6 +73,16 @@
               <th>Bank Account (IBAN)</th>
               <td>{{ invoice.bankAccount?.iban ?? '—' }}</td>
             </tr>
+            @if (invoice.payoutType === PayoutType.NotYetPaid) {
+              <tr>
+                <th>Creditor</th>
+                <td>{{ invoice.creditorName ?? '—' }}</td>
+              </tr>
+              <tr>
+                <th>Due Date</th>
+                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate') : '—' }}</td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>

@@ -103,7 +103,8 @@ namespace PayTrack.Api.Handler
                     comment,
                     createPaymentRequestByUserDto.PayoutType,
                     createPaymentRequestByUserDto.BankAccountId,
-                    createPaymentRequestByUserDto.CreditorName);
+                    createPaymentRequestByUserDto.CreditorName,
+                    createPaymentRequestByUserDto.DueDate);
 
             var createdPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(createdPaymentRequestByUser);
 

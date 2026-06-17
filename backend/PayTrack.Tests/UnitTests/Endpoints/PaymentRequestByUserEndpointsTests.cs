@@ -146,7 +146,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
                     It.IsAny<int?>(),
-                    It.IsAny<string?>()))
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();
@@ -222,7 +223,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.Is<string?>(comment => comment == null),
                     It.IsAny<PayoutType>(),
                     It.IsAny<int?>(),
-                    It.IsAny<string?>()))
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>()))
                 .ReturnsAsync(created);
 
             var client = _factory.CreateClient();

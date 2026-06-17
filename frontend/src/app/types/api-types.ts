@@ -2665,6 +2665,8 @@ export interface components {
             receipt: string;
             payoutType: components["schemas"]["PayoutType"];
             creditorName?: string | null;
+            /** Format: date-time */
+            dueDate?: string | null;
             /** Format: int32 */
             bankAccountId?: number | null;
         };
@@ -2814,6 +2816,8 @@ export interface components {
             hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
             creditorName?: string | null;
+            /** Format: date-time */
+            dueDate?: string | null;
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;
