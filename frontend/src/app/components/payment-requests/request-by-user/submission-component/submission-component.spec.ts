@@ -55,6 +55,7 @@ describe('ReceiptSubmitComponent', () => {
       paidAt: '2025-01-01',
       receipt: 'ok.pdf',
       creditorName: '',
+      dueDate: null,
     });
   };
 
@@ -422,6 +423,7 @@ describe('ReceiptSubmitComponent', () => {
     setValidFormValues();
     component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
     component.form.get('creditorName')?.setValue('Acme GmbH');
+    component.form.get('dueDate')?.setValue('2025-12-31');
     component.selectedFile = file;
 
     paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
