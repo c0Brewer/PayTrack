@@ -89,7 +89,7 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         /// <summary>
-        /// Validates that the uploaded receipt is non-empty, within the size limit, and has a supported extension.
+        /// Validates that the uploaded receipt is non-empty, within the size limit, and matches a supported file signature.
         /// </summary>
         /// <param name="receipt">Receipt file to validate.</param>
         /// <exception cref="InvalidFileException">Thrown when the receipt does not meet the upload requirements.</exception>
@@ -109,6 +109,49 @@ namespace PayTrack.Application.Services.Implementation
             {
                 throw new InvalidFileException("Only PDF, JPG, JPEG, and PNG receipts are supported.");
             }
+
+            if (!HasSupportedFileSignature(receipt))
+            {
+                throw new InvalidFileException("The receipt content does not match a supported PDF, JPG, or PNG file.");
+            }
+        }
+
+        /// <summary>
+        /// Checks the file header instead of trusting only the uploaded file name or content type.
+        /// </summary>
+        /// <param name="receipt">Receipt file to inspect.</param>
+        /// <returns>Whether the file header matches its supported extension.</returns>
+        private static bool HasSupportedFileSignature(IFormFile receipt)
+        {
+            Span<byte> header = stackalloc byte[8];
+            using var stream = receipt.OpenReadStream();
+            var bytesRead = stream.Read(header);
+            var extension = Path.GetExtension(receipt.FileName);
+
+            // Match the file extension against the expected magic bytes for each supported receipt format.
+            return extension.ToLowerInvariant() switch
+            {
+                ".pdf" => bytesRead >= 5
+                    && header[0] == 0x25
+                    && header[1] == 0x50
+                    && header[2] == 0x44
+                    && header[3] == 0x46
+                    && header[4] == 0x2D,
+                ".jpg" or ".jpeg" => bytesRead >= 3
+                    && header[0] == 0xFF
+                    && header[1] == 0xD8
+                    && header[2] == 0xFF,
+                ".png" => bytesRead >= 8
+                    && header[0] == 0x89
+                    && header[1] == 0x50
+                    && header[2] == 0x4E
+                    && header[3] == 0x47
+                    && header[4] == 0x0D
+                    && header[5] == 0x0A
+                    && header[6] == 0x1A
+                    && header[7] == 0x0A,
+                _ => false,
+            };
         }
 
         /// <summary>

@@ -68,12 +68,24 @@ namespace PayTrack.Tests.UnitTests.Services
                 .WithMessage("*20 MB*");
         }
 
-        [Theory]
-        [InlineData("invoice.pdf")]
-        [InlineData("invoice.PNG")]
-        public async Task ExtractAsync_ReturnsFailureWhenSupportedFileCannotBeRead(string fileName)
+        [Fact]
+        public async Task ExtractAsync_RejectsFileWithMismatchedSignature()
         {
-            await using var stream = new MemoryStream([1, 2, 3]);
+            await using var stream = new MemoryStream("not a pdf"u8.ToArray());
+            var formFile = new FormFile(stream, 0, stream.Length, "receipt", "invoice.pdf");
+
+            var act = () => this.service.ExtractAsync(formFile);
+
+            await act.Should().ThrowAsync<InvalidFileException>()
+                .WithMessage("*content*");
+        }
+
+        [Theory]
+        [InlineData("invoice.pdf", new byte[] { 0x25, 0x50, 0x44, 0x46, 0x2D })]
+        [InlineData("invoice.PNG", new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })]
+        public async Task ExtractAsync_ReturnsFailureWhenSupportedFileCannotBeRead(string fileName, byte[] content)
+        {
+            await using var stream = new MemoryStream(content);
             var formFile = new FormFile(stream, 0, stream.Length, "receipt", fileName);
 
             var result = await this.service.ExtractAsync(formFile);
