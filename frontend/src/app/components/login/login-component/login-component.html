@@ -15,6 +15,7 @@
     <button
       type="button"
       class="google-custom-btn"
+      data-testid="login-google-button"
       [disabled]="isLoggingIn"
       [attr.aria-busy]="isLoggingIn"
       (click)="signInWithGoogle()"
