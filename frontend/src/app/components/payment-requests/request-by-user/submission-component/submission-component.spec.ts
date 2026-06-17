@@ -205,8 +205,6 @@ describe('ReceiptSubmitComponent', () => {
         amount: { value: 128.5, confidence: 0.82 },
         invoiceDate: { value: '2026-06-10T00:00:00Z', confidence: 0.75 },
         invoiceNumber: { value: 'RE-2026-004812', confidence: 0.78 },
-        extractionMethod: 'PdfText',
-        warnings: [],
       }),
     );
     const file = new File(['ok'], 'ok.pdf', { type: 'application/pdf' });
