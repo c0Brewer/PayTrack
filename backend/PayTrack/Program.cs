@@ -53,6 +53,7 @@ builder.Services.AddScoped<ISeasonService, SeasonService>();
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
+builder.Services.Configure<PushNotificationSettings>(builder.Configuration.GetSection("PushNotifications"));
 builder.Services.AddOptions<ReminderSettings>()
     .BindConfiguration("Reminders")
     .Validate(s => s.RunAtHourUtc is >= 0 and <= 23, "Reminders:RunAtHourUtc must be between 0 and 23.")
@@ -65,6 +66,8 @@ builder.Services.Configure<PaymentRequestNotificationSettings>(builder.Configura
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddHttpClient<PushNotificationService>();
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 builder.Services.AddHostedService<PaymentReminderHostedService>();
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 
@@ -77,6 +80,7 @@ builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -233,6 +237,15 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
                     break;
                 case "SLACK_BOT_TOKEN":
                     values["Slack:BotToken"] = value;
+                    break;
+                case "PUSH_VAPID_PUBLIC_KEY":
+                    values["PushNotifications:PublicKey"] = value;
+                    break;
+                case "PUSH_VAPID_PRIVATE_KEY":
+                    values["PushNotifications:PrivateKey"] = value;
+                    break;
+                case "PUSH_VAPID_SUBJECT":
+                    values["PushNotifications:Subject"] = value;
                     break;
             }
         }

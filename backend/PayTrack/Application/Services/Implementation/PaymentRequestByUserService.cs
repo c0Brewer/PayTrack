@@ -19,7 +19,8 @@ namespace PayTrack.Application.Services.Implementation
         IFileRepository _fileRepo,
         IBankAccountService _bankAccountService,
         ICostCentreService _costCentreService,
-        IBudgetService _budgetService) : IPaymentRequestByUserService
+        IBudgetService _budgetService,
+        IPushNotificationService? _pushNotifications = null) : IPaymentRequestByUserService
     {
         private const int MaxDuplicateResults = 10;
 
@@ -32,6 +33,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IBankAccountService bankAccountService = _bankAccountService;
         private readonly ICostCentreService costCentreService = _costCentreService;
         private readonly IBudgetService budgetService = _budgetService;
+        private readonly IPushNotificationService? pushNotifications = _pushNotifications;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -285,7 +287,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (string.IsNullOrWhiteSpace(paymentReference))
@@ -315,7 +317,9 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 $"Payment reference: {transaction.PaymentReference}");
 
-            return await this.repo.UpdateAsync(transaction);
+            var updated = await this.repo.UpdateAsync(transaction);
+            await this.SendInvoiceStatusPushAsync(updated, "Payment completed", "Your invoice payment has been completed.");
+            return updated;
         }
 
         /// <inheritdoc/>
@@ -327,7 +331,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (costCentreId <= 0)
@@ -355,7 +359,9 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 NormalizeOptionalReason(reason));
 
-            return await this.repo.UpdateAsync(transaction);
+            var updated = await this.repo.UpdateAsync(transaction);
+            await this.SendInvoiceStatusPushAsync(updated, "Invoice approved", "Your submitted invoice has been approved.");
+            return updated;
         }
 
         /// <inheritdoc/>
@@ -366,7 +372,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
@@ -376,7 +382,9 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            var updated = await this.repo.UpdateAsync(transaction);
+            await this.SendInvoiceStatusPushAsync(updated, "Invoice rejected", $"Your submitted invoice was rejected: {normalizedReason}");
+            return updated;
         }
 
         /// <inheritdoc/>
@@ -387,7 +395,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
@@ -397,7 +405,9 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            var updated = await this.repo.UpdateAsync(transaction);
+            await this.SendInvoiceStatusPushAsync(updated, "Invoice changes requested", $"Changes were requested for your invoice: {normalizedReason}");
+            return updated;
         }
 
         /// <inheritdoc/>
@@ -520,6 +530,24 @@ namespace PayTrack.Application.Services.Implementation
                 ".pdf" => "application/pdf",
                 _ => "application/octet-stream",
             };
+        }
+
+        private async Task SendInvoiceStatusPushAsync(PaymentRequestByUser transaction, string title, string body)
+        {
+            if (this.pushNotifications is null)
+            {
+                return;
+            }
+
+            var purpose = string.IsNullOrWhiteSpace(transaction.PurposeOfPayment)
+                ? $"Invoice #{transaction.Id}"
+                : transaction.PurposeOfPayment.Trim();
+
+            await this.pushNotifications.SendWorkflowStatusChangedAsync(
+                transaction.UserId,
+                title,
+                $"{body}\n{purpose}",
+                $"/my-invoices/{transaction.Id}");
         }
 
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(
