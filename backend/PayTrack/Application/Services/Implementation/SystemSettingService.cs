@@ -34,8 +34,13 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task UpdateCsvColumnSettingsAsync(UpdateCsvColumnSettingsRequestDto dto, int userId)
         {
-            await this.repo.UpsertAsync(SystemSettingKeys.CsvColumnName, dto.NameColumn, userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.CsvColumnSumme, dto.SummeColumn, userId);
+            await this.repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    [SystemSettingKeys.CsvColumnName] = dto.NameColumn,
+                    [SystemSettingKeys.CsvColumnSumme] = dto.SummeColumn,
+                },
+                userId);
         }
 
         /// <inheritdoc/>
@@ -63,14 +68,19 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task UpdateNotificationChannelGroupsAsync(UpdateNotificationChannelGroupsRequestDto dto, int userId)
         {
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsCreationEmail, dto.Creation.SendEmail.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsCreationSlack, dto.Creation.SendSlack.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsConfirmationEmail, dto.Confirmation.SendEmail.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsConfirmationSlack, dto.Confirmation.SendSlack.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsRemindersEmail, dto.Reminders.SendEmail.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsRemindersSlack, dto.Reminders.SendSlack.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsDeletionEmail, dto.Deletion.SendEmail.ToString(), userId);
-            await this.repo.UpsertAsync(SystemSettingKeys.NotificationsDeletionSlack, dto.Deletion.SendSlack.ToString(), userId);
+            await this.repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    [SystemSettingKeys.NotificationsCreationEmail] = dto.Creation.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsCreationSlack] = dto.Creation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsConfirmationEmail] = dto.Confirmation.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsConfirmationSlack] = dto.Confirmation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsRemindersEmail] = dto.Reminders.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsRemindersSlack] = dto.Reminders.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsDeletionEmail] = dto.Deletion.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsDeletionSlack] = dto.Deletion.SendSlack.ToString(),
+                },
+                userId);
         }
 
         /// <inheritdoc/>
@@ -86,24 +96,14 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task UpdateReminderScheduleAsync(UpdateReminderScheduleRequestDto dto, int userId)
         {
-            await this.repo.UpsertAsync(
-                SystemSettingKeys.RemindersDaysBeforeDue,
-                string.Join(',', dto.DaysBeforeDue),
-                userId);
-
-            await this.repo.UpsertAsync(
-                SystemSettingKeys.RemindersRunAtHourUtc,
-                dto.RunAtHourUtc.ToString(),
-                userId);
-
-            await this.repo.UpsertAsync(
-                SystemSettingKeys.RemindersRunAtMinuteUtc,
-                dto.RunAtMinuteUtc.ToString(),
-                userId);
-
-            await this.repo.UpsertAsync(
-                SystemSettingKeys.RemindersEmailDelayMs,
-                dto.EmailDelayMs.ToString(),
+            await this.repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    [SystemSettingKeys.RemindersDaysBeforeDue] = string.Join(',', dto.DaysBeforeDue),
+                    [SystemSettingKeys.RemindersRunAtHourUtc] = dto.RunAtHourUtc.ToString(),
+                    [SystemSettingKeys.RemindersRunAtMinuteUtc] = dto.RunAtMinuteUtc.ToString(),
+                    [SystemSettingKeys.RemindersEmailDelayMs] = dto.EmailDelayMs.ToString(),
+                },
                 userId);
         }
 
@@ -128,6 +128,11 @@ namespace PayTrack.Application.Services.Implementation
                 return DefaultDaysBeforeDue;
             }
 
+            if (string.IsNullOrWhiteSpace(row.Value))
+            {
+                return [];
+            }
+
             var parts = row.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var days = new List<int>();
             foreach (var part in parts)
@@ -138,7 +143,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            return days.Count > 0 ? [.. days] : DefaultDaysBeforeDue;
+            return [.. days];
         }
 
         /// <inheritdoc/>

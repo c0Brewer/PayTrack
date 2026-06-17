@@ -78,5 +78,74 @@ namespace PayTrack.Tests.UnitTests.Repositories
             rows.Should().HaveCount(1);
             rows[0].Value.Should().Be("Bezeichnung");
         }
+
+        [Fact]
+        public async Task UpsertManyAsync_ShouldInsertAllKeys_WhenNoneExist()
+        {
+            await using var context = GetInMemoryDbContext();
+            var user = new User { Name = "Admin", Email = "admin@test.com", Role = Role.Admin };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var repo = new SystemSettingRepository(context);
+
+            await repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    ["key.a"] = "value-a",
+                    ["key.b"] = "value-b",
+                },
+                user.Id);
+
+            var rows = await context.SystemSettings.ToListAsync();
+            rows.Should().HaveCount(2);
+            rows.Should().Contain(r => r.Key == "key.a" && r.Value == "value-a");
+            rows.Should().Contain(r => r.Key == "key.b" && r.Value == "value-b");
+        }
+
+        [Fact]
+        public async Task UpsertManyAsync_ShouldUpdateExistingAndInsertNew_WhenSomeExist()
+        {
+            await using var context = GetInMemoryDbContext();
+            var user = new User { Name = "Admin", Email = "admin@test.com", Role = Role.Admin };
+            context.User.Add(user);
+            context.SystemSettings.Add(new SystemSetting { Key = "key.a", Value = "old-value" });
+            await context.SaveChangesAsync();
+
+            var repo = new SystemSettingRepository(context);
+
+            await repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    ["key.a"] = "new-value",
+                    ["key.b"] = "value-b",
+                },
+                user.Id);
+
+            var rows = await context.SystemSettings.ToListAsync();
+            rows.Should().HaveCount(2);
+            rows.Should().Contain(r => r.Key == "key.a" && r.Value == "new-value");
+            rows.Should().Contain(r => r.Key == "key.b" && r.Value == "value-b");
+        }
+
+        [Fact]
+        public async Task UpsertManyAsync_ShouldSetLastModifiedFields_OnAllRows()
+        {
+            await using var context = GetInMemoryDbContext();
+            var user = new User { Name = "Admin", Email = "admin@test.com", Role = Role.Admin };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var repo = new SystemSettingRepository(context);
+            var before = DateTime.UtcNow;
+
+            await repo.UpsertManyAsync(
+                new Dictionary<string, string> { ["key.a"] = "v" },
+                user.Id);
+
+            var row = await context.SystemSettings.FirstAsync(s => s.Key == "key.a");
+            row.LastModifiedByUserId.Should().Be(user.Id);
+            row.LastModifiedAt.Should().BeOnOrAfter(before);
+        }
     }
 }

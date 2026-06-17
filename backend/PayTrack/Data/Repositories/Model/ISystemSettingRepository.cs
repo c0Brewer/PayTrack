@@ -26,5 +26,13 @@ namespace PayTrack.Data.Repositories.Model
         /// <param name="lastModifiedByUserId">ID of the admin performing the update.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task UpsertAsync(string key, string value, int lastModifiedByUserId);
+
+        /// <summary>
+        /// Inserts or updates all settings in the dictionary in a single atomic operation.
+        /// </summary>
+        /// <param name="settings">Key-value pairs to upsert.</param>
+        /// <param name="lastModifiedByUserId">ID of the admin performing the update.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task UpsertManyAsync(IReadOnlyDictionary<string, string> settings, int lastModifiedByUserId);
     }
 }

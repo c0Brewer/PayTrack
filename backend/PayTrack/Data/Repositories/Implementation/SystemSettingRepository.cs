@@ -45,5 +45,37 @@ namespace PayTrack.Data.Repositories.Implementation
 
             await this.context.SaveChangesAsync();
         }
+
+        /// <inheritdoc/>
+        public async Task UpsertManyAsync(IReadOnlyDictionary<string, string> settings, int lastModifiedByUserId)
+        {
+            var keys = settings.Keys.ToList();
+            var existing = await this.context.SystemSettings
+                .Where(s => keys.Contains(s.Key))
+                .ToDictionaryAsync(s => s.Key);
+
+            var now = DateTime.UtcNow;
+            foreach (var (key, value) in settings)
+            {
+                if (existing.TryGetValue(key, out var row))
+                {
+                    row.Value = value;
+                    row.LastModifiedAt = now;
+                    row.LastModifiedByUserId = lastModifiedByUserId;
+                }
+                else
+                {
+                    this.context.SystemSettings.Add(new SystemSetting
+                    {
+                        Key = key,
+                        Value = value,
+                        LastModifiedAt = now,
+                        LastModifiedByUserId = lastModifiedByUserId,
+                    });
+                }
+            }
+
+            await this.context.SaveChangesAsync();
+        }
     }
 }

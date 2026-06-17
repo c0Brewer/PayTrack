@@ -88,14 +88,19 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
   }
 
   private validateReminderDays(): void {
-    const parts = this.reminderDaysInput
+    const trimmed = this.reminderDaysInput.trim();
+    if (trimmed === '') {
+      this.reminderDaysError = '';
+      return;
+    }
+    const parts = trimmed
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
-    const valid = parts.length > 0 && parts.every((s) => /^\d+$/.test(s) && parseInt(s, 10) >= 0);
+    const valid = parts.every((s) => /^\d+$/.test(s) && parseInt(s, 10) >= 0);
     this.reminderDaysError = valid
       ? ''
-      : 'Enter one or more non-negative integers, separated by commas.';
+      : 'Enter non-negative integers separated by commas, or leave empty to disable reminders.';
   }
 
   private validateReminderTime(): void {
@@ -252,7 +257,9 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     this.validateReminderEmailDelay();
     if (this.reminderDaysError || this.reminderTimeError || this.reminderEmailDelayError) return;
 
-    const days = this.reminderDaysInput.split(',').map((s) => parseInt(s.trim(), 10));
+    const trimmedDays = this.reminderDaysInput.trim();
+    const days =
+      trimmedDays === '' ? [] : trimmedDays.split(',').map((s) => parseInt(s.trim(), 10));
     const [hourStr, minuteStr] = this.reminderTimeInput.split(':');
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);

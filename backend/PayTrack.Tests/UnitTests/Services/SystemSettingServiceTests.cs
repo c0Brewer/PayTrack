@@ -59,8 +59,11 @@ namespace PayTrack.Tests.UnitTests.Services
             await service.UpdateCsvColumnSettingsAsync(
                 new UpdateCsvColumnSettingsRequestDto("Bezeichnung", "Betrag"), userId: 1);
 
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.CsvColumnName, "Bezeichnung", 1), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.CsvColumnSumme, "Betrag", 1), Times.Once);
+            repoMock.Verify(r => r.UpsertManyAsync(
+                It.Is<IReadOnlyDictionary<string, string>>(d =>
+                    d[SystemSettingKeys.CsvColumnName] == "Bezeichnung" &&
+                    d[SystemSettingKeys.CsvColumnSumme] == "Betrag"),
+                1), Times.Once);
         }
 
         // ── GetNotificationChannelGroupsAsync ─────────────────────────────────────
@@ -96,14 +99,17 @@ namespace PayTrack.Tests.UnitTests.Services
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsCreationEmail, "True", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsCreationSlack, "False", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsConfirmationEmail, "False", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsConfirmationSlack, "True", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsRemindersEmail, "True", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsRemindersSlack, "True", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsDeletionEmail, "False", 5), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.NotificationsDeletionSlack, "False", 5), Times.Once);
+            repoMock.Verify(r => r.UpsertManyAsync(
+                It.Is<IReadOnlyDictionary<string, string>>(d =>
+                    d[SystemSettingKeys.NotificationsCreationEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsCreationSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsConfirmationEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsConfirmationSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsRemindersEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsRemindersSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsDeletionEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False"),
+                5), Times.Once);
         }
 
         // ── GetReminderScheduleAsync ───────────────────────────────────────────────
@@ -132,10 +138,13 @@ namespace PayTrack.Tests.UnitTests.Services
             await service.UpdateReminderScheduleAsync(
                 new UpdateReminderScheduleRequestDto([14, 7], 10, 30, 250), userId: 2);
 
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.RemindersDaysBeforeDue, "14,7", 2), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.RemindersRunAtHourUtc, "10", 2), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.RemindersRunAtMinuteUtc, "30", 2), Times.Once);
-            repoMock.Verify(r => r.UpsertAsync(SystemSettingKeys.RemindersEmailDelayMs, "250", 2), Times.Once);
+            repoMock.Verify(r => r.UpsertManyAsync(
+                It.Is<IReadOnlyDictionary<string, string>>(d =>
+                    d[SystemSettingKeys.RemindersDaysBeforeDue] == "14,7" &&
+                    d[SystemSettingKeys.RemindersRunAtHourUtc] == "10" &&
+                    d[SystemSettingKeys.RemindersRunAtMinuteUtc] == "30" &&
+                    d[SystemSettingKeys.RemindersEmailDelayMs] == "250"),
+                2), Times.Once);
         }
 
         // ── GetBoolSettingAsync ────────────────────────────────────────────────────
@@ -195,6 +204,19 @@ namespace PayTrack.Tests.UnitTests.Services
             var result = await service.GetDaysBeforeDueAsync();
 
             result.Should().BeEquivalentTo(new[] { 7, 2, 1 });
+        }
+
+        [Fact]
+        public async Task GetDaysBeforeDueAsync_ShouldReturnEmptyArray_WhenValueIsEmptyString()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            repoMock.Setup(r => r.GetByKeyAsync(SystemSettingKeys.RemindersDaysBeforeDue))
+                .ReturnsAsync(new SystemSetting { Key = SystemSettingKeys.RemindersDaysBeforeDue, Value = "" });
+
+            var service = BuildService(repoMock);
+            var result = await service.GetDaysBeforeDueAsync();
+
+            result.Should().BeEmpty();
         }
 
         // ── GetRunAtHourUtcAsync ───────────────────────────────────────────────────
