@@ -179,14 +179,14 @@ describe('PushNotificationService', () => {
   it('disables push by unregistering the backend and browser subscription', async () => {
     const subscription = createSubscription('https://push.example.test/send/disable');
     setServiceWorkerRegistration(createRegistration(subscription));
-    const fetchSpy = vi.spyOn(window, 'fetch').mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchSpy = vi
+      .spyOn(window, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 200 }));
 
     await service.disable();
 
     const unsubscribeRequest = fetchSpy.mock.calls.at(-1)!;
-    expect(unsubscribeRequest[0].toString()).toContain(
-      '/api/v1/notification/push/unsubscribe',
-    );
+    expect(unsubscribeRequest[0].toString()).toContain('/api/v1/notification/push/unsubscribe');
     expect(JSON.parse((unsubscribeRequest[1] as RequestInit).body as string)).toEqual({
       endpoint: 'https://push.example.test/send/disable',
     });
