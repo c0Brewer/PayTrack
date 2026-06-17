@@ -21,6 +21,7 @@ namespace PayTrack.Application.Services.Implementation
     {
         private const long MaximumFileSize = 20 * 1024 * 1024;
         private const int MinimumEmbeddedPdfTextLength = 40; // Below this threshold, treat the PDF as scanned and use OCR.
+        private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(15); // Bounds external tools to a timeout
         private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".pdf", ".jpg", ".jpeg", ".png",
@@ -199,11 +200,16 @@ namespace PayTrack.Application.Services.Implementation
             using var process = Process.Start(startInfo)
                 ?? throw new InvalidOperationException($"Could not start {fileName}.");
 
-            var standardOutput = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var standardError = process.StandardError.ReadToEndAsync(cancellationToken);
+            using var timeoutSource = new CancellationTokenSource(ExternalProcessTimeout);
+            using var processCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                timeoutSource.Token);
+            var processCancellationToken = processCancellation.Token;
+            var standardOutput = process.StandardOutput.ReadToEndAsync(processCancellationToken);
+            var standardError = process.StandardError.ReadToEndAsync(processCancellationToken);
             try
             {
-                await process.WaitForExitAsync(cancellationToken);
+                await process.WaitForExitAsync(processCancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -212,7 +218,13 @@ namespace PayTrack.Application.Services.Implementation
                     process.Kill(true);
                 }
 
-                throw;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                throw new InvalidOperationException(
+                    $"{fileName} exceeded the extraction timeout of {ExternalProcessTimeout.TotalSeconds:N0} seconds.");
             }
 
             if (process.ExitCode != 0)
