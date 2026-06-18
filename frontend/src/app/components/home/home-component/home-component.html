@@ -51,53 +51,55 @@
           subtitle="Current totals and your most recent invoice activity."
           size="medium"
         >
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.invoices.submittedCount }}</span>
-            <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.invoices.paidCount }}</span>
-            @if (data.invoices.lastPaidAt) {
-              <span class="badge rounded-pill dashboard-summary-badge">
-                Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
-              </span>
-            }
-          </div>
-
-          @if (data.invoices.recent.length > 0) {
-            <div class="list-group list-group-flush">
-              @for (item of data.invoices.recent; track item.id) {
-                <a
-                  class="list-group-item list-group-item-action px-0"
-                  [routerLink]="['/my-invoices', item.id]"
-                >
-                  <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div class="min-w-0">
-                      <p class="fw-semibold mb-1 text-truncate">{{ getInvoiceReference(item) }}</p>
-                      <p class="mb-0 text-body-secondary small">
-                        {{ item.teamName || 'No team assigned' }}
-                        @if (item.createdAt) {
-                          <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
-                        }
-                      </p>
-                    </div>
-                    <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
-                      <strong>{{ item.amount | euro }}</strong>
-                      <span class="status-pill" [class]="getStatusClass(item.status)">
-                        {{ getStatusLabel(item.status) }}
-                      </span>
-                    </div>
-                  </div>
-                </a>
+          <div class="dashboard-card-content">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.invoices.submittedCount }}</span>
+              <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.invoices.paidCount }}</span>
+              @if (data.invoices.lastPaidAt) {
+                <span class="badge rounded-pill dashboard-summary-badge">
+                  Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
+                </span>
               }
             </div>
-            @if (data.invoices.totalRecentCount > data.invoices.recent.length) {
-              <p class="recent-note mb-0 mt-3 text-danger small"> {{data.invoices.totalRecentCount - data.invoices.recent.length}} more entries available!</p>
-            }
-          } @else {
-            <p class="mb-0 text-body-secondary">No invoice activity yet.</p>
-          }
 
-          <a class="btn btn-secondary mt-3 align-self-start" routerLink="/my-invoices">
-            <span class="material-symbols-outlined">description</span>
-            View My Invoices</a>
+            @if (data.invoices.recent.length > 0) {
+              <div class="list-group list-group-flush">
+                @for (item of data.invoices.recent; track item.id) {
+                  <a
+                    class="list-group-item list-group-item-action px-0"
+                    [routerLink]="['/my-invoices', item.id]"
+                  >
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                      <div class="min-w-0">
+                        <p class="fw-semibold mb-1 text-truncate">{{ getInvoiceReference(item) }}</p>
+                        <p class="mb-0 text-body-secondary small">
+                          {{ item.teamName || 'No team assigned' }}
+                          @if (item.createdAt) {
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                          }
+                        </p>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                        <strong>{{ item.amount | euro }}</strong>
+                        <span class="status-pill" [class]="getStatusClass(item.status)">
+                          {{ getStatusLabel(item.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                }
+              </div>
+              @if (data.invoices.totalRecentCount > data.invoices.recent.length) {
+                <p class="recent-note mb-0 mt-3 text-danger small"> {{data.invoices.totalRecentCount - data.invoices.recent.length}} more entries available!</p>
+              }
+            } @else {
+              <p class="mb-0 text-body-secondary">No invoice activity yet.</p>
+            }
+
+            <a class="btn btn-secondary mt-auto align-self-start" routerLink="/my-invoices">
+              <span class="material-symbols-outlined">description</span>
+              View My Invoices</a>
+          </div>
         </app-box-component>
       </div>
 
@@ -107,54 +109,56 @@
           subtitle="Your assigned payment requests and recent updates."
           size="medium"
         >
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.paymentRequests.submittedCount }}</span>
-            <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.paymentRequests.paidCount }}</span>
-            @if (data.paymentRequests.lastPaidAt) {
-              <span class="badge rounded-pill dashboard-summary-badge">
-                Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
-              </span>
-            }
-          </div>
-
-          @if (data.paymentRequests.recent.length > 0) {
-            <div class="list-group list-group-flush">
-              @for (item of data.paymentRequests.recent; track item.id) {
-                <a
-                  class="list-group-item list-group-item-action px-0"
-                  [routerLink]="['/my-team-requests', item.id]"
-                >
-                  <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div class="min-w-0">
-                      <p class="fw-semibold mb-1 text-truncate">{{ getPaymentRequestReference(item) }}</p>
-                      <p class="mb-0 text-body-secondary small">
-                        {{ item.userName || 'No assignee' }}
-                        @if (item.createdAt) {
-                          <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
-                        }
-                      </p>
-                    </div>
-                    <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
-                      <strong>{{ item.amount | euro }}</strong>
-                      <span class="status-pill" [class]="getStatusClass(item.status)">
-                        {{ getStatusLabel(item.status) }}
-                      </span>
-                    </div>
-                  </div>
-                </a>
+          <div class="dashboard-card-content">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.paymentRequests.submittedCount }}</span>
+              <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.paymentRequests.paidCount }}</span>
+              @if (data.paymentRequests.lastPaidAt) {
+                <span class="badge rounded-pill dashboard-summary-badge">
+                  Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
+                </span>
               }
             </div>
-            @if (data.paymentRequests.totalRecentCount > data.paymentRequests.recent.length) {
-              <p class="recent-note mb-0 mt-3 text-danger small"> {{data.paymentRequests.totalRecentCount - data.paymentRequests.recent.length}} more entries available!</p>
-            }
-          } @else {
-            <p class="mb-0 text-body-secondary">No payment request activity yet.</p>
-          }
 
-          <a class="btn btn-secondary mt-3 align-self-start" routerLink="/my-team-requests">
-            <span class="material-symbols-outlined">receipt_long</span>
-            View My Payment Requests
-          </a>
+            @if (data.paymentRequests.recent.length > 0) {
+              <div class="list-group list-group-flush">
+                @for (item of data.paymentRequests.recent; track item.id) {
+                  <a
+                    class="list-group-item list-group-item-action px-0"
+                    [routerLink]="['/my-team-requests', item.id]"
+                  >
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                      <div class="min-w-0">
+                        <p class="fw-semibold mb-1 text-truncate">{{ getPaymentRequestReference(item) }}</p>
+                        <p class="mb-0 text-body-secondary small">
+                          {{ item.userName || 'No assignee' }}
+                          @if (item.createdAt) {
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                          }
+                        </p>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                        <strong>{{ item.amount | euro }}</strong>
+                        <span class="status-pill" [class]="getStatusClass(item.status)">
+                          {{ getStatusLabel(item.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                }
+              </div>
+              @if (data.paymentRequests.totalRecentCount > data.paymentRequests.recent.length) {
+                <p class="recent-note mb-0 mt-3 text-danger small"> {{data.paymentRequests.totalRecentCount - data.paymentRequests.recent.length}} more entries available!</p>
+              }
+            } @else {
+              <p class="mb-0 text-body-secondary">No payment request activity yet.</p>
+            }
+
+            <a class="btn btn-secondary mt-auto align-self-start" routerLink="/my-team-requests">
+              <span class="material-symbols-outlined">receipt_long</span>
+              View My Payment Requests
+            </a>
+          </div>
         </app-box-component>
       </div>
     </div>
