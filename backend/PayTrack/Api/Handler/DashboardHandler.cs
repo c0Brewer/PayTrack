@@ -19,8 +19,8 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns the home dashboard payload for the current user.
         /// </summary>
-        /// <param name="authService">Authentication service.</param>
-        /// <param name="homeDashboardService">Dashboard service.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="homeDashboardService">Dependency-Injected dashboard service.</param>
         /// <returns>The dashboard payload.</returns>
         public static async Task<Results<Ok<HomeDashboardDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetHomeDashboardAsync(
             IAuthService authService,
