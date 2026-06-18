@@ -32,6 +32,7 @@ namespace PayTrack.Application.Dto.Dashboard
         int PaidCount,
         decimal OpenAmount,
         DateTime? LastPaidAt,
+        int TotalRecentCount,
         IReadOnlyList<HomeDashboardRecentItemDto> Recent);
 
     /// <summary>

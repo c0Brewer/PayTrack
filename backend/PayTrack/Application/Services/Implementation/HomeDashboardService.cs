@@ -64,6 +64,7 @@ namespace PayTrack.Application.Services.Implementation
                 PaidCount: invoices.Count(invoice => invoice.Status == TransactionStatus.Paid),
                 OpenAmount: invoices.Where(IsOpen).Sum(invoice => invoice.Amount),
                 LastPaidAt: lastPaidAt,
+                TotalRecentCount: invoices.Count,
                 Recent: invoices
                     .OrderByDescending(invoice => invoice.CreatedAt)
                     .Take(RecentItemsLimit)
@@ -93,6 +94,7 @@ namespace PayTrack.Application.Services.Implementation
                 PaidCount: paymentRequests.Count(paymentRequest => paymentRequest.Status == TransactionStatus.Paid),
                 OpenAmount: paymentRequests.Where(IsOpen).Sum(paymentRequest => paymentRequest.Amount),
                 LastPaidAt: lastPaidAt,
+                TotalRecentCount: paymentRequests.Count,
                 Recent: paymentRequests
                     .OrderByDescending(paymentRequest => paymentRequest.CreatedAt)
                     .Take(RecentItemsLimit)
