@@ -52,11 +52,11 @@
           size="medium"
         >
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge rounded-pill dashboard-summary-badge">Submitted {{ data.invoices.submittedCount }}</span>
-            <span class="badge rounded-pill dashboard-summary-badge">Paid {{ data.invoices.paidCount }}</span>
+            <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.invoices.submittedCount }}</span>
+            <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.invoices.paidCount }}</span>
             @if (data.invoices.lastPaidAt) {
               <span class="badge rounded-pill dashboard-summary-badge">
-                Last paid {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
+                Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
               </span>
             }
           </div>
@@ -108,11 +108,11 @@
           size="medium"
         >
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge rounded-pill dashboard-summary-badge">Submitted {{ data.paymentRequests.submittedCount }}</span>
-            <span class="badge rounded-pill dashboard-summary-badge">Paid {{ data.paymentRequests.paidCount }}</span>
+            <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.paymentRequests.submittedCount }}</span>
+            <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.paymentRequests.paidCount }}</span>
             @if (data.paymentRequests.lastPaidAt) {
               <span class="badge rounded-pill dashboard-summary-badge">
-                Last paid {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
+                Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
               </span>
             }
           </div>
