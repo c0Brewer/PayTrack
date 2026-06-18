@@ -3,117 +3,58 @@
 // </copyright>
 
 using PayTrack.Application.Dto.Dashboard;
-using PayTrack.Application.Dto.PaymentRequestByTeam;
-using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data.Entities;
+using PayTrack.Data.Repositories.Model;
 
 namespace PayTrack.Application.Services.Implementation
 {
     /// <inheritdoc/>
     public class HomeDashboardService(
-        IPaymentRequestByUserService _paymentRequestByUserService,
-        IPaymentRequestByTeamService _paymentRequestByTeamService) : IHomeDashboardService
+        ITransactionRepository _transactionRepository) : IHomeDashboardService
     {
         private const int RecentItemsLimit = 5;
 
-        private readonly IPaymentRequestByUserService paymentRequestByUserService = _paymentRequestByUserService;
-        private readonly IPaymentRequestByTeamService paymentRequestByTeamService = _paymentRequestByTeamService;
+        private readonly ITransactionRepository transactionRepository = _transactionRepository;
 
         /// <inheritdoc/>
         public async Task<HomeDashboardDto> GetHomeDashboardAsync(User currentUser)
         {
-            var invoiceQuery = new GetPaymentRequestByUserQuery
-            {
-                UserId = currentUser.Id,
-                IncludeTeam = true,
-            };
-
-            var paymentRequestQuery = new GetPaymentRequestByTeamQuery
-            {
-                UserId = currentUser.Id,
-                IncludeTeam = true,
-            };
-
-            var (invoices, _) = await this.paymentRequestByUserService.GetAllAsync(invoiceQuery);
-            var (paymentRequests, _) = await this.paymentRequestByTeamService.GetAllAsync(paymentRequestQuery);
-            var needsAttentionCount = invoices.Count(invoice => invoice.Status is TransactionStatus.ChangesRequested or TransactionStatus.Declined)
-                + paymentRequests.Count(paymentRequest => paymentRequest.Status is TransactionStatus.ChangesRequested or TransactionStatus.Declined);
+            var invoiceSection = await this.transactionRepository.GetHomeDashboardInvoiceSectionAsync(currentUser.Id, RecentItemsLimit);
+            var paymentRequestSection = await this.transactionRepository.GetHomeDashboardPaymentRequestSectionAsync(currentUser.Id, RecentItemsLimit);
+            var needsAttentionCount = invoiceSection.NeedsAttentionCount + paymentRequestSection.NeedsAttentionCount;
 
             return new HomeDashboardDto(
                 User: new HomeDashboardUserDto(currentUser.Id, currentUser.Name, currentUser.Role),
-                Invoices: BuildInvoiceSection(invoices),
-                PaymentRequests: BuildPaymentRequestSection(paymentRequests),
+                Invoices: BuildSection(invoiceSection),
+                PaymentRequests: BuildSection(paymentRequestSection),
                 Actions: new HomeDashboardActionsDto(
                     MissingBankAccount: currentUser.BankAccounts.Count == 0,
                     BankInformationSkipped: currentUser.BankInformationSkipped,
                     NeedsAttentionCount: needsAttentionCount));
         }
 
-        private static HomeDashboardSectionDto BuildInvoiceSection(List<PaymentRequestByUser> invoices)
+        private static HomeDashboardSectionDto BuildSection(HomeDashboardSectionProjection section)
         {
-            var lastPaidAt = invoices
-                .Where(invoice => invoice.Status == TransactionStatus.Paid && invoice.FinancePaidAt.HasValue)
-                .MaxBy(invoice => invoice.FinancePaidAt)?
-                .FinancePaidAt
-                ?? invoices.Where(invoice => invoice.Status == TransactionStatus.Paid && invoice.PaidAt.HasValue).MaxBy(invoice => invoice.PaidAt)?.PaidAt;
-
             return new HomeDashboardSectionDto(
-                OpenCount: invoices.Count(IsOpen),
-                SubmittedCount: invoices.Count(invoice => invoice.Status == TransactionStatus.Submitted),
-                PaidCount: invoices.Count(invoice => invoice.Status == TransactionStatus.Paid),
-                OpenAmount: invoices.Where(IsOpen).Sum(invoice => invoice.Amount),
-                LastPaidAt: lastPaidAt,
-                TotalRecentCount: invoices.Count,
-                Recent: invoices
-                    .OrderByDescending(invoice => invoice.CreatedAt)
-                    .Take(RecentItemsLimit)
-                    .Select(invoice => new HomeDashboardRecentItemDto(
-                        invoice.Id,
-                        invoice.Amount,
-                        invoice.Status,
-                        invoice.CreatedAt,
-                        invoice.FinancePaidAt ?? invoice.PaidAt,
-                        invoice.InvoiceNumber,
-                        invoice.PurposeOfPayment,
-                        invoice.Team?.Name,
-                        invoice.User?.Name))
+                OpenCount: section.OpenCount,
+                SubmittedCount: section.SubmittedCount,
+                PaidCount: section.PaidCount,
+                OpenAmount: section.OpenAmount,
+                LastPaidAt: section.LastPaidAt,
+                TotalRecentCount: section.TotalRecentCount,
+                Recent: section.Recent
+                    .Select(item => new HomeDashboardRecentItemDto(
+                        item.Id,
+                        item.Amount,
+                        item.Status,
+                        item.CreatedAt,
+                        item.PaidAt,
+                        item.Reference,
+                        item.PurposeOfPayment,
+                        item.TeamName,
+                        item.UserName))
                     .ToList());
-        }
-
-        private static HomeDashboardSectionDto BuildPaymentRequestSection(List<PaymentRequestByTeam> paymentRequests)
-        {
-            var lastPaidAt = paymentRequests
-                .Where(paymentRequest => paymentRequest.Status == TransactionStatus.Paid && paymentRequest.PaidAt.HasValue)
-                .MaxBy(paymentRequest => paymentRequest.PaidAt)?
-                .PaidAt;
-
-            return new HomeDashboardSectionDto(
-                OpenCount: paymentRequests.Count(IsOpen),
-                SubmittedCount: paymentRequests.Count(paymentRequest => paymentRequest.Status == TransactionStatus.Submitted),
-                PaidCount: paymentRequests.Count(paymentRequest => paymentRequest.Status == TransactionStatus.Paid),
-                OpenAmount: paymentRequests.Where(IsOpen).Sum(paymentRequest => paymentRequest.Amount),
-                LastPaidAt: lastPaidAt,
-                TotalRecentCount: paymentRequests.Count,
-                Recent: paymentRequests
-                    .OrderByDescending(paymentRequest => paymentRequest.CreatedAt)
-                    .Take(RecentItemsLimit)
-                    .Select(paymentRequest => new HomeDashboardRecentItemDto(
-                        paymentRequest.Id,
-                        paymentRequest.Amount,
-                        paymentRequest.Status,
-                        paymentRequest.CreatedAt,
-                        paymentRequest.PaidAt,
-                        paymentRequest.PaymentReference,
-                        paymentRequest.PurposeOfPayment,
-                        paymentRequest.Team?.Name,
-                        paymentRequest.User?.Name))
-                    .ToList());
-        }
-
-        private static bool IsOpen(Transaction transaction)
-        {
-            return transaction.Status is not TransactionStatus.Paid and not TransactionStatus.Declined;
         }
     }
 }
