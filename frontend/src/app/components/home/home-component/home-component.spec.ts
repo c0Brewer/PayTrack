@@ -131,7 +131,7 @@ describe('HomeComponent', () => {
   });
 
   it('should show a note when more recent entries exist than displayed', () => {
-    component.dashboard = {
+    homeDashboardServiceMock.getHomeDashboard.mockReturnValueOnce(of({
       ...dashboardResponse,
       paymentRequests: {
         ...dashboardResponse.paymentRequests,
@@ -150,8 +150,7 @@ describe('HomeComponent', () => {
           },
         ],
       },
-    };
-    component.isLoading = false;
+    }));
 
     fixture.detectChanges();
 
