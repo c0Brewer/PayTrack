@@ -133,6 +133,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             var recent = await baseQuery
                 .OrderByDescending(invoice => invoice.CreatedAt)
+                
                 // Use id as a tie-breaker so equal timestamps still yield deterministic recent ordering.
                 .ThenByDescending(invoice => invoice.Id)
                 .Take(normalizedRecentItemsLimit)
@@ -195,6 +196,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             var recent = await baseQuery
                 .OrderByDescending(paymentRequest => paymentRequest.CreatedAt)
+                
                 // Use id as a tie-breaker so equal timestamps still yield deterministic recent ordering.
                 .ThenByDescending(paymentRequest => paymentRequest.Id)
                 .Take(normalizedRecentItemsLimit)
