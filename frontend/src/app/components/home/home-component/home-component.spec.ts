@@ -155,6 +155,6 @@ describe('HomeComponent', () => {
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('More entries available.');
+    expect(fixture.nativeElement.textContent).toContain('5 more entries available!');
   });
 });
