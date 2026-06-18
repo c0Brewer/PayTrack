@@ -112,6 +112,22 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
+        /// Extracts invoice data from a receipt without persisting the uploaded file.
+        /// </summary>
+        /// <param name="receipt">Receipt to inspect.</param>
+        /// <param name="receiptExtractionService">Dependency-injected receipt extraction service.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The extracted invoice fields and their confidence values.</returns>
+        public static async Task<Ok<ReceiptExtractionDto>> ExtractReceiptAsync(
+            IFormFile receipt,
+            IReceiptExtractionService receiptExtractionService,
+            CancellationToken cancellationToken)
+        {
+            var result = await receiptExtractionService.ExtractAsync(receipt, cancellationToken);
+            return TypedResults.Ok(result);
+        }
+
+        /// <summary>
         /// Checks possible duplicates for a PaymentRequestByUser.
         /// </summary>
         /// <param name="getDuplicatePaymentRequestsByUserDto">Data for duplicate check.</param>

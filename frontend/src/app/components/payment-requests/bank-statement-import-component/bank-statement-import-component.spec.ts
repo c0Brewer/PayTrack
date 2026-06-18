@@ -238,6 +238,12 @@ describe('BankStatementImportComponent', () => {
     });
   });
 
+  describe('getStatusLabel', () => {
+    it('should return Unknown when the matched transaction status is missing', () => {
+      expect(component.getStatusLabel(undefined)).toBe('Unknown');
+    });
+  });
+
   // ── Computed counts ────────────────────────────────────────────────────────
 
   describe('computed counts', () => {

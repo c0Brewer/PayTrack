@@ -582,11 +582,42 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var content = await response.Content.ReadAsByteArrayAsync();
             content.Should().Equal(fileBytes);
         }
+
+        [Fact]
+        public async Task ExtractReceipt_ReturnsExtractedFields()
+        {
+            _factory.AuthServiceMock
+                .Setup(service => service.GetCurrentUser(It.IsAny<GetUserQueryById?>()))
+                .ReturnsAsync(new User { Id = 1, IsActive = true });
+
+            var extraction = new ReceiptExtractionDto(
+                true,
+                null,
+                new ExtractedReceiptFieldDto<decimal?>(120m, 0.95m),
+                new ExtractedReceiptFieldDto<DateTime?>(new DateTime(2026, 6, 14), 0.92m),
+                new ExtractedReceiptFieldDto<string?>("INV-42", 0.95m));
+
+            _factory.ReceiptExtractionServiceMock
+                .Setup(service => service.ExtractAsync(It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(extraction);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+            using var content = new MultipartFormDataContent();
+            content.Add(new ByteArrayContent([1, 2, 3]), "receipt", "invoice.pdf");
+
+            var response = await client.PostAsync("api/v1/transaction/user/receipt/extract", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<ReceiptExtractionDto>();
+            result.Should().BeEquivalentTo(extraction);
+        }
     }
     public class PaymentRequestByUserApiFactory : WebApplicationFactory<Program>
     {
         public Mock<IPaymentRequestByUserService> ServiceMock { get; } = new();
         public Mock<IAuthService> AuthServiceMock { get; } = new();
+        public Mock<IReceiptExtractionService> ReceiptExtractionServiceMock { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -625,9 +656,16 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptorAuth is not null)
                     services.Remove(serviceDescriptorAuth);
 
+                var receiptExtractionServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IReceiptExtractionService));
+
+                if (receiptExtractionServiceDescriptor is not null)
+                    services.Remove(receiptExtractionServiceDescriptor);
+
 
                 services.AddSingleton(ServiceMock.Object);
                 services.AddSingleton(AuthServiceMock.Object);
+                services.AddSingleton(ReceiptExtractionServiceMock.Object);
             });
         }
     }
