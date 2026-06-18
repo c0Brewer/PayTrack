@@ -131,26 +131,28 @@ describe('HomeComponent', () => {
   });
 
   it('should show a note when more recent entries exist than displayed', () => {
-    homeDashboardServiceMock.getHomeDashboard.mockReturnValueOnce(of({
-      ...dashboardResponse,
-      paymentRequests: {
-        ...dashboardResponse.paymentRequests,
-        totalRecentCount: 6,
-        recent: [
-          {
-            id: 1,
-            amount: 12,
-            status: TransactionStatus.Submitted,
-            createdAt: null,
-            paidAt: null,
-            reference: null,
-            purposeOfPayment: 'Budget refill',
-            teamName: null,
-            userName: null,
-          },
-        ],
-      },
-    }));
+    homeDashboardServiceMock.getHomeDashboard.mockReturnValueOnce(
+      of({
+        ...dashboardResponse,
+        paymentRequests: {
+          ...dashboardResponse.paymentRequests,
+          totalRecentCount: 6,
+          recent: [
+            {
+              id: 1,
+              amount: 12,
+              status: TransactionStatus.Submitted,
+              createdAt: null,
+              paidAt: null,
+              reference: null,
+              purposeOfPayment: 'Budget refill',
+              teamName: null,
+              userName: null,
+            },
+          ],
+        },
+      }),
+    );
 
     fixture.detectChanges();
 
