@@ -41,8 +41,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             var dashboard = new HomeDashboardDto(
                 new HomeDashboardUserDto(1, "Alex", Role.RegularUser),
-                new HomeDashboardSectionDto(1, 2, 3, 100m, null, []),
-                new HomeDashboardSectionDto(4, 5, 6, 200m, null, []),
+                new HomeDashboardSectionDto(1, 2, 3, 100m, null, 1, []),
+                new HomeDashboardSectionDto(4, 5, 6, 200m, null, 7, []),
                 new HomeDashboardActionsDto(true, false, 2));
 
             _factory.AuthServiceMock
@@ -67,6 +67,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.User.Name.Should().Be("Alex");
             result.Actions.MissingBankAccount.Should().BeTrue();
             result.PaymentRequests.OpenCount.Should().Be(4);
+            result.PaymentRequests.TotalRecentCount.Should().Be(7);
 
             _factory.AuthServiceMock.Verify(
                 service => service.GetCurrentUser(It.Is<GetUserQueryById?>(query => query!.IncludeBankAccounts == true)),

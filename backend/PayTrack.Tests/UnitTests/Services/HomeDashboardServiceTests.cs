@@ -144,6 +144,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Invoices.PaidCount.Should().Be(1);
             result.Invoices.OpenAmount.Should().Be(150m);
             result.Invoices.LastPaidAt.Should().Be(new DateTime(2026, 06, 11, 0, 0, 0, DateTimeKind.Utc));
+            result.Invoices.TotalRecentCount.Should().Be(4);
             result.Invoices.Recent.Should().HaveCount(4);
             result.Invoices.Recent.First().Reference.Should().Be("INV-100");
             result.Invoices.Recent.First().TeamName.Should().Be("Core Team");
@@ -153,6 +154,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result.PaymentRequests.PaidCount.Should().Be(1);
             result.PaymentRequests.OpenAmount.Should().Be(300m);
             result.PaymentRequests.LastPaidAt.Should().Be(new DateTime(2026, 06, 13, 0, 0, 0, DateTimeKind.Utc));
+            result.PaymentRequests.TotalRecentCount.Should().Be(3);
             result.PaymentRequests.Recent.Should().HaveCount(3);
             result.PaymentRequests.Recent.First().Reference.Should().Be("PR-1");
 
@@ -222,6 +224,8 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Actions.MissingBankAccount.Should().BeFalse();
             result.Actions.BankInformationSkipped.Should().BeTrue();
             result.Invoices.LastPaidAt.Should().Be(new DateTime(2026, 06, 03, 0, 0, 0, DateTimeKind.Utc));
+            result.Invoices.TotalRecentCount.Should().Be(1);
+            result.PaymentRequests.TotalRecentCount.Should().Be(0);
             result.PaymentRequests.Recent.Should().BeEmpty();
             result.PaymentRequests.OpenAmount.Should().Be(0m);
         }

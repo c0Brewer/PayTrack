@@ -88,6 +88,9 @@
                 </a>
               }
             </div>
+            @if (data.invoices.totalRecentCount > data.invoices.recent.length) {
+              <p class="recent-note mb-0 mt-3 text-danger small"> {{data.invoices.totalRecentCount - data.invoices.recent.length}} more entries available!</p>
+            }
           } @else {
             <p class="mb-0 text-body-secondary">No invoice activity yet.</p>
           }
@@ -141,6 +144,9 @@
                 </a>
               }
             </div>
+            @if (data.paymentRequests.totalRecentCount > data.paymentRequests.recent.length) {
+              <p class="recent-note mb-0 mt-3 text-danger small"> {{data.paymentRequests.totalRecentCount - data.paymentRequests.recent.length}} more entries available!</p>
+            }
           } @else {
             <p class="mb-0 text-body-secondary">No payment request activity yet.</p>
           }

@@ -20,6 +20,7 @@ describe('HomeComponent', () => {
       paidCount: 3,
       openAmount: 100,
       lastPaidAt: null,
+      totalRecentCount: 1,
       recent: [],
     },
     paymentRequests: {
@@ -28,6 +29,7 @@ describe('HomeComponent', () => {
       paidCount: 6,
       openAmount: 200,
       lastPaidAt: null,
+      totalRecentCount: 6,
       recent: [],
     },
     actions: {
@@ -126,5 +128,33 @@ describe('HomeComponent', () => {
         userName: null,
       }),
     ).toBe('Budget refill');
+  });
+
+  it('should show a note when more recent entries exist than displayed', () => {
+    component.dashboard = {
+      ...dashboardResponse,
+      paymentRequests: {
+        ...dashboardResponse.paymentRequests,
+        totalRecentCount: 6,
+        recent: [
+          {
+            id: 1,
+            amount: 12,
+            status: TransactionStatus.Submitted,
+            createdAt: null,
+            paidAt: null,
+            reference: null,
+            purposeOfPayment: 'Budget refill',
+            teamName: null,
+            userName: null,
+          },
+        ],
+      },
+    };
+    component.isLoading = false;
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('More entries available.');
   });
 });

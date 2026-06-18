@@ -24,6 +24,7 @@ export interface HomeDashboardSection {
   paidCount: number;
   openAmount: number;
   lastPaidAt: string | null;
+  totalRecentCount: number;
   recent: HomeDashboardRecentItem[];
 }
 

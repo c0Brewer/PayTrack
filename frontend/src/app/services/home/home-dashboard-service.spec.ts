@@ -47,6 +47,7 @@ describe('HomeDashboardService', () => {
           paidCount: 3,
           openAmount: 50,
           lastPaidAt: null,
+          totalRecentCount: 1,
           recent: [],
         },
         paymentRequests: {
@@ -55,6 +56,7 @@ describe('HomeDashboardService', () => {
           paidCount: 6,
           openAmount: 75,
           lastPaidAt: null,
+          totalRecentCount: 8,
           recent: [],
         },
         actions: {
@@ -90,6 +92,7 @@ describe('HomeDashboardService', () => {
           paidCount: 0,
           openAmount: 0,
           lastPaidAt: null,
+          totalRecentCount: 0,
           recent: [],
         },
         paymentRequests: {
@@ -98,6 +101,7 @@ describe('HomeDashboardService', () => {
           paidCount: 0,
           openAmount: 0,
           lastPaidAt: null,
+          totalRecentCount: 0,
           recent: [],
         },
         actions: {
