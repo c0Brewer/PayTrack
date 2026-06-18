@@ -127,7 +127,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         .Where(invoice => invoice.Status == TransactionStatus.Paid)
                         .Max(invoice => invoice.FinancePaidAt ?? invoice.PaidAt),
                     TotalRecentCount = group.Count(),
-                    NeedsAttentionCount = group.Count(invoice => invoice.Status == TransactionStatus.ChangesRequested || invoice.Status == TransactionStatus.Declined),
+                    NeedsAttentionCount = group.Count(invoice => invoice.Status == TransactionStatus.ChangesRequested),
                 })
                 .SingleOrDefaultAsync();
 
@@ -189,7 +189,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         .Where(paymentRequest => paymentRequest.Status == TransactionStatus.Paid)
                         .Max(paymentRequest => paymentRequest.PaidAt),
                     TotalRecentCount = group.Count(),
-                    NeedsAttentionCount = group.Count(paymentRequest => paymentRequest.Status == TransactionStatus.ChangesRequested || paymentRequest.Status == TransactionStatus.Declined),
+                    NeedsAttentionCount = group.Count(paymentRequest => paymentRequest.Status == TransactionStatus.ChangesRequested),
                 })
                 .SingleOrDefaultAsync();
 

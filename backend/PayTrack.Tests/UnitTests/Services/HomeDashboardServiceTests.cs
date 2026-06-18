@@ -32,7 +32,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     150m,
                     new DateTime(2026, 06, 11, 0, 0, 0, DateTimeKind.Utc),
                     4,
-                    2,
+                    1,
                     [
                         new HomeDashboardRecentItemProjection(
                             11,
@@ -55,7 +55,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     300m,
                     new DateTime(2026, 06, 13, 0, 0, 0, DateTimeKind.Utc),
                     3,
-                    1,
+                    0,
                     [
                         new HomeDashboardRecentItemProjection(
                             21,
@@ -98,7 +98,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Actions.MissingBankAccount.Should().BeTrue();
             result.Actions.BankInformationSkipped.Should().BeFalse();
-            result.Actions.NeedsAttentionCount.Should().Be(3);
+            result.Actions.NeedsAttentionCount.Should().Be(1);
 
             repoMock.Verify(
                 repo => repo.GetHomeDashboardInvoiceSectionAsync(currentUser.Id, 5),
