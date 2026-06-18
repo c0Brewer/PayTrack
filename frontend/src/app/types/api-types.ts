@@ -1668,6 +1668,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transaction/user/receipt/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        receipt: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReceiptExtractionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transaction/user/{id}/mark-paid": {
         parameters: {
             query?: never;
@@ -2705,6 +2747,18 @@ export interface components {
             /** Format: int32 */
             budgetId?: number | null;
         };
+        DateTimeNullableExtractedReceiptFieldDto: {
+            /** Format: date-time */
+            value?: string | null;
+            /** Format: double */
+            confidence?: number;
+        };
+        DecimalNullableExtractedReceiptFieldDto: {
+            /** Format: double */
+            value?: number | null;
+            /** Format: double */
+            confidence?: number;
+        };
         DeclinePaymentRequestByUserDto: {
             reason: string;
         };
@@ -2845,6 +2899,13 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        ReceiptExtractionDto: {
+            extractionSucceeded?: boolean;
+            message?: string | null;
+            amount?: components["schemas"]["DecimalNullableExtractedReceiptFieldDto"];
+            invoiceDate?: components["schemas"]["DateTimeNullableExtractedReceiptFieldDto"];
+            invoiceNumber?: components["schemas"]["StringExtractedReceiptFieldDto"];
+        };
         RequestChangesPaymentRequestByUserDto: {
             reason: string;
         };
@@ -2869,6 +2930,11 @@ export interface components {
             /** Format: email */
             recipientEmail: string;
             message: string;
+        };
+        StringExtractedReceiptFieldDto: {
+            value?: string | null;
+            /** Format: double */
+            confidence?: number;
         };
         TeamDto: {
             /** Format: int32 */

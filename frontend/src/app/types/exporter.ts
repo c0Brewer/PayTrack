@@ -42,6 +42,7 @@ export type RequestChangesPaymentRequestByUserDto =
   components['schemas']['RequestChangesPaymentRequestByUserDto'];
 export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
+export type ReceiptExtractionDto = components['schemas']['ReceiptExtractionDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
