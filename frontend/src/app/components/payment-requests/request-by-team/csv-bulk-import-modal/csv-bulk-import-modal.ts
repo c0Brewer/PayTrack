@@ -95,8 +95,8 @@ export class CsvBulkImportModalComponent implements OnInit, OnDestroy {
   step: ImportStep = 'configure';
   configForm!: FormGroup;
 
-  private csvColName = 'Name';
-  private csvColSumme = 'Summe';
+  protected csvColName = 'Name';
+  protected csvColSumme = 'Summe';
 
   budgets: BudgetDto[] = [];
   parsedRows: ParsedRow[] = [];

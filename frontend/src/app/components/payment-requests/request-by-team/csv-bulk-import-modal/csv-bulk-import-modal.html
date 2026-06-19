@@ -31,8 +31,8 @@
     @if (parsedRows.length === 0) {
       <p class="no-rows-warning">
         <span class="material-symbols-outlined">warning</span>
-        No valid rows were found in the CSV. Make sure the file has a "{{ 'Name' }}" and
-        "{{ 'Summe' }}" column with non-zero amounts.
+        No valid rows were found in the CSV. Make sure the file has a "{{ csvColName }}" and
+        "{{ csvColSumme }}" column with non-zero amounts.
       </p>
     }
 
