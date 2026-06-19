@@ -2,9 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Options;
 using PayTrack.Application.Services.Model;
-using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -15,11 +13,9 @@ namespace PayTrack.Application.Services.Implementation
     /// </summary>
     public sealed class PaymentReminderHostedService(
         IServiceScopeFactory scopeFactory,
-        IOptions<ReminderSettings> settings,
         ILogger<PaymentReminderHostedService> logger) : BackgroundService
     {
         private readonly IServiceScopeFactory scopeFactory = scopeFactory;
-        private readonly ReminderSettings settings = settings.Value;
         private readonly ILogger<PaymentReminderHostedService> logger = logger;
 
         /// <summary>
@@ -33,10 +29,14 @@ namespace PayTrack.Application.Services.Implementation
             using var scope = this.scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
             var notifications = scope.ServiceProvider.GetRequiredService<INotificationDispatchService>();
+            var systemSettings = scope.ServiceProvider.GetRequiredService<ISystemSettingService>();
 
-            var channels = this.settings.Channels;
+            var sendEmail = await systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersEmail, true);
+            var sendSlack = await systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, false);
+            var daysBeforeDue = await systemSettings.GetDaysBeforeDueAsync();
+            var emailDelayMs = await systemSettings.GetEmailDelayMsAsync();
 
-            foreach (var daysAhead in this.settings.DaysBeforeDue)
+            foreach (var daysAhead in daysBeforeDue)
             {
                 var targetDate = DateTime.UtcNow.Date.AddDays(daysAhead);
 
@@ -53,7 +53,7 @@ namespace PayTrack.Application.Services.Implementation
 
                 foreach (var request in dueSoon)
                 {
-                    if (channels.SendEmail)
+                    if (sendEmail)
                     {
                         try
                         {
@@ -68,7 +68,7 @@ namespace PayTrack.Application.Services.Implementation
                                 $"PayTrack";
 
                             await notifications.SendEmailAsync(request.User.Email, subject, body);
-                            await Task.Delay(this.settings.EmailDelayMs, cancellationToken);
+                            await Task.Delay(emailDelayMs, cancellationToken);
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                         {
@@ -84,7 +84,7 @@ namespace PayTrack.Application.Services.Implementation
                         }
                     }
 
-                    if (channels.SendSlack)
+                    if (sendSlack)
                     {
                         try
                         {
@@ -117,8 +117,17 @@ namespace PayTrack.Application.Services.Implementation
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                int runAtHour;
+                int runAtMinute;
+                using (var scope = this.scopeFactory.CreateScope())
+                {
+                    var systemSettings = scope.ServiceProvider.GetRequiredService<ISystemSettingService>();
+                    runAtHour = await systemSettings.GetRunAtHourUtcAsync();
+                    runAtMinute = await systemSettings.GetRunAtMinuteUtcAsync();
+                }
+
                 var now = DateTime.UtcNow;
-                var nextRun = now.Date.AddHours(this.settings.RunAtHourUtc).AddMinutes(this.settings.RunAtMinuteUtc);
+                var nextRun = now.Date.AddHours(runAtHour).AddMinutes(runAtMinute);
 
                 if (nextRun <= now)
                 {

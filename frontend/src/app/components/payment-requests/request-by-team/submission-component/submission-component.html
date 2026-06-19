@@ -189,6 +189,9 @@
           </button>
           <p class="csv-hint">
             One row = one payment request. Rows with no name or &euro;&thinsp;0.00 are skipped automatically.
+            The CSV must contain a <strong>{{ csvColName }}</strong> (recipient name) and a
+            <strong>{{ csvColSumme }}</strong> (amount) column. Admins can change these names under
+            <em>Settings &rarr; Administration</em>.
           </p>
         </div>
       </app-box-component>

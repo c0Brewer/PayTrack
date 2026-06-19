@@ -25,6 +25,7 @@ import { CostCentreService } from '../../../../services/cost-centre/cost-centre-
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
 import {
@@ -80,6 +81,8 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
 
   isCsvModalOpen = false;
   csvImportFile: File | null = null;
+  protected csvColName = 'Name';
+  protected csvColSumme = 'Summe';
 
   private readonly destroy$ = new Subject<void>();
 
@@ -92,6 +95,7 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
     private readonly costCentreService: CostCentreService,
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
+    private readonly systemSettingService: SystemSettingService,
   ) {}
 
   ngOnInit(): void {
@@ -99,6 +103,15 @@ export class PaymentRequestByTeamComponent implements OnInit, OnDestroy {
     this.loadData();
     this.loadCostCentres();
     this.loadUsers();
+    this.systemSettingService.getCsvColumnSettings().subscribe({
+      next: (settings) => {
+        this.csvColName = settings.nameColumn;
+        this.csvColSumme = settings.summeColumn;
+      },
+      error: () => {
+        /* keep defaults */
+      },
+    });
     this.form
       .get('teamId')!
       .valueChanges.pipe(takeUntil(this.destroy$))

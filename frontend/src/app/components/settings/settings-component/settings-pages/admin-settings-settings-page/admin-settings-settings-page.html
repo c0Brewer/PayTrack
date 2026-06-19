@@ -1,0 +1,279 @@
+<div class="row gx-4 gx-xl-5 gy-4">
+  <div class="col-12">
+    <app-box-component
+      title="CSV Import"
+      subtitle="Column names used when parsing bulk payment CSV files."
+      size="large"
+    >
+      @if (csvLoading) {
+        <p class="admin-settings__state">Loading...</p>
+      } @else {
+        <form class="admin-settings__form" (ngSubmit)="saveCsvSettings()">
+          <div class="admin-settings__field-group">
+            <div class="admin-settings__field">
+              <label for="csvNameColumn" class="admin-settings__label">Name Column</label>
+              <input
+                id="csvNameColumn"
+                type="text"
+                class="admin-settings__input"
+                [(ngModel)]="csvSettings.nameColumn"
+                name="csvNameColumn"
+                required
+                maxlength="255"
+              />
+            </div>
+            <div class="admin-settings__field">
+              <label for="csvSummeColumn" class="admin-settings__label">Amount Column</label>
+              <input
+                id="csvSummeColumn"
+                type="text"
+                class="admin-settings__input"
+                [(ngModel)]="csvSettings.summeColumn"
+                name="csvSummeColumn"
+                required
+                maxlength="255"
+              />
+            </div>
+          </div>
+          <div class="admin-settings__actions">
+            <button type="submit" class="admin-settings__save-btn" [disabled]="csvSaving || !csvDirty">
+              @if (csvSaving) {
+                Saving...
+              } @else {
+                <span class="material-symbols-outlined">save</span>
+                Save
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </app-box-component>
+  </div>
+
+  <div class="col-12">
+    <app-box-component
+      title="Notification Channels"
+      subtitle="Choose which channels to use for each notification event."
+      size="large"
+    >
+      @if (notifLoading) {
+        <p class="admin-settings__state">Loading...</p>
+      } @else {
+        <form class="admin-settings__form" (ngSubmit)="saveNotifSettings()">
+          <div class="admin-settings__channels-group">
+            <h4 class="admin-settings__channels-group__title">Payment Requests</h4>
+            <table class="admin-settings__channels-table">
+              <thead>
+                <tr>
+                  <th class="admin-settings__channels-table__event-col">Event</th>
+                  <th>
+                    <span class="material-symbols-outlined">mail</span>
+                    Email
+                  </th>
+                  <th>
+                    <span class="material-symbols-outlined">chat</span>
+                    Slack
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Creation</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendEmail"
+                        name="creationEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendSlack"
+                        name="creationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mark as Paid</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendEmail"
+                        name="confirmationEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendSlack"
+                        name="confirmationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Automatic Reminders</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendEmail"
+                        name="remindersEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendSlack"
+                        name="remindersSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Deletion</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendEmail"
+                        name="deletionEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendSlack"
+                        name="deletionSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-settings__channels-group">
+            <h4 class="admin-settings__channels-group__title">Invoice Submissions</h4>
+            <p class="admin-settings__channels-group__empty">No notification events configured yet.</p>
+          </div>
+          <div class="admin-settings__actions">
+            <button type="submit" class="admin-settings__save-btn" [disabled]="notifSaving || !notifDirty">
+              @if (notifSaving) {
+                Saving...
+              } @else {
+                <span class="material-symbols-outlined">save</span>
+                Save
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </app-box-component>
+  </div>
+
+  <div class="col-12">
+    <app-box-component
+      title="Reminder Schedule"
+      subtitle="When to send payment reminders to users."
+      size="large"
+    >
+      @if (reminderLoading) {
+        <p class="admin-settings__state">Loading...</p>
+      } @else {
+        <form class="admin-settings__form" (ngSubmit)="saveReminderSettings()">
+          <div class="admin-settings__field-group">
+            <div class="admin-settings__field">
+              <label for="reminderDays" class="admin-settings__label">Days before due date</label>
+              <p class="admin-settings__hint">Comma-separated list, e.g. 7, 2, 1, 0</p>
+              <input
+                id="reminderDays"
+                type="text"
+                class="admin-settings__input"
+                [class.admin-settings__input--error]="reminderDaysError"
+                [(ngModel)]="reminderDaysInput"
+                name="reminderDays"
+                (blur)="onReminderDaysBlur()"
+              />
+              @if (reminderDaysError) {
+                <p class="admin-settings__field-error">{{ reminderDaysError }}</p>
+              }
+            </div>
+            <div class="admin-settings__field">
+              <label for="reminderTime" class="admin-settings__label">Send time</label>
+              <p class="admin-settings__hint">UTC (HH:MM)</p>
+              <input
+                id="reminderTime"
+                type="time"
+                class="admin-settings__input admin-settings__input--time"
+                [class.admin-settings__input--error]="reminderTimeError"
+                [(ngModel)]="reminderTimeInput"
+                name="reminderTime"
+                (blur)="onReminderTimeBlur()"
+              />
+              @if (reminderTimeError) {
+                <p class="admin-settings__field-error">{{ reminderTimeError }}</p>
+              }
+            </div>
+            <div class="admin-settings__field">
+              <label for="emailDelayMs" class="admin-settings__label">Email send delay</label>
+              <p class="admin-settings__hint">Milliseconds between reminder emails (SMTP rate-limit guard)</p>
+              <input
+                id="emailDelayMs"
+                type="number"
+                min="0"
+                step="1"
+                class="admin-settings__input admin-settings__input--short"
+                [class.admin-settings__input--error]="reminderEmailDelayError"
+                [(ngModel)]="reminderEmailDelayInput"
+                name="emailDelayMs"
+                (blur)="onReminderEmailDelayBlur()"
+              />
+              @if (reminderEmailDelayError) {
+                <p class="admin-settings__field-error">{{ reminderEmailDelayError }}</p>
+              }
+            </div>
+          </div>
+          <div class="admin-settings__actions">
+            <button type="submit" class="admin-settings__save-btn" [disabled]="reminderSaving || !reminderDirty || !!reminderDaysError || !!reminderTimeError || !!reminderEmailDelayError">
+              @if (reminderSaving) {
+                Saving...
+              } @else {
+                <span class="material-symbols-outlined">save</span>
+                Save
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </app-box-component>
+  </div>
+</div>

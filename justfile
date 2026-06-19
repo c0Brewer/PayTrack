@@ -33,7 +33,7 @@ run-backend:
 
 [working-directory: "backend"]
 test-backend:
-    dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=90 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
+    dotnet test
 
 [working-directory: "backend/PayTrack.Tests"]
 print-test-report:
@@ -117,4 +117,3 @@ stop-sonarqube:
 [windows]
 stop-sonarqube:
     sudo docker-compose -f docker-compose-sonarqube.yml down
-

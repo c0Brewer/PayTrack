@@ -21,25 +21,97 @@
     <ul class="duplicate-list">
       @for (duplicate of duplicates; track duplicate.paymentRequestByUser.id) {
         <li class="duplicate-list__item">
-          <div class="duplicate-list__main">
-            <span class="duplicate-list__invoice">
-              Invoice: {{ duplicate.paymentRequestByUser.invoiceNumber }}
-            </span>
-            <span class="duplicate-list__amount">
-              {{ duplicate.paymentRequestByUser.amount | euro }}
-            </span>
-          </div>
+          <div
+            class="duplicate-list__comparison"
+            [class.duplicate-list__comparison--paired]="sourceInvoice"
+          >
+            @if (sourceInvoice) {
+              <div
+                class="duplicate-list__invoice-summary"
+                [class.duplicate-list__invoice-summary--selected]="isInvoiceSelected(duplicate, 'source')"
+              >
+                @if (mode === 'review' && getActionableSourceInvoice()) {
+                  <label class="duplicate-list__selector">
+                    <input
+                      type="radio"
+                      [name]="'duplicate-selection-' + duplicate.paymentRequestByUser.id"
+                      [checked]="isInvoiceSelected(duplicate, 'source')"
+                      (change)="selectInvoice(duplicate, 'source')"
+                    />
+                    <span class="duplicate-list__card-title">Invoice being checked</span>
+                  </label>
+                } @else {
+                  <span class="duplicate-list__card-title">Invoice being checked</span>
+                }
+                <span class="duplicate-list__invoice">Invoice: {{ sourceInvoice.invoiceNumber || '-' }}</span>
+                <span class="duplicate-list__amount">{{ (sourceInvoice.amount ?? 0) | euro }}</span>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">User</span>
+                  <span class="duplicate-list__detail-value">{{ getInvoiceUserName(sourceInvoice) }}</span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Team</span>
+                  <span class="duplicate-list__detail-value">{{ getInvoiceTeamName(sourceInvoice) }}</span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Paid at</span>
+                  <span class="duplicate-list__detail-value">
+                    {{ sourceInvoice.paidAt ? (sourceInvoice.paidAt | date: 'mediumDate') : '-' }}
+                  </span>
+                </div>
+                <div class="duplicate-list__detail">
+                  <span class="duplicate-list__detail-label">Purpose</span>
+                  <span class="duplicate-list__detail-value">{{ sourceInvoice.purposeOfPayment || '-' }}</span>
+                </div>
+              </div>
+            }
 
-          <div class="duplicate-list__details">
-            <span>User: {{ getDuplicateUserName(duplicate) }}</span>
-            <span>Team: {{ getDuplicateTeamName(duplicate) }}</span>
-            <span>
-              Paid at:
-              {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
-            </span>
+            <div
+              class="duplicate-list__invoice-summary"
+              [class.duplicate-list__invoice-summary--selected]="isInvoiceSelected(duplicate, 'matching')"
+            >
+              @if (mode === 'review') {
+                <label class="duplicate-list__selector">
+                  <input
+                    type="radio"
+                    [name]="'duplicate-selection-' + duplicate.paymentRequestByUser.id"
+                    [checked]="isInvoiceSelected(duplicate, 'matching')"
+                    (change)="selectInvoice(duplicate, 'matching')"
+                  />
+                  <span class="duplicate-list__card-title">Matching invoice</span>
+                </label>
+              } @else {
+                <span class="duplicate-list__card-title">Matching invoice</span>
+              }
+              <span class="duplicate-list__invoice">
+                Invoice: {{ duplicate.paymentRequestByUser.invoiceNumber }}
+              </span>
+              <span class="duplicate-list__amount">
+                {{ duplicate.paymentRequestByUser.amount | euro }}
+              </span>
+              <div class="duplicate-list__detail">
+                <span class="duplicate-list__detail-label">User</span>
+                <span class="duplicate-list__detail-value">{{ getDuplicateUserName(duplicate) }}</span>
+              </div>
+              <div class="duplicate-list__detail">
+                <span class="duplicate-list__detail-label">Team</span>
+                <span class="duplicate-list__detail-value">{{ getDuplicateTeamName(duplicate) }}</span>
+              </div>
+              <div class="duplicate-list__detail">
+                <span class="duplicate-list__detail-label">Paid at</span>
+                <span class="duplicate-list__detail-value">
+                  {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
+                </span>
+              </div>
+              <div class="duplicate-list__detail">
+                <span class="duplicate-list__detail-label">Purpose</span>
+                <span class="duplicate-list__detail-value">{{ duplicate.paymentRequestByUser.purposeOfPayment || '-' }}</span>
+              </div>
+            </div>
           </div>
 
           <div class="duplicate-list__meta">
+            <span class="duplicate-list__meta-label">Matched on:</span>
             @for (field of duplicate.matchedFields; track field) {
               <span class="duplicate-list__match">{{ getMatchedFieldLabel(field) }}</span>
             }
@@ -97,17 +169,16 @@
               <button
                 type="button"
                 class="duplicate-list__button"
-                (click)="onOpenDetail(duplicate.paymentRequestByUser)"
+                [disabled]="!getSelectedInvoice(duplicate)"
+                (click)="onOpenSelectedDetail(duplicate)"
               >
-                View
+                View selected
               </button>
               <button
                 type="button"
                 class="duplicate-list__button"
                 appDisableOfflineAction
-                [disabled]="
-                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
-                "
+                [disabled]="isDuplicateActionPending(duplicate)"
                 (click)="onDismissDuplicate(duplicate)"
               >
                 Dismiss warning
@@ -116,14 +187,37 @@
                 type="button"
                 class="duplicate-list__button duplicate-list__button--danger"
                 appDisableOfflineAction
-                [disabled]="
-                  actionInvoiceId === duplicate.paymentRequestByUser.id || offlineService.isOffline()
-                "
-                (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
+                [disabled]="!getSelectedInvoice(duplicate) || isDuplicateActionPending(duplicate)"
+                (click)="onRequestDeleteSelectedInvoice(duplicate)"
               >
-                Delete invoice
+                Delete selected invoice
               </button>
             </div>
+
+            @if (isDeleteConfirmationOpen(duplicate) && pendingDeleteInvoice) {
+              <div class="duplicate-list__delete-confirmation">
+                <span class="duplicate-list__delete-text">
+                  Delete invoice {{ getSelectedInvoiceLabel(duplicate) }}?
+                </span>
+                <div class="duplicate-list__actions">
+                  <button
+                    type="button"
+                    class="duplicate-list__button"
+                    (click)="onCancelDeleteConfirmation()"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="duplicate-list__button duplicate-list__button--danger"
+                    [disabled]="actionInvoiceId === pendingDeleteInvoice.id"
+                    (click)="onConfirmDeleteSelectedInvoice()"
+                  >
+                    Delete invoice
+                  </button>
+                </div>
+              </div>
+            }
           }
         </li>
       }
