@@ -28,7 +28,7 @@ export class SeasonManagementComponent implements OnInit {
   }
 
   loadSeasons(): void {
-    this.seasonService.getSeasons().subscribe({
+    this.seasonService.getSeasons({ IncludeInactive: true }).subscribe({
       next: (seasons) => {
         this.seasons = seasons;
         this.cdr.markForCheck();
@@ -46,7 +46,7 @@ export class SeasonManagementComponent implements OnInit {
         this.loadSeasons();
       },
       error: (err: Error) => {
-        this.notificationService.showError('Could not create season: ' + err.message);
+        this.showSeasonError('Could not create season: ', err);
       },
     });
   }
@@ -58,7 +58,19 @@ export class SeasonManagementComponent implements OnInit {
         this.loadSeasons();
       },
       error: (err: Error) => {
-        this.notificationService.showError('Could not update season: ' + err.message);
+        this.showSeasonError('Could not update season: ', err);
+      },
+    });
+  }
+
+  reactivateSeason(id: number): void {
+    this.seasonService.updateSeason(id, { isActive: true }).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Season reactivated successfully');
+        this.loadSeasons();
+      },
+      error: (err: Error) => {
+        this.showSeasonError('Could not reactivate season: ', err);
       },
     });
   }
@@ -94,5 +106,14 @@ export class SeasonManagementComponent implements OnInit {
         this.notificationService.showError('Could not delete season: ' + err.message);
       },
     });
+  }
+
+  private showSeasonError(prefix: string, err: Error): void {
+    if (err.message === 'season name already taken') {
+      this.notificationService.showError('season name already taken');
+      return;
+    }
+
+    this.notificationService.showError(prefix + err.message);
   }
 }

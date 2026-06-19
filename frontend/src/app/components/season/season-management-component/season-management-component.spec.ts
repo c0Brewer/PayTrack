@@ -18,6 +18,7 @@ const mockSeasons: SeasonDto[] = [
     isActive: true,
     budgets: [{ id: 10 } as NonNullable<SeasonDto['budgets']>[number]],
   },
+  { id: 3, name: '2024', isActive: false, budgets: [] },
 ];
 
 describe('SeasonManagementComponent', () => {
@@ -69,7 +70,7 @@ describe('SeasonManagementComponent', () => {
   it('ngOnInit should load seasons', () => {
     component.ngOnInit();
 
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.seasons).toEqual(mockSeasons);
   });
 
@@ -105,6 +106,16 @@ describe('SeasonManagementComponent', () => {
     );
   });
 
+  it('createSeason should show duplicate-name message without prefix', () => {
+    seasonServiceMock.createSeason.mockReturnValueOnce(
+      throwError(() => new Error('season name already taken')),
+    );
+
+    component.createSeason('2026');
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith('season name already taken');
+  });
+
   it('updateSeason should update a season and reload', () => {
     const loadSpy = vi.spyOn(component, 'loadSeasons');
 
@@ -124,6 +135,40 @@ describe('SeasonManagementComponent', () => {
 
     expect(notificationServiceMock.showError).toHaveBeenCalledWith(
       'Could not update season: Update failed',
+    );
+  });
+
+  it('updateSeason should show duplicate-name message without prefix', () => {
+    seasonServiceMock.updateSeason.mockReturnValueOnce(
+      throwError(() => new Error('season name already taken')),
+    );
+
+    component.updateSeason({ id: 1, name: '2026' });
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith('season name already taken');
+  });
+
+  it('reactivateSeason should update active flag and reload', () => {
+    const loadSpy = vi.spyOn(component, 'loadSeasons');
+
+    component.reactivateSeason(3);
+
+    expect(seasonServiceMock.updateSeason).toHaveBeenCalledWith(3, { isActive: true });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Season reactivated successfully',
+    );
+    expect(loadSpy).toHaveBeenCalledOnce();
+  });
+
+  it('reactivateSeason should show error when API throws', () => {
+    seasonServiceMock.updateSeason.mockReturnValueOnce(
+      throwError(() => new Error('Reactivate failed')),
+    );
+
+    component.reactivateSeason(3);
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not reactivate season: Reactivate failed',
     );
   });
 

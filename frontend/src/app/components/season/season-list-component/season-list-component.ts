@@ -13,12 +13,17 @@ export class SeasonListComponent {
   @Input() seasons: SeasonDto[] = [];
   @Output() updateSeason = new EventEmitter<{ id: number; name: string }>();
   @Output() deleteSeason = new EventEmitter<number>();
+  @Output() reactivateSeason = new EventEmitter<number>();
 
   editingSeasonId: number | null = null;
   editedSeasonName = '';
 
   get visibleSeasons(): SeasonDto[] {
     return this.seasons.filter((season) => season.isActive !== false);
+  }
+
+  get inactiveSeasons(): SeasonDto[] {
+    return this.seasons.filter((season) => season.isActive === false);
   }
 
   startEdit(season: SeasonDto): void {
@@ -46,5 +51,9 @@ export class SeasonListComponent {
 
   requestDelete(season: SeasonDto): void {
     this.deleteSeason.emit(season.id);
+  }
+
+  requestReactivate(season: SeasonDto): void {
+    this.reactivateSeason.emit(season.id);
   }
 }

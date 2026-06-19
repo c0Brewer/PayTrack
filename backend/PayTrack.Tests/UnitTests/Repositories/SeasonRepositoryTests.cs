@@ -92,14 +92,14 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 async () => await repo.AddAsync(new Season { Name = "2026" }));
 
             // Assert
-            exception.Message.Should().Be("A season with the name '2026' already exists.");
+            exception.Message.Should().Be("season name already taken");
         }
 
         [Fact]
-        public async Task AddAsync_ShouldReactivateInactiveSeason_WhenNameAlreadyExists()
+        public async Task AddAsync_ShouldThrowInvalidState_WhenInactiveNameAlreadyExists()
         {
             // Arrange
-            await using var context = GetInMemoryDbContext("AddSeason_ReactivatesInactive");
+            await using var context = GetInMemoryDbContext("AddSeason_InactiveDuplicateName");
             var inactiveSeason = new Season { Name = "2026", IsActive = false };
             context.Seasons.Add(inactiveSeason);
             await context.SaveChangesAsync();
@@ -107,12 +107,12 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new SeasonRepository(context);
 
             // Act
-            var result = await repo.AddAsync(new Season { Name = "2026" });
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.AddAsync(new Season { Name = "2026" }));
 
             // Assert
-            result.Id.Should().Be(inactiveSeason.Id);
-            result.IsActive.Should().BeTrue();
-            context.Seasons.Should().ContainSingle(s => s.Name == "2026");
+            exception.Message.Should().Be("season name already taken");
+            inactiveSeason.IsActive.Should().BeFalse();
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 async () => await repo.UpdateAsync(second.Id, "2026", null));
 
             // Assert
-            exception.Message.Should().Be("A season with the name '2026' already exists.");
+            exception.Message.Should().Be("season name already taken");
         }
 
         [Fact]

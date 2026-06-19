@@ -12,7 +12,12 @@ const mockSeasons: SeasonDto[] = [
     isActive: true,
     budgets: [{ id: 10 } as NonNullable<SeasonDto['budgets']>[number]],
   },
-  { id: 3, name: '2024', isActive: false, budgets: [] },
+  {
+    id: 3,
+    name: '2024',
+    isActive: false,
+    budgets: [{ id: 20 } as NonNullable<SeasonDto['budgets']>[number]],
+  },
 ];
 
 describe('SeasonListComponent', () => {
@@ -39,7 +44,9 @@ describe('SeasonListComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('2025');
     expect(fixture.nativeElement.textContent).toContain('2026');
-    expect(fixture.nativeElement.textContent).not.toContain('2024');
+    expect(fixture.nativeElement.textContent).toContain('2024');
+    expect(fixture.nativeElement.textContent).toContain('Inactive Seasons');
+    expect(fixture.nativeElement.textContent).toContain('Reactivate');
     expect(fixture.nativeElement.textContent).toContain('1');
   });
 
@@ -68,5 +75,20 @@ describe('SeasonListComponent', () => {
     component.requestDelete(mockSeasons[0]);
 
     expect(deleteSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('should expose active and inactive seasons separately', () => {
+    fixture.componentRef.setInput('seasons', mockSeasons);
+
+    expect(component.visibleSeasons.map((season) => season.id)).toEqual([1, 2]);
+    expect(component.inactiveSeasons.map((season) => season.id)).toEqual([3]);
+  });
+
+  it('should emit reactivate event for inactive season', () => {
+    const reactivateSpy = vi.spyOn(component.reactivateSeason, 'emit');
+
+    component.requestReactivate(mockSeasons[2]);
+
+    expect(reactivateSpy).toHaveBeenCalledWith(3);
   });
 });

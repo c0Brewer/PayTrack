@@ -50,20 +50,7 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (existingSeason is not null)
             {
-                if (existingSeason.IsActive)
-                {
-                    throw new InvalidStateException($"A season with the name '{season.Name}' already exists.");
-                }
-
-                existingSeason.IsActive = true;
-                int reactivationRes = await this.context.SaveChangesAsync();
-
-                if (reactivationRes != 1)
-                {
-                    throw new InternalErrorException($"Reactivating Season did not end as expected. Saved {reactivationRes} records.");
-                }
-
-                return existingSeason;
+                throw new InvalidStateException("season name already taken");
             }
 
             this.context.Seasons.Add(season);
@@ -91,7 +78,7 @@ namespace PayTrack.Data.Repositories.Implementation
                 var duplicateNameExists = await this.context.Seasons.AnyAsync(s => s.Id != id && s.Name == name);
                 if (duplicateNameExists)
                 {
-                    throw new InvalidStateException($"A season with the name '{name}' already exists.");
+                    throw new InvalidStateException("season name already taken");
                 }
 
                 season.Name = name;
