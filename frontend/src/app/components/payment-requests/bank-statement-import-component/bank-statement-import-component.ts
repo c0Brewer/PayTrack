@@ -283,8 +283,8 @@ export class BankStatementImportComponent {
     this.sortMode.update((m) => (m === 'score' ? 'original' : 'score'));
   }
 
-  getStatusLabel(status: TransactionStatus | null | undefined): string {
-    if (status == null) {
+  getStatusLabel(status: TransactionStatus | undefined): string {
+    if (status === undefined) {
       return 'Unknown';
     }
 

@@ -73,6 +73,15 @@ namespace PayTrack.Application.Services.Model
         Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment);
 
         /// <summary>
+        /// Deletes a PaymentRequestByTeam. Only allowed when Status is Submitted.
+        /// Sends a deletion notification to the assigned user if configured.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByTeam to delete.</param>
+        /// <param name="reason">Optional reason provided by the admin.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeletePaymentRequestByTeamAsync(int id, string? reason = null);
+
+        /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.
         /// </summary>
         /// <param name="query">The query submitted by the client.</param>

@@ -11,6 +11,12 @@ RUN dotnet publish ./PayTrack/PayTrack.csproj -c Release -o /app/publish /p:UseA
 FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /app
 
+RUN apk add --no-cache \
+    poppler-utils \
+    tesseract-ocr \
+    tesseract-ocr-data-deu \
+    tesseract-ocr-data-eng
+
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 

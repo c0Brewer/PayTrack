@@ -191,10 +191,6 @@ export class AdminInvoicesOverviewComponent implements OnInit {
       return;
     }
 
-    if (!window.confirm(`Delete invoice ${invoice.invoiceNumber}?`)) {
-      return;
-    }
-
     this.duplicateActionInvoiceId = invoice.id;
 
     this.paymentRequestService.deletePaymentRequestByUser(invoice.id).subscribe({
