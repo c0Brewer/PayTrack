@@ -12,7 +12,6 @@ import {
 import { Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 
-import { DisableOfflineActionDirective } from '../../../../directives/disable-offline-action.directive';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
@@ -52,13 +51,7 @@ function maxDateValidator(maxDate: Date): ValidatorFn {
 @Component({
   selector: 'app-receipt-submit-component',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    BoxComponent,
-    DuplicateListModalComponent,
-    DisableOfflineActionDirective,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, BoxComponent, DuplicateListModalComponent],
   templateUrl: './submission-component.html',
   styleUrl: './submission-component.scss',
 })
