@@ -454,6 +454,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.ngZone.run(() => {
             if (duplicates.length > 0) {
               this.duplicateCandidates = duplicates;
+              this.duplicateSourceInvoice = this.buildDuplicateSourceInvoice(payload);
               this.pendingSubmissionPayload = payload;
               this.pendingSubmissionFile = this.selectedFile;
               this.isDuplicateModalOpen = true;
@@ -478,6 +479,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   onDuplicateModalCancel(): void {
     this.isDuplicateModalOpen = false;
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;
   }
@@ -495,6 +497,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     this.isDuplicateModalOpen = false;
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;
     this.isSubmitting = true;
@@ -582,6 +585,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.selectedFile = null;
     this.selectedFileName = '';
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.isDuplicateModalOpen = false;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;

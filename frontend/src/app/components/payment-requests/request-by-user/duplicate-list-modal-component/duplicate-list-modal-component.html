@@ -118,53 +118,6 @@
           </div>
 
           @if (mode === 'review') {
-            @if (invoicePendingDelete?.id === duplicate.paymentRequestByUser.id) {
-              <div class="duplicate-list__confirm-delete">
-                <p>
-                  Delete invoice <strong>{{ duplicate.paymentRequestByUser.invoiceNumber }}</strong
-                  >? This action cannot be undone.
-                </p>
-                <div class="duplicate-list__actions">
-                  <button type="button" class="duplicate-list__button" (click)="onCancelDeleteInvoice()">
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    class="duplicate-list__button duplicate-list__button--danger"
-                    [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
-                    (click)="onConfirmDeleteInvoice()"
-                  >
-                    Delete invoice
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <div class="duplicate-list__actions">
-                <button
-                  type="button"
-                  class="duplicate-list__button"
-                  (click)="onOpenDetail(duplicate.paymentRequestByUser)"
-                >
-                  View
-                </button>
-                <button
-                  type="button"
-                  class="duplicate-list__button"
-                  [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
-                  (click)="onDismissDuplicate(duplicate)"
-                >
-                  Dismiss warning
-                </button>
-                <button
-                  type="button"
-                  class="duplicate-list__button duplicate-list__button--danger"
-                  [disabled]="actionInvoiceId === duplicate.paymentRequestByUser.id"
-                  (click)="onDeleteInvoice(duplicate.paymentRequestByUser)"
-                >
-                  Delete invoice
-                </button>
-              </div>
-            }
             <div class="duplicate-list__actions">
               <button
                 type="button"

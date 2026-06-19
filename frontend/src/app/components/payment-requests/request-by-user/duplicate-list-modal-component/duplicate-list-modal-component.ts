@@ -48,10 +48,7 @@ export class DuplicateListModalComponent {
   deleteConfirmationDuplicateId: number | null = null;
   pendingDeleteInvoice: PaymentRequestByUserDto | null = null;
 
-  invoicePendingDelete: PaymentRequestByUserDto | null = null;
-
   onClose(): void {
-    this.invoicePendingDelete = null;
     this.resetInteractionState();
     this.closeModal.emit();
   }
@@ -83,21 +80,6 @@ export class DuplicateListModalComponent {
       this.deleteInvoice.emit(this.pendingDeleteInvoice);
       this.onCancelDeleteConfirmation();
     }
-  onDeleteInvoice(invoice: PaymentRequestByUserDto): void {
-    this.invoicePendingDelete = invoice;
-  }
-
-  onCancelDeleteInvoice(): void {
-    this.invoicePendingDelete = null;
-  }
-
-  onConfirmDeleteInvoice(): void {
-    if (!this.invoicePendingDelete) {
-      return;
-    }
-
-    this.deleteInvoice.emit(this.invoicePendingDelete);
-    this.invoicePendingDelete = null;
   }
 
   onDismissDuplicate(duplicate: DuplicatePaymentRequestByUserDto): void {
