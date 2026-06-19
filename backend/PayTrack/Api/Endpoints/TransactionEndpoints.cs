@@ -90,8 +90,12 @@ namespace PayTrack.Api.Endpoints
             /*
              * Bankstatement Matching
              */
-            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches);
-            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches);
+            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }
