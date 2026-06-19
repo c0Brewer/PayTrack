@@ -44,7 +44,7 @@ namespace PayTrack.Api.Middleware
             }
             else
             {
-                this.logger.LogError(exception, "Exception occured");
+                this.logger.LogError(exception, "Exception occurred");
             }
 
             httpContext.Response.StatusCode = problem.Status ?? 500;
