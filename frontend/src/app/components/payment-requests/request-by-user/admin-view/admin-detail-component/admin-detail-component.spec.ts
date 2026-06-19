@@ -7,6 +7,7 @@ import { BudgetService } from '../../../../../services/budget/budget-service';
 import { ExternalNotificationService } from '../../../../../services/external-notification/external-notification-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { RequestDetailComponent } from './admin-detail-component';
@@ -32,6 +33,10 @@ describe('RequestDetailComponent', () => {
   const notificationMock = {
     showError: vi.fn(),
     showSuccess: vi.fn(),
+  };
+
+  const statusRefreshMock = {
+    requestRefresh: vi.fn(),
   };
 
   const externalNotificationMock = {
@@ -80,6 +85,7 @@ describe('RequestDetailComponent', () => {
         { provide: BudgetService, useValue: budgetServiceMock },
         { provide: ExternalNotificationService, useValue: externalNotificationMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: PaymentRequestStatusRefreshService, useValue: statusRefreshMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -407,23 +413,7 @@ describe('RequestDetailComponent', () => {
     expect(message).toContain('100');
   });
 
-  it('opens the email notification modal before request changes when email is selected', () => {
-    component.invoice = mockInvoice;
-
-    component.onRequestChanges({
-      reason: 'Please upload a clearer receipt',
-      contactMethod: 'email',
-    });
-
-    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
-    expect(component.modalType).toBe('email');
-    expect(component.pendingChangeRequest).toEqual({
-      reason: 'Please upload a clearer receipt',
-    });
-    expect(component.notificationMessage).toContain('Please upload a clearer receipt');
-  });
-
-  it('requests changes after the selected notification was sent', () => {
+  it('requests changes before opening the email notification modal', () => {
     const reloadedInvoice = {
       ...mockInvoice,
       status: TransactionStatus.ChangesRequested,
@@ -436,29 +426,56 @@ describe('RequestDetailComponent', () => {
       reason: 'Please upload a clearer receipt',
       contactMethod: 'email',
     });
-    component.onNotificationSent();
 
     expect(serviceMock.requestChangesForPaymentRequestByUser).toHaveBeenCalledWith(7, {
       reason: 'Please upload a clearer receipt',
     });
-    expect(component.modalType).toBeNull();
-    expect(component.pendingChangeRequest).toBeNull();
+    expect(component.modalType).toBe('email');
+    expect(component.pendingChangeRequest).toEqual({
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.notificationMessage).toContain('Please upload a clearer receipt');
   });
 
-  it('opens the slack notification modal before request changes when slack is selected', () => {
+  it('does not open the notification modal when request changes fails', () => {
     component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(
+      throwError(() => new Error('status failed')),
+    );
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    expect(component.modalType).toBeNull();
+    expect(component.pendingChangeRequest).toBeNull();
+    expect(notificationMock.showError).toHaveBeenCalledWith(
+      'Could not request changes: status failed',
+    );
+  });
+
+  it('opens the slack notification modal after request changes succeeds', () => {
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
 
     component.onRequestChanges({
       reason: 'Please upload a clearer receipt',
       contactMethod: 'slack',
     });
 
-    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
+    expect(serviceMock.requestChangesForPaymentRequestByUser).toHaveBeenCalledWith(7, {
+      reason: 'Please upload a clearer receipt',
+    });
     expect(component.modalType).toBe('slack');
   });
 
   it('clears pending request when the notification modal is closed', () => {
     component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
     component.onRequestChanges({
       reason: 'Please upload a clearer receipt',
       contactMethod: 'email',
@@ -468,7 +485,6 @@ describe('RequestDetailComponent', () => {
 
     expect(component.modalType).toBeNull();
     expect(component.pendingChangeRequest).toBeNull();
-    expect(serviceMock.requestChangesForPaymentRequestByUser).not.toHaveBeenCalled();
   });
 
   it('does not open a notification modal after request changes succeeds without contact', () => {

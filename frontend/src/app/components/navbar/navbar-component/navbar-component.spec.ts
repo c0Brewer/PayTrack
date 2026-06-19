@@ -5,6 +5,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { Role, TransactionStatus, UserDto } from '../../../types/exporter';
 
 import { NavbarComponent } from './navbar-component';
@@ -24,6 +25,7 @@ describe('NavbarComponent', () => {
     currentUser$: BehaviorSubject<UserDto | null>;
     logout: ReturnType<typeof vi.fn>;
   };
+  let statusRefreshService: PaymentRequestStatusRefreshService;
 
   beforeEach(async () => {
     authServiceMock = {
@@ -52,6 +54,7 @@ describe('NavbarComponent', () => {
 
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;
+    statusRefreshService = TestBed.inject(PaymentRequestStatusRefreshService);
     await fixture.whenStable();
   });
 
@@ -133,5 +136,29 @@ describe('NavbarComponent', () => {
 
     const myInvoicesLink = fixture.nativeElement.querySelector('a[href="/my-invoices"]');
     expect(myInvoicesLink.querySelector('.nav-badge').textContent.trim()).toBe('3');
+  });
+
+  it('should reload requested changes count when a status refresh is requested', async () => {
+    authServiceMock.currentUser$.next({
+      id: 7,
+      name: 'Test User',
+      email: 'test@example.com',
+      isActive: true,
+      role: Role.REGULAR_USER,
+      profilePictureUrl: '',
+      team: { id: 1, name: 'Team' },
+      bankInformationSkipped: false,
+      hasBankInformation: false,
+      bankAccounts: [],
+    });
+    paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ totalCount: 4 }));
+    fixture.detectChanges();
+
+    statusRefreshService.requestRefresh();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const myInvoicesLink = fixture.nativeElement.querySelector('a[href="/my-invoices"]');
+    expect(myInvoicesLink.querySelector('.nav-badge').textContent.trim()).toBe('4');
   });
 });

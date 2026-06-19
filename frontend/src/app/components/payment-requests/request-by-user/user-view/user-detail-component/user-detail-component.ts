@@ -29,7 +29,7 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
   loading: boolean = true;
 
   get latestChangeRequestMessage(): string | null {
-    if (this.invoice?.status !== TransactionStatus.ChangesRequested) {
+    if (!this.invoice || this.invoice.status !== TransactionStatus.ChangesRequested) {
       return null;
     }
 
@@ -42,6 +42,10 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
       )[0];
 
     return latestChangeRequest?.comment?.trim() ?? null;
+  }
+
+  get canEditRequestedChanges(): boolean {
+    return this.invoice?.status === TransactionStatus.ChangesRequested;
   }
 
   ngOnInit(): void {

@@ -7,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
@@ -58,6 +59,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   constructor(
     private readonly fb: FormBuilder,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
+    private readonly statusRefreshService: PaymentRequestStatusRefreshService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
@@ -299,11 +301,11 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload: CreatePaymentRequestByUserDto = {
+    const payload = {
       invoiceNumber: v.invoiceNumber,
       comment: v.comment,
       payoutType: payoutType,
-      bankAccountId: Number(v.bankAccountId),
+      ...(payoutType === PayoutType.User ? { bankAccountId: Number(v.bankAccountId) } : {}),
       receipt: '', // ignored — real file is passed separately below
       transaction: {
         teamId: Number(v.teamId),
@@ -311,7 +313,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         purposeOfPayment: v.purposeOfPayment,
         paidAt: new Date(v.paidAt).toISOString(),
       },
-    };
+    } as CreatePaymentRequestByUserDto;
 
     if (this.isEditMode) {
       this.resubmitPaymentRequest(payload);
@@ -357,6 +359,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.notificationService.showSuccess('Invoice updated and returned for review.');
+          this.statusRefreshService.requestRefresh();
           this.isSubmitting = false;
           this.router.navigate(['/my-invoices', this.editingInvoiceId]);
         },

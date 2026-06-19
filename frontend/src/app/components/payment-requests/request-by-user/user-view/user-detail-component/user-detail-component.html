@@ -1,9 +1,11 @@
-@if (latestChangeRequestMessage) {
+@if (canEditRequestedChanges) {
   <section class="change-request-message" aria-labelledby="change-request-title">
     <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
     <div>
       <h2 id="change-request-title">Changes requested</h2>
-      <p>{{ latestChangeRequestMessage }}</p>
+      @if (latestChangeRequestMessage) {
+        <p>{{ latestChangeRequestMessage }}</p>
+      }
     </div>
   </section>
   <div class="change-request-actions">

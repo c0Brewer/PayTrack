@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BudgetService } from '../../../../../services/budget/budget-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import {
   ApprovePaymentRequestByUserDto,
   BudgetDto,
@@ -39,6 +40,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
     private readonly service: PaymentRequestByUserService,
     private readonly budgetService: BudgetService,
     private readonly notificationService: NotificationService,
+    private readonly statusRefreshService: PaymentRequestStatusRefreshService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -108,6 +110,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
         this.loadInvoice(this.invoice!.id);
         this.markingPaid = false;
         this.canUndoLastStatusChange = true;
+        this.statusRefreshService.requestRefresh();
         this.notificationService.showSuccess('Invoice marked as paid');
         this.cdr.detectChanges();
       },
@@ -134,25 +137,23 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   onRequestChanges(requestChangesRequest: RequestChangesSubmission): void {
     const { contactMethod, ...request } = requestChangesRequest;
 
-    if (contactMethod !== 'none') {
-      this.openChangeRequestNotification(contactMethod, request);
-      return;
-    }
-
-    this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
-      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
+    this.runStatusAction(
+      'requestChanges',
+      'Changes requested',
+      'Could not request changes: ',
+      () => this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
+      () => {
+        if (contactMethod !== 'none') {
+          this.openChangeRequestNotification(contactMethod, request);
+        }
+      },
     );
   }
 
   onNotificationSent(): void {
-    if (!this.pendingChangeRequest) return;
-
-    const request = this.pendingChangeRequest;
     this.pendingChangeRequest = null;
     this.modalType = null;
-    this.runStatusAction('requestChanges', 'Changes requested', 'Could not request changes: ', () =>
-      this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
-    );
+    this.changeRequestNotificationReason = null;
   }
 
   onNotificationModalClosed(): void {
@@ -170,6 +171,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
         this.loadInvoice(this.invoice!.id);
         this.undoingStatusChange = false;
         this.canUndoLastStatusChange = false;
+        this.statusRefreshService.requestRefresh();
         this.notificationService.showSuccess('Status change undone');
         this.cdr.detectChanges();
       },
@@ -232,6 +234,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
         this.loadInvoice(this.invoice!.id);
         this.statusActionPending = null;
         this.canUndoLastStatusChange = true;
+        this.statusRefreshService.requestRefresh();
         this.notificationService.showSuccess(successMessage);
         afterSuccess?.();
         this.cdr.detectChanges();

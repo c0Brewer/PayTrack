@@ -165,6 +165,24 @@ describe('MyInvoiceDetailComponent', () => {
     expect(message.textContent).toContain('Please upload the complete receipt');
   });
 
+  it('should render edit action for requested changes without a message', () => {
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(
+      of({
+        ...mockInvoice,
+        status: TransactionStatus.ChangesRequested,
+        statusHistory: [],
+      } as unknown as PaymentRequestByUserDto),
+    );
+
+    fixture.detectChanges();
+
+    const action = fixture.nativeElement.querySelector('.change-request-actions button');
+    const message = fixture.nativeElement.querySelector('.change-request-message p');
+    expect(action).not.toBeNull();
+    expect(action.textContent).toContain('Edit Invoice');
+    expect(message).toBeNull();
+  });
+
   it('should show error and clear loading when invoice load fails', () => {
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(
       throwError(() => new Error('Not found')),

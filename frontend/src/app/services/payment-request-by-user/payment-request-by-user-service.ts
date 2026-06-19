@@ -93,7 +93,9 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    if (updateRequest.bankAccountId && updateRequest.bankAccountId > 0) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
     fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
@@ -128,7 +130,7 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    if (updateRequest.bankAccountId != null) {
+    if (updateRequest.bankAccountId && updateRequest.bankAccountId > 0) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));
     }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));

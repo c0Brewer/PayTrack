@@ -8,6 +8,7 @@ import { of, throwError } from 'rxjs';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { PaymentRequestByUserDto, PayoutType, TransactionStatus } from '../../../../types/exporter';
 
@@ -34,6 +35,10 @@ describe('ReceiptSubmitComponent', () => {
   const notificationMock = {
     showSuccess: vi.fn(),
     showError: vi.fn(),
+  };
+
+  const statusRefreshMock = {
+    requestRefresh: vi.fn(),
   };
 
   const routerMock = {
@@ -69,6 +74,7 @@ describe('ReceiptSubmitComponent', () => {
     bankAccountServiceMock.getBankAccounts.mockReset();
     notificationMock.showSuccess.mockReset();
     notificationMock.showError.mockReset();
+    statusRefreshMock.requestRefresh.mockReset();
     routerMock.navigate.mockReset();
 
     teamServiceMock.getTeams.mockReturnValue(of({ items: [] }));
@@ -83,6 +89,7 @@ describe('ReceiptSubmitComponent', () => {
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: PaymentRequestStatusRefreshService, useValue: statusRefreshMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
       ],
@@ -503,6 +510,28 @@ describe('ReceiptSubmitComponent', () => {
       null,
     );
     expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 7]);
+    expect(statusRefreshMock.requestRefresh).toHaveBeenCalledOnce();
+  });
+
+  it('should resubmit an external edited invoice without a bank account id', () => {
+    component.ngOnInit();
+    component.isEditMode = true;
+    component.editingInvoiceId = 7;
+    component.form.get('receipt')?.clearValidators();
+    component.form.get('receipt')?.updateValueAndValidity();
+    setValidFormValues();
+    component.form.patchValue({
+      payoutType: PayoutType.External,
+      bankAccountId: null,
+    });
+    component.form.get('receipt')?.setValue(null);
+    paymentServiceMock.resubmitPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    const payload = paymentServiceMock.resubmitPaymentRequestByUser.mock.calls[0][1];
+    expect(payload.payoutType).toBe(PayoutType.External);
+    expect(payload).not.toHaveProperty('bankAccountId');
   });
 
   it('should navigate back to invoice detail when editing is cancelled', () => {

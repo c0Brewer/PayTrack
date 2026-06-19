@@ -5,7 +5,11 @@ import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { client } from '../../client';
-import { CreatePaymentRequestByUserDto, PaymentRequestByUserDto } from '../../types/exporter';
+import {
+  CreatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
+  PayoutType,
+} from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
 import { PaymentRequestByUserService } from './payment-request-by-user-service';
@@ -103,7 +107,7 @@ describe('PaymentRequestByUserService', () => {
     );
   });
 
-  it('should resubmit an edited payment request via fetch', async () => {
+  it('should resubmit an edited payment request via fetch without invalid bank account id', async () => {
     const dto = {
       invoiceNumber: 'INV-1',
       comment: 'corrected',
@@ -135,7 +139,36 @@ describe('PaymentRequestByUserService', () => {
         headers: { Authorization: 'Bearer test-token' },
       }),
     );
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
+    expect(request.body).toBeInstanceOf(FormData);
+    expect((request.body as FormData).has('bankAccountId')).toBe(false);
     expect(result).toEqual(apiResponse);
+  });
+
+  it('should resubmit an edited user payout payment request with bank account id', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: 'corrected',
+      receipt: '',
+      payoutType: PayoutType.User,
+      bankAccountId: 12,
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'corrected purpose',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+    const apiResponse = { id: 7 } as PaymentRequestByUserDto;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    await firstValueFrom(service.resubmitPaymentRequestByUser(7, dto, null));
+
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
+    expect((request.body as FormData).get('bankAccountId')).toBe('12');
   });
 
   // -----------------------
