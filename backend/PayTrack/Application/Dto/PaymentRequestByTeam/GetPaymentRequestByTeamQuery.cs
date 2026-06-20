@@ -12,6 +12,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
     public class GetPaymentRequestByTeamQuery : GetTransactionQuery
     {
         /// <summary>
+        /// Cost centre of the assigned budget to query.
+        /// </summary>
+        public int? CostCentreId { get; init; }
+
+        /// <summary>
         /// Whether to include only statuses visible in the payment requests table.
         /// </summary>
         public bool? VisibleStatusesOnly { get; init; }

@@ -67,11 +67,6 @@ namespace PayTrack.Application.Dto.Transaction
         public int? TeamId { get; init; }
 
         /// <summary>
-        /// Cost centre to query.
-        /// </summary>
-        public int? CostCentreId { get; init; }
-
-        /// <summary>
         /// PaymentDirection to query.
         /// </summary>
         public PaymentDirection? PaymentDirection { get; init; }

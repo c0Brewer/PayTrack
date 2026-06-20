@@ -10,6 +10,11 @@ namespace PayTrack.Application.Dto.Transaction
     public class GetFinancialExportQuery : GetTransactionQuery
     {
         /// <summary>
+        /// Cost centre of the assigned budget to query for payment request exports.
+        /// </summary>
+        public int? CostCentreId { get; init; }
+
+        /// <summary>
         /// Requested financial export format.
         /// </summary>
         public FinancialExportFormat? Format { get; init; }

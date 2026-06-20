@@ -64,6 +64,11 @@ namespace PayTrack.Data.Repositories.Implementation
                 dbQuery = dbQuery.Where(t => t.BankAccountId == query.BankAccountId.Value);
             }
 
+            if (query?.CostCentreId.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.Budget != null && t.Budget.CostCentreId == query.CostCentreId.Value);
+            }
+
             // Calculate total count before limit / offset
             var totalCount = await dbQuery.CountAsync();
 
@@ -97,6 +102,11 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.VisibleStatusesOnly == true && !query.Status.HasValue)
             {
                 dbQuery = dbQuery.Where(t => t.Status == TransactionStatus.Submitted || t.Status == TransactionStatus.Paid);
+            }
+
+            if (query?.CostCentreId.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(t => t.Budget != null && t.Budget.CostCentreId == query.CostCentreId.Value);
             }
 
             // Calculate total count before limit / offset
@@ -461,11 +471,6 @@ namespace PayTrack.Data.Repositories.Implementation
             if (query?.TeamId.HasValue == true)
             {
                 dbQuery = dbQuery.Where(t => t.TeamId == query.TeamId.Value);
-            }
-
-            if (query?.CostCentreId.HasValue == true)
-            {
-                dbQuery = dbQuery.Where(t => t.Budget != null && t.Budget.CostCentreId == query.CostCentreId.Value);
             }
 
             if (query?.PaymentDirection.HasValue == true)

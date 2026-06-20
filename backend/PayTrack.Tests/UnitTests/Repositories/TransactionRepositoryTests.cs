@@ -905,7 +905,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task GetAllTransactions_ShouldFilterByCostCentre()
+        public async Task GetAllPaymentRequestsByUser_ShouldFilterByCostCentre()
         {
             await using var context = GetInMemoryDbContext("FilterByCostCentre");
 
@@ -974,7 +974,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
 
-            var (result, count) = await repo.GetAllAsync(new Application.Dto.Transaction.GetTransactionQuery
+            var (result, count) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
             {
                 CostCentreId = 1,
                 IncludeBudget = true,

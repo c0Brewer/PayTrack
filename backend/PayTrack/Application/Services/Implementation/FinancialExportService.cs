@@ -67,7 +67,6 @@ namespace PayTrack.Application.Services.Implementation
                 BankAccountId = query.BankAccountId,
                 Status = query.Status,
                 TeamId = query.TeamId,
-                CostCentreId = query.CostCentreId,
                 PaymentDirection = query.PaymentDirection,
                 MinCreatedAt = query.MinCreatedAt,
                 MaxCreatedAt = query.MaxCreatedAt,
@@ -82,7 +81,7 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static GetPaymentRequestByUserQuery CreateSubmittedInvoicesExportQuery(GetTransactionQuery query)
+        private static GetPaymentRequestByUserQuery CreateSubmittedInvoicesExportQuery(GetFinancialExportQuery query)
         {
             return new GetPaymentRequestByUserQuery
             {
@@ -112,7 +111,7 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static GetPaymentRequestByTeamQuery CreatePaymentRequestsExportQuery(GetTransactionQuery query)
+        private static GetPaymentRequestByTeamQuery CreatePaymentRequestsExportQuery(GetFinancialExportQuery query)
         {
             return new GetPaymentRequestByTeamQuery
             {
@@ -489,13 +488,13 @@ namespace PayTrack.Application.Services.Implementation
             return transactions;
         }
 
-        private async Task<IReadOnlyCollection<Transaction>> GetSubmittedInvoicesForExportAsync(GetTransactionQuery query)
+        private async Task<IReadOnlyCollection<Transaction>> GetSubmittedInvoicesForExportAsync(GetFinancialExportQuery query)
         {
             var (transactions, _) = await this.transactionRepository.GetAllAsync(CreateSubmittedInvoicesExportQuery(query));
             return transactions.Cast<Transaction>().ToList();
         }
 
-        private async Task<IReadOnlyCollection<Transaction>> GetPaymentRequestsForExportAsync(GetTransactionQuery query)
+        private async Task<IReadOnlyCollection<Transaction>> GetPaymentRequestsForExportAsync(GetFinancialExportQuery query)
         {
             var (transactions, _) = await this.transactionRepository.GetAllAsync(CreatePaymentRequestsExportQuery(query));
             return transactions

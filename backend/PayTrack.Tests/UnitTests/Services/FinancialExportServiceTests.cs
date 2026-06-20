@@ -69,7 +69,6 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Format = FinancialExportFormat.Csv,
                 TeamId = 1,
-                CostCentreId = 1,
                 Limit = 10,
                 Offset = 20,
             });
@@ -77,7 +76,6 @@ namespace PayTrack.Tests.UnitTests.Services
             result.ContentType.Should().Be("text/csv; charset=utf-8");
             result.FileName.Should().EndWith(".csv");
             capturedQuery.TeamId.Should().Be(1);
-            capturedQuery.CostCentreId.Should().Be(1);
             capturedQuery.IncludeTeam.Should().BeTrue();
             capturedQuery.IncludeBudget.Should().BeTrue();
             capturedQuery.Limit.Should().BeNull();
@@ -138,6 +136,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 PayoutType = PayoutType.AlreadyPaid,
                 BankAccountId = 12,
                 TeamId = 2,
+                CostCentreId = 3,
                 UserId = 5,
                 SortBy = "InvoiceNumber",
                 SortDirection = "Asc",
@@ -151,6 +150,7 @@ namespace PayTrack.Tests.UnitTests.Services
             capturedQuery.PayoutType.Should().Be(PayoutType.AlreadyPaid);
             capturedQuery.BankAccountId.Should().Be(12);
             capturedQuery.TeamId.Should().Be(2);
+            capturedQuery.CostCentreId.Should().Be(3);
             capturedQuery.UserId.Should().Be(5);
             capturedQuery.SortBy.Should().Be("InvoiceNumber");
             capturedQuery.SortDirection.Should().Be("Asc");
@@ -247,6 +247,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 Format = FinancialExportFormat.Csv,
                 RequestById = 8,
                 TeamId = 1,
+                CostCentreId = 4,
                 SortBy = "DueDate",
                 SortDirection = "Desc",
             });
@@ -255,6 +256,7 @@ namespace PayTrack.Tests.UnitTests.Services
             result.FileName.Should().EndWith(".csv");
             capturedQuery.RequestById.Should().Be(8);
             capturedQuery.TeamId.Should().Be(1);
+            capturedQuery.CostCentreId.Should().Be(4);
             capturedQuery.Status.Should().BeNull();
             capturedQuery.SortBy.Should().Be("DueDate");
             capturedQuery.SortDirection.Should().Be("Desc");
