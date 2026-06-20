@@ -28,6 +28,8 @@ type BankAccountForm = FormGroup<{
   styleUrl: './bank-account-editor.scss',
 })
 export class BankAccountEditorComponent implements OnChanges {
+  private static readonly invalidIbanMessage = 'IBAN is invalid.';
+
   @Input() public title = 'Edit Bank Account';
   @Input() public submitLabel = 'Save';
   @Input() public initialValue: BankAccountDto | null = null;
@@ -37,7 +39,6 @@ export class BankAccountEditorComponent implements OnChanges {
   @Output() public readonly submitForm = new EventEmitter<CreateBankAccountRequestDto>();
 
   public readonly form: BankAccountForm;
-  public validationMessage = '';
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.nonNullable.group({
@@ -58,10 +59,6 @@ export class BankAccountEditorComponent implements OnChanges {
           Validators.pattern(/^[A-Za-z]{4}[A-Za-z]{2}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?$/),
         ],
       ],
-    });
-
-    this.form.valueChanges.subscribe(() => {
-      this.validationMessage = '';
     });
   }
 
@@ -88,7 +85,6 @@ export class BankAccountEditorComponent implements OnChanges {
 
   public onSubmit(): void {
     if (this.form.invalid) {
-      this.validationMessage = 'Please enter valid values.';
       this.form.markAllAsTouched();
       return;
     }
@@ -106,6 +102,22 @@ export class BankAccountEditorComponent implements OnChanges {
 
     input.value = formattedIban;
     this.form.controls.iban.setValue(formattedIban, { emitEvent: false });
+  }
+
+  public get topLevelErrorMessage(): string {
+    return this.errorMessage === BankAccountEditorComponent.invalidIbanMessage ? '' : this.errorMessage;
+  }
+
+  public get ibanErrorMessage(): string {
+    if (this.errorMessage === BankAccountEditorComponent.invalidIbanMessage) {
+      return this.errorMessage;
+    }
+
+    if (this.form.controls.iban.touched && this.form.controls.iban.invalid) {
+      return 'Use 15-34 characters.';
+    }
+
+    return '';
   }
 
   private formatIban(value: string): string {
