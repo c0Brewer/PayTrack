@@ -71,7 +71,8 @@ namespace PayTrack.Api.Mapper
                 paymentRequestByUser.PayoutType,
                 paymentRequestByUser.HasPotentialDuplicate,
                 bankAccountDto,
-                paymentRequestByUser.CreditorName);
+                paymentRequestByUser.CreditorName,
+                paymentRequestByUser.DueDate);
         }
 
         /// <summary>

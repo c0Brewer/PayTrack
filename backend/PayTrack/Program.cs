@@ -49,6 +49,8 @@ builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<IGoogleDriveArchiveClient, GoogleDriveArchiveClient>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+builder.Services.AddScoped<IReceiptExtractionService, ReceiptExtractionService>();
+builder.Services.AddSingleton<IReceiptParser, ReceiptParser>();
 
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
@@ -70,6 +72,7 @@ builder.Services.AddHttpClient<PushNotificationService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 builder.Services.AddHostedService<PaymentReminderHostedService>();
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -80,6 +83,7 @@ builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 builder.Services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
@@ -198,6 +202,7 @@ apiV1.MapBankAccountEndpoints();
 apiV1.MapBudgetEndpoints();
 apiV1.MapSeasonEndpoints();
 apiV1.MapNotificationEndpoints();
+apiV1.MapAdminSettingsEndpoints();
 
 if (hasFrontendBundle)
 {

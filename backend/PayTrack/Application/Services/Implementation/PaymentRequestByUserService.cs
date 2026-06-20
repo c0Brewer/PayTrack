@@ -60,7 +60,8 @@ namespace PayTrack.Application.Services.Implementation
             string? comment,
             PayoutType payoutType,
             int? bankAccountId,
-            string? creditorName)
+            string? creditorName,
+            DateTime? dueDate)
         {
             var team = await this.teamService.GetTeamByIdAsync(teamId) ?? throw new NotFoundException("Team could not be found");
 
@@ -94,6 +95,11 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException("Creditor name is required when the payout type is NotYetPaid");
             }
 
+            if (payoutType == PayoutType.NotYetPaid && !dueDate.HasValue)
+            {
+                throw new InvalidStateException("Due date is required when the payout type is NotYetPaid");
+            }
+
             var isAlreadyPaid = payoutType == PayoutType.AlreadyPaid;
 
             var paymentRequest = new PaymentRequestByUser
@@ -118,6 +124,7 @@ namespace PayTrack.Application.Services.Implementation
                 PayoutType = payoutType,
                 BankAccountId = bankAccountId,
                 CreditorName = payoutType == PayoutType.NotYetPaid ? creditorName : null,
+                DueDate = payoutType == PayoutType.NotYetPaid ? dueDate?.ToUniversalTime() : null,
                 StatusHistory = isAlreadyPaid
                     ?
                     [

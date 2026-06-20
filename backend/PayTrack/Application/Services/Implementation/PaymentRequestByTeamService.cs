@@ -2,11 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Options;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
-using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -19,6 +17,8 @@ namespace PayTrack.Application.Services.Implementation
         IUserService _userService,
         IBudgetService _budgetService,
         INotificationDispatchService _notifications,
+        ISystemSettingService _systemSettings,
+        ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
         IOptions<PaymentRequestNotificationSettings> _notifSettings,
         ILogger<PaymentRequestByTeamService> _logger,
         IPushNotificationService? _pushNotifications = null) : IPaymentRequestByTeamService
@@ -31,7 +31,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserService userService = _userService;
         private readonly IBudgetService budgetService = _budgetService;
         private readonly INotificationDispatchService notifications = _notifications;
-        private readonly PaymentRequestNotificationSettings notifSettings = _notifSettings.Value;
+        private readonly ISystemSettingService systemSettings = _systemSettings;
         private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
         private readonly IPushNotificationService? pushNotifications = _pushNotifications;
 
@@ -95,9 +95,10 @@ namespace PayTrack.Application.Services.Implementation
 
             var created = await this.repo.AddAsync(paymentRequest);
 
-            var ch = this.notifSettings.OnCreation;
+            var sendCreationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, true);
+            var sendCreationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, false);
 
-            if (ch.SendEmail)
+            if (sendCreationEmail)
             {
                 try
                 {
@@ -119,7 +120,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendCreationSlack)
             {
                 try
                 {
@@ -210,9 +211,10 @@ namespace PayTrack.Application.Services.Implementation
                     Comment = comment,
                 });
 
-            var ch = this.notifSettings.OnConfirmation;
+            var sendConfirmationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, true);
+            var sendConfirmationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, false);
 
-            if (ch.SendEmail)
+            if (sendConfirmationEmail)
             {
                 try
                 {
@@ -234,7 +236,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendConfirmationSlack)
             {
                 try
                 {
@@ -281,9 +283,10 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
-            var ch = this.notifSettings.OnDeletion;
+            var sendDeletionEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, true);
+            var sendDeletionSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, false);
 
-            if (ch.SendEmail)
+            if (sendDeletionEmail)
             {
                 try
                 {
@@ -305,7 +308,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendDeletionSlack)
             {
                 try
                 {

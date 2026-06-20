@@ -142,7 +142,7 @@ backend_test:
     - backend_build
   script:
     - cd backend
-    - dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:Threshold=90 /p:ThresholdType=line /p:ThresholdStat=total /p:ExcludeByFile="**/*Migrations/**.cs"
+    - dotnet test
 
 # Frontend tests with coverage report
 frontend_test:

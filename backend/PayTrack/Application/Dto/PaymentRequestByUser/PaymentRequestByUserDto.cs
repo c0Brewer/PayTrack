@@ -60,5 +60,7 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
 
         BankAccountDto? BankAccount,
 
-        string? CreditorName);
+        string? CreditorName,
+
+        DateTime? DueDate);
 }

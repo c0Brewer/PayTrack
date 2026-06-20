@@ -5,6 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { BudgetDto } from '../../../../types/exporter';
 
 import { CsvBulkImportModalComponent } from './csv-bulk-import-modal';
@@ -30,11 +31,15 @@ describe('CsvBulkImportModalComponent', () => {
 
   const mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
   const mockPaymentRequestByTeamService = { createPaymentRequestByTeam: vi.fn() };
+  const mockSystemSettingService = { getCsvColumnSettings: vi.fn() };
 
   beforeEach(async () => {
     mockNotificationService.showSuccess.mockClear();
     mockNotificationService.showError.mockClear();
     mockPaymentRequestByTeamService.createPaymentRequestByTeam.mockReset().mockReturnValue(of({}));
+    mockSystemSettingService.getCsvColumnSettings
+      .mockReset()
+      .mockReturnValue(of({ nameColumn: 'Name', summeColumn: 'Summe' }));
 
     // Prevent parseCsvFile from running during component creation in most tests.
     // Tests that verify CSV parsing will re-spy individually.
@@ -50,6 +55,7 @@ describe('CsvBulkImportModalComponent', () => {
       providers: [
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: PaymentRequestByTeamService, useValue: mockPaymentRequestByTeamService },
+        { provide: SystemSettingService, useValue: mockSystemSettingService },
       ],
     }).compileComponents();
 
