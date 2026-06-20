@@ -2665,6 +2665,8 @@ export interface components {
             receipt: string;
             payoutType: components["schemas"]["PayoutType"];
             creditorName?: string | null;
+            /** Format: date-time */
+            dueDate?: string | null;
             /** Format: int32 */
             bankAccountId?: number | null;
         };
@@ -2814,6 +2816,8 @@ export interface components {
             hasPotentialDuplicate?: boolean;
             bankAccount?: components["schemas"]["BankAccountDto"];
             creditorName?: string | null;
+            /** Format: date-time */
+            dueDate?: string | null;
         };
         PaymentRequestByUserDtoPaginatedResponse: {
             items: components["schemas"]["PaymentRequestByUserDto"][] | null;
@@ -2840,6 +2844,30 @@ export interface components {
             instance?: string | null;
         } & {
             [key: string]: unknown;
+        };
+        ReceiptExtractionDto: {
+            extractionSucceeded: boolean;
+            message?: string | null;
+            amount: components["schemas"]["NullableDecimalExtractedReceiptFieldDto"];
+            invoiceDate: components["schemas"]["NullableDateTimeExtractedReceiptFieldDto"];
+            invoiceNumber: components["schemas"]["StringExtractedReceiptFieldDto"];
+        };
+        NullableDecimalExtractedReceiptFieldDto: {
+            /** Format: double */
+            value?: number | null;
+            /** Format: double */
+            confidence: number;
+        };
+        NullableDateTimeExtractedReceiptFieldDto: {
+            /** Format: date-time */
+            value?: string | null;
+            /** Format: double */
+            confidence: number;
+        };
+        StringExtractedReceiptFieldDto: {
+            value?: string | null;
+            /** Format: double */
+            confidence: number;
         };
         RequestChangesPaymentRequestByUserDto: {
             reason: string;
