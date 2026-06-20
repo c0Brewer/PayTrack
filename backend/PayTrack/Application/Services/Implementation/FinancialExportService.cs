@@ -258,8 +258,20 @@ namespace PayTrack.Application.Services.Implementation
                 "Invoice Number  Submitted   Paid At     Amount      Purpose              Team/Cost Centre        Payout Type       Status             User",
             };
 
-            lines.AddRange(rows.Select(row =>
-                $"{TrimForPdf(row.InvoiceNumber, 15),-15} {FormatDisplayDate(row.CreatedAt),-11} {FormatDisplayDate(row.PaidAt),-10} {row.Amount,10:F2}  {TrimForPdf(row.PurposeOfPayment, 20),-20} {TrimForPdf(FormatTeamCostCentre(row), 23),-23} {TrimForPdf(row.PayoutType, 17),-17} {TrimForPdf(row.Status, 18),-18} {TrimForPdf(row.User, 24)}"));
+            foreach (var row in rows)
+            {
+                AddWrappedPdfRow(
+                    lines,
+                    (row.InvoiceNumber, 15),
+                    (FormatDisplayDate(row.CreatedAt), 11),
+                    (FormatDisplayDate(row.PaidAt), 10),
+                    (row.Amount.ToString("F2", CultureInfo.InvariantCulture), 10),
+                    (row.PurposeOfPayment, 20),
+                    (FormatTeamCostCentre(row), 23),
+                    (row.PayoutType, 17),
+                    (row.Status, 18),
+                    (row.User, 24));
+            }
 
             return SimplePdfBuilder.Build(lines);
         }
@@ -275,8 +287,17 @@ namespace PayTrack.Application.Services.Implementation
                 "Amount      Due Date    Purpose                         Team/Cost Centre              Status             User",
             };
 
-            lines.AddRange(rows.Select(row =>
-                $"{row.Amount,10:F2}  {FormatDisplayDate(row.DueDate),-10}  {TrimForPdf(row.PurposeOfPayment, 30),-30} {TrimForPdf(FormatTeamCostCentre(row), 29),-29} {TrimForPdf(row.Status, 18),-18} {TrimForPdf(row.User, 28)}"));
+            foreach (var row in rows)
+            {
+                AddWrappedPdfRow(
+                    lines,
+                    (row.Amount.ToString("F2", CultureInfo.InvariantCulture), 10),
+                    (FormatDisplayDate(row.DueDate), 10),
+                    (row.PurposeOfPayment, 30),
+                    (FormatTeamCostCentre(row), 29),
+                    (row.Status, 18),
+                    (row.User, 28));
+            }
 
             return SimplePdfBuilder.Build(lines);
         }
@@ -354,14 +375,104 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static string TrimForPdf(string? value, int maxLength)
+        private static void AddWrappedPdfRow(
+            ICollection<string> lines,
+            params (string? Value, int Width)[] columns)
         {
-            if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+            var wrappedColumns = columns
+                .Select(column => WrapForPdf(column.Value, column.Width))
+                .ToList();
+            var rowLineCount = wrappedColumns.Max(column => column.Count);
+
+            for (var lineIndex = 0; lineIndex < rowLineCount; lineIndex++)
             {
-                return value ?? string.Empty;
+                var builder = new StringBuilder();
+
+                for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++)
+                {
+                    var column = columns[columnIndex];
+                    var value = lineIndex < wrappedColumns[columnIndex].Count
+                        ? wrappedColumns[columnIndex][lineIndex]
+                        : string.Empty;
+
+                    builder.Append(value.PadRight(column.Width));
+
+                    if (columnIndex < columns.Length - 1)
+                    {
+                        builder.Append(' ');
+                    }
+                }
+
+                lines.Add(builder.ToString().TrimEnd());
+            }
+        }
+
+        private static IReadOnlyList<string> WrapForPdf(string? value, int maxLength)
+        {
+            if (maxLength <= 0)
+            {
+                return [string.Empty];
             }
 
-            return value[..(maxLength - 3)] + "...";
+            var normalizedValue = value?
+                .Replace("\r\n", "\n", StringComparison.Ordinal)
+                .Replace('\r', '\n') ?? string.Empty;
+            var result = new List<string>();
+
+            foreach (var paragraph in normalizedValue.Split('\n'))
+            {
+                AddWrappedParagraph(result, paragraph, maxLength);
+            }
+
+            return result.Count == 0 ? [string.Empty] : result;
+        }
+
+        private static void AddWrappedParagraph(ICollection<string> result, string paragraph, int maxLength)
+        {
+            if (string.IsNullOrWhiteSpace(paragraph))
+            {
+                result.Add(string.Empty);
+                return;
+            }
+
+            var currentLine = string.Empty;
+
+            foreach (var originalWord in paragraph.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var word = originalWord;
+
+                while (word.Length > maxLength)
+                {
+                    if (!string.IsNullOrEmpty(currentLine))
+                    {
+                        result.Add(currentLine);
+                        currentLine = string.Empty;
+                    }
+
+                    result.Add(word[..maxLength]);
+                    word = word[maxLength..];
+                }
+
+                if (string.IsNullOrEmpty(currentLine))
+                {
+                    currentLine = word;
+                    continue;
+                }
+
+                if (currentLine.Length + 1 + word.Length <= maxLength)
+                {
+                    currentLine += $" {word}";
+                    continue;
+                }
+
+                result.Add(currentLine);
+                currentLine = word;
+            }
+
+            if (!string.IsNullOrEmpty(currentLine))
+            {
+                result.Add(currentLine);
+            }
         }
 
         private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(
