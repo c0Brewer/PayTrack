@@ -53,7 +53,10 @@ describe('BankAccountsSettingsPageComponent', () => {
 
     fixture = TestBed.createComponent(BankAccountsSettingsPageComponent);
     component = fixture.componentInstance;
-    detectChangesSpy = vi.spyOn((component as never as { cdr: { detectChanges: () => void } }).cdr, 'detectChanges');
+    detectChangesSpy = vi.spyOn(
+      (component as never as { cdr: { detectChanges: () => void } }).cdr,
+      'detectChanges',
+    );
   });
 
   it('should call loadBankAccounts on init', () => {
@@ -270,7 +273,9 @@ describe('BankAccountsSettingsPageComponent', () => {
 
   it('should format ibans in groups of four characters', () => {
     expect(component.formatIbanForDisplay('AT611904300234573201')).toBe('AT61 1904 3002 3457 3201');
-    expect(component.formatIbanForDisplay('AT61 1904 3002 3457 3201')).toBe('AT61 1904 3002 3457 3201');
+    expect(component.formatIbanForDisplay('AT61 1904 3002 3457 3201')).toBe(
+      'AT61 1904 3002 3457 3201',
+    );
     expect(component.formatIbanForDisplay(null)).toBe('');
   });
 

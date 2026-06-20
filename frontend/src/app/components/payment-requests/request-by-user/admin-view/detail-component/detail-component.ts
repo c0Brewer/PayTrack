@@ -130,7 +130,9 @@ export class AdminInvoiceDetailComponent {
   }
 
   onRequestChanges(): void {
-    if (!this.isTextLengthValid(this.changeRequestReason, this.reasonMinLength, this.reasonMaxLength)) {
+    if (
+      !this.isTextLengthValid(this.changeRequestReason, this.reasonMinLength, this.reasonMaxLength)
+    ) {
       return;
     }
 
@@ -147,7 +149,11 @@ export class AdminInvoiceDetailComponent {
         this.paymentReferenceMinLength,
         this.paymentReferenceMaxLength,
       ) ||
-      !this.isTextLengthValid(this.paymentPurpose, this.paymentPurposeMinLength, this.paymentPurposeMaxLength)
+      !this.isTextLengthValid(
+        this.paymentPurpose,
+        this.paymentPurposeMinLength,
+        this.paymentPurposeMaxLength,
+      )
     ) {
       return;
     }
@@ -175,7 +181,9 @@ export class AdminInvoiceDetailComponent {
     return trimmedLength >= minLength && trimmedLength <= maxLength;
   }
 
-  markFieldBlurred(field: 'declineReason' | 'changeRequestReason' | 'paymentReference' | 'paymentPurpose'): void {
+  markFieldBlurred(
+    field: 'declineReason' | 'changeRequestReason' | 'paymentReference' | 'paymentPurpose',
+  ): void {
     switch (field) {
       case 'declineReason':
         this.declineReasonBlurred = true;
