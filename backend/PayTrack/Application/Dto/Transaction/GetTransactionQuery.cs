@@ -17,11 +17,6 @@ namespace PayTrack.Application.Dto.Transaction
         public int? UserId { get; init; }
 
         /// <summary>
-        /// PaymentRequestByTeam requester id to query.
-        /// </summary>
-        public int? RequestById { get; init; }
-
-        /// <summary>
         /// Min Amount to query.
         /// </summary>
         public decimal? MinAmount { get; init; }
@@ -40,21 +35,6 @@ namespace PayTrack.Application.Dto.Transaction
         /// Payment Reference to query.
         /// </summary>
         public string? PaymentReference { get; init; }
-
-        /// <summary>
-        /// Invoice number to query.
-        /// </summary>
-        public string? InvoiceNumber { get; init; }
-
-        /// <summary>
-        /// Payout type to query.
-        /// </summary>
-        public PayoutType? PayoutType { get; set; }
-
-        /// <summary>
-        /// Bank account id to query.
-        /// </summary>
-        public int? BankAccountId { get; init; }
 
         /// <summary>
         /// Transaction Status to query.

@@ -1449,7 +1449,6 @@ export interface paths {
                 query?: {
                     IncludeBankAccount?: boolean;
                     UserId?: number;
-                    RequestById?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
@@ -2137,9 +2136,6 @@ export interface paths {
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
-                    InvoiceNumber?: string;
-                    PayoutType?: components["schemas"]["PayoutType"];
-                    BankAccountId?: number;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
                     CostCentreId?: number;

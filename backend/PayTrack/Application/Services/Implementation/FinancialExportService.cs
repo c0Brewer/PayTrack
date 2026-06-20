@@ -57,14 +57,10 @@ namespace PayTrack.Application.Services.Implementation
             return new GetTransactionQuery
             {
                 UserId = query.UserId,
-                RequestById = query.RequestById,
                 MinAmount = query.MinAmount,
                 MaxAmount = query.MaxAmount,
                 PurposeOfPayment = query.PurposeOfPayment,
                 PaymentReference = query.PaymentReference,
-                InvoiceNumber = query.InvoiceNumber,
-                PayoutType = query.PayoutType,
-                BankAccountId = query.BankAccountId,
                 Status = query.Status,
                 TeamId = query.TeamId,
                 PaymentDirection = query.PaymentDirection,

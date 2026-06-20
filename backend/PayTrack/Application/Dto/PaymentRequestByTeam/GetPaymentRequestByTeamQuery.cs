@@ -12,6 +12,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByTeam
     public class GetPaymentRequestByTeamQuery : GetTransactionQuery
     {
         /// <summary>
+        /// PaymentRequestByTeam requester id to query.
+        /// </summary>
+        public int? RequestById { get; init; }
+
+        /// <summary>
         /// Cost centre of the assigned budget to query.
         /// </summary>
         public int? CostCentreId { get; init; }
