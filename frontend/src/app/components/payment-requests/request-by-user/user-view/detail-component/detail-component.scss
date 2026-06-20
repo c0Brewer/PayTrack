@@ -53,6 +53,43 @@
     margin-bottom: v.$size-l;
   }
 
+  .detail-action-buttons,
+  .modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-s;
+  }
+
+  .action-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-s;
+
+    label {
+      color: v.$text-muted;
+      display: flex;
+      flex-direction: column;
+      font-weight: v.$font-semibold;
+      gap: v.$size-xxs;
+    }
+  }
+
+  .action-modal-form__content {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-s;
+  }
+
+  .action-modal-form__description {
+    color: v.$text-muted;
+    margin: 0;
+  }
+
+  .modal-actions {
+    justify-content: flex-end;
+    margin-top: v.$size-m;
+  }
+
   .status-form,
   .payment-form {
     background: v.$background-light;
