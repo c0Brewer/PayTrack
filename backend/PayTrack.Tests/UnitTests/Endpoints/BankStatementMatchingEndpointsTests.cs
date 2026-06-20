@@ -12,7 +12,6 @@ using PayTrack.Application.Dto.BankStatement;
 using PayTrack.Data.Entities;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
-using PayTrack.Tests.UnitTests.Helper;
 
 namespace PayTrack.Tests.UnitTests.Endpoints
 {
@@ -60,7 +59,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(matchResponse);
 
             var client = this.factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.PostAsJsonAsync(
@@ -85,7 +84,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync(new BankStatementMatchResponseDto([]));
 
             var client = this.factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.PostAsJsonAsync(
@@ -122,7 +121,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync([]);
 
             var client = this.factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.PutAsJsonAsync(
@@ -145,7 +144,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 .ReturnsAsync((User?)null);
 
             var client = this.factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
             var response = await client.PutAsJsonAsync(
@@ -154,6 +153,38 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert — NotFoundException from handler maps to a non-OK response
             response.StatusCode.Should().NotBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task PostBankStatementMatches_AsRegularUser_ReturnsForbidden()
+        {
+            // Arrange
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.PostAsJsonAsync(
+                "api/v1/transaction/bank-statement-matches",
+                new List<BankStatementEntryDto>());
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+
+        [Fact]
+        public async Task PutBankStatementMatches_AsRegularUser_ReturnsForbidden()
+        {
+            // Arrange
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            var response = await client.PutAsJsonAsync(
+                "api/v1/transaction/bank-statement-matches",
+                new List<BankStatementUpdateRequestDto>());
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
     }
 
@@ -168,8 +199,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             builder.UseEnvironment("Test");
             builder.ConfigureServices(services =>
             {
-                services.AddAuthentication("Test")
-                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+                services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = "Test";
+                    options.DefaultChallengeScheme = "Test";
+                })
+                .AddScheme<AuthenticationSchemeOptions, DynamicTestAuthHandler>("Test", _ => { });
 
                 _ = services.AddAuthorization(_ => { });
 

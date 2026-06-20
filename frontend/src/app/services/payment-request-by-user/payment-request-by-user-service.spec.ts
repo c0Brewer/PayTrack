@@ -9,6 +9,7 @@ import {
   CreatePaymentRequestByUserDto,
   PaymentRequestByUserDto,
   PayoutType,
+  ReceiptExtractionDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
@@ -136,6 +137,55 @@ describe('PaymentRequestByUserService', () => {
 
     await expect(firstValueFrom(service.createPaymentRequestByUser(dto, file))).rejects.toThrow(
       'Upload failed',
+    );
+  });
+
+  it('should extract receipt data via fetch without creating an invoice', async () => {
+    const file = new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' });
+    const apiResponse: ReceiptExtractionDto = {
+      extractionSucceeded: true,
+      message: null,
+      amount: { value: 128.5, confidence: 0.82 },
+      invoiceDate: { value: '2026-06-10T00:00:00Z', confidence: 0.75 },
+      invoiceNumber: { value: 'RE-2026-004812', confidence: 0.78 },
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    const result = await firstValueFrom(service.extractReceiptData(file));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/receipt/extract', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/receipt/extract';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const body = requestInit?.body as FormData;
+    expect(body.get('receipt')).toBe(file);
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should throw error when receipt extraction fails', async () => {
+    const file = new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' });
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ detail: 'Extraction unavailable' }),
+    });
+
+    await expect(firstValueFrom(service.extractReceiptData(file))).rejects.toThrow(
+      'Extraction unavailable',
     );
   });
 

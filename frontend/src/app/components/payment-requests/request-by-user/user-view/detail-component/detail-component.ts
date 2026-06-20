@@ -59,6 +59,7 @@ export class UserInvoiceDetailComponent {
   TransactionStatusLabels = TransactionStatusLabels;
   PayoutTypeLabels = PayoutTypeLabels;
   TransactionStatus = TransactionStatus;
+  PayoutType = PayoutType;
   paymentReference: string = '';
   paymentPurpose: string = '';
   paymentDate: string = new Date().toISOString().split('T')[0];
