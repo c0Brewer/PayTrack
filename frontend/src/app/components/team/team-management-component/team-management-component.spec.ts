@@ -83,8 +83,8 @@ describe('TeamManagementComponent', () => {
     hasPrevious: false,
   };
   const mockSeasons: SeasonDto[] = [
-    { id: 1, name: '2025', budgets: [] },
-    { id: 2, name: '2026', budgets: [] },
+    { id: 1, name: '2025', isActive: true, budgets: [] },
+    { id: 2, name: '2026', isActive: true, budgets: [] },
   ];
 
   beforeEach(async () => {
@@ -154,7 +154,7 @@ describe('TeamManagementComponent', () => {
       Limit: 1000,
       Offset: 0,
     });
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.seasons).toEqual(mockSeasons);
     expect(teamServiceMock.getTeams).toHaveBeenCalledWith({
       Name: undefined,

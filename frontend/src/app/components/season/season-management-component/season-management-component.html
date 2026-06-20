@@ -1,5 +1,76 @@
 <div class="main-page-container season-management">
-  <h2 class="m-0">Season Management</h2>
+  <div class="season-management__header">
+    <h2 class="m-0">Season Management</h2>
+    <button
+      type="button"
+      class="btn btn-secondary season-management__inactive-toggle"
+      [class.active]="showInactiveSeasons"
+      (click)="toggleInactiveSeasons()"
+    >
+      <span class="material-symbols-outlined">visibility</span>
+      {{ showInactiveSeasons ? 'Show Active Seasons' : 'Inactive Seasons' }}
+    </button>
+  </div>
   <app-season-form-component (createSeason)="createSeason($event)" />
-  <app-season-list-component [seasons]="seasons" />
+
+  <div class="season-management__page-size">
+    <label for="season-page-size">Items per page</label>
+    <select id="season-page-size" class="form-select" [value]="limit" (change)="onLimitChange($event)">
+      @for (option of limitSelection; track option) {
+        <option [value]="option">{{ option }}</option>
+      }
+    </select>
+  </div>
+
+  <app-season-list-component
+    [seasons]="seasons"
+    [showInactive]="showInactiveSeasons"
+    (updateSeason)="updateSeason($event)"
+    (deleteSeason)="openDeleteSeason($event)"
+    (reactivateSeason)="reactivateSeason($event)"
+  />
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+
+  <app-modal-component
+    [visible]="seasonToDelete !== null"
+    title="Delete Season"
+    icon="delete"
+    (closeEvent)="closeDeleteSeasonModal()"
+  >
+    @if (seasonToDelete; as selectedSeason) {
+      <p class="season-delete-modal__text">
+        You are about to delete <strong>{{ selectedSeason.name }}</strong
+        >.
+      </p>
+
+      @if (selectedSeasonHasDependencies) {
+        <div class="season-delete-modal__warning">
+          <p>This season has linked records and will be deactivated instead of deleted:</p>
+          <ul>
+            <li>{{ selectedSeason.budgets?.length ?? 0 }} budget(s)</li>
+          </ul>
+        </div>
+      } @else {
+        <p class="season-delete-modal__text">Are you sure? This action cannot be undone.</p>
+      }
+
+      <div class="season-delete-modal__actions">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="closeDeleteSeasonModal()">
+          <span class="material-symbols-outlined">cancel</span>
+          Cancel</button>
+        <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="confirmDeleteSeason()">
+          <span class="material-symbols-outlined">          {{ selectedSeasonHasDependencies ? 'block' : 'delete' }}</span>
+          {{ selectedSeasonHasDependencies ? 'Deactivate' : 'Delete' }}
+        </button>
+      </div>
+    }
+  </app-modal-component>
 </div>

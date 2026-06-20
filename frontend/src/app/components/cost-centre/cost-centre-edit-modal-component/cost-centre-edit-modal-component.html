@@ -111,7 +111,7 @@
           (blur)="onBudgetFieldBlur('seasonId')"
         >
           <option [ngValue]="0" disabled>Select season</option>
-          @for (season of seasons; track season.id) {
+          @for (season of activeSeasons; track season.id) {
             <option [ngValue]="season.id">{{ season.name }}</option>
           }
         </select>

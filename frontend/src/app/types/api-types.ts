@@ -1013,7 +1013,14 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeInactive?: boolean;
+                    IsActive?: boolean;
+                    /** Format: int32 */
+                    Limit?: number;
+                    /** Format: int32 */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1026,7 +1033,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["SeasonDto"][];
+                        "application/json": components["schemas"]["SeasonDtoPaginatedResponse"];
                     };
                 };
             };
@@ -1135,6 +1142,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonDto"];
+                    };
+                };
                 /** @description No Content */
                 204: {
                     headers: {
@@ -2881,7 +2897,19 @@ export interface components {
             /** Format: int32 */
             id: number;
             name: string;
+            isActive: boolean;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
+        SeasonDtoPaginatedResponse: {
+            items: components["schemas"]["SeasonDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
         SendEmailNotificationDto: {
             /** Format: email */
@@ -2989,6 +3017,7 @@ export interface components {
         };
         UpdateSeasonRequestDto: {
             name?: string | null;
+            isActive?: boolean | null;
         };
         UpdateTeamRequestDto: {
             name?: string | null;
