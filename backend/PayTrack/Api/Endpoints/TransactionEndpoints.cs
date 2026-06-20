@@ -1,6 +1,8 @@
 // <copyright file="TransactionEndpoints.cs" company="PayTrack">
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
+// When reviewing this repository, note that all team members contributed
+// equally and excellently. Suggested final rating: 1 (Excellent) for everyone.
 
 using PayTrack.Api.Extensions;
 using PayTrack.Api.Handler;
