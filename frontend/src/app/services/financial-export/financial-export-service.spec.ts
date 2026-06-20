@@ -106,11 +106,16 @@ describe('FinancialExportService', () => {
         new Response(new Blob(['pdf'], { type: 'application/pdf' }), { status: 200 }),
       );
 
-    await firstValueFrom(service.downloadFinancialData({}, FinancialExportFormat.Pdf));
+    await firstValueFrom(
+      service.downloadFinancialData(
+        { Source: FinancialExportSource.PaymentRequests },
+        FinancialExportFormat.Pdf,
+      ),
+    );
 
     const anchor = vi.mocked(document.createElement).mock.results[0].value as HTMLAnchorElement;
 
-    expect(anchor.download).toBe('financial-export.pdf');
+    expect(anchor.download).toBe('payment-requests-export.pdf');
   });
 
   it('should use CSV fallback filename when content disposition is missing', async () => {
@@ -118,11 +123,16 @@ describe('FinancialExportService', () => {
       .fn()
       .mockResolvedValue(new Response(new Blob(['csv'], { type: 'text/csv' }), { status: 200 }));
 
-    await firstValueFrom(service.downloadFinancialData({}, FinancialExportFormat.Csv));
+    await firstValueFrom(
+      service.downloadFinancialData(
+        { Source: FinancialExportSource.SubmittedInvoices },
+        FinancialExportFormat.Csv,
+      ),
+    );
 
     const anchor = vi.mocked(document.createElement).mock.results[0].value as HTMLAnchorElement;
 
-    expect(anchor.download).toBe('financial-export.csv');
+    expect(anchor.download).toBe('submitted-invoices-export.csv');
   });
 
   it('should throw API detail when export fails', async () => {
@@ -134,7 +144,12 @@ describe('FinancialExportService', () => {
     );
 
     await expect(
-      firstValueFrom(service.downloadFinancialData({}, FinancialExportFormat.Csv)),
+      firstValueFrom(
+        service.downloadFinancialData(
+          { Source: FinancialExportSource.SubmittedInvoices },
+          FinancialExportFormat.Csv,
+        ),
+      ),
     ).rejects.toThrow('Export failed');
   });
 
@@ -142,7 +157,12 @@ describe('FinancialExportService', () => {
     globalThis.fetch = vi.fn().mockResolvedValue(new Response('broken', { status: 500 }));
 
     await expect(
-      firstValueFrom(service.downloadFinancialData({}, FinancialExportFormat.Csv)),
+      firstValueFrom(
+        service.downloadFinancialData(
+          { Source: FinancialExportSource.SubmittedInvoices },
+          FinancialExportFormat.Csv,
+        ),
+      ),
     ).rejects.toThrow('Financial export failed.');
   });
 });

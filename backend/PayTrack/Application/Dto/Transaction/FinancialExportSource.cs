@@ -10,11 +10,6 @@ namespace PayTrack.Application.Dto.Transaction
     public enum FinancialExportSource
     {
         /// <summary>
-        /// Export all transaction types.
-        /// </summary>
-        All = 0,
-
-        /// <summary>
         /// Export the submitted invoices view.
         /// </summary>
         SubmittedInvoices = 1,

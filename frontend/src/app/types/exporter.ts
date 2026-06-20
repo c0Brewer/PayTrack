@@ -165,7 +165,6 @@ export enum FinancialExportFormat {
 }
 
 export enum FinancialExportSource {
-  All = 0,
   SubmittedInvoices = 1,
   PaymentRequests = 2,
 }
@@ -179,7 +178,7 @@ export type FinancialExportQueryOptions = Omit<
   'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
 > &
   SortQueryOptions & {
-    Source?: FinancialExportSource;
+    Source: FinancialExportSource;
     InvoiceNumber?: string;
     PayoutType?: PayoutType;
     BankAccountId?: number;

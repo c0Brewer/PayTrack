@@ -2919,7 +2919,7 @@ export interface components {
          * Format: int32
          * @enum {integer}
          */
-        FinancialExportSource: 0 | 1 | 2;
+        FinancialExportSource: 1 | 2;
         GoogleAuthCallbackDto: {
             code: string;
         };

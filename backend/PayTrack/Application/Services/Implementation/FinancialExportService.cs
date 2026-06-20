@@ -26,25 +26,26 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task<FinancialExportResult> ExportFinancialDataAsync(GetFinancialExportQuery query)
         {
-            var transactions = await this.GetTransactionsForExportAsync(query);
+            var source = GetRequiredSource(query.Source);
+            var transactions = await this.GetTransactionsForExportAsync(query, source);
             var rows = transactions
                 .Select(ToExportRow)
                 .ToList();
 
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
             var format = query.Format ?? FinancialExportFormat.Csv;
-            var filePrefix = GetFilePrefix(query.Source);
-            var title = GetTitle(query.Source);
+            var filePrefix = GetFilePrefix(source);
+            var title = GetTitle(source);
 
             return format switch
             {
                 FinancialExportFormat.Csv => new FinancialExportResult(
-                    Encoding.UTF8.GetBytes(BuildCsv(rows, query.Source)),
+                    Encoding.UTF8.GetBytes(BuildCsv(rows, source)),
                     CsvContentType,
                     $"{filePrefix}-{timestamp}.csv"),
 
                 FinancialExportFormat.Pdf => new FinancialExportResult(
-                    BuildPdf(rows, title, query.Source),
+                    BuildPdf(rows, title, source),
                     PdfContentType,
                     $"{filePrefix}-{timestamp}.pdf"),
 
@@ -52,29 +53,14 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
-        private static GetTransactionQuery CreateExportQuery(GetTransactionQuery query)
+        private static FinancialExportSource GetRequiredSource(FinancialExportSource? source)
         {
-            return new GetTransactionQuery
+            if (!source.HasValue)
             {
-                UserId = query.UserId,
-                MinAmount = query.MinAmount,
-                MaxAmount = query.MaxAmount,
-                PurposeOfPayment = query.PurposeOfPayment,
-                PaymentReference = query.PaymentReference,
-                Status = query.Status,
-                TeamId = query.TeamId,
-                PaymentDirection = query.PaymentDirection,
-                MinCreatedAt = query.MinCreatedAt,
-                MaxCreatedAt = query.MaxCreatedAt,
-                MinPaidAt = query.MinPaidAt,
-                MaxPaidAt = query.MaxPaidAt,
-                MinDueDate = query.MinDueDate,
-                MaxDueDate = query.MaxDueDate,
-                SortBy = query.SortBy,
-                SortDirection = query.SortDirection,
-                IncludeTeam = true,
-                IncludeBudget = true,
-            };
+                throw new InvalidStateException("Financial export source is required.");
+            }
+
+            return source.Value;
         }
 
         private static GetPaymentRequestByUserQuery CreateSubmittedInvoicesExportQuery(GetFinancialExportQuery query)
@@ -176,66 +162,14 @@ namespace PayTrack.Application.Services.Implementation
 
         private static string BuildCsv(
             IReadOnlyCollection<FinancialExportRow> rows,
-            FinancialExportSource? source)
+            FinancialExportSource source)
         {
-            return (source ?? FinancialExportSource.All) switch
+            return source switch
             {
                 FinancialExportSource.SubmittedInvoices => BuildSubmittedInvoicesCsv(rows),
                 FinancialExportSource.PaymentRequests => BuildPaymentRequestsCsv(rows),
-                _ => BuildAllTransactionsCsv(rows),
+                _ => throw new InvalidStateException("Unsupported financial export source."),
             };
-        }
-
-        private static string BuildAllTransactionsCsv(IReadOnlyCollection<FinancialExportRow> rows)
-        {
-            var builder = new StringBuilder();
-
-            AppendCsvLine(
-                builder,
-                "Id",
-                "Type",
-                "Direction",
-                "Status",
-                "Amount",
-                "PurposeOfPayment",
-                "PaymentReference",
-                "Team",
-                "CostCentre",
-                "Budget",
-                "User",
-                "CreatedAt",
-                "PaidAt",
-                "FinancePaidAt",
-                "DueDate");
-
-            foreach (var row in rows)
-            {
-                AppendCsvLine(
-                    builder,
-                    row.Id.ToString(CultureInfo.InvariantCulture),
-                    row.Type,
-                    row.Direction,
-                    row.Status,
-                    row.Amount.ToString("F2", CultureInfo.InvariantCulture),
-                    row.PurposeOfPayment,
-                    row.PaymentReference,
-                    row.Team,
-                    row.CostCentre,
-                    row.Budget,
-                    row.User,
-                    FormatDate(row.CreatedAt),
-                    FormatDate(row.PaidAt),
-                    FormatDate(row.FinancePaidAt),
-                    FormatDate(row.DueDate));
-            }
-
-            AppendCsvLine(builder);
-            AppendCsvLine(builder, "Summary");
-            AppendCsvLine(builder, "Income", CalculateTotal(rows, PaymentDirection.In).ToString("F2", CultureInfo.InvariantCulture));
-            AppendCsvLine(builder, "Expenses", CalculateTotal(rows, PaymentDirection.Out).ToString("F2", CultureInfo.InvariantCulture));
-            AppendCsvLine(builder, "Net", CalculateNetTotal(rows).ToString("F2", CultureInfo.InvariantCulture));
-
-            return builder.ToString();
         }
 
         private static string BuildSubmittedInvoicesCsv(IReadOnlyCollection<FinancialExportRow> rows)
@@ -303,34 +237,14 @@ namespace PayTrack.Application.Services.Implementation
         private static byte[] BuildPdf(
             IReadOnlyCollection<FinancialExportRow> rows,
             string title,
-            FinancialExportSource? source)
+            FinancialExportSource source)
         {
-            return (source ?? FinancialExportSource.All) switch
+            return source switch
             {
                 FinancialExportSource.SubmittedInvoices => BuildSubmittedInvoicesPdf(rows, title),
                 FinancialExportSource.PaymentRequests => BuildPaymentRequestsPdf(rows, title),
-                _ => BuildAllTransactionsPdf(rows, title),
+                _ => throw new InvalidStateException("Unsupported financial export source."),
             };
-        }
-
-        private static byte[] BuildAllTransactionsPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
-        {
-            var lines = new List<string>
-            {
-                title,
-                $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
-                $"Rows: {rows.Count}",
-                $"Income: {CalculateTotal(rows, PaymentDirection.In):F2}",
-                $"Expenses: {CalculateTotal(rows, PaymentDirection.Out):F2}",
-                $"Net: {CalculateNetTotal(rows):F2}",
-                string.Empty,
-                "Date       Type     Dir  Status             Amount       Team / Cost Centre",
-            };
-
-            lines.AddRange(rows.Select(row =>
-                $"{FormatDate(row.PaidAt ?? row.CreatedAt),-10} {TrimForPdf(row.Type, 8),-8} {TrimForPdf(row.Direction, 3),-3} {TrimForPdf(row.Status, 18),-18} {row.Amount,10:F2}  {TrimForPdf($"{row.Team} / {row.CostCentre}", 42)}"));
-
-            return SimplePdfBuilder.Build(lines);
         }
 
         private static byte[] BuildSubmittedInvoicesPdf(IReadOnlyCollection<FinancialExportRow> rows, string title)
@@ -367,36 +281,24 @@ namespace PayTrack.Application.Services.Implementation
             return SimplePdfBuilder.Build(lines);
         }
 
-        private static string GetFilePrefix(FinancialExportSource? source)
+        private static string GetFilePrefix(FinancialExportSource source)
         {
-            return (source ?? FinancialExportSource.All) switch
+            return source switch
             {
                 FinancialExportSource.SubmittedInvoices => "submitted-invoices-export",
                 FinancialExportSource.PaymentRequests => "payment-requests-export",
-                _ => "financial-export",
+                _ => throw new InvalidStateException("Unsupported financial export source."),
             };
         }
 
-        private static string GetTitle(FinancialExportSource? source)
+        private static string GetTitle(FinancialExportSource source)
         {
-            return (source ?? FinancialExportSource.All) switch
+            return source switch
             {
                 FinancialExportSource.SubmittedInvoices => "PayTrack Submitted Invoices Export",
                 FinancialExportSource.PaymentRequests => "PayTrack Payment Requests Export",
-                _ => "PayTrack Financial Export",
+                _ => throw new InvalidStateException("Unsupported financial export source."),
             };
-        }
-
-        private static decimal CalculateTotal(IEnumerable<FinancialExportRow> rows, PaymentDirection direction)
-        {
-            return rows
-                .Where(row => string.Equals(row.Direction, direction.ToString(), StringComparison.Ordinal))
-                .Sum(row => row.Amount);
-        }
-
-        private static decimal CalculateNetTotal(IReadOnlyCollection<FinancialExportRow> rows)
-        {
-            return CalculateTotal(rows, PaymentDirection.In) - CalculateTotal(rows, PaymentDirection.Out);
         }
 
         private static void AppendCsvLine(StringBuilder builder, params string?[] values)
@@ -415,11 +317,6 @@ namespace PayTrack.Application.Services.Implementation
             var escaped = value.Replace("\"", "\"\"");
 
             return mustQuote ? $"\"{escaped}\"" : escaped;
-        }
-
-        private static string FormatDate(DateTime? value)
-        {
-            return value?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
         }
 
         private static string FormatDisplayDate(DateTime? value)
@@ -467,21 +364,16 @@ namespace PayTrack.Application.Services.Implementation
             return value[..(maxLength - 3)] + "...";
         }
 
-        private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(GetFinancialExportQuery query)
+        private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(
+            GetFinancialExportQuery query,
+            FinancialExportSource source)
         {
-            return (query.Source ?? FinancialExportSource.All) switch
+            return source switch
             {
                 FinancialExportSource.SubmittedInvoices => await this.GetSubmittedInvoicesForExportAsync(query),
                 FinancialExportSource.PaymentRequests => await this.GetPaymentRequestsForExportAsync(query),
-                FinancialExportSource.All => await this.GetAllTransactionsForExportAsync(query),
                 _ => throw new InvalidStateException("Unsupported financial export source."),
             };
-        }
-
-        private async Task<IReadOnlyCollection<Transaction>> GetAllTransactionsForExportAsync(GetTransactionQuery query)
-        {
-            var (transactions, _) = await this.transactionRepository.GetAllAsync(CreateExportQuery(query));
-            return transactions;
         }
 
         private async Task<IReadOnlyCollection<Transaction>> GetSubmittedInvoicesForExportAsync(GetFinancialExportQuery query)

@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { FinancialExportFormat, FinancialExportQueryOptions } from '../../types/exporter';
+import {
+  FinancialExportFormat,
+  FinancialExportQueryOptions,
+  FinancialExportSource,
+} from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
 
 @Injectable({
@@ -27,7 +31,7 @@ export class FinancialExportService {
       }
 
       const blob = await response.blob();
-      this.downloadBlob(blob, this.getFileName(response, format));
+      this.downloadBlob(blob, this.getFileName(response, format, queryOptions.Source));
     });
 
     return from(promise);
@@ -54,12 +58,20 @@ export class FinancialExportService {
     return `${baseUrl}?${params.toString()}`;
   }
 
-  private getFileName(response: Response, format: FinancialExportFormat): string {
+  private getFileName(
+    response: Response,
+    format: FinancialExportFormat,
+    source: FinancialExportSource,
+  ): string {
     const contentDisposition = response.headers.get('Content-Disposition');
     const fileNameMatch = contentDisposition?.match(/filename="?([^"]+)"?/i);
     const extension = format === FinancialExportFormat.Pdf ? 'pdf' : 'csv';
+    const prefix =
+      source === FinancialExportSource.PaymentRequests
+        ? 'payment-requests-export'
+        : 'submitted-invoices-export';
 
-    return fileNameMatch?.[1] ?? `financial-export.${extension}`;
+    return fileNameMatch?.[1] ?? `${prefix}.${extension}`;
   }
 
   private downloadBlob(blob: Blob, fileName: string): void {

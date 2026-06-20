@@ -622,23 +622,24 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             _factory.FinancialExportServiceMock
                 .Setup(s => s.ExportFinancialDataAsync(It.Is<GetFinancialExportQuery>(q =>
                     q.Format == FinancialExportFormat.Csv &&
+                    q.Source == FinancialExportSource.SubmittedInvoices &&
                     q.TeamId == 7 &&
                     q.CostCentreId == 4)))
                 .ReturnsAsync(new FinancialExportResult(
                     fileBytes,
                     "text/csv; charset=utf-8",
-                    "financial-export.csv"));
+                    "submitted-invoices-export.csv"));
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
 
             // Act
-            var response = await client.GetAsync("api/v1/transaction/export?Format=Csv&TeamId=7&CostCentreId=4");
+            var response = await client.GetAsync("api/v1/transaction/export?Format=Csv&Source=SubmittedInvoices&TeamId=7&CostCentreId=4");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
-            response.Content.Headers.ContentDisposition!.FileNameStar.Should().Be("financial-export.csv");
+            response.Content.Headers.ContentDisposition!.FileNameStar.Should().Be("submitted-invoices-export.csv");
 
             var content = await response.Content.ReadAsByteArrayAsync();
             content.Should().Equal(fileBytes);
