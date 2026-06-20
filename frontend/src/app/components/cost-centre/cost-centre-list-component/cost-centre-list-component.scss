@@ -18,7 +18,17 @@
   }
 
   .actions-col {
-    width: 16%;
+    min-width: 19rem;
+    overflow: hidden;
+    text-align: right;
+    width: 19rem;
+
+    .action-buttons {
+      display: inline-flex;
+      justify-content: flex-end;
+      max-width: 100%;
+      overflow: hidden;
+    }
   }
 
   .name-col a {
