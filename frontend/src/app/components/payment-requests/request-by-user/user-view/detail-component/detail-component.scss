@@ -1,6 +1,12 @@
 @use 'variables' as v;
 
 .invoice-detail {
+  .field-error {
+    color: #dc2626;
+    font-size: v.$font-s;
+    font-weight: v.$font-regular;
+  }
+
   h3 {
     margin: 0 0 v.$size-s;
   }
@@ -47,6 +53,43 @@
     margin-bottom: v.$size-l;
   }
 
+  .detail-action-buttons,
+  .modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-s;
+  }
+
+  .action-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-s;
+
+    label {
+      color: v.$text-muted;
+      display: flex;
+      flex-direction: column;
+      font-weight: v.$font-semibold;
+      gap: v.$size-xxs;
+    }
+  }
+
+  .action-modal-form__content {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-s;
+  }
+
+  .action-modal-form__description {
+    color: v.$text-muted;
+    margin: 0;
+  }
+
+  .modal-actions {
+    justify-content: flex-end;
+    margin-top: v.$size-m;
+  }
+
   .status-form,
   .payment-form {
     background: v.$background-light;
@@ -64,9 +107,22 @@
   }
 
   .status-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: v.$size-s;
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: v.$size-s;
+      min-height: 0;
+    }
+
+    &__actions {
+      align-items: end;
+      display: flex;
+      min-height: 2.75rem;
+    }
   }
 
   .history-table-wrapper {

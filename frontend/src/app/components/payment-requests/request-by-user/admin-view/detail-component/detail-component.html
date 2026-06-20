@@ -12,6 +12,60 @@
       statusVariant="neutral"
       (backClick)="back.emit()"
     >
+      <div detail-actions class="detail-action-buttons">
+        @if (canManageStatus && canApprove(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'approve' || offlineService.isOffline()"
+            (click)="openActionModal('approve')"
+          >
+            <span class="material-symbols-outlined">check_circle</span>
+            Approve
+          </button>
+        }
+
+        @if (canManageStatus && canRequestChanges(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'requestChanges' || offlineService.isOffline()"
+            (click)="openActionModal('requestChanges')"
+          >
+            <span class="material-symbols-outlined">edit_note</span>
+            Request Changes
+          </button>
+        }
+
+        @if (canManageStatus && canDecline(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'decline' || offlineService.isOffline()"
+            (click)="openActionModal('decline')"
+          >
+            <span class="material-symbols-outlined">cancel</span>
+            Decline
+          </button>
+        }
+
+        @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="markingPaid || offlineService.isOffline()"
+            (click)="openActionModal('markPaid')"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            Mark as Paid
+          </button>
+        }
+      </div>
+
       <div detail-meta class="invoice-info-card">
         <table class="info-table">
           <tbody>
@@ -87,135 +141,6 @@
         </table>
       </div>
 
-      @if (canManageStatus && (canApprove(invoice.status) || canRequestChanges(invoice.status) || canDecline(invoice.status))) {
-        <h3>Status Actions</h3>
-        <div class="status-actions row g-3">
-          @if (canApprove(invoice.status)) {
-            <form class="status-form col-12 col-xl-4" (ngSubmit)="onApprove()">
-              <h4>Approve</h4>
-              <label>
-                <span>Cost Centre</span>
-                <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
-                  <option [ngValue]="null">Select cost centre</option>
-                  @for (costCentre of costCentres; track costCentre.id) {
-                    <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
-                  }
-                </select>
-              </label>
-              <label>
-                <span>Reason</span>
-                <textarea name="approvalReason" [(ngModel)]="approvalReason" maxlength="1000"></textarea>
-              </label>
-              <button
-                class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'approve' ||
-                  !approvalCostCentreId ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">check_circle</span>
-                {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
-              </button>
-            </form>
-          }
-
-          @if (canRequestChanges(invoice.status)) {
-            <form class="status-form col-12 col-xl-4" (ngSubmit)="onRequestChanges()">
-              <h4>Request Changes</h4>
-              <label>
-                <span>Reason</span>
-                <textarea
-                  name="changeRequestReason"
-                  [(ngModel)]="changeRequestReason"
-                  maxlength="1000"
-                  required
-                ></textarea>
-              </label>
-              <button
-                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'requestChanges' ||
-                  !changeRequestReason.trim() ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">edit_note</span>
-                {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
-              </button>
-            </form>
-          }
-
-          @if (canDecline(invoice.status)) {
-            <form class="status-form col-12 col-xl-4" (ngSubmit)="onDecline()">
-              <h4>Decline</h4>
-              <label>
-                <span>Reason</span>
-                <textarea name="declineReason" [(ngModel)]="declineReason" maxlength="1000" required></textarea>
-              </label>
-              <button
-                class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1"
-                type="submit"
-                appDisableOfflineAction
-                [disabled]="
-                  statusActionPending === 'decline' ||
-                  !declineReason.trim() ||
-                  offlineService.isOffline()
-                "
-              >
-                <span class="material-symbols-outlined">cancel</span>
-                {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
-              </button>
-            </form>
-          }
-        </div>
-      }
-
-      @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
-        <form class="payment-form" (ngSubmit)="onMarkPaid()">
-          <h3>Mark as Paid</h3>
-          <div class="row g-3">
-            <label class="col-12 col-md-6">
-              <span>Payment Reference</span>
-              <input
-                type="text"
-                name="paymentReference"
-                [(ngModel)]="paymentReference"
-                maxlength="255"
-                required
-              />
-            </label>
-            <label class="col-12 col-md-6">
-              <span>Payment Date</span>
-              <input type="date" name="paymentDate" [(ngModel)]="paymentDate" [max]="maxPaymentDate" required />
-            </label>
-            <label class="col-12">
-              <span>Purpose</span>
-              <textarea name="paymentPurpose" [(ngModel)]="paymentPurpose" maxlength="500" required></textarea>
-            </label>
-          </div>
-          <button
-            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 mt-3"
-            type="submit"
-            appDisableOfflineAction
-            [disabled]="
-              markingPaid ||
-              !paymentReference.trim() ||
-              !paymentPurpose.trim() ||
-              !paymentDate ||
-              offlineService.isOffline()
-            "
-          >
-            <span class="material-symbols-outlined">payments</span>
-            {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
-          </button>
-        </form>
-      }
-
       @if ((invoice.statusHistory?.length ?? 0) > 0) {
         <app-box-component title="Status History" size="large" class="status-history-box">
           <div class="history-table-wrapper">
@@ -277,5 +202,220 @@
         }
       </section>
     </app-detail-component>
+
+    @if (activeActionModal === 'approve') {
+      <app-modal-component title="Approve Invoice" icon="check_circle" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onApprove()">
+          <p class="action-modal-form__description">
+            Approve this invoice and assign the cost centre that should be charged.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Cost Centre</span>
+              <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
+                <option [ngValue]="null">Select cost centre</option>
+                @for (costCentre of costCentres; track costCentre.id) {
+                  <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="approvalReason"
+                [(ngModel)]="approvalReason"
+                [maxlength]="reasonMaxLength"
+                placeholder="Enter a reason..."
+              ></textarea>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="statusActionPending === 'approve' || !approvalCostCentreId || offlineService.isOffline()"
+            >
+              <span class="material-symbols-outlined">check_circle</span>
+              {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'requestChanges') {
+      <app-modal-component title="Request Changes" icon="edit_note" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onRequestChanges()">
+          <p class="action-modal-form__description">
+            Ask the submitter to update the invoice before it can continue through review.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="changeRequestReason"
+                [(ngModel)]="changeRequestReason"
+                (blur)="markFieldBlurred('changeRequestReason')"
+                placeholder="Enter a reason..."
+                rows="6"
+                [minlength]="reasonMinLength"
+                [maxlength]="reasonMaxLength"
+                required
+              ></textarea>
+              @if (changeRequestReasonBlurred && !changeRequestReason.trim()) {
+                <span class="field-error">Reason is required.</span>
+              } @else if (changeRequestReasonBlurred && isTextTooShort(changeRequestReason, reasonMinLength)) {
+                <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                statusActionPending === 'requestChanges' ||
+                !isTextLengthValid(changeRequestReason, reasonMinLength, reasonMaxLength) ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">edit_note</span>
+              {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'decline') {
+      <app-modal-component title="Decline Invoice" icon="cancel" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onDecline()">
+          <p class="action-modal-form__description">
+            Decline this invoice permanently and record the reason for the submitter.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="declineReason"
+                [(ngModel)]="declineReason"
+                (blur)="markFieldBlurred('declineReason')"
+                [minlength]="reasonMinLength"
+                [maxlength]="reasonMaxLength"
+                placeholder="Enter a reason..."
+                rows="6"
+                required
+              ></textarea>
+              @if (declineReasonBlurred && !declineReason.trim()) {
+                <span class="field-error">Reason is required.</span>
+              } @else if (declineReasonBlurred && isTextTooShort(declineReason, reasonMinLength)) {
+                <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                statusActionPending === 'decline' ||
+                !isTextLengthValid(declineReason, reasonMinLength, reasonMaxLength) ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">cancel</span>
+              {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'markPaid') {
+      <app-modal-component title="Mark as Paid" icon="payments" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onMarkPaid()">
+          <p class="action-modal-form__description">
+            Confirm the payout details that should be stored when this invoice is marked as paid.
+          </p>
+          <div class="action-modal-form__content row g-3">
+            <label class="col-12 col-md-6">
+              <span>Payment Reference</span>
+              <input
+                type="text"
+                name="paymentReference"
+                [(ngModel)]="paymentReference"
+                (blur)="markFieldBlurred('paymentReference')"
+                [minlength]="paymentReferenceMinLength"
+                [maxlength]="paymentReferenceMaxLength"
+                required
+              />
+              @if (paymentReferenceBlurred && !paymentReference.trim()) {
+                <span class="field-error">Payment reference is required.</span>
+              } @else if (paymentReferenceBlurred && isTextTooShort(paymentReference, paymentReferenceMinLength)) {
+                <span class="field-error">
+                  Payment reference must be at least {{ paymentReferenceMinLength }} characters long.
+                </span>
+              }
+            </label>
+            <label class="col-12 col-md-6">
+              <span>Payment Date</span>
+              <input type="date" name="paymentDate" [(ngModel)]="paymentDate" [max]="maxPaymentDate" required />
+            </label>
+            <label class="col-12">
+              <span>Purpose</span>
+              <textarea
+                name="paymentPurpose"
+                [(ngModel)]="paymentPurpose"
+                (blur)="markFieldBlurred('paymentPurpose')"
+                [minlength]="paymentPurposeMinLength"
+                [maxlength]="paymentPurposeMaxLength"
+                required
+              ></textarea>
+              @if (paymentPurposeBlurred && !paymentPurpose.trim()) {
+                <span class="field-error">Purpose is required.</span>
+              } @else if (paymentPurposeBlurred && isTextTooShort(paymentPurpose, paymentPurposeMinLength)) {
+                <span class="field-error">Purpose must be at least {{ paymentPurposeMinLength }} characters long.</span>
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                markingPaid ||
+                !isTextLengthValid(paymentReference, paymentReferenceMinLength, paymentReferenceMaxLength) ||
+                !isTextLengthValid(paymentPurpose, paymentPurposeMinLength, paymentPurposeMaxLength) ||
+                !paymentDate ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">payments</span>
+              {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
   }
 </div>

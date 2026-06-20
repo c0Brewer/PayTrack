@@ -103,6 +103,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
 
     this.bankAccountService.deleteBankAccount(id).subscribe({
       next: () => {
+        this.notificationService.showSuccess('Bank account deleted.');
         this.closeDeleteModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
