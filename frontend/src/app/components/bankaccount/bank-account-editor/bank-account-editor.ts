@@ -105,7 +105,9 @@ export class BankAccountEditorComponent implements OnChanges {
   }
 
   public get topLevelErrorMessage(): string {
-    return this.errorMessage === BankAccountEditorComponent.invalidIbanMessage ? '' : this.errorMessage;
+    return this.errorMessage === BankAccountEditorComponent.invalidIbanMessage
+      ? ''
+      : this.errorMessage;
   }
 
   public get ibanErrorMessage(): string {
