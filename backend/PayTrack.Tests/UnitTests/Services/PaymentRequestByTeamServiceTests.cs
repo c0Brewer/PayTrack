@@ -1,3 +1,5 @@
+//AI helped with the test cases
+
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -26,7 +28,8 @@ namespace PayTrack.Tests.UnitTests.Services
             bool confirmationPush = true,
             bool deletionEmail = true,
             bool deletionSlack = false,
-            bool deletionPush = true)
+            bool deletionPush = true,
+            Mock<IPushNotificationService>? pushNotificationsMock = null)
         {
             notificationsMock ??= new Mock<INotificationDispatchService>();
 
@@ -67,7 +70,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 budgetMock.Object,
                 notificationsMock.Object,
                 systemSettingsMock.Object,
-                logger.Object);
+                logger.Object,
+                pushNotificationsMock?.Object);
         }
 
         // ----------------------------
@@ -191,16 +195,16 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Id.Should().Be(1);
 
             repoMock.Verify(r =>
-                r.AddAsync(It.Is<PaymentRequestByTeam>(p =>
-                    p.UserId == 1 &&
-                    p.TeamId == 5 &&
-                    p.Amount == 100 &&
-                    p.PurposeOfPayment == "test" &&
-                    p.RequestedById == 2 &&
-                    p.PaymentDirection == PaymentDirection.In &&
-                    p.Status == TransactionStatus.Submitted &&
-                    p.DueDate != null
-                )),
+                    r.AddAsync(It.Is<PaymentRequestByTeam>(p =>
+                        p.UserId == 1 &&
+                        p.TeamId == 5 &&
+                        p.Amount == 100 &&
+                        p.PurposeOfPayment == "test" &&
+                        p.RequestedById == 2 &&
+                        p.PaymentDirection == PaymentDirection.In &&
+                        p.Status == TransactionStatus.Submitted &&
+                        p.DueDate != null
+                    )),
                 Times.Once);
         }
 
@@ -891,6 +895,80 @@ namespace PayTrack.Tests.UnitTests.Services
         // MARK AS PAID — Slack channel
         // ----------------------------
         [Fact]
+        public async Task Create_ShouldSendPush_WhenPushEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var pushNotificationsMock = new Mock<IPushNotificationService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+
+            repoMock
+                .Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>()))
+                .ReturnsAsync(new PaymentRequestByTeam
+                {
+                    Id = 11,
+                    UserId = 1,
+                    PurposeOfPayment = "Office Supplies",
+                    Amount = 100m,
+                });
+
+            var service = BuildService(
+                repoMock,
+                teamMock,
+                userMock,
+                budgetMock,
+                creationEmail: false,
+                creationSlack: false,
+                pushNotificationsMock: pushNotificationsMock);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            pushNotificationsMock.Verify(
+                p => p.SendWorkflowStatusChangedAsync(
+                    1,
+                    "New payment request",
+                    It.Is<string>(body => body.Contains("Office Supplies") && body.Contains("100")),
+                    "/my-team-requests/11"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_ShouldNotSendPush_WhenPushDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var pushNotificationsMock = new Mock<IPushNotificationService>();
+
+            teamMock.Setup(t => t.GetTeamByIdAsync(5)).ReturnsAsync(new Team { Id = 5 });
+            userMock.Setup(u => u.GetUserByIdAsync(1)).ReturnsAsync(new User { Id = 1, Name = "Alice", Email = "alice@test.com" });
+            userMock.Setup(u => u.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2 });
+            repoMock.Setup(r => r.AddAsync(It.IsAny<PaymentRequestByTeam>())).ReturnsAsync(new PaymentRequestByTeam { Id = 11 });
+
+            var service = BuildService(
+                repoMock,
+                teamMock,
+                userMock,
+                budgetMock,
+                creationEmail: false,
+                creationSlack: false,
+                creationPush: false,
+                pushNotificationsMock: pushNotificationsMock);
+
+            await service.CreatePaymentRequestByTeamAsync(1, 2, 5, 100, "Office Supplies", DateTime.Today.AddDays(7));
+
+            pushNotificationsMock.Verify(
+                p => p.SendWorkflowStatusChangedAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task MarkAsPaid_ShouldSendSlack_WhenSlackEnabled()
         {
             var repoMock = new Mock<ITransactionRepository>();
@@ -958,6 +1036,53 @@ namespace PayTrack.Tests.UnitTests.Services
             await service.MarkAsPaidAsync(5, 42, null);
 
             notificationsMock.Verify(n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldSendPush_WhenPushEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var pushNotificationsMock = new Mock<IPushNotificationService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 5,
+                UserId = 1,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 250m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.UpdateAndAddStatusHistoryAsync(It.IsAny<PaymentRequestByTeam>(), It.IsAny<TransactionStatusHistory>()))
+                .ReturnsAsync((PaymentRequestByTeam p, TransactionStatusHistory h) => p);
+
+            var service = BuildService(
+                repoMock,
+                teamMock,
+                userMock,
+                budgetMock,
+                confirmationEmail: false,
+                confirmationSlack: false,
+                pushNotificationsMock: pushNotificationsMock);
+
+            await service.MarkAsPaidAsync(5, 42, null);
+
+            pushNotificationsMock.Verify(
+                p => p.SendWorkflowStatusChangedAsync(
+                    1,
+                    "Payment request paid",
+                    It.Is<string>(body => body.Contains("Office Supplies") && body.Contains("250")),
+                    "/my-team-requests/5"),
+                Times.Once);
         }
 
         [Fact]
@@ -1257,6 +1382,53 @@ namespace PayTrack.Tests.UnitTests.Services
                     "alice@test.com",
                     It.IsAny<string>(),
                     It.Is<string>(b => b.Contains("Budget cut"))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_ShouldSendPush_WhenPushEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var teamMock = new Mock<ITeamService>();
+            var userMock = new Mock<IUserService>();
+            var budgetMock = new Mock<IBudgetService>();
+            var pushNotificationsMock = new Mock<IPushNotificationService>();
+
+            var entity = new PaymentRequestByTeam
+            {
+                Id = 7,
+                UserId = 1,
+                Status = TransactionStatus.Submitted,
+                PurposeOfPayment = "Office Supplies",
+                Amount = 100m,
+                User = new User { Id = 1, Name = "Alice", Email = "alice@test.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(7, It.IsAny<GetPaymentRequestByTeamQueryById>()))
+                .ReturnsAsync(entity);
+
+            repoMock
+                .Setup(r => r.DeletePaymentRequestByTeamAsync(7))
+                .ReturnsAsync(true);
+
+            var service = BuildService(
+                repoMock,
+                teamMock,
+                userMock,
+                budgetMock,
+                deletionEmail: false,
+                deletionSlack: false,
+                pushNotificationsMock: pushNotificationsMock);
+
+            await service.DeletePaymentRequestByTeamAsync(7);
+
+            pushNotificationsMock.Verify(
+                p => p.SendWorkflowStatusChangedAsync(
+                    1,
+                    "Payment request deleted",
+                    It.Is<string>(body => body.Contains("Office Supplies") && body.Contains("100")),
+                    "/my-team-requests"),
                 Times.Once);
         }
 
