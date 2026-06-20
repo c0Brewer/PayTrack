@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -21,6 +29,7 @@ import {
 } from '../../../../../types/exporter';
 import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
+import { ModalComponent } from '../../../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-admin-invoice-detail-component',
@@ -31,11 +40,18 @@ import { DetailComponent } from '../../../../general/detail-component/detail-com
     FormsModule,
     BoxComponent,
     DisableOfflineActionDirective,
+    ModalComponent,
   ],
   templateUrl: './detail-component.html',
   styleUrl: './detail-component.scss',
 })
-export class AdminInvoiceDetailComponent {
+export class AdminInvoiceDetailComponent implements OnChanges {
+  readonly reasonMinLength = 3;
+  readonly reasonMaxLength = 1000;
+  readonly paymentReferenceMinLength = 3;
+  readonly paymentReferenceMaxLength = 255;
+  readonly paymentPurposeMinLength = 3;
+  readonly paymentPurposeMaxLength = 500;
   protected readonly offlineService = inject(OfflineService);
 
   @Input() invoice: PaymentRequestByUserDto | null = null;
@@ -68,8 +84,23 @@ export class AdminInvoiceDetailComponent {
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
+  activeActionModal: 'approve' | 'requestChanges' | 'decline' | 'markPaid' | null = null;
+  declineReasonBlurred: boolean = false;
+  changeRequestReasonBlurred: boolean = false;
+  paymentReferenceBlurred: boolean = false;
+  paymentPurposeBlurred: boolean = false;
 
   constructor(private readonly sanitizer: DomSanitizer) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      changes['invoice'] &&
+      this.activeActionModal &&
+      !this.isActionModalAllowed(this.activeActionModal)
+    ) {
+      this.closeActionModal();
+    }
+  }
 
   get safeReceiptUrl(): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(this.receiptBlobUrl ?? '');
@@ -99,6 +130,23 @@ export class AdminInvoiceDetailComponent {
     return status !== TransactionStatus.Paid && status !== TransactionStatus.Declined;
   }
 
+  openActionModal(action: 'approve' | 'requestChanges' | 'decline' | 'markPaid'): void {
+    if (!this.isActionModalAllowed(action)) {
+      return;
+    }
+
+    this.resetValidationForAction(action);
+    this.activeActionModal = action;
+  }
+
+  closeActionModal(): void {
+    this.activeActionModal = null;
+    this.resetValidationForAction('approve');
+    this.resetValidationForAction('requestChanges');
+    this.resetValidationForAction('decline');
+    this.resetValidationForAction('markPaid');
+  }
+
   onApprove(): void {
     if (!this.approvalCostCentreId) {
       return;
@@ -111,7 +159,7 @@ export class AdminInvoiceDetailComponent {
   }
 
   onDecline(): void {
-    if (!this.declineReason.trim()) {
+    if (!this.isTextLengthValid(this.declineReason, this.reasonMinLength, this.reasonMaxLength)) {
       return;
     }
 
@@ -121,7 +169,9 @@ export class AdminInvoiceDetailComponent {
   }
 
   onRequestChanges(): void {
-    if (!this.changeRequestReason.trim()) {
+    if (
+      !this.isTextLengthValid(this.changeRequestReason, this.reasonMinLength, this.reasonMaxLength)
+    ) {
       return;
     }
 
@@ -131,7 +181,19 @@ export class AdminInvoiceDetailComponent {
   }
 
   onMarkPaid(): void {
-    if (!this.paymentReference.trim() || !this.paymentPurpose.trim() || !this.paymentDate) {
+    if (
+      !this.paymentDate ||
+      !this.isTextLengthValid(
+        this.paymentReference,
+        this.paymentReferenceMinLength,
+        this.paymentReferenceMaxLength,
+      ) ||
+      !this.isTextLengthValid(
+        this.paymentPurpose,
+        this.paymentPurposeMinLength,
+        this.paymentPurposeMaxLength,
+      )
+    ) {
       return;
     }
 
@@ -140,5 +202,78 @@ export class AdminInvoiceDetailComponent {
       purposeOfPayment: this.paymentPurpose.trim(),
       paymentDate: new Date(this.paymentDate).toISOString(),
     });
+  }
+
+  isTextTooShort(value: string, minLength: number): boolean {
+    const trimmedLength = value.trim().length;
+
+    return trimmedLength > 0 && trimmedLength < minLength;
+  }
+
+  isTextTooLong(value: string, maxLength: number): boolean {
+    return value.trim().length > maxLength;
+  }
+
+  isTextLengthValid(value: string, minLength: number, maxLength: number): boolean {
+    const trimmedLength = value.trim().length;
+
+    return trimmedLength >= minLength && trimmedLength <= maxLength;
+  }
+
+  markFieldBlurred(
+    field: 'declineReason' | 'changeRequestReason' | 'paymentReference' | 'paymentPurpose',
+  ): void {
+    switch (field) {
+      case 'declineReason':
+        this.declineReasonBlurred = true;
+        break;
+      case 'changeRequestReason':
+        this.changeRequestReasonBlurred = true;
+        break;
+      case 'paymentReference':
+        this.paymentReferenceBlurred = true;
+        break;
+      case 'paymentPurpose':
+        this.paymentPurposeBlurred = true;
+        break;
+    }
+  }
+
+  private isActionModalAllowed(
+    action: 'approve' | 'requestChanges' | 'decline' | 'markPaid',
+  ): boolean {
+    if (!this.invoice) {
+      return false;
+    }
+
+    switch (action) {
+      case 'approve':
+        return this.canManageStatus && this.canApprove(this.invoice.status);
+      case 'requestChanges':
+        return this.canManageStatus && this.canRequestChanges(this.invoice.status);
+      case 'decline':
+        return this.canManageStatus && this.canDecline(this.invoice.status);
+      case 'markPaid':
+        return this.canMarkPaid && this.invoice.status === TransactionStatus.Approved;
+    }
+  }
+
+  private resetValidationForAction(
+    action: 'approve' | 'requestChanges' | 'decline' | 'markPaid',
+  ): void {
+    if (action === 'requestChanges') {
+      this.changeRequestReasonBlurred = false;
+      return;
+    }
+
+    if (action === 'decline') {
+      this.declineReasonBlurred = false;
+      return;
+    }
+
+    if (action === 'markPaid') {
+      this.paymentReferenceBlurred = false;
+      this.paymentPurposeBlurred = false;
+    }
   }
 }
