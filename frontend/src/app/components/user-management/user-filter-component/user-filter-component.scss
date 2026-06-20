@@ -3,7 +3,7 @@
 .user-filter select,
 .user-filter input {
   background-color: v.$TUR-secondary-background;
-  border: 1px solid white;
+  border: 1px solid v.$TUR-border-color;
   height: 2.5rem;
 }
 
