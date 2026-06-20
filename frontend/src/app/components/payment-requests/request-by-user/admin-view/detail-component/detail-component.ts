@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -84,7 +92,11 @@ export class AdminInvoiceDetailComponent implements OnChanges {
   constructor(private readonly sanitizer: DomSanitizer) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['invoice'] && this.activeActionModal && !this.isActionModalAllowed(this.activeActionModal)) {
+    if (
+      changes['invoice'] &&
+      this.activeActionModal &&
+      !this.isActionModalAllowed(this.activeActionModal)
+    ) {
       this.closeActionModal();
     }
   }
@@ -226,7 +238,9 @@ export class AdminInvoiceDetailComponent implements OnChanges {
     }
   }
 
-  private isActionModalAllowed(action: 'approve' | 'requestChanges' | 'decline' | 'markPaid'): boolean {
+  private isActionModalAllowed(
+    action: 'approve' | 'requestChanges' | 'decline' | 'markPaid',
+  ): boolean {
     if (!this.invoice) {
       return false;
     }
@@ -243,7 +257,9 @@ export class AdminInvoiceDetailComponent implements OnChanges {
     }
   }
 
-  private resetValidationForAction(action: 'approve' | 'requestChanges' | 'decline' | 'markPaid'): void {
+  private resetValidationForAction(
+    action: 'approve' | 'requestChanges' | 'decline' | 'markPaid',
+  ): void {
     if (action === 'requestChanges') {
       this.changeRequestReasonBlurred = false;
       return;

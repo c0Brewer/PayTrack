@@ -382,7 +382,7 @@ describe('AdminInvoiceDetailComponent', () => {
     fixture.detectChanges();
 
     expect(component.activeActionModal).toBe('approve');
-    expect((getModal()?.textContent ?? '')).toContain('Approve Invoice');
+    expect(getModal()?.textContent ?? '').toContain('Approve Invoice');
 
     getButtonByText('Cancel')?.click();
     fixture.detectChanges();
