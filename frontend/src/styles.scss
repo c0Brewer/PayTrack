@@ -597,29 +597,3 @@ textarea:focus,
   }
 }
 
-
-/* filter toolbar*/
-.toolbar {
-  background-color: white;
-  border: 1px solid v.$TUR-border-color;
-  border-radius: 12px;
-  box-shadow: 0 1px 2px v.$shadow-color;
-  padding: v.$size-m;
-
-  .filter-icon {
-    color: v.$TUR-primary-orange;
-    font-size: 1.25rem;
-  }
-
-  .filter-label {
-    color: v.$gray-500;
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  hr {
-    border-color: v.$TUR-border-color;
-    opacity: 1;
-  }
-}
