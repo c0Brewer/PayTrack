@@ -162,7 +162,7 @@ export type TransactionDto = components['schemas']['TransactionDto'];
 // Admin Settings
 export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
 export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
-export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean; sendPush: boolean };
 export type NotificationChannelGroupsDto = {
   creation: NotificationChannelDto;
   confirmation: NotificationChannelDto;

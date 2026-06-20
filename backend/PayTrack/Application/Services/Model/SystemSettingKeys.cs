@@ -21,11 +21,17 @@ namespace PayTrack.Application.Services.Model
         /// <summary>Notification channels: send Slack on new payment request creation.</summary>
         public const string NotificationsCreationSlack = "notifications.creation.slack";
 
+        /// <summary>Notification channels: send push notification on new payment request creation.</summary>
+        public const string NotificationsCreationPush = "notifications.creation.push";
+
         /// <summary>Notification channels: send email when a payment is confirmed as paid.</summary>
         public const string NotificationsConfirmationEmail = "notifications.confirmation.email";
 
         /// <summary>Notification channels: send Slack when a payment is confirmed as paid.</summary>
         public const string NotificationsConfirmationSlack = "notifications.confirmation.slack";
+
+        /// <summary>Notification channels: send push notification when a payment is confirmed as paid.</summary>
+        public const string NotificationsConfirmationPush = "notifications.confirmation.push";
 
         /// <summary>Notification channels: send email for due-date reminders.</summary>
         public const string NotificationsRemindersEmail = "notifications.reminders.email";
@@ -33,11 +39,17 @@ namespace PayTrack.Application.Services.Model
         /// <summary>Notification channels: send Slack for due-date reminders.</summary>
         public const string NotificationsRemindersSlack = "notifications.reminders.slack";
 
+        /// <summary>Notification channels: send push notification for due-date reminders.</summary>
+        public const string NotificationsRemindersPush = "notifications.reminders.push";
+
         /// <summary>Notification channels: send email when a payment request is deleted.</summary>
         public const string NotificationsDeletionEmail = "notifications.deletion.email";
 
         /// <summary>Notification channels: send Slack when a payment request is deleted.</summary>
         public const string NotificationsDeletionSlack = "notifications.deletion.slack";
+
+        /// <summary>Notification channels: send push notification when a payment request is deleted.</summary>
+        public const string NotificationsDeletionPush = "notifications.deletion.push";
 
         /// <summary>Reminder schedule: comma-separated list of days before due date (e.g. "7,2,1").</summary>
         public const string RemindersDaysBeforeDue = "reminders.days-before-due";

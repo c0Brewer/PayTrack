@@ -30,16 +30,16 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
   }
 
   notifSettings: NotificationChannelGroupsDto = {
-    creation: { sendEmail: true, sendSlack: false },
-    confirmation: { sendEmail: true, sendSlack: false },
-    reminders: { sendEmail: true, sendSlack: false },
-    deletion: { sendEmail: true, sendSlack: false },
+    creation: { sendEmail: true, sendSlack: false, sendPush: true },
+    confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+    reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+    deletion: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   private notifOriginal: NotificationChannelGroupsDto = {
-    creation: { sendEmail: true, sendSlack: false },
-    confirmation: { sendEmail: true, sendSlack: false },
-    reminders: { sendEmail: true, sendSlack: false },
-    deletion: { sendEmail: true, sendSlack: false },
+    creation: { sendEmail: true, sendSlack: false, sendPush: true },
+    confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+    reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+    deletion: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   notifLoading = false;
   notifSaving = false;
@@ -48,12 +48,16 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     return (
       this.notifSettings.creation.sendEmail !== this.notifOriginal.creation.sendEmail ||
       this.notifSettings.creation.sendSlack !== this.notifOriginal.creation.sendSlack ||
+      this.notifSettings.creation.sendPush !== this.notifOriginal.creation.sendPush ||
       this.notifSettings.confirmation.sendEmail !== this.notifOriginal.confirmation.sendEmail ||
       this.notifSettings.confirmation.sendSlack !== this.notifOriginal.confirmation.sendSlack ||
+      this.notifSettings.confirmation.sendPush !== this.notifOriginal.confirmation.sendPush ||
       this.notifSettings.reminders.sendEmail !== this.notifOriginal.reminders.sendEmail ||
       this.notifSettings.reminders.sendSlack !== this.notifOriginal.reminders.sendSlack ||
+      this.notifSettings.reminders.sendPush !== this.notifOriginal.reminders.sendPush ||
       this.notifSettings.deletion.sendEmail !== this.notifOriginal.deletion.sendEmail ||
-      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack
+      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack ||
+      this.notifSettings.deletion.sendPush !== this.notifOriginal.deletion.sendPush
     );
   }
 

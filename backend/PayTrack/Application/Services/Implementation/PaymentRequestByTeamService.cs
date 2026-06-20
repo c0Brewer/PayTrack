@@ -95,6 +95,7 @@ namespace PayTrack.Application.Services.Implementation
 
             var sendCreationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, true);
             var sendCreationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, false);
+            var sendCreationPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationPush, true);
 
             if (sendCreationEmail)
             {
@@ -135,12 +136,15 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            await this.SendTeamRequestPushAsync(
-                created,
-                userToAssignTo.Id,
-                "New payment request",
-                $"A new payment request was assigned to you: {purposeOfPayment}",
-                $"/my-team-requests/{created.Id}");
+            if (sendCreationPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    created,
+                    userToAssignTo.Id,
+                    "New payment request",
+                    $"A new payment request was assigned to you: {purposeOfPayment}",
+                    $"/my-team-requests/{created.Id}");
+            }
 
             return created;
         }
@@ -211,6 +215,7 @@ namespace PayTrack.Application.Services.Implementation
 
             var sendConfirmationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, true);
             var sendConfirmationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, false);
+            var sendConfirmationPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationPush, true);
 
             if (sendConfirmationEmail)
             {
@@ -251,12 +256,15 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            await this.SendTeamRequestPushAsync(
-                result,
-                transaction.UserId,
-                "Payment request paid",
-                $"Your payment request has been marked as paid: {transaction.PurposeOfPayment}",
-                $"/my-team-requests/{transaction.Id}");
+            if (sendConfirmationPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    result,
+                    transaction.UserId,
+                    "Payment request paid",
+                    $"Your payment request has been marked as paid: {transaction.PurposeOfPayment}",
+                    $"/my-team-requests/{transaction.Id}");
+            }
 
             return result;
         }
@@ -283,6 +291,7 @@ namespace PayTrack.Application.Services.Implementation
             var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
             var sendDeletionEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, true);
             var sendDeletionSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, false);
+            var sendDeletionPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionPush, true);
 
             if (sendDeletionEmail)
             {
@@ -323,12 +332,15 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            await this.SendTeamRequestPushAsync(
-                transaction,
-                transaction.UserId,
-                "Payment request deleted",
-                $"Your payment request was deleted: {transaction.PurposeOfPayment}",
-                "/my-team-requests");
+            if (sendDeletionPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    transaction,
+                    transaction.UserId,
+                    "Payment request deleted",
+                    $"Your payment request was deleted: {transaction.PurposeOfPayment}",
+                    "/my-team-requests");
+            }
         }
 
         /// <inheritdoc/>

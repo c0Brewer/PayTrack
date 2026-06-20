@@ -74,6 +74,10 @@
                     <span class="material-symbols-outlined">chat</span>
                     Slack
                   </th>
+                  <th>
+                    <span class="material-symbols-outlined">notifications</span>
+                    Push
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -97,6 +101,17 @@
                         class="admin-settings__toggle__input"
                         [(ngModel)]="notifSettings.creation.sendSlack"
                         name="creationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendPush"
+                        name="creationPush"
                       />
                       <span class="admin-settings__toggle__track"></span>
                     </label>
@@ -126,6 +141,17 @@
                       <span class="admin-settings__toggle__track"></span>
                     </label>
                   </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendPush"
+                        name="confirmationPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
                 </tr>
                 <tr>
                   <td>Automatic Reminders</td>
@@ -151,6 +177,17 @@
                       <span class="admin-settings__toggle__track"></span>
                     </label>
                   </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendPush"
+                        name="remindersPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
                 </tr>
                 <tr>
                   <td>Deletion</td>
@@ -172,6 +209,17 @@
                         class="admin-settings__toggle__input"
                         [(ngModel)]="notifSettings.deletion.sendSlack"
                         name="deletionSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendPush"
+                        name="deletionPush"
                       />
                       <span class="admin-settings__toggle__track"></span>
                     </label>

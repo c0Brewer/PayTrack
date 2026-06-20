@@ -13,6 +13,7 @@ namespace PayTrack.Application.Services.Implementation
     {
         private const bool DefaultSendEmail = true;
         private const bool DefaultSendSlack = false;
+        private const bool DefaultSendPush = true;
         private const int DefaultRunAtHourUtc = 8;
         private const int DefaultRunAtMinuteUtc = 0;
         private const int DefaultEmailDelayMs = 500;
@@ -48,19 +49,23 @@ namespace PayTrack.Application.Services.Implementation
         {
             var creation = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationPush, DefaultSendPush));
 
             var confirmation = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationPush, DefaultSendPush));
 
             var reminders = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersPush, DefaultSendPush));
 
             var deletion = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionPush, DefaultSendPush));
 
             return new NotificationChannelGroupsDto(creation, confirmation, reminders, deletion);
         }
@@ -73,12 +78,16 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     [SystemSettingKeys.NotificationsCreationEmail] = dto.Creation.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsCreationSlack] = dto.Creation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsCreationPush] = dto.Creation.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsConfirmationEmail] = dto.Confirmation.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsConfirmationSlack] = dto.Confirmation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsConfirmationPush] = dto.Confirmation.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsRemindersEmail] = dto.Reminders.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsRemindersSlack] = dto.Reminders.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsRemindersPush] = dto.Reminders.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsDeletionEmail] = dto.Deletion.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsDeletionSlack] = dto.Deletion.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsDeletionPush] = dto.Deletion.SendPush.ToString(),
                 },
                 userId);
         }

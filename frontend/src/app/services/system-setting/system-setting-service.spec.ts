@@ -78,10 +78,10 @@ describe('SystemSettingService', () => {
   describe('getNotificationChannelGroups', () => {
     it('should return notification channel groups on success', async () => {
       const response: NotificationChannelGroupsDto = {
-        creation: { sendEmail: true, sendSlack: false },
-        confirmation: { sendEmail: false, sendSlack: true },
-        reminders: { sendEmail: true, sendSlack: true },
-        deletion: { sendEmail: false, sendSlack: false },
+        creation: { sendEmail: true, sendSlack: false, sendPush: true },
+        confirmation: { sendEmail: false, sendSlack: true, sendPush: true },
+        reminders: { sendEmail: true, sendSlack: true, sendPush: false },
+        deletion: { sendEmail: false, sendSlack: false, sendPush: false },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
@@ -112,10 +112,10 @@ describe('SystemSettingService', () => {
       await expect(
         firstValueFrom(
           service.updateNotificationChannelGroups({
-            creation: { sendEmail: true, sendSlack: false },
-            confirmation: { sendEmail: true, sendSlack: false },
-            reminders: { sendEmail: true, sendSlack: false },
-            deletion: { sendEmail: false, sendSlack: false },
+            creation: { sendEmail: true, sendSlack: false, sendPush: true },
+            confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+            reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+            deletion: { sendEmail: false, sendSlack: false, sendPush: false },
           }),
         ),
       ).resolves.toBeUndefined();
@@ -130,10 +130,10 @@ describe('SystemSettingService', () => {
       await expect(
         firstValueFrom(
           service.updateNotificationChannelGroups({
-            creation: { sendEmail: true, sendSlack: false },
-            confirmation: { sendEmail: true, sendSlack: false },
-            reminders: { sendEmail: true, sendSlack: false },
-            deletion: { sendEmail: false, sendSlack: false },
+            creation: { sendEmail: true, sendSlack: false, sendPush: true },
+            confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+            reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+            deletion: { sendEmail: false, sendSlack: false, sendPush: false },
           }),
         ),
       ).rejects.toThrow('Failed to update notification channels');

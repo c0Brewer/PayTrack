@@ -79,23 +79,26 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Creation.SendEmail.Should().BeTrue();
             result.Creation.SendSlack.Should().BeFalse();
+            result.Creation.SendPush.Should().BeTrue();
             result.Confirmation.SendEmail.Should().BeTrue();
             result.Confirmation.SendSlack.Should().BeFalse();
+            result.Confirmation.SendPush.Should().BeTrue();
             result.Reminders.SendEmail.Should().BeTrue();
             result.Reminders.SendSlack.Should().BeFalse();
+            result.Reminders.SendPush.Should().BeTrue();
         }
 
         [Fact]
-        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllEightKeys()
+        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllTwelveKeys()
         {
             var repoMock = new Mock<ISystemSettingRepository>();
             var service = BuildService(repoMock);
 
             var dto = new UpdateNotificationChannelGroupsRequestDto(
-                Creation: new NotificationChannelDto(true, false),
-                Confirmation: new NotificationChannelDto(false, true),
-                Reminders: new NotificationChannelDto(true, true),
-                Deletion: new NotificationChannelDto(false, false));
+                Creation: new NotificationChannelDto(true, false, true),
+                Confirmation: new NotificationChannelDto(false, true, false),
+                Reminders: new NotificationChannelDto(true, true, true),
+                Deletion: new NotificationChannelDto(false, false, false));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -103,12 +106,16 @@ namespace PayTrack.Tests.UnitTests.Services
                 It.Is<IReadOnlyDictionary<string, string>>(d =>
                     d[SystemSettingKeys.NotificationsCreationEmail] == "True" &&
                     d[SystemSettingKeys.NotificationsCreationSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsCreationPush] == "True" &&
                     d[SystemSettingKeys.NotificationsConfirmationEmail] == "False" &&
                     d[SystemSettingKeys.NotificationsConfirmationSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsConfirmationPush] == "False" &&
                     d[SystemSettingKeys.NotificationsRemindersEmail] == "True" &&
                     d[SystemSettingKeys.NotificationsRemindersSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsRemindersPush] == "True" &&
                     d[SystemSettingKeys.NotificationsDeletionEmail] == "False" &&
-                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False"),
+                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsDeletionPush] == "False"),
                 5), Times.Once);
         }
 

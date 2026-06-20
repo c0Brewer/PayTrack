@@ -25,10 +25,10 @@ const mockNotificationService = {
 
 const defaultCsvSettings = { nameColumn: 'Name', summeColumn: 'Summe' };
 const defaultNotifSettings = {
-  creation: { sendEmail: true, sendSlack: false },
-  confirmation: { sendEmail: true, sendSlack: false },
-  reminders: { sendEmail: true, sendSlack: false },
-  deletion: { sendEmail: false, sendSlack: false },
+  creation: { sendEmail: true, sendSlack: false, sendPush: true },
+  confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+  reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+  deletion: { sendEmail: false, sendSlack: false, sendPush: true },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
@@ -193,10 +193,10 @@ describe('AdminSettingsSettingsPageComponent', () => {
     it('should update notifOriginal and show success notification on success', () => {
       fixture.detectChanges();
       component.notifSettings = {
-        creation: { sendEmail: false, sendSlack: true },
-        confirmation: { sendEmail: true, sendSlack: false },
-        reminders: { sendEmail: false, sendSlack: false },
-        deletion: { sendEmail: false, sendSlack: false },
+        creation: { sendEmail: false, sendSlack: true, sendPush: true },
+        confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+        reminders: { sendEmail: false, sendSlack: false, sendPush: false },
+        deletion: { sendEmail: false, sendSlack: false, sendPush: false },
       };
 
       component.saveNotifSettings();

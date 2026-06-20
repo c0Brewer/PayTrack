@@ -20,10 +20,13 @@ namespace PayTrack.Tests.UnitTests.Services
             Mock<INotificationDispatchService>? notificationsMock = null,
             bool creationEmail = true,
             bool creationSlack = false,
+            bool creationPush = true,
             bool confirmationEmail = true,
             bool confirmationSlack = false,
+            bool confirmationPush = true,
             bool deletionEmail = true,
-            bool deletionSlack = false)
+            bool deletionSlack = false,
+            bool deletionPush = true)
         {
             notificationsMock ??= new Mock<INotificationDispatchService>();
 
@@ -35,17 +38,26 @@ namespace PayTrack.Tests.UnitTests.Services
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, It.IsAny<bool>()))
                 .ReturnsAsync(creationSlack);
             systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationPush, It.IsAny<bool>()))
+                .ReturnsAsync(creationPush);
+            systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, It.IsAny<bool>()))
                 .ReturnsAsync(confirmationEmail);
             systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, It.IsAny<bool>()))
                 .ReturnsAsync(confirmationSlack);
             systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationPush, It.IsAny<bool>()))
+                .ReturnsAsync(confirmationPush);
+            systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, It.IsAny<bool>()))
                 .ReturnsAsync(deletionEmail);
             systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, It.IsAny<bool>()))
                 .ReturnsAsync(deletionSlack);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionPush, It.IsAny<bool>()))
+                .ReturnsAsync(deletionPush);
 
             var logger = new Mock<ILogger<PaymentRequestByTeamService>>();
             return new PaymentRequestByTeamService(

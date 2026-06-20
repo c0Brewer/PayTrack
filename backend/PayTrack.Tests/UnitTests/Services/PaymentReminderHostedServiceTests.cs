@@ -20,7 +20,8 @@ namespace PayTrack.Tests.UnitTests.Services
             Mock<INotificationDispatchService> notificationsMock,
             int[] daysBeforeDue,
             bool sendEmail = true,
-            bool sendSlack = false)
+            bool sendSlack = false,
+            bool sendPush = true)
         {
             var systemSettingsMock = new Mock<ISystemSettingService>();
             systemSettingsMock
@@ -29,6 +30,9 @@ namespace PayTrack.Tests.UnitTests.Services
             systemSettingsMock
                 .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, It.IsAny<bool>()))
                 .ReturnsAsync(sendSlack);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersPush, It.IsAny<bool>()))
+                .ReturnsAsync(sendPush);
             systemSettingsMock
                 .Setup(s => s.GetDaysBeforeDueAsync())
                 .ReturnsAsync(daysBeforeDue);
