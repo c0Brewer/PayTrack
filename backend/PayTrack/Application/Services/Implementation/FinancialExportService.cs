@@ -339,7 +339,7 @@ namespace PayTrack.Application.Services.Implementation
             {
                 title,
                 $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
-                $"Rows: {rows.Count}",
+                $"Invoices: {rows.Count}",
                 string.Empty,
                 "Invoice Number  Submitted   Paid At     Amount      Purpose              Team/Cost Centre        Payout Type       Status             User",
             };
@@ -356,7 +356,7 @@ namespace PayTrack.Application.Services.Implementation
             {
                 title,
                 $"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
-                $"Rows: {rows.Count}",
+                $"Payments: {rows.Count}",
                 string.Empty,
                 "Amount      Due Date    Purpose                         Team/Cost Centre              Status             User",
             };

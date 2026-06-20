@@ -171,6 +171,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 Format = FinancialExportFormat.Pdf,
             });
             var pdf = Encoding.ASCII.GetString(pdfResult.Content);
+            pdf.Should().Contain("Invoices: 1");
+            pdf.Should().NotContain("Rows: 1");
             pdf.Should().Contain("Invoice Number");
             pdf.Should().Contain("Submitted");
             pdf.Should().Contain("Paid At");
@@ -281,6 +283,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 SortDirection = "Desc",
             });
             var pdf = Encoding.ASCII.GetString(pdfResult.Content);
+            pdf.Should().Contain("Payments: 2");
+            pdf.Should().NotContain("Rows: 2");
             pdf.Should().Contain("Amount");
             pdf.Should().Contain("Due Date");
             pdf.Should().Contain("Purpose");
