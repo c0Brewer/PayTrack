@@ -95,7 +95,12 @@
                 </label>
                 <label>
                   <span>Reason</span>
-                  <textarea name="approvalReason" [(ngModel)]="approvalReason" maxlength="1000" placeholder="Enter a reason..."></textarea>
+                  <textarea
+                    name="approvalReason"
+                    [(ngModel)]="approvalReason"
+                    [maxlength]="reasonMaxLength"
+                    placeholder="Enter a reason..."
+                  ></textarea>
                 </label>
               </div>
               <div class="status-form__actions">
@@ -125,11 +130,18 @@
                   <textarea
                     name="changeRequestReason"
                     [(ngModel)]="changeRequestReason"
+                    (blur)="markFieldBlurred('changeRequestReason')"
                     placeholder="Enter a reason..."
                     rows="6"
-                    maxlength="1000"
+                    [minlength]="reasonMinLength"
+                    [maxlength]="reasonMaxLength"
                     required
                   ></textarea>
+                  @if (changeRequestReasonBlurred && !changeRequestReason.trim()) {
+                    <span class="field-error">Reason is required.</span>
+                  } @else if (changeRequestReasonBlurred && isTextTooShort(changeRequestReason, reasonMinLength)) {
+                    <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+                  }
                 </label>
               </div>
               <div class="status-form__actions">
@@ -139,7 +151,7 @@
                   appDisableOfflineAction
                   [disabled]="
                     statusActionPending === 'requestChanges' ||
-                    !changeRequestReason.trim() ||
+                    !isTextLengthValid(changeRequestReason, reasonMinLength, reasonMaxLength) ||
                     offlineService.isOffline()
                   "
                 >
@@ -159,9 +171,16 @@
                   <textarea
                     name="declineReason"
                     [(ngModel)]="declineReason"
-                    maxlength="1000"
+                    (blur)="markFieldBlurred('declineReason')"
+                    [minlength]="reasonMinLength"
+                    [maxlength]="reasonMaxLength"
                     placeholder="Enter a reason..."
                     rows="6" required></textarea>
+                  @if (declineReasonBlurred && !declineReason.trim()) {
+                    <span class="field-error">Reason is required.</span>
+                  } @else if (declineReasonBlurred && isTextTooShort(declineReason, reasonMinLength)) {
+                    <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+                  }
                 </label>
               </div>
               <div class="status-form__actions">
@@ -171,7 +190,7 @@
                   appDisableOfflineAction
                   [disabled]="
                     statusActionPending === 'decline' ||
-                    !declineReason.trim() ||
+                    !isTextLengthValid(declineReason, reasonMinLength, reasonMaxLength) ||
                     offlineService.isOffline()
                   "
                 >
@@ -194,9 +213,18 @@
                 type="text"
                 name="paymentReference"
                 [(ngModel)]="paymentReference"
-                maxlength="255"
+                (blur)="markFieldBlurred('paymentReference')"
+                [minlength]="paymentReferenceMinLength"
+                [maxlength]="paymentReferenceMaxLength"
                 required
               />
+              @if (paymentReferenceBlurred && !paymentReference.trim()) {
+                <span class="field-error">Payment reference is required.</span>
+              } @else if (paymentReferenceBlurred && isTextTooShort(paymentReference, paymentReferenceMinLength)) {
+                <span class="field-error">
+                  Payment reference must be at least {{ paymentReferenceMinLength }} characters long.
+                </span>
+              }
             </label>
             <label class="col-12 col-md-6">
               <span>Payment Date</span>
@@ -204,7 +232,19 @@
             </label>
             <label class="col-12">
               <span>Purpose</span>
-              <textarea name="paymentPurpose" [(ngModel)]="paymentPurpose" maxlength="500" required></textarea>
+              <textarea
+                name="paymentPurpose"
+                [(ngModel)]="paymentPurpose"
+                (blur)="markFieldBlurred('paymentPurpose')"
+                [minlength]="paymentPurposeMinLength"
+                [maxlength]="paymentPurposeMaxLength"
+                required
+              ></textarea>
+              @if (paymentPurposeBlurred && !paymentPurpose.trim()) {
+                <span class="field-error">Purpose is required.</span>
+              } @else if (paymentPurposeBlurred && isTextTooShort(paymentPurpose, paymentPurposeMinLength)) {
+                <span class="field-error">Purpose must be at least {{ paymentPurposeMinLength }} characters long.</span>
+              }
             </label>
           </div>
           <button
@@ -213,8 +253,8 @@
             appDisableOfflineAction
             [disabled]="
               markingPaid ||
-              !paymentReference.trim() ||
-              !paymentPurpose.trim() ||
+              !isTextLengthValid(paymentReference, paymentReferenceMinLength, paymentReferenceMaxLength) ||
+              !isTextLengthValid(paymentPurpose, paymentPurposeMinLength, paymentPurposeMaxLength) ||
               !paymentDate ||
               offlineService.isOffline()
             "

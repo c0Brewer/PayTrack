@@ -339,6 +339,37 @@ describe('UserInvoiceDetailComponent', () => {
     expect(getStatusFormButton('Decline')?.disabled).toBe(false);
   });
 
+  it('should show inline validation for too-short decline reason and disable submit', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.declineReason = 'ab';
+    component.markFieldBlurred('declineReason');
+
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Reason must be at least 3 characters long.',
+    );
+    expect(getStatusFormButton('Decline')?.disabled).toBe(true);
+  });
+
+  it('should disable mark paid button for too-short payment reference', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canMarkPaid = true;
+    component.paymentReference = 'ab';
+    component.paymentPurpose = 'Supplier payout';
+    component.paymentDate = '2026-02-03';
+
+    fixture.detectChanges();
+
+    expect(getButtonByText('Mark as Paid')?.disabled).toBe(true);
+  });
+
   it('should disable mark paid button while marking paid', () => {
     component.invoice = {
       ...mockInvoice,

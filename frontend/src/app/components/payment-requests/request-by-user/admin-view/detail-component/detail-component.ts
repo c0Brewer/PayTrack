@@ -36,6 +36,12 @@ import { DetailComponent } from '../../../../general/detail-component/detail-com
   styleUrl: './detail-component.scss',
 })
 export class AdminInvoiceDetailComponent {
+  readonly reasonMinLength = 3;
+  readonly reasonMaxLength = 1000;
+  readonly paymentReferenceMinLength = 3;
+  readonly paymentReferenceMaxLength = 255;
+  readonly paymentPurposeMinLength = 3;
+  readonly paymentPurposeMaxLength = 500;
   protected readonly offlineService = inject(OfflineService);
 
   @Input() invoice: PaymentRequestByUserDto | null = null;
@@ -67,6 +73,10 @@ export class AdminInvoiceDetailComponent {
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
+  declineReasonBlurred: boolean = false;
+  changeRequestReasonBlurred: boolean = false;
+  paymentReferenceBlurred: boolean = false;
+  paymentPurposeBlurred: boolean = false;
 
   constructor(private readonly sanitizer: DomSanitizer) {}
 
@@ -110,7 +120,7 @@ export class AdminInvoiceDetailComponent {
   }
 
   onDecline(): void {
-    if (!this.declineReason.trim()) {
+    if (!this.isTextLengthValid(this.declineReason, this.reasonMinLength, this.reasonMaxLength)) {
       return;
     }
 
@@ -120,7 +130,7 @@ export class AdminInvoiceDetailComponent {
   }
 
   onRequestChanges(): void {
-    if (!this.changeRequestReason.trim()) {
+    if (!this.isTextLengthValid(this.changeRequestReason, this.reasonMinLength, this.reasonMaxLength)) {
       return;
     }
 
@@ -130,7 +140,15 @@ export class AdminInvoiceDetailComponent {
   }
 
   onMarkPaid(): void {
-    if (!this.paymentReference.trim() || !this.paymentPurpose.trim() || !this.paymentDate) {
+    if (
+      !this.paymentDate ||
+      !this.isTextLengthValid(
+        this.paymentReference,
+        this.paymentReferenceMinLength,
+        this.paymentReferenceMaxLength,
+      ) ||
+      !this.isTextLengthValid(this.paymentPurpose, this.paymentPurposeMinLength, this.paymentPurposeMaxLength)
+    ) {
       return;
     }
 
@@ -139,5 +157,38 @@ export class AdminInvoiceDetailComponent {
       purposeOfPayment: this.paymentPurpose.trim(),
       paymentDate: new Date(this.paymentDate).toISOString(),
     });
+  }
+
+  isTextTooShort(value: string, minLength: number): boolean {
+    const trimmedLength = value.trim().length;
+
+    return trimmedLength > 0 && trimmedLength < minLength;
+  }
+
+  isTextTooLong(value: string, maxLength: number): boolean {
+    return value.trim().length > maxLength;
+  }
+
+  isTextLengthValid(value: string, minLength: number, maxLength: number): boolean {
+    const trimmedLength = value.trim().length;
+
+    return trimmedLength >= minLength && trimmedLength <= maxLength;
+  }
+
+  markFieldBlurred(field: 'declineReason' | 'changeRequestReason' | 'paymentReference' | 'paymentPurpose'): void {
+    switch (field) {
+      case 'declineReason':
+        this.declineReasonBlurred = true;
+        break;
+      case 'changeRequestReason':
+        this.changeRequestReasonBlurred = true;
+        break;
+      case 'paymentReference':
+        this.paymentReferenceBlurred = true;
+        break;
+      case 'paymentPurpose':
+        this.paymentPurposeBlurred = true;
+        break;
+    }
   }
 }

@@ -1,6 +1,12 @@
 @use 'variables' as v;
 
 .invoice-detail {
+  .field-error {
+    color: #dc2626;
+    font-size: v.$font-s;
+    font-weight: v.$font-regular;
+  }
+
   h3 {
     margin: 0 0 v.$size-s;
   }
