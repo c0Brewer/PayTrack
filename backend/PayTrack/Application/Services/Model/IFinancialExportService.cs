@@ -16,6 +16,6 @@ namespace PayTrack.Application.Services.Model
         /// </summary>
         /// <param name="query">Export query including filters and output format.</param>
         /// <returns>Generated export file.</returns>
-        Task<FinancialExportResult> ExportFinancialDataAsync(GetTransactionQuery query);
+        Task<FinancialExportResult> ExportFinancialDataAsync(GetFinancialExportQuery query);
     }
 }

@@ -1474,8 +1474,6 @@ export interface paths {
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                     IncludeBudget?: boolean;
-                    Format?: components["schemas"]["FinancialExportFormat"];
-                    Source?: components["schemas"]["FinancialExportSource"];
                 };
                 header?: never;
                 path?: never;
@@ -2159,8 +2157,6 @@ export interface paths {
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
                     IncludeBudget?: boolean;
-                    Format?: components["schemas"]["FinancialExportFormat"];
-                    Source?: components["schemas"]["FinancialExportSource"];
                 };
                 header?: never;
                 path?: never;

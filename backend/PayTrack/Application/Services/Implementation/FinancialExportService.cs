@@ -24,7 +24,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ITransactionRepository transactionRepository = _transactionRepository;
 
         /// <inheritdoc/>
-        public async Task<FinancialExportResult> ExportFinancialDataAsync(GetTransactionQuery query)
+        public async Task<FinancialExportResult> ExportFinancialDataAsync(GetFinancialExportQuery query)
         {
             var transactions = await this.GetTransactionsForExportAsync(query);
             var rows = transactions
@@ -472,7 +472,7 @@ namespace PayTrack.Application.Services.Implementation
             return value[..(maxLength - 3)] + "...";
         }
 
-        private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(GetTransactionQuery query)
+        private async Task<IReadOnlyCollection<Transaction>> GetTransactionsForExportAsync(GetFinancialExportQuery query)
         {
             return (query.Source ?? FinancialExportSource.All) switch
             {

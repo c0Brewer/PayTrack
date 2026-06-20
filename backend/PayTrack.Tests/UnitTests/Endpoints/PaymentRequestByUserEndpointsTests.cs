@@ -620,7 +620,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             // Arrange
             var fileBytes = new byte[] { 1, 2, 3 };
             _factory.FinancialExportServiceMock
-                .Setup(s => s.ExportFinancialDataAsync(It.Is<GetTransactionQuery>(q =>
+                .Setup(s => s.ExportFinancialDataAsync(It.Is<GetFinancialExportQuery>(q =>
                     q.Format == FinancialExportFormat.Csv &&
                     q.TeamId == 7 &&
                     q.CostCentreId == 4)))
@@ -644,7 +644,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             content.Should().Equal(fileBytes);
 
             _factory.FinancialExportServiceMock.Verify(
-                s => s.ExportFinancialDataAsync(It.IsAny<GetTransactionQuery>()),
+                s => s.ExportFinancialDataAsync(It.IsAny<GetFinancialExportQuery>()),
                 Times.Once);
         }
     }

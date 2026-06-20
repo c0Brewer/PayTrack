@@ -21,7 +21,7 @@ namespace PayTrack.Api.Handler
         /// <param name="financialExportService">Dependency-Injected financial export service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task<Results<FileContentHttpResult, BadRequest<ProblemDetails>, ProblemHttpResult>> ExportFinancialDataAsync(
-            [AsParameters] GetTransactionQuery query,
+            [AsParameters] GetFinancialExportQuery query,
             IFinancialExportService financialExportService)
         {
             var exportResult = await financialExportService.ExportFinancialDataAsync(query);

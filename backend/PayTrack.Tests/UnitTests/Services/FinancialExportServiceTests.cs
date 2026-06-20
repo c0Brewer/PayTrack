@@ -65,7 +65,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var service = new FinancialExportService(repoMock.Object);
 
-            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var result = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Format = FinancialExportFormat.Csv,
                 TeamId = 1,
@@ -130,7 +130,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var service = new FinancialExportService(repoMock.Object);
 
-            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var result = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Source = FinancialExportSource.SubmittedInvoices,
                 Format = FinancialExportFormat.Csv,
@@ -165,7 +165,7 @@ namespace PayTrack.Tests.UnitTests.Services
             csv.Should().Contain("Invoice Number,Submitted,Paid At,Amount,Purpose,Team/Cost Centre,Payout Type,Status,User");
             csv.Should().Contain("INV-44,01.02.2026,03.02.2026,80.00,Tools,Electronics / Lab,Already Paid,Paid,Alice Admin");
 
-            var pdfResult = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var pdfResult = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Source = FinancialExportSource.SubmittedInvoices,
                 Format = FinancialExportFormat.Pdf,
@@ -241,7 +241,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var service = new FinancialExportService(repoMock.Object);
 
-            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var result = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Source = FinancialExportSource.PaymentRequests,
                 Format = FinancialExportFormat.Csv,
@@ -271,7 +271,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 .BeLessThan(csv.IndexOf("100.00,31.01.2026", StringComparison.Ordinal));
             csv.Should().NotContain("Approved,20.00");
 
-            var pdfResult = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var pdfResult = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Source = FinancialExportSource.PaymentRequests,
                 Format = FinancialExportFormat.Pdf,
@@ -316,7 +316,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var service = new FinancialExportService(repoMock.Object);
 
-            var result = await service.ExportFinancialDataAsync(new GetTransactionQuery
+            var result = await service.ExportFinancialDataAsync(new GetFinancialExportQuery
             {
                 Format = FinancialExportFormat.Pdf,
             });
@@ -341,7 +341,7 @@ namespace PayTrack.Tests.UnitTests.Services
             var service = new FinancialExportService(repoMock.Object);
 
             Func<Task> act = async () =>
-                await service.ExportFinancialDataAsync(new GetTransactionQuery
+                await service.ExportFinancialDataAsync(new GetFinancialExportQuery
                 {
                     Format = (FinancialExportFormat)999,
                 });

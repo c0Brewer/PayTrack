@@ -140,15 +140,5 @@ namespace PayTrack.Application.Dto.Transaction
         /// Whether to include the budget and cost centre in the query.
         /// </summary>
         public bool? IncludeBudget { get; init; }
-
-        /// <summary>
-        /// Requested financial export format.
-        /// </summary>
-        public FinancialExportFormat? Format { get; init; }
-
-        /// <summary>
-        /// Requested financial export source view.
-        /// </summary>
-        public FinancialExportSource? Source { get; init; }
     }
 }
