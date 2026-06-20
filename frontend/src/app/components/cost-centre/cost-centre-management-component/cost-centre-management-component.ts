@@ -89,7 +89,7 @@ export class CostCentreManagementComponent implements OnInit {
   }
 
   loadSeasons(): void {
-    this.seasonService.getSeasons().subscribe({
+    this.seasonService.getSeasons({ IncludeInactive: true }).subscribe({
       next: (seasons) => {
         this.seasons = seasons;
         this.cdr.markForCheck();
@@ -151,6 +151,22 @@ export class CostCentreManagementComponent implements OnInit {
   }
 
   openEdit(costCentre: CostCentreDto): void {
+    if (this.hasMissingBudgetSeasons(costCentre)) {
+      this.seasonService.getSeasons({ IncludeInactive: true }).subscribe({
+        next: (seasons) => {
+          this.seasons = seasons;
+          this.editingCostCentre = costCentre;
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load seasons: ' + err.message);
+          this.editingCostCentre = costCentre;
+          this.cdr.markForCheck();
+        },
+      });
+      return;
+    }
+
     this.editingCostCentre = costCentre;
   }
 
@@ -197,5 +213,10 @@ export class CostCentreManagementComponent implements OnInit {
       this.page--;
       this.load();
     }
+  }
+
+  private hasMissingBudgetSeasons(costCentre: CostCentreDto): boolean {
+    const knownSeasonIds = new Set(this.seasons.map((season) => season.id));
+    return (costCentre.budgets ?? []).some((budget) => !knownSeasonIds.has(budget.seasonId));
   }
 }

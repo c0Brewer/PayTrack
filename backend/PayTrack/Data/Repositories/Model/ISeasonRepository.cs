@@ -2,6 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
+using PayTrack.Application.Dto.Season;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Data.Repositories.Model
@@ -14,8 +15,9 @@ namespace PayTrack.Data.Repositories.Model
         /// <summary>
         /// Returns all seasons including their budgets.
         /// </summary>
-        /// <returns>List of seasons.</returns>
-        Task<List<Season>> GetAllAsync();
+        /// <param name="query">Query options.</param>
+        /// <returns>Matching seasons and total count before pagination.</returns>
+        Task<(List<Season> seasons, int totalCount)> GetAllAsync(GetSeasonQuery? query = null);
 
         /// <summary>
         /// Gets a season by ID.
@@ -36,14 +38,15 @@ namespace PayTrack.Data.Repositories.Model
         /// </summary>
         /// <param name="id">Id of the season.</param>
         /// <param name="name">New name, or null to leave unchanged.</param>
+        /// <param name="isActive">Active status, or null to leave unchanged.</param>
         /// <returns>The updated season.</returns>
-        Task<Season> UpdateAsync(int id, string? name);
+        Task<Season> UpdateAsync(int id, string? name, bool? isActive);
 
         /// <summary>
-        /// Deletes a season when no budgets are linked.
+        /// Deletes a season when no budgets are linked, otherwise deactivates it.
         /// </summary>
         /// <param name="id">Id of the season.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task DeleteAsync(int id);
+        /// <returns>Null when hard-deleted, otherwise the deactivated season.</returns>
+        Task<Season?> DeleteAsync(int id);
     }
 }

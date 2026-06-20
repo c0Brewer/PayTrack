@@ -73,9 +73,98 @@
   line-height: 1.25;
 }
 
+.season-list__actions,
+.season-list__edit-form {
+  align-items: center;
+  display: flex;
+  gap: v.$size-xs;
+}
+
+.season-list__edit-form {
+  flex-wrap: wrap;
+}
+
+.season-list__edit-form input {
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.35rem;
+  color: v.$text-color;
+  min-height: 2.25rem;
+  min-width: 12rem;
+  padding: 0 v.$size-s;
+}
+
+.season-list__icon-button {
+  align-items: center;
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.25rem;
+
+  .material-symbols-outlined {
+    font-size: 1.1rem;
+  }
+}
+
 .season-list__empty {
   color: v.$text-muted;
   padding: v.$size-m;
+}
+
+.season-list__inactive {
+  background: #f8fafc;
+  border-top: 1px solid v.$TUR-border-color;
+  padding: v.$size-m;
+}
+
+.season-list__inactive-title {
+  color: v.$text-muted;
+  font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+  margin: 0 0 v.$size-s;
+}
+
+.season-list__inactive-rows {
+  display: grid;
+  gap: v.$size-xs;
+}
+
+.season-list__inactive-row {
+  align-items: center;
+  background: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.5rem;
+  display: flex;
+  gap: v.$size-s;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  padding: v.$size-s;
+}
+
+.season-list__inactive-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.season-list__inactive-name {
+  color: v.$text-color;
+  font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+}
+
+.season-list__inactive-meta {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+}
+
+.season-list__reactivate {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: v.$size-xxs;
+  min-height: 2.25rem;
 }
 
 @media (max-width: 575.98px) {
@@ -86,5 +175,10 @@
   .season-list__actions {
     grid-column: 1 / -1;
     justify-content: flex-end;
+  }
+
+  .season-list__inactive-row {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

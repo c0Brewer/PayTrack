@@ -39,8 +39,8 @@ const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
 };
 
 const mockSeasons: SeasonDto[] = [
-  { id: 1, name: '2025', budgets: [] },
-  { id: 2, name: '2026', budgets: [] },
+  { id: 1, name: '2025', isActive: true, budgets: [] },
+  { id: 2, name: '2026', isActive: true, budgets: [] },
 ];
 const mockTeams: TeamDtoPaginatedResponse = {
   items: [{ id: 1, name: 'Platform', description: null, displayColor: null, members: [] }],
@@ -118,7 +118,7 @@ describe('CostCentreManagementComponent', () => {
     component.ngOnInit();
     expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
     expect(teamServiceMock.getTeams).toHaveBeenCalled();
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.costCentres).toEqual(mockCostCentres);
     expect(component.seasons).toEqual(mockSeasons);
   });
@@ -152,6 +152,41 @@ describe('CostCentreManagementComponent', () => {
     component.openEdit(mockCostCentres[0]);
     expect(component.editingCostCentre).toEqual(mockCostCentres[0]);
     expect(component.editingCostCentre).toBe(mockCostCentres[0]);
+  });
+
+  it('openEdit should reload inactive seasons when budget season lookup is missing', () => {
+    const costCentre = {
+      ...mockCostCentres[0],
+      budgets: [
+        {
+          id: 5,
+          name: 'test33',
+          description: null,
+          teamId: 1,
+          costCentreId: 1,
+          seasonId: 13,
+          targetAmount: 232323,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+          type: 0 as const,
+          transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
+        },
+      ],
+    };
+    const seasonsWithInactive = [
+      ...mockSeasons,
+      { id: 13, name: 'test3', isActive: false, budgets: [] },
+    ];
+    component.seasons = mockSeasons;
+    seasonServiceMock.getSeasons.mockReturnValueOnce(of(seasonsWithInactive));
+
+    component.openEdit(costCentre);
+
+    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
+    expect(component.seasons).toEqual(seasonsWithInactive);
+    expect(component.editingCostCentre).toBe(costCentre);
   });
 
   it('closeEdit should reset editingCostCentre', () => {

@@ -27,6 +27,11 @@ namespace PayTrack.Data.Entities
         public string Name { get; set; } = null!;
 
         /// <summary>
+        /// Indicates if Season is set active or inactive.
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
         /// Budgets assigned to this Season.
         /// </summary>
         public ICollection<Budget> Budgets { get; set; } = [];
