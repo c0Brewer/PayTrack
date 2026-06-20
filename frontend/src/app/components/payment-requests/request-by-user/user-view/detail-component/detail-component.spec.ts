@@ -136,6 +136,12 @@ describe('UserInvoiceDetailComponent', () => {
     expect(fixture.nativeElement.querySelector('img.receipt-image')).toBeNull();
   });
 
+  it('should expose a safe receipt url for the current blob', () => {
+    component.receiptBlobUrl = 'blob:test';
+
+    expect(component.safeReceiptUrl).toBeTruthy();
+  });
+
   it('should emit back event when back button is clicked', () => {
     component.invoice = mockInvoice;
     component.loading = false;
@@ -184,6 +190,25 @@ describe('UserInvoiceDetailComponent', () => {
     expect(component.canDecline(TransactionStatus.Declined)).toBe(false);
   });
 
+  it('should validate trimmed text lengths consistently', () => {
+    expect(component.isTextTooShort(' ab ', 3)).toBe(true);
+    expect(component.isTextTooShort(' abc ', 3)).toBe(false);
+    expect(component.isTextLengthValid(' abc ', 3, 5)).toBe(true);
+    expect(component.isTextLengthValid(' ab ', 3, 5)).toBe(false);
+  });
+
+  it('should mark fields as blurred for inline validation', () => {
+    component.markFieldBlurred('declineReason');
+    component.markFieldBlurred('changeRequestReason');
+    component.markFieldBlurred('paymentReference');
+    component.markFieldBlurred('paymentPurpose');
+
+    expect(component.declineReasonBlurred).toBe(true);
+    expect(component.changeRequestReasonBlurred).toBe(true);
+    expect(component.paymentReferenceBlurred).toBe(true);
+    expect(component.paymentPurposeBlurred).toBe(true);
+  });
+
   it('should emit approve with trimmed optional reason when cost centre is selected', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
@@ -193,6 +218,17 @@ describe('UserInvoiceDetailComponent', () => {
     component.onApprove();
 
     expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+  });
+
+  it('should emit approve with null reason when optional reason is blank', () => {
+    const emitted = vi.fn();
+    component.approve.subscribe(emitted);
+    component.approvalCostCentreId = 12;
+    component.approvalReason = ' ';
+
+    component.onApprove();
+
+    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: null });
   });
 
   it('should not emit approve without cost centre', () => {
@@ -224,6 +260,16 @@ describe('UserInvoiceDetailComponent', () => {
     expect(emitted).not.toHaveBeenCalled();
   });
 
+  it('should not emit decline when reason is shorter than backend minimum', () => {
+    const emitted = vi.fn();
+    component.decline.subscribe(emitted);
+    component.declineReason = 'ab';
+
+    component.onDecline();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
   it('should emit request changes with trimmed reason', () => {
     const emitted = vi.fn();
     component.requestChanges.subscribe(emitted);
@@ -238,6 +284,16 @@ describe('UserInvoiceDetailComponent', () => {
     const emitted = vi.fn();
     component.requestChanges.subscribe(emitted);
     component.changeRequestReason = ' ';
+
+    component.onRequestChanges();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should not emit request changes when reason is shorter than backend minimum', () => {
+    const emitted = vi.fn();
+    component.requestChanges.subscribe(emitted);
+    component.changeRequestReason = 'ab';
 
     component.onRequestChanges();
 
@@ -265,6 +321,30 @@ describe('UserInvoiceDetailComponent', () => {
     component.markPaid.subscribe(emitted);
     component.paymentReference = 'REF-123';
     component.paymentPurpose = '';
+    component.paymentDate = '2026-02-03';
+
+    component.onMarkPaid();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should not emit mark paid when payment reference is shorter than backend minimum', () => {
+    const emitted = vi.fn();
+    component.markPaid.subscribe(emitted);
+    component.paymentReference = 'ab';
+    component.paymentPurpose = 'Supplier payout';
+    component.paymentDate = '2026-02-03';
+
+    component.onMarkPaid();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should not emit mark paid when purpose is shorter than backend minimum', () => {
+    const emitted = vi.fn();
+    component.markPaid.subscribe(emitted);
+    component.paymentReference = 'REF-123';
+    component.paymentPurpose = 'ab';
     component.paymentDate = '2026-02-03';
 
     component.onMarkPaid();
