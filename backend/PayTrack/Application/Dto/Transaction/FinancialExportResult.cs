@@ -2,7 +2,7 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-namespace PayTrack.Application.Services.Model
+namespace PayTrack.Application.Dto.Transaction
 {
     /// <summary>
     /// Represents a generated financial export file.
