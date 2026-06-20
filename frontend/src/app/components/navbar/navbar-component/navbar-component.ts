@@ -60,7 +60,10 @@ export class NavbarComponent {
         filter((user) => user?.role === Role.ADMIN),
         take(1),
         switchMap(() =>
-          this.paymentRequestService.getPaymentRequestsByUser({ Status: 0, Limit: 1 }),
+          this.paymentRequestService.getPaymentRequestsByUser({
+            Status: TransactionStatus.Submitted,
+            Limit: 1,
+          }),
         ),
       )
       .subscribe({

@@ -6,7 +6,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
-import { Role, UserDto } from '../../../types/exporter';
+import { Role, TransactionStatus, UserDto } from '../../../types/exporter';
 
 import { NavbarComponent } from './navbar-component';
 
@@ -143,7 +143,7 @@ describe('NavbarComponent', () => {
     fixture.detectChanges();
 
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith({
-      Status: 0,
+      Status: TransactionStatus.Submitted,
       Limit: 1,
     });
     expect(access().submittedCount()).toBe(7);
@@ -168,7 +168,7 @@ describe('NavbarComponent', () => {
     fixture.detectChanges();
 
     expect(teamRequestServiceMock.getPaymentRequestsByTeam).toHaveBeenCalledWith({
-      Status: 0,
+      Status: TransactionStatus.Submitted,
       UserId: 42,
       Limit: 1,
     });
