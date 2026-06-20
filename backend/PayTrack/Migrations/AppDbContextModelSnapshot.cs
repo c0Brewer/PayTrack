@@ -190,6 +190,39 @@ namespace PayTrack.Migrations
                     b.ToTable("Seasons");
                 });
 
+            modelBuilder.Entity("PayTrack.Data.Entities.SystemSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("LastModifiedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.HasIndex("LastModifiedByUserId");
+
+                    b.ToTable("SystemSettings");
+                });
+
             modelBuilder.Entity("PayTrack.Data.Entities.Team", b =>
                 {
                     b.Property<int>("Id")
@@ -493,6 +526,16 @@ namespace PayTrack.Migrations
                     b.Navigation("FirstPaymentRequestByUser");
 
                     b.Navigation("SecondPaymentRequestByUser");
+                });
+
+            modelBuilder.Entity("PayTrack.Data.Entities.SystemSetting", b =>
+                {
+                    b.HasOne("PayTrack.Data.Entities.User", "LastModifiedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("LastModifiedByUser");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Transaction", b =>

@@ -89,7 +89,7 @@
   color: #b91c1c;
 }
 
-.form-actions{
+.form-actions {
   display: flex;
   justify-content: flex-end;
 
@@ -97,13 +97,12 @@
     padding: 1rem;
     font-size: 1.2rem;
   }
-
 }
 
-.input-wrapper{
+.input-wrapper {
   input,
   select,
-  textarea{
+  textarea {
     width: 100%;
     border: 1px solid white;
     background-color: v.$TUR-secondary-background;
@@ -112,7 +111,9 @@
     border-radius: 0.2rem;
     font-size: 1rem;
   }
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     border-color: v.$TUR-primary-orange;
     box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
     outline: none;
@@ -125,17 +126,15 @@
     resize: vertical;
   }
 
-
-  label{
-    .required{
+  label {
+    .required {
       color: #ef4444;
     }
     margin-top: 0.5rem;
   }
-
 }
 
-.error-msg{
+.error-msg {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -178,6 +177,17 @@
 
 .receipt-upload--invalid {
   border-color: #ef4444;
+}
+
+.receipt-upload__hint {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #475569;
+  font-size: 0.92rem !important;
+  line-height: 1.35;
+  margin: 0 0 1rem !important;
+  padding: 0.75rem 0.9rem;
 }
 
 .receipt-upload__icon {
@@ -245,6 +255,54 @@
   width: 1px;
 }
 
+.receipt-extraction {
+  align-items: flex-start;
+  border-radius: 0.55rem;
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.85rem;
+
+  p {
+    color: #334155;
+    font-size: 0.9rem !important;
+    line-height: 1.35;
+    margin: 0 !important;
+  }
+
+  span:not(.material-symbols-outlined) {
+    color: #64748b;
+    display: inline-block;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+}
+
+.receipt-extraction__icon {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.receipt-extraction--loading {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.receipt-extraction--success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.receipt-extraction--partial {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.receipt-extraction--error {
+  background: #f8fafc;
+  color: #475569;
+}
+
 .payout-type {
   border: 0;
   margin: 0;
@@ -265,7 +323,7 @@
   display: flex;
   justify-content: space-between;
 
-  button{
+  button {
     align-items: center;
     display: inline-flex;
     gap: 0.45rem;
@@ -273,7 +331,7 @@
     color: v.$TUR-primary-orange;
     background-color: transparent;
   }
-  button:hover{
+  button:hover {
     cursor: pointer;
     color: #b85402;
   }

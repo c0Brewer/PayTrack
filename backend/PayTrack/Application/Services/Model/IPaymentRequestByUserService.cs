@@ -48,6 +48,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="payoutType">payout type (to user, not yet paid, or already paid).</param>
         /// <param name="bankAccountId">id of bank account to use.</param>
         /// <param name="creditorName">name of the external creditor, required for NotYetPaid.</param>
+        /// <param name="dueDate">due date of the invoice, required for NotYetPaid.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> CreatePaymentRequestByUserAsync(
             int userId,
@@ -60,7 +61,8 @@ namespace PayTrack.Application.Services.Model
             string? comment,
             PayoutType payoutType,
             int? bankAccountId,
-            string? creditorName);
+            string? creditorName,
+            DateTime? dueDate);
 
         /// <summary>
         /// Checks possible duplicates of a PaymentRequestByUser with exact matching criteria.
@@ -71,6 +73,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="paidAt">Paid-at day for matching.</param>
         /// <param name="invoiceNumber">Invoice number for matching.</param>
         /// <param name="paymentRequestByUserId">Optional source payment request id to exclude dismissed pairs.</param>
+        /// <param name="includeOtherUsers">Whether duplicates from other users may be returned.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
@@ -78,7 +81,8 @@ namespace PayTrack.Application.Services.Model
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null);
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.

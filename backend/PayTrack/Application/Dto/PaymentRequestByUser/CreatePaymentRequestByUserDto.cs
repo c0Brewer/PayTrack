@@ -51,6 +51,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         public string? CreditorName { get; init; }
 
         /// <summary>
+        /// Gets the due date of the invoice. Required when PayoutType is NotYetPaid.
+        /// </summary>
+        public DateTime? DueDate { get; init; }
+
+        /// <summary>
         /// Gets the bank account id, required only for user payouts.
         /// </summary>
         public int? BankAccountId { get; init; }

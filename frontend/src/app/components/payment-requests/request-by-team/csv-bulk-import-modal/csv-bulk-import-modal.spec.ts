@@ -5,6 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { BudgetDto } from '../../../../types/exporter';
 
 import { CsvBulkImportModalComponent } from './csv-bulk-import-modal';
@@ -30,11 +31,15 @@ describe('CsvBulkImportModalComponent', () => {
 
   const mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
   const mockPaymentRequestByTeamService = { createPaymentRequestByTeam: vi.fn() };
+  const mockSystemSettingService = { getCsvColumnSettings: vi.fn() };
 
   beforeEach(async () => {
     mockNotificationService.showSuccess.mockClear();
     mockNotificationService.showError.mockClear();
     mockPaymentRequestByTeamService.createPaymentRequestByTeam.mockReset().mockReturnValue(of({}));
+    mockSystemSettingService.getCsvColumnSettings
+      .mockReset()
+      .mockReturnValue(of({ nameColumn: 'Name', summeColumn: 'Summe' }));
 
     // Prevent parseCsvFile from running during component creation in most tests.
     // Tests that verify CSV parsing will re-spy individually.
@@ -50,6 +55,7 @@ describe('CsvBulkImportModalComponent', () => {
       providers: [
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: PaymentRequestByTeamService, useValue: mockPaymentRequestByTeamService },
+        { provide: SystemSettingService, useValue: mockSystemSettingService },
       ],
     }).compileComponents();
 
@@ -280,6 +286,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 1,
           userId: 1,
           displayName: 'A',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'pending',
         },
@@ -288,6 +295,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 2,
           userId: null,
           displayName: null,
+          displayEmail: null,
           isAutoMatched: false,
           status: 'pending',
         },
@@ -302,6 +310,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 1,
           userId: 1,
           displayName: 'A',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'pending',
         },
@@ -310,6 +319,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 2,
           userId: 2,
           displayName: 'B',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'pending',
         },
@@ -324,6 +334,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 5,
           userId: null,
           displayName: null,
+          displayEmail: null,
           isAutoMatched: false,
           status: 'pending',
         },
@@ -356,6 +367,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 10,
           userId: 100,
           displayName: 'Alice Müller',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'pending',
         },
@@ -364,6 +376,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 20,
           userId: 101,
           displayName: 'Bob Smith',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'pending',
         },
@@ -377,6 +390,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 5,
           userId: null,
           displayName: null,
+          displayEmail: null,
           isAutoMatched: false,
           status: 'pending',
         },
@@ -417,6 +431,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 1,
           userId: 1,
           displayName: 'A',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'success',
         },
@@ -425,6 +440,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 2,
           userId: 2,
           displayName: 'B',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'error',
         },
@@ -433,6 +449,7 @@ describe('CsvBulkImportModalComponent', () => {
           amount: 3,
           userId: 3,
           displayName: 'C',
+          displayEmail: null,
           isAutoMatched: true,
           status: 'success',
         },
