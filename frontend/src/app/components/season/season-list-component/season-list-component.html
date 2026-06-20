@@ -1,5 +1,7 @@
 <div class="box season-list">
-  <h5 class="season-list__title">Active Seasons ({{ visibleSeasons.length }})</h5>
+  <h5 class="season-list__title">
+    {{ showInactive ? 'Inactive Seasons' : 'Active Seasons' }} ({{ visibleSeasons.length }})
+  </h5>
 
   <div class="season-list__rows">
     @for (season of visibleSeasons; track season.id) {
@@ -34,12 +36,23 @@
 
         @if (editingSeasonId !== season.id) {
           <div class="season-list__actions">
-            <button class="btn btn-outline-primary season-list__icon-button" type="button" (click)="startEdit(season)" aria-label="Edit season">
-              <span class="material-symbols-outlined">edit</span>
-            </button>
-            <button class="btn btn-outline-danger season-list__icon-button" type="button" (click)="requestDelete(season)" aria-label="Delete season">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
+            @if (showInactive) {
+              <button
+                class="btn btn-outline-primary season-list__reactivate"
+                type="button"
+                (click)="requestReactivate(season)"
+              >
+                <span class="material-symbols-outlined">restart_alt</span>
+                Reactivate
+              </button>
+            } @else {
+              <button class="btn btn-outline-primary season-list__icon-button" type="button" (click)="startEdit(season)" aria-label="Edit season">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="btn btn-outline-danger season-list__icon-button" type="button" (click)="requestDelete(season)" aria-label="Delete season">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            }
           </div>
         }
       </div>
@@ -47,30 +60,4 @@
       <div class="season-list__empty">No seasons found.</div>
     }
   </div>
-
-  @if (inactiveSeasons.length > 0) {
-    <div class="season-list__inactive">
-      <h6 class="season-list__inactive-title">Inactive Seasons</h6>
-      <div class="season-list__inactive-rows">
-        @for (season of inactiveSeasons; track season.id) {
-          <div class="season-list__inactive-row">
-            <div class="season-list__inactive-content">
-              <span class="season-list__inactive-name">{{ season.name }}</span>
-              <span class="season-list__inactive-meta">
-                {{ season.budgets?.length ?? 0 }} Budgets assigned
-              </span>
-            </div>
-            <button
-              class="btn btn-outline-primary season-list__reactivate"
-              type="button"
-              (click)="requestReactivate(season)"
-            >
-              <span class="material-symbols-outlined">restart_alt</span>
-              Reactivate
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-  }
 </div>

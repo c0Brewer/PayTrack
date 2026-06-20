@@ -19,18 +19,37 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<List<Season>> GetAllAsync(GetSeasonQuery? query = null)
+        public async Task<(List<Season> seasons, int totalCount)> GetAllAsync(GetSeasonQuery? query = null)
         {
             var dbQuery = this.context.Seasons
                 .Include(s => s.Budgets)
                 .AsQueryable();
 
-            if (query?.IncludeInactive != true)
+            if (query?.IsActive.HasValue == true)
+            {
+                dbQuery = dbQuery.Where(s => s.IsActive == query.IsActive.Value);
+            }
+            else if (query?.IncludeInactive != true)
             {
                 dbQuery = dbQuery.Where(s => s.IsActive);
             }
 
-            return await dbQuery.OrderBy(s => s.Name).ToListAsync();
+            var totalCount = await dbQuery.CountAsync();
+
+            dbQuery = dbQuery.OrderBy(s => s.Name);
+
+            if (query?.Offset.HasValue == true)
+            {
+                dbQuery = dbQuery.Skip(query.Offset.Value);
+            }
+
+            if (query?.Limit.HasValue == true)
+            {
+                dbQuery = dbQuery.Take(query.Limit.Value);
+            }
+
+            var seasons = await dbQuery.ToListAsync();
+            return (seasons, totalCount);
         }
 
         /// <inheritdoc/>

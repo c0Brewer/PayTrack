@@ -1,12 +1,43 @@
 <div class="main-page-container season-management">
-  <h2 class="m-0">Season Management</h2>
+  <div class="season-management__header">
+    <h2 class="m-0">Season Management</h2>
+    <button
+      type="button"
+      class="btn btn-outline-secondary season-management__inactive-toggle"
+      [class.active]="showInactiveSeasons"
+      (click)="toggleInactiveSeasons()"
+    >
+      <span class="material-symbols-outlined">visibility</span>
+      {{ showInactiveSeasons ? 'Show Active Seasons' : 'Inactive Seasons' }}
+    </button>
+  </div>
   <app-season-form-component (createSeason)="createSeason($event)" />
+
+  <div class="season-management__page-size">
+    <label for="season-page-size">Items per page</label>
+    <select id="season-page-size" class="form-select" [value]="limit" (change)="onLimitChange($event)">
+      @for (option of limitSelection; track option) {
+        <option [value]="option">{{ option }}</option>
+      }
+    </select>
+  </div>
+
   <app-season-list-component
     [seasons]="seasons"
+    [showInactive]="showInactiveSeasons"
     (updateSeason)="updateSeason($event)"
     (deleteSeason)="openDeleteSeason($event)"
     (reactivateSeason)="reactivateSeason($event)"
   />
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
 
   <app-modal-component
     [visible]="seasonToDelete !== null"

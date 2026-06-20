@@ -57,8 +57,9 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.GetAllAsync(new GetSeasonQuery { IncludeInactive = true });
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Select(s => s.Name).Should().Equal("2025", "2026");
+            result.seasons.Should().HaveCount(2);
+            result.totalCount.Should().Be(2);
+            result.seasons.Select(s => s.Name).Should().Equal("2025", "2026");
         }
 
         [Fact]
@@ -133,8 +134,52 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.GetAllAsync();
 
             // Assert
-            result.Should().HaveCount(3);
-            result.Select(s => s.Name).Should().Equal("2025", "2026", "2027");
+            result.seasons.Should().HaveCount(3);
+            result.totalCount.Should().Be(3);
+            result.seasons.Select(s => s.Name).Should().Equal("2025", "2026", "2027");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithPagination_ShouldReturnPageAndTotalCount()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_Paginated");
+            context.Seasons.AddRange(
+                new Season { Name = "2024" },
+                new Season { Name = "2025" },
+                new Season { Name = "2026" });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { Limit = 1, Offset = 1 });
+
+            // Assert
+            result.seasons.Should().ContainSingle();
+            result.totalCount.Should().Be(3);
+            result.seasons[0].Name.Should().Be("2025");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithInactiveFilter_ShouldReturnOnlyInactiveSeasons()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_InactiveOnly");
+            context.Seasons.AddRange(
+                new Season { Name = "2026" },
+                new Season { Name = "2025", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { IsActive = false });
+
+            // Assert
+            result.seasons.Should().ContainSingle();
+            result.totalCount.Should().Be(1);
+            result.seasons[0].Name.Should().Be("2025");
         }
 
         [Fact]
@@ -168,8 +213,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.GetAllAsync();
 
             // Assert
-            result.Should().ContainSingle();
-            result[0].Budgets.Should().ContainSingle(b => b.Name == "Season budget");
+            result.seasons.Should().ContainSingle();
+            result.seasons[0].Budgets.Should().ContainSingle(b => b.Name == "Season budget");
         }
 
         [Fact]

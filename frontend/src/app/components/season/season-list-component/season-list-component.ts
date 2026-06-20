@@ -11,6 +11,7 @@ import { SeasonDto } from '../../../types/exporter';
 })
 export class SeasonListComponent {
   @Input() seasons: SeasonDto[] = [];
+  @Input() showInactive = false;
   @Output() updateSeason = new EventEmitter<{ id: number; name: string }>();
   @Output() deleteSeason = new EventEmitter<number>();
   @Output() reactivateSeason = new EventEmitter<number>();
@@ -19,11 +20,7 @@ export class SeasonListComponent {
   editedSeasonName = '';
 
   get visibleSeasons(): SeasonDto[] {
-    return this.seasons.filter((season) => season.isActive !== false);
-  }
-
-  get inactiveSeasons(): SeasonDto[] {
-    return this.seasons.filter((season) => season.isActive === false);
+    return this.seasons;
   }
 
   startEdit(season: SeasonDto): void {

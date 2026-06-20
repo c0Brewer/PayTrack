@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -34,7 +35,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             };
             this.factory.ServiceMock
                 .Setup(s => s.GetAllAsync(It.Is<GetSeasonQuery>(q => q.IncludeInactive == true)))
-                .ReturnsAsync(seasons);
+                .ReturnsAsync((seasons, seasons.Count));
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
@@ -44,10 +45,11 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<List<SeasonDto>>();
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(s => s.Name == "2025");
-            result.Should().ContainSingle(s => s.Name == "2026");
+            var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<SeasonDto>>();
+            result!.Items.Should().HaveCount(2);
+            result.TotalCount.Should().Be(2);
+            result.Items.Should().ContainSingle(s => s.Name == "2025");
+            result.Items.Should().ContainSingle(s => s.Name == "2026");
         }
 
         // POST /season

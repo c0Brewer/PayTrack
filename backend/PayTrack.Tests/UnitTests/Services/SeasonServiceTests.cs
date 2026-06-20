@@ -30,15 +30,16 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 2, Name = "2026" },
             };
             var query = new GetSeasonQuery { IncludeInactive = true };
-            this.repoMock.Setup(r => r.GetAllAsync(query)).ReturnsAsync(seasons);
+            this.repoMock.Setup(r => r.GetAllAsync(query)).ReturnsAsync((seasons, seasons.Count));
 
             // Act
             var result = await this.service.GetAllAsync(query);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(s => s.Name == "2025");
-            result.Should().ContainSingle(s => s.Name == "2026");
+            result.seasons.Should().HaveCount(2);
+            result.totalCount.Should().Be(2);
+            result.seasons.Should().ContainSingle(s => s.Name == "2025");
+            result.seasons.Should().ContainSingle(s => s.Name == "2026");
             this.repoMock.Verify(r => r.GetAllAsync(query), Times.Once);
         }
 

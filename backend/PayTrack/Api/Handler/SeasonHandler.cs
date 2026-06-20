@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Services.Model;
 
@@ -21,12 +22,14 @@ namespace PayTrack.Api.Handler
         /// <param name="query">Query options.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<List<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
+        public static async Task<Results<Ok<PaginatedResponse<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
             [AsParameters] GetSeasonQuery query,
             ISeasonService service)
         {
-            var seasons = await service.GetAllAsync(query);
-            return TypedResults.Ok(SeasonMapper.ListToDto(seasons));
+            var (seasons, totalCount) = await service.GetAllAsync(query);
+            var seasonDtos = SeasonMapper.ListToDto(seasons);
+            var paginatedResponse = new PaginatedResponse<SeasonDto>(seasonDtos, totalCount, query.Limit ?? -1, query.Offset ?? 0);
+            return TypedResults.Ok(paginatedResponse);
         }
 
         /// <summary>

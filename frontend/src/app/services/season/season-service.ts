@@ -7,6 +7,7 @@ import {
   GetSeasonOptions,
   ProblemDetails,
   SeasonDto,
+  SeasonDtoPaginatedResponse,
   UpdateSeasonRequestDto,
 } from '../../types/exporter';
 
@@ -19,7 +20,20 @@ export class SeasonService {
       .GET('/api/v1/season', { params: { query: queryOptions ?? {} } })
       .then(({ data, error }) => {
         if (error) throw new Error(SeasonService.getErrorMessage(error));
-        return data ?? [];
+        return data?.items ?? [];
+      });
+    return from(promise);
+  }
+
+  public getSeasonsPaginated(
+    queryOptions?: GetSeasonOptions,
+  ): Observable<SeasonDtoPaginatedResponse> {
+    const promise: Promise<SeasonDtoPaginatedResponse> = client
+      .GET('/api/v1/season', { params: { query: queryOptions ?? {} } })
+      .then(({ data, error }) => {
+        if (error) throw new Error(SeasonService.getErrorMessage(error));
+        if (!data) throw new Error('No data returned');
+        return data;
       });
     return from(promise);
   }

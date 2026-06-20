@@ -25,7 +25,7 @@ describe('SeasonManagementComponent', () => {
   let component: SeasonManagementComponent;
   let fixture: ComponentFixture<SeasonManagementComponent>;
   let seasonServiceMock: {
-    getSeasons: ReturnType<typeof vi.fn>;
+    getSeasonsPaginated: ReturnType<typeof vi.fn>;
     createSeason: ReturnType<typeof vi.fn>;
     updateSeason: ReturnType<typeof vi.fn>;
     deleteSeason: ReturnType<typeof vi.fn>;
@@ -38,7 +38,16 @@ describe('SeasonManagementComponent', () => {
 
   beforeEach(async () => {
     seasonServiceMock = {
-      getSeasons: vi.fn().mockReturnValue(of(mockSeasons)),
+      getSeasonsPaginated: vi.fn().mockReturnValue(
+        of({
+          items: mockSeasons.filter((season) => season.isActive),
+          totalCount: 2,
+          limit: 10,
+          offset: 0,
+          hasNext: false,
+          hasPrevious: false,
+        }),
+      ),
       createSeason: vi.fn().mockReturnValue(of(mockSeasons[0])),
       updateSeason: vi.fn().mockReturnValue(of(mockSeasons[0])),
       deleteSeason: vi.fn().mockReturnValue(of(null)),
@@ -70,12 +79,19 @@ describe('SeasonManagementComponent', () => {
   it('ngOnInit should load seasons', () => {
     component.ngOnInit();
 
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
-    expect(component.seasons).toEqual(mockSeasons);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: true,
+      Limit: 10,
+      Offset: 0,
+    });
+    expect(component.seasons).toEqual(mockSeasons.filter((season) => season.isActive));
+    expect(component.totalCount).toBe(2);
   });
 
   it('loadSeasons should show error when API throws', () => {
-    seasonServiceMock.getSeasons.mockReturnValueOnce(throwError(() => new Error('API error')));
+    seasonServiceMock.getSeasonsPaginated.mockReturnValueOnce(
+      throwError(() => new Error('API error')),
+    );
 
     component.loadSeasons();
 
@@ -172,6 +188,42 @@ describe('SeasonManagementComponent', () => {
     );
   });
 
+  it('toggleInactiveSeasons should load inactive seasons from first page', () => {
+    seasonServiceMock.getSeasonsPaginated.mockReturnValueOnce(
+      of({
+        items: [mockSeasons[2]],
+        totalCount: 1,
+        limit: 10,
+        offset: 0,
+        hasNext: false,
+        hasPrevious: false,
+      }),
+    );
+
+    component.page = 2;
+    component.toggleInactiveSeasons();
+
+    expect(component.showInactiveSeasons).toBe(true);
+    expect(component.page).toBe(0);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: false,
+      Limit: 10,
+      Offset: 0,
+    });
+    expect(component.seasons).toEqual([mockSeasons[2]]);
+  });
+
+  it('nextPage should increment page and reload seasons', () => {
+    component.nextPage();
+
+    expect(component.page).toBe(1);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: true,
+      Limit: 10,
+      Offset: 10,
+    });
+  });
+
   it('openDeleteSeason should select the season for delete modal', () => {
     component.seasons = mockSeasons;
 
@@ -241,7 +293,6 @@ describe('SeasonManagementComponent', () => {
   });
 
   it('should pass seasons to the season list component', () => {
-    component.seasons = mockSeasons;
     fixture.detectChanges();
 
     const list = fixture.nativeElement.querySelector('app-season-list-component');

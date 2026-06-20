@@ -18,7 +18,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ISeasonRepository repo = repo;
 
         /// <inheritdoc/>
-        public async Task<List<Season>> GetAllAsync(GetSeasonQuery? query = null)
+        public async Task<(List<Season> seasons, int totalCount)> GetAllAsync(GetSeasonQuery? query = null)
         {
             return await this.repo.GetAllAsync(query);
         }

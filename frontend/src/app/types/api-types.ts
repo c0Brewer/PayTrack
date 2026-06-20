@@ -1015,6 +1015,11 @@ export interface paths {
             parameters: {
                 query?: {
                     IncludeInactive?: boolean;
+                    IsActive?: boolean;
+                    /** Format: int32 */
+                    Limit?: number;
+                    /** Format: int32 */
+                    Offset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -1028,7 +1033,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["SeasonDto"][];
+                        "application/json": components["schemas"]["SeasonDtoPaginatedResponse"];
                     };
                 };
             };
@@ -2931,6 +2936,17 @@ export interface components {
             name: string;
             isActive: boolean;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
+        SeasonDtoPaginatedResponse: {
+            items: components["schemas"]["SeasonDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
         SendEmailNotificationDto: {
             /** Format: email */

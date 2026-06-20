@@ -16,8 +16,8 @@ namespace PayTrack.Data.Repositories.Model
         /// Returns all seasons including their budgets.
         /// </summary>
         /// <param name="query">Query options.</param>
-        /// <returns>List of seasons.</returns>
-        Task<List<Season>> GetAllAsync(GetSeasonQuery? query = null);
+        /// <returns>Matching seasons and total count before pagination.</returns>
+        Task<(List<Season> seasons, int totalCount)> GetAllAsync(GetSeasonQuery? query = null);
 
         /// <summary>
         /// Gets a season by ID.

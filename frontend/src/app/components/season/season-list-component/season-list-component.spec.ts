@@ -39,15 +39,28 @@ describe('SeasonListComponent', () => {
   });
 
   it('should render season names and budget counts', () => {
-    fixture.componentRef.setInput('seasons', mockSeasons);
+    fixture.componentRef.setInput(
+      'seasons',
+      mockSeasons.filter((season) => season.isActive),
+    );
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('2025');
     expect(fixture.nativeElement.textContent).toContain('2026');
-    expect(fixture.nativeElement.textContent).toContain('2024');
-    expect(fixture.nativeElement.textContent).toContain('Inactive Seasons');
-    expect(fixture.nativeElement.textContent).toContain('Reactivate');
+    expect(fixture.nativeElement.textContent).not.toContain('2024');
+    expect(fixture.nativeElement.textContent).toContain('Active Seasons');
+    expect(fixture.nativeElement.textContent).not.toContain('Reactivate');
     expect(fixture.nativeElement.textContent).toContain('1');
+  });
+
+  it('should render inactive seasons only when showInactive is enabled', () => {
+    fixture.componentRef.setInput('seasons', [mockSeasons[2]]);
+    fixture.componentRef.setInput('showInactive', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Inactive Seasons');
+    expect(fixture.nativeElement.textContent).toContain('2024');
+    expect(fixture.nativeElement.textContent).toContain('Reactivate');
   });
 
   it('should render empty state when no seasons exist', () => {
@@ -77,11 +90,10 @@ describe('SeasonListComponent', () => {
     expect(deleteSpy).toHaveBeenCalledWith(1);
   });
 
-  it('should expose active and inactive seasons separately', () => {
-    fixture.componentRef.setInput('seasons', mockSeasons);
+  it('should expose current page seasons', () => {
+    fixture.componentRef.setInput('seasons', [mockSeasons[0], mockSeasons[1]]);
 
     expect(component.visibleSeasons.map((season) => season.id)).toEqual([1, 2]);
-    expect(component.inactiveSeasons.map((season) => season.id)).toEqual([3]);
   });
 
   it('should emit reactivate event for inactive season', () => {
