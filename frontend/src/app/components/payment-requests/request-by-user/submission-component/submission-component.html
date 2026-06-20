@@ -1,6 +1,8 @@
 <div id="invoice-page" class="main-page-container">
-  <h1>Invoice Submission</h1>
-  <p>Upload your invoice and provide the details.</p>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Invoice Submission</h1>
+    <p class="mb-0 text-body-secondary">Upload your invoice and provide the details.</p>
+  </div>
 
   @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
     <app-box-component

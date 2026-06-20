@@ -1,9 +1,14 @@
 <div class="main-page-container team-management">
-  <div class="d-flex align-items-center mb-1">
-    <h2 class="m-0">Team Management</h2>
+  <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
+    <div class="d-flex flex-column gap-1">
+      <h1 class="m-0">Team Management</h1>
+      <p class="mb-0 text-body-secondary">
+        Create teams, adjust assignments, and keep team structures up to date.
+      </p>
+    </div>
     <button
       type="button"
-      class="btn btn-primary ms-auto d-inline-flex align-items-center gap-1"
+      class="btn btn-primary align-self-start align-self-sm-auto d-inline-flex align-items-center gap-1"
       (click)="openCreate()"
     >
       <span class="material-symbols-outlined">add</span>

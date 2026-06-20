@@ -1,5 +1,40 @@
 @use 'variables' as v;
 
+.user-table-wrapper {
+  border-radius: v.$size-xs;
+  width: 100%;
+}
+
+:host-context(.user-management) {
+  .user-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .user-table {
+    min-width: 82rem;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .status-col {
+      min-width: 8.5rem;
+      width: 8.5rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
+  }
+}
+
   .user-summary {
     display: flex;
     flex-direction: column;
@@ -70,11 +105,7 @@
   }
 
   .status-col {
-    width: 14%;
-  }
-
-  .actions-col {
-    width: 16%;
+    text-align: center;
   }
 
   .actions-col {
@@ -84,6 +115,43 @@
 
 
 @media (max-width: 767.98px) {
+  :host-context(.user-management) {
+    .user-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .user-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .status-col {
+        min-width: 0;
+        width: auto;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
+  }
 
     .user-summary {
       align-items: center;

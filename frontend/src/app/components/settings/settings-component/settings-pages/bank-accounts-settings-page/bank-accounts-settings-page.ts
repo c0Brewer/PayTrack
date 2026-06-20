@@ -107,6 +107,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeDeleteModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account deleted successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -122,6 +123,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account created successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -148,6 +150,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account updated successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
