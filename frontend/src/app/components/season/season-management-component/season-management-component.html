@@ -3,7 +3,7 @@
     <h2 class="m-0">Season Management</h2>
     <button
       type="button"
-      class="btn btn-outline-secondary season-management__inactive-toggle"
+      class="btn btn-secondary season-management__inactive-toggle"
       [class.active]="showInactiveSeasons"
       (click)="toggleInactiveSeasons()"
     >
@@ -63,8 +63,11 @@
       }
 
       <div class="season-delete-modal__actions">
-        <button type="button" class="btn btn-secondary" (click)="closeDeleteSeasonModal()">Cancel</button>
-        <button type="button" class="btn btn-outline-danger" (click)="confirmDeleteSeason()">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="closeDeleteSeasonModal()">
+          <span class="material-symbols-outlined">cancel</span>
+          Cancel</button>
+        <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="confirmDeleteSeason()">
+          <span class="material-symbols-outlined">          {{ selectedSeasonHasDependencies ? 'block' : 'delete' }}</span>
           {{ selectedSeasonHasDependencies ? 'Deactivate' : 'Delete' }}
         </button>
       </div>

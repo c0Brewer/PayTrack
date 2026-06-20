@@ -38,7 +38,7 @@
           <div class="season-list__actions">
             @if (showInactive) {
               <button
-                class="btn btn-outline-primary season-list__reactivate"
+                class="btn btn-secondary season-list__reactivate"
                 type="button"
                 (click)="requestReactivate(season)"
               >
@@ -46,11 +46,23 @@
                 Reactivate
               </button>
             } @else {
-              <button class="btn btn-outline-primary season-list__icon-button" type="button" (click)="startEdit(season)" aria-label="Edit season">
+              <button
+                class="btn btn-secondary d-inline-flex align-items-center icon-hover-btn"
+                type="button"
+                (click)="startEdit(season)"
+                aria-label="Edit season"
+              >
                 <span class="material-symbols-outlined">edit</span>
+                <span class="btn-text">Edit</span>
               </button>
-              <button class="btn btn-outline-danger season-list__icon-button" type="button" (click)="requestDelete(season)" aria-label="Delete season">
+              <button
+                class="btn btn-outline-danger d-inline-flex align-items-center icon-hover-btn"
+                type="button"
+                (click)="requestDelete(season)"
+                aria-label="Delete season"
+              >
                 <span class="material-symbols-outlined">delete</span>
+                <span class="btn-text">Delete</span>
               </button>
             }
           </div>
