@@ -143,7 +143,7 @@ namespace PayTrack.Tests.UnitTests.Services
                     Team = new Team { Id = 1, Name = "Powertrain" },
                     UserId = 1,
                     User = new User { Id = 1, Name = "Member One", Email = "member1@paytrack.dev" },
-                    PurposeOfPayment = "Workshop participation and logistics coordination fee",
+                    PurposeOfPayment = "Workshop participation \u2013 logistics coordination fee",
                     CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
                     DueDate = new DateTime(2026, 2, 15, 0, 0, 0, DateTimeKind.Utc),
                 },
@@ -213,7 +213,7 @@ namespace PayTrack.Tests.UnitTests.Services
 
             var csv = Encoding.UTF8.GetString(result.Content);
             csv.Should().Contain("Amount,Due Date,Purpose,Team/Cost Centre,Status,User");
-            csv.Should().Contain("40.00,15.02.2026,Workshop participation and logistics coordination fee,Powertrain,Paid,Member One");
+            csv.Should().Contain("40.00,15.02.2026,Workshop participation \u2013 logistics coordination fee,Powertrain,Paid,Member One");
             csv.Should().Contain("100.00,31.01.2026,Membership fee,Powertrain / Membership,Submitted,Member One");
             csv.IndexOf("40.00,15.02.2026", StringComparison.Ordinal)
                 .Should()
@@ -236,9 +236,11 @@ namespace PayTrack.Tests.UnitTests.Services
             pdf.Should().Contain("Team/Cost Centre");
             pdf.Should().Contain("Status");
             pdf.Should().Contain("logistics coordination fee");
+            pdf.Should().Contain("\\226");
             pdf.Should().Contain("Member One");
             pdf.Should().NotContain("...");
-            pdf.IndexOf("Workshop participation and", StringComparison.Ordinal)
+            pdf.Should().NotContain("?");
+            pdf.IndexOf("Workshop participation", StringComparison.Ordinal)
                 .Should()
                 .BeLessThan(pdf.IndexOf("Membership fee", StringComparison.Ordinal));
         }
