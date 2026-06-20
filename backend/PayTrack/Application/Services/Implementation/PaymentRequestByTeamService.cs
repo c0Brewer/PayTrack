@@ -18,8 +18,6 @@ namespace PayTrack.Application.Services.Implementation
         IBudgetService _budgetService,
         INotificationDispatchService _notifications,
         ISystemSettingService _systemSettings,
-        ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
-        IOptions<PaymentRequestNotificationSettings> _notifSettings,
         ILogger<PaymentRequestByTeamService> _logger,
         IPushNotificationService? _pushNotifications = null) : IPaymentRequestByTeamService
     {
@@ -126,7 +124,7 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     var slackMsg =
                         $"New Payment Request: {purposeOfPayment}\n" +
-                        $"Amount: {amount:C2} · Due: {dueDate:yyyy-MM-dd}";
+                        $"Amount: {amount:C2} - Due: {dueDate:yyyy-MM-dd}";
 
                     // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(userToAssignTo.Email, slackMsg);
@@ -242,7 +240,7 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     var slackMsg =
                         $"Payment Confirmed: {transaction.PurposeOfPayment}\n" +
-                        $"Amount: {transaction.Amount:C2} · Paid on: {transaction.PaidAt:yyyy-MM-dd}";
+                        $"Amount: {transaction.Amount:C2} - Paid on: {transaction.PaidAt:yyyy-MM-dd}";
 
                     // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
@@ -315,7 +313,7 @@ namespace PayTrack.Application.Services.Implementation
                     var slackMsg =
                         $"Payment Request Deleted: {transaction.PurposeOfPayment}\n" +
                         $"Amount: {transaction.Amount:C2}" +
-                        (normalizedReason is not null ? $" · Reason: {normalizedReason}" : string.Empty);
+                        (normalizedReason is not null ? $" - Reason: {normalizedReason}" : string.Empty);
 
                     await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
                 }
