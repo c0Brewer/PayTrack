@@ -247,6 +247,29 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.form.get('invoiceNumber')?.value).toBe('MANUAL-1');
     expect(component.form.get('creditorName')?.value).toBe('Manual Supplier');
     expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe(
+      'Invoice details were detected, but your existing input was kept.',
+    );
+  });
+
+  it('should show no reliable details only when receipt extraction found no values', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: false,
+        message: null,
+        amount: { value: null, confidence: 0 },
+        invoiceDate: { value: null, confidence: 0 },
+        invoiceNumber: { value: null, confidence: 0 },
+      }),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe('No reliable invoice details were detected.');
   });
 
   it('should report only the number of fields actually prefilled', () => {
@@ -298,7 +321,9 @@ describe('ReceiptSubmitComponent', () => {
 
     expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
     expect(component.receiptExtractionStatus).toBe('partial');
-    expect(component.receiptExtractionMessage).toContain('offline');
+    expect(component.receiptExtractionMessage).toBe(
+      'Automatic field detection is unavailable while you are offline.',
+    );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (component as any).offlineService.isOffline.set(false);
   });

@@ -320,10 +320,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
             this.receiptExtractionResult = result;
             this.isExtractingReceiptData = false;
             this.receiptExtractionStatus = appliedFields > 0 ? 'success' : 'partial';
-            this.receiptExtractionMessage =
-              appliedFields > 0
-                ? `Pre-filled ${appliedFields} ${appliedFields === 1 ? 'field' : 'fields'} from the receipt. Please review before submitting.`
-                : (result.message ?? 'No reliable invoice details were detected.');
+            this.receiptExtractionMessage = this.getReceiptExtractionMessage(result, appliedFields);
             this.changeDetectorRef.detectChanges();
           },
           error: (err: Error) => {
@@ -357,6 +354,24 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     appliedFields += this.patchIfEmpty('invoiceNumber', result.invoiceNumber?.value);
 
     return appliedFields;
+  }
+
+  private getReceiptExtractionMessage(result: ReceiptExtractionDto, appliedFields: number): string {
+    if (appliedFields > 0) {
+      return `Pre-filled ${appliedFields} ${appliedFields === 1 ? 'field' : 'fields'} from the receipt. Please review before submitting.`;
+    }
+
+    if (this.hasExtractedReceiptValues(result)) {
+      return 'Invoice details were detected, but your existing input was kept.';
+    }
+
+    return result.message ?? 'No reliable invoice details were detected.';
+  }
+
+  private hasExtractedReceiptValues(result: ReceiptExtractionDto): boolean {
+    return [result.amount?.value, result.invoiceDate?.value, result.invoiceNumber?.value].some(
+      (value) => value != null && value !== '',
+    );
   }
 
   private patchIfEmpty(field: string, value: string | number | null | undefined): number {
