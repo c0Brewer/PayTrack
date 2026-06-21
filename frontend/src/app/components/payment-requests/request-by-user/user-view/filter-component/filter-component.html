@@ -10,6 +10,7 @@
         class="form-control"
         type="text"
         placeholder="Invoice number..."
+        [ngModel]="filterInvoiceNumber"
         (input)="onInvoiceNumberChange($event)"
       />
     </div>
@@ -19,12 +20,13 @@
         class="form-control"
         type="text"
         placeholder="Purpose of payment..."
+        [ngModel]="filterPurpose"
         (input)="onPurposeChange($event)"
       />
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <select class="form-select" (change)="onStatusChange($event)">
+      <select class="form-select" [ngModel]="filterStatus ?? ''" (change)="onStatusChange($event)">
         <option value="">All statuses</option>
 
         @for (status of transactionStatusOptions; track status) {
@@ -36,7 +38,7 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <select class="form-select" (change)="onTeamChange($event)">
+      <select class="form-select" [ngModel]="filterTeamId ?? ''" (change)="onTeamChange($event)">
         <option value="">All teams</option>
         @for (team of teams; track team.id) {
           <option [value]="team.id">{{ team.name }}</option>
@@ -45,7 +47,11 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <select class="form-select" (change)="onPayoutTypeChange($event)">
+      <select
+        class="form-select"
+        [ngModel]="filterPayoutType ?? ''"
+        (change)="onPayoutTypeChange($event)"
+      >
         <option value="">All Payout Types</option>
 
         @for (type of payoutTypeOptions; track type) {
@@ -57,11 +63,23 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <input class="form-control" type="number" placeholder="Min amount..." (input)="onMinAmountChange($event)" />
+      <input
+        class="form-control"
+        type="number"
+        placeholder="Min amount..."
+        [ngModel]="filterMinAmount"
+        (input)="onMinAmountChange($event)"
+      />
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <input class="form-control" type="number" placeholder="Max amount..." (input)="onMaxAmountChange($event)" />
+      <input
+        class="form-control"
+        type="number"
+        placeholder="Max amount..."
+        [ngModel]="filterMaxAmount"
+        (input)="onMaxAmountChange($event)"
+      />
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
@@ -84,7 +102,7 @@
             class="form-control"
             type="date"
             title="Submitted from"
-            [value]="filterMinCreatedAt"
+            [ngModel]="filterMinCreatedAt"
             (input)="onMinDateChange($event)"
           />
         </div>
@@ -93,7 +111,7 @@
             class="form-control"
             type="date"
             title="Submitted to"
-            [value]="filterMaxCreatedAt"
+            [ngModel]="filterMaxCreatedAt"
             (input)="onMaxDateChange($event)"
           />
         </div>
@@ -108,7 +126,7 @@
             class="form-control"
             type="date"
             title="Paid from"
-            [value]="filterMinPaidAt"
+            [ngModel]="filterMinPaidAt"
             (input)="onMinPaidAtChange($event)"
           />
         </div>
@@ -117,7 +135,7 @@
             class="form-control"
             type="date"
             title="Paid to"
-            [value]="filterMaxPaidAt"
+            [ngModel]="filterMaxPaidAt"
             (input)="onMaxPaidAtChange($event)"
           />
         </div>
