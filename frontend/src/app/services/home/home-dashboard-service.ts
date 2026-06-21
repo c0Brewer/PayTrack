@@ -4,7 +4,7 @@ import { from, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Role, TransactionStatus } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
-import { withOfflineReadFallback } from '../offline/offline-utils';
+import { isBrowserOnline, OFFLINE_READ_MESSAGE } from '../offline/offline-utils';
 
 export interface HomeDashboardRecentItem {
   id: number;
@@ -51,6 +51,8 @@ export interface HomeDashboardDto {
   providedIn: 'root',
 })
 export class HomeDashboardService {
+  private static readonly dashboardCacheKey = 'home-dashboard-cache';
+
   constructor(private readonly authService: AuthService) {}
 
   private getApiUrl(path: string): string {
@@ -66,15 +68,61 @@ export class HomeDashboardService {
         Accept: 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-    }).then(async (res) => {
-      if (!res.ok) {
-        const error = (await res.json().catch(() => null)) as { detail?: string } | null;
-        throw new Error(error?.detail ?? 'Unexpected Error');
-      }
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = (await res.json().catch(() => null)) as { detail?: string } | null;
+          throw new Error(error?.detail ?? 'Unexpected Error');
+        }
 
-      return (await res.json()) as HomeDashboardDto;
-    });
+        return (await res.json()) as HomeDashboardDto;
+      })
+      .then((dashboard) => {
+        this.storeCachedDashboard(dashboard);
+        return dashboard;
+      })
+      .catch((error: unknown) => {
+        const cachedDashboard = this.getCachedDashboard();
+        if (!isBrowserOnline() && cachedDashboard) {
+          return cachedDashboard;
+        }
 
-    return from(withOfflineReadFallback(promise, 'Error while loading dashboard'));
+        if (!isBrowserOnline()) {
+          throw new Error(OFFLINE_READ_MESSAGE);
+        }
+
+        if (error instanceof Error) {
+          throw error;
+        }
+
+        throw new Error('Error while loading dashboard');
+      });
+
+    return from(promise);
+  }
+
+  private storeCachedDashboard(dashboard: HomeDashboardDto): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      localStorage.setItem(HomeDashboardService.dashboardCacheKey, JSON.stringify(dashboard));
+    } catch {
+      // Ignore storage failures so dashboard loading still succeeds.
+    }
+  }
+
+  private getCachedDashboard(): HomeDashboardDto | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    try {
+      const cachedValue = localStorage.getItem(HomeDashboardService.dashboardCacheKey);
+      return cachedValue ? (JSON.parse(cachedValue) as HomeDashboardDto) : null;
+    } catch {
+      return null;
+    }
   }
 }
