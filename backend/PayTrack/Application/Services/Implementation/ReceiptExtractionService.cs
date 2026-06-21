@@ -22,7 +22,7 @@ namespace PayTrack.Application.Services.Implementation
         private const long MaximumFileSize = 20 * 1024 * 1024;
         private const int MinimumEmbeddedPdfTextLength = 40; // Below this threshold, treat the PDF as scanned and use OCR.
         private const int ScannedPdfRenderDpi = 150;
-        private const string TesseractPageSegmentationMode = "6";
+        private const string TesseractPageSegmentationMode = "1";
         private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(45); // Bounds external tools to a timeout
         private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
