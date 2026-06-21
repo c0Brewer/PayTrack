@@ -155,13 +155,13 @@ spec:
                   key: GOOGLE_CLIENT_SECRET
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
-              ephemeral-storage: "100Mi"
-            limits:
               memory: "512Mi"
+              cpu: "100m"
+              ephemeral-storage: "200Mi"
+            limits:
+              memory: "1Gi"
               cpu: "500m"
-              ephemeral-storage: "250Mi"
+              ephemeral-storage: "500Mi"
           volumeMounts:
             - name: backend-uploads
               mountPath: /app/uploads
