@@ -4,8 +4,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
-import { UserDto } from '../../../types/exporter';
+import { Role, UserDto } from '../../../types/exporter';
 
+import { AdminSettingsSettingsPageComponent } from './settings-pages/admin-settings-settings-page/admin-settings-settings-page';
 import { BankAccountsSettingsPageComponent } from './settings-pages/bank-accounts-settings-page/bank-accounts-settings-page';
 import { NotificationsSettingsPageComponent } from './settings-pages/notifications-settings-page/notifications-settings-page';
 import { ProfileSettingsPageComponent } from './settings-pages/profile-settings-page/profile-settings-page';
@@ -15,11 +16,13 @@ type SettingsTab = {
   id: string;
   label: string;
   icon: string;
+  adminOnly?: boolean;
 };
 
 @Component({
   selector: 'app-settings-component',
   imports: [
+    AdminSettingsSettingsPageComponent,
     BankAccountsSettingsPageComponent,
     NotificationsSettingsPageComponent,
     ProfileSettingsPageComponent,
@@ -52,6 +55,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
       label: 'Notifications',
       icon: 'edit_notifications',
     },
+    {
+      id: 'admin-settings',
+      label: 'Administration',
+      icon: 'admin_panel_settings',
+      adminOnly: true,
+    },
   ];
 
   private readonly activeTabId = signal(this.tabs[0].id);
@@ -79,6 +88,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   protected isActiveTab(tabId: string): boolean {
     return this.activeTabId() === tabId;
+  }
+
+  protected filteredTabs(user: UserDto | null): SettingsTab[] {
+    return this.tabs.filter((tab) => !tab.adminOnly || user?.role === Role.ADMIN);
   }
 
   protected hasNoBankAccounts(user: UserDto | null): boolean {

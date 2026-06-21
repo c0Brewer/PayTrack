@@ -31,11 +31,53 @@
   padding: v.$size-s;
 }
 
-.duplicate-list__main {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
+.duplicate-list__comparison {
+  display: grid;
   gap: v.$size-s;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.duplicate-list__comparison--paired {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto auto auto auto auto auto;
+}
+
+.duplicate-list__invoice-summary {
+  border-left: 3px solid v.$border-color;
+  display: grid;
+  gap: v.$size-xxs;
+  padding: 0 0 0 v.$size-xs;
+}
+
+.duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
+  grid-row: 1 / span 7;
+  grid-template-rows: subgrid;
+}
+
+.duplicate-list__invoice-summary--selected {
+  border-left-color: v.$TUR-primary-orange;
+}
+
+.duplicate-list__selector {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: v.$size-xxs;
+  min-width: 0;
+}
+
+.duplicate-list__selector input {
+  accent-color: v.$TUR-primary-orange;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.duplicate-list__card-title {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+  font-weight: v.$font-semibold;
+  text-transform: uppercase;
 }
 
 .duplicate-list__invoice,
@@ -44,13 +86,37 @@
   font-weight: v.$font-semibold;
 }
 
-.duplicate-list__details,
+.duplicate-list__detail {
+  display: grid;
+  font-size: v.$font-xs;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.duplicate-list__detail-label {
+  color: v.$text-muted;
+  font-weight: v.$font-semibold;
+}
+
+.duplicate-list__detail-value {
+  color: v.$text-color;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .duplicate-list__meta {
+  align-items: center;
   color: v.$text-muted;
   display: flex;
   flex-wrap: wrap;
-  gap: v.$size-xs v.$size-s;
   font-size: v.$font-xs;
+  gap: v.$size-xs v.$size-s;
+}
+
+.duplicate-list__meta-label {
+  color: v.$text-muted;
+  flex-shrink: 0;
+  font-weight: v.$font-semibold;
 }
 
 .duplicate-list__match {
@@ -64,6 +130,21 @@
   gap: v.$size-xs;
 }
 
+.duplicate-list__confirm-delete {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: v.$size-xs;
+  display: grid;
+  gap: v.$size-xs;
+  padding: v.$size-xs;
+
+  p {
+    color: #991b1b;
+    font-size: v.$font-xs;
+    margin: 0;
+  }
+}
+
 .duplicate-list__button {
   padding: v.$size-xxs v.$size-s;
   border: 1px solid v.$border-color;
@@ -72,8 +153,12 @@
   cursor: pointer;
   font-size: v.$font-xs;
 
+  &:hover:not(:disabled) {
+    background: v.$background-dark;
+  }
+
   &:disabled {
-    cursor: progress;
+    cursor: not-allowed;
     opacity: 0.6;
   }
 }
@@ -134,5 +219,35 @@
     box-shadow: 0 0.35rem 0.9rem rgb(235 106 0 / 22%);
     color: #fff;
     transform: translateY(-1px);
+  }
+}
+
+.duplicate-list__delete-confirmation {
+  align-items: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: v.$size-xs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$size-xs v.$size-s;
+  justify-content: space-between;
+  padding: v.$size-xs;
+}
+
+.duplicate-list__delete-text {
+  color: #991b1b;
+  font-size: v.$font-xs;
+  font-weight: v.$font-semibold;
+}
+
+@media (max-width: 420px) {
+  .duplicate-list__comparison--paired {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .duplicate-list__comparison--paired > .duplicate-list__invoice-summary {
+    grid-row: auto;
+    grid-template-rows: none;
   }
 }

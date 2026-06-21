@@ -10,5 +10,6 @@ namespace PayTrack.Application.Dto.Season
     /// Dto containing necessary information for updating a season.
     /// </summary>
     public sealed record class UpdateSeasonRequestDto(
-        string? Name);
+        string? Name = null,
+        bool? IsActive = null);
 }

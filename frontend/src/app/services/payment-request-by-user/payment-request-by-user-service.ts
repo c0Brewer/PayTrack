@@ -15,6 +15,7 @@ import {
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
   PayoutType,
+  ReceiptExtractionDto,
   RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
@@ -33,6 +34,10 @@ export class PaymentRequestByUserService {
 
   private getUploadUrl(): string {
     return this.getApiUrl('/api/v1/transaction/user');
+  }
+
+  private getReceiptExtractionUrl(): string {
+    return this.getApiUrl('/api/v1/transaction/user/receipt/extract');
   }
 
   public getPaymentRequestsByUser(
@@ -116,6 +121,29 @@ export class PaymentRequestByUserService {
     });
 
     return from(withOfflineReadFallback(promise));
+  }
+
+  public extractReceiptData(file: File): Observable<ReceiptExtractionDto> {
+    ensureOnlineForMutation();
+
+    const fd = new FormData();
+    fd.append('receipt', file);
+
+    const promise = fetch(this.getReceiptExtractionUrl(), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+      body: fd,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Receipt extraction failed.');
+      }
+      return res.json() as Promise<ReceiptExtractionDto>;
+    });
+
+    return from(promise);
   }
 
   public getDuplicatePaymentRequestsByUser(

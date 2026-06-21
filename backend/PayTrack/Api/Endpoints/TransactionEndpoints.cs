@@ -36,6 +36,10 @@ namespace PayTrack.Api.Endpoints
 
             group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery().RequireActiveUser(); // Needed because of the way the file upload works. This is intentional
 
+            group.MapPost("/user/receipt/extract", PaymentRequestByUserHandler.ExtractReceiptAsync)
+                .DisableAntiforgery() // JWT-authenticated multipart upload; no CSRF token needed.
+                .RequireActiveUser();
+
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
@@ -79,11 +83,19 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
 
+            group.MapDelete("/team/{id:int}", PaymentRequestByTeamHandler.DeletePaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+
             /*
              * Bankstatement Matching
              */
-            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches);
-            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches);
+            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }

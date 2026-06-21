@@ -137,5 +137,22 @@ namespace PayTrack.Api.Handler
 
             return TypedResults.Ok(PaymentRequestByTeamMapper.ToDto(updated));
         }
+
+        /// <summary>
+        /// Deletes a PaymentRequestByTeam. Only allowed when Status is Submitted.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByTeam to delete.</param>
+        /// <param name="dto">Optional request body containing the deletion reason.</param>
+        /// <param name="paymentRequestByTeamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeletePaymentRequestByTeamAsync(
+            [FromRoute] int id,
+            [FromBody] DeletePaymentRequestByTeamDto? dto,
+            IPaymentRequestByTeamService paymentRequestByTeamService)
+        {
+            await paymentRequestByTeamService.DeletePaymentRequestByTeamAsync(id, dto?.Reason);
+
+            return TypedResults.NoContent();
+        }
     }
 }

@@ -75,6 +75,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TransactionStatusHistory> TransactionStatusHistories => this.Set<TransactionStatusHistory>();
 
     /// <summary>
+    /// Database set for all admin-configurable SystemSettings.
+    /// </summary>
+    public DbSet<SystemSetting> SystemSettings => this.Set<SystemSetting>();
+
+    /// <summary>
     /// Overrides OnModelCreating to manually adjust the connections and constraints.
     /// </summary>
     /// <param name="modelBuilder">Model Builder.</param>
@@ -265,6 +270,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(d => d.SecondPaymentRequestByUserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // -------------------------------------------------------
+        // SystemSetting
+        // -------------------------------------------------------
+        modelBuilder.Entity<SystemSetting>(e =>
+        {
+            e.HasIndex(s => s.Key).IsUnique();
+
+            e.HasOne(s => s.LastModifiedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.LastModifiedByUserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // -------------------------------------------------------

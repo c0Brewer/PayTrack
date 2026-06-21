@@ -1,6 +1,8 @@
 <div id="invoice-page" class="main-page-container">
-  <h1>Invoice Submission</h1>
-  <p>Upload your invoice and provide the details.</p>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Invoice Submission</h1>
+    <p class="mb-0 text-body-secondary">Upload your invoice and provide the details.</p>
+  </div>
 
   @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
     <app-box-component
@@ -15,8 +17,8 @@
       <div class="offline-queue">
         @if (offlineService.isOffline()) {
           <p class="offline-queue__notice">
-            You are offline. New invoices will be stored locally on this device until you come
-            back online and restore them into the form.
+            You are offline. New invoices will be stored locally on this device until you come back
+            online and restore them into the form.
           </p>
         } @else {
           <p class="offline-queue__notice">
@@ -61,7 +63,8 @@
                     class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
                     [disabled]="offlineService.isOffline()"
                     (click)="loadPendingSubmission(item)"
-                  ><span class="material-symbols-outlined">input</span>
+                  >
+                    <span class="material-symbols-outlined">input</span>
                     Plug into Form
                   </button>
                   <button
@@ -206,6 +209,10 @@
           subtitle="Upload your invoice/receipt and enter the details."
           size="medium"
         >
+          <p class="receipt-upload__hint">
+            Uploading the receipt first may help us pre-fill some invoice fields automatically. You
+            can review and change all values before submitting.
+          </p>
           <label
             class="receipt-upload"
             for="receiptFile"
@@ -235,6 +242,27 @@
             <span class="error-msg">
               <span class="material-symbols-outlined">error</span>{{ getError('receipt') }}
             </span>
+          }
+          @if (receiptExtractionStatus !== 'idle') {
+            <div
+              class="receipt-extraction"
+              [ngClass]="'receipt-extraction--' + receiptExtractionStatus"
+            >
+              <span class="receipt-extraction__icon material-symbols-outlined">
+                {{
+                  receiptExtractionStatus === 'loading'
+                    ? 'hourglass_top'
+                    : receiptExtractionStatus === 'success'
+                      ? 'auto_awesome'
+                      : receiptExtractionStatus === 'error'
+                        ? 'info'
+                        : 'rule'
+                }}
+              </span>
+              <div>
+                <p>{{ receiptExtractionMessage }}</p>
+              </div>
+            </div>
           }
         </app-box-component>
       </div>
@@ -351,6 +379,21 @@
                 >
               }
             </div>
+            <div class="field input-wrapper payout-type__due-date">
+              <label for="dueDate">Due Date <span class="required">*</span></label>
+              <input
+                id="dueDate"
+                type="date"
+                formControlName="dueDate"
+                [class.is-invalid]="isInvalid('dueDate')"
+              />
+              @if (getError('dueDate')) {
+                <span class="error-msg"
+                  ><span class="material-symbols-outlined">error</span
+                  >{{ getError('dueDate') }}</span
+                >
+              }
+            </div>
           }
         </app-box-component>
       </div>
@@ -377,6 +420,7 @@
   <app-duplicate-list-modal-component
     [visible]="isDuplicateModalOpen"
     mode="submit"
+    [sourceInvoice]="duplicateSourceInvoice"
     [duplicates]="duplicateCandidates"
     (closeModal)="onDuplicateModalCancel()"
     (submitRegardless)="onDuplicateModalSubmitRegardless()"

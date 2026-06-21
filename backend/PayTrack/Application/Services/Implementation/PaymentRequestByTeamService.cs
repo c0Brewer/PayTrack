@@ -2,11 +2,9 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Options;
 using PayTrack.Application.Dto.PaymentRequestByTeam;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
-using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -19,7 +17,7 @@ namespace PayTrack.Application.Services.Implementation
         IUserService _userService,
         IBudgetService _budgetService,
         INotificationDispatchService _notifications,
-        IOptions<PaymentRequestNotificationSettings> _notifSettings,
+        ISystemSettingService _systemSettings,
         ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
     {
         /// <summary>
@@ -30,7 +28,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IUserService userService = _userService;
         private readonly IBudgetService budgetService = _budgetService;
         private readonly INotificationDispatchService notifications = _notifications;
-        private readonly PaymentRequestNotificationSettings notifSettings = _notifSettings.Value;
+        private readonly ISystemSettingService systemSettings = _systemSettings;
         private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
 
         /// <inheritdoc/>
@@ -93,9 +91,10 @@ namespace PayTrack.Application.Services.Implementation
 
             var created = await this.repo.AddAsync(paymentRequest);
 
-            var ch = this.notifSettings.OnCreation;
+            var sendCreationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, true);
+            var sendCreationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, false);
 
-            if (ch.SendEmail)
+            if (sendCreationEmail)
             {
                 try
                 {
@@ -117,7 +116,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendCreationSlack)
             {
                 try
                 {
@@ -201,9 +200,10 @@ namespace PayTrack.Application.Services.Implementation
                     Comment = comment,
                 });
 
-            var ch = this.notifSettings.OnConfirmation;
+            var sendConfirmationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, true);
+            var sendConfirmationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, false);
 
-            if (ch.SendEmail)
+            if (sendConfirmationEmail)
             {
                 try
                 {
@@ -225,7 +225,7 @@ namespace PayTrack.Application.Services.Implementation
                 }
             }
 
-            if (ch.SendSlack)
+            if (sendConfirmationSlack)
             {
                 try
                 {
@@ -243,6 +243,69 @@ namespace PayTrack.Application.Services.Implementation
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task DeletePaymentRequestByTeamAsync(int id, string? reason = null)
+        {
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByTeamQueryById { IncludeUser = true })
+                ?? throw new NotFoundException("PaymentRequestByTeam could not be found");
+
+            if (transaction.Status != TransactionStatus.Submitted)
+            {
+                throw new InvalidStateException(
+                    $"Cannot delete a payment request that is not in Submitted status.");
+            }
+
+            var wasDeleted = await this.repo.DeletePaymentRequestByTeamAsync(id);
+            if (!wasDeleted)
+            {
+                throw new InvalidStateException(
+                    "Cannot delete a payment request that is not in Submitted status.");
+            }
+
+            var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+            var sendDeletionEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, true);
+            var sendDeletionSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, false);
+
+            if (sendDeletionEmail)
+            {
+                try
+                {
+                    var subject = $"Payment Request Deleted: {transaction.PurposeOfPayment}";
+                    var body =
+                        $"Dear {transaction.User.Name},\n\n" +
+                        $"Your payment request has been deleted by an administrator.\n\n" +
+                        $"Amount: {transaction.Amount:C2}\n" +
+                        $"Purpose: {transaction.PurposeOfPayment}\n" +
+                        (normalizedReason is not null ? $"Reason: {normalizedReason}\n\n" : "\n") +
+                        $"If you have questions, please contact your administrator.\n\n" +
+                        $"PayTrack";
+
+                    await this.notifications.SendEmailAsync(transaction.User.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-request-deleted email to {Email}.", transaction.User.Email);
+                }
+            }
+
+            if (sendDeletionSlack)
+            {
+                try
+                {
+                    var slackMsg =
+                        $"Payment Request Deleted: {transaction.PurposeOfPayment}\n" +
+                        $"Amount: {transaction.Amount:C2}" +
+                        (normalizedReason is not null ? $" · Reason: {normalizedReason}" : string.Empty);
+
+                    await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to send payment-request-deleted Slack notification to {Email}.", transaction.User.Email);
+                }
+            }
         }
 
         /// <inheritdoc/>

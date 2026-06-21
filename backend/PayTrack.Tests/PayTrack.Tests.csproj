@@ -34,7 +34,7 @@
     <Threshold>90</Threshold>
     <ThresholdType>line</ThresholdType>
     <ThresholdStat>total</ThresholdStat>
-    <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+    <ExcludeByFile>**/Migrations/*.cs,**/RegexGenerator.g.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>

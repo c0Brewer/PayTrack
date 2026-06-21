@@ -22,6 +22,7 @@ namespace PayTrack.Api.Mapper
             return new SeasonDto(
                 season.Id,
                 season.Name,
+                season.IsActive,
                 BudgetMapper.CollectionToDto(season.Budgets));
         }
 

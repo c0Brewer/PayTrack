@@ -42,6 +42,7 @@ export type RequestChangesPaymentRequestByUserDto =
   components['schemas']['RequestChangesPaymentRequestByUserDto'];
 export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
+export type ReceiptExtractionDto = components['schemas']['ReceiptExtractionDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
@@ -130,8 +131,10 @@ export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['paramete
 
 // Season
 export type SeasonDto = components['schemas']['SeasonDto'];
+export type SeasonDtoPaginatedResponse = components['schemas']['SeasonDtoPaginatedResponse'];
 export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
 export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+export type GetSeasonOptions = paths['/api/v1/season']['get']['parameters']['query'];
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
@@ -157,3 +160,22 @@ export type BankStatementMatchResponseDto = components['schemas']['BankStatement
 export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
 export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];
 export type TransactionDto = components['schemas']['TransactionDto'];
+
+// Admin Settings
+export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
+export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelGroupsDto = {
+  creation: NotificationChannelDto;
+  confirmation: NotificationChannelDto;
+  reminders: NotificationChannelDto;
+  deletion: NotificationChannelDto;
+};
+export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
+export type ReminderScheduleDto = {
+  daysBeforeDue: number[];
+  runAtHourUtc: number;
+  runAtMinuteUtc: number;
+  emailDelayMs: number;
+};
+export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;

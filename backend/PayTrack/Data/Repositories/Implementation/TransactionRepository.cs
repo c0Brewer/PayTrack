@@ -358,7 +358,8 @@ namespace PayTrack.Data.Repositories.Implementation
             decimal amount,
             DateTime paidAt,
             string? invoiceNumber = null,
-            int? paymentRequestByUserId = null)
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false)
         {
             var paidAtDayStart = DateTime.SpecifyKind(paidAt.Date, DateTimeKind.Utc);
             var paidAtDayEnd = paidAtDayStart.AddDays(1);
@@ -369,12 +370,19 @@ namespace PayTrack.Data.Repositories.Implementation
                 .AsNoTracking()
                 .Where(paymentRequestByUser =>
                     paymentRequestByUser.PaidAt.HasValue &&
-                    (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
-                        && (paymentRequestByUser.Amount == amount
-                            || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
-                    || (hasInvoiceNumber
-                        && paymentRequestByUser.InvoiceNumber != null
-                        && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)));
+                    (includeOtherUsers
+                        ? (((paymentRequestByUser.UserId == userId || paymentRequestByUser.TeamId == teamId)
+                            && (paymentRequestByUser.Amount == amount
+                                || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)))
+                            || (hasInvoiceNumber
+                                && paymentRequestByUser.InvoiceNumber != null
+                                && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber))
+                        : (paymentRequestByUser.UserId == userId
+                            && (paymentRequestByUser.Amount == amount
+                                || (paymentRequestByUser.PaidAt >= paidAtDayStart && paymentRequestByUser.PaidAt < paidAtDayEnd)
+                                || (hasInvoiceNumber
+                                    && paymentRequestByUser.InvoiceNumber != null
+                                    && paymentRequestByUser.InvoiceNumber.Trim().ToUpper() == normalizedInvoiceNumber)))));
 
             if (paymentRequestByUserId.HasValue)
             {
@@ -485,6 +493,16 @@ namespace PayTrack.Data.Repositories.Implementation
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeletePaymentRequestByTeamAsync(int id)
+        {
+            int deleted = await this.context.PaymentRequestsByTeam
+                .Where(t => t.Id == id && t.Status == TransactionStatus.Submitted)
+                .ExecuteDeleteAsync();
+
+            return deleted > 0;
         }
 
         /// <inheritdoc/>

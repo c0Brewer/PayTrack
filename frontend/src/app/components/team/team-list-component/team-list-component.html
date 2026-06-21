@@ -41,18 +41,20 @@
           </button>
         </td>
         <td class="actions-col" data-label="Actions">
-          <a class="btn btn-secondary icon-hover-btn" [routerLink]="['/team', team.id]">
-            <span class="material-symbols-outlined">bar_chart</span>
-            <span class="btn-text">Details</span>
-          </a>
-          <button
-            type="button"
-            class="btn btn-secondary icon-hover-btn"
-            (click)="onOpenEditTeam(team)"
-          >
-            <span class="material-symbols-outlined">edit</span>
-            <span class="btn-text">Edit</span>
-          </button>
+          <div class="action-buttons">
+            <a class="btn btn-secondary icon-hover-btn" [routerLink]="['/team', team.id]">
+              <span class="material-symbols-outlined">bar_chart</span>
+              <span class="btn-text">Details</span>
+            </a>
+            <button
+              type="button"
+              class="btn btn-secondary icon-hover-btn"
+              (click)="onOpenEditTeam(team)"
+            >
+              <span class="material-symbols-outlined">edit</span>
+              <span class="btn-text">Edit</span>
+            </button>
+          </div>
         </td>
       </tr>
     } @empty {
