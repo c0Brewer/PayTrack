@@ -36,6 +36,22 @@ namespace PayTrack.Data.Repositories.Model
         Task<(List<PaymentRequestByTeam> transaction, int totalCount)> GetAllAsync(GetPaymentRequestByTeamQuery? query = null);
 
         /// <summary>
+        /// Gets a lightweight dashboard section projection for a user's invoice overview.
+        /// </summary>
+        /// <param name="userId">Current user id.</param>
+        /// <param name="recentItemsLimit">Maximum number of recent items to return.</param>
+        /// <returns>Dashboard section projection.</returns>
+        Task<HomeDashboardSectionProjection> GetHomeDashboardInvoiceSectionAsync(int userId, int recentItemsLimit);
+
+        /// <summary>
+        /// Gets a lightweight dashboard section projection for a user's payment-request overview.
+        /// </summary>
+        /// <param name="userId">Current user id.</param>
+        /// <param name="recentItemsLimit">Maximum number of recent items to return.</param>
+        /// <returns>Dashboard section projection.</returns>
+        Task<HomeDashboardSectionProjection> GetHomeDashboardPaymentRequestSectionAsync(int userId, int recentItemsLimit);
+
+        /// <summary>
         /// Gets a specific Transaction by their ID.
         /// </summary>
         /// <param name="id">id of Transaction to find.</param>
