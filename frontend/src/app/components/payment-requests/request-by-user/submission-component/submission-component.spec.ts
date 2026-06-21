@@ -2,7 +2,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
@@ -42,6 +42,14 @@ describe('ReceiptSubmitComponent', () => {
 
   const routerMock = {
     navigate: vi.fn(),
+  };
+
+  const activatedRouteMock = {
+    snapshot: {
+      paramMap: {
+        get: vi.fn(() => null),
+      },
+    },
   };
 
   const authServiceMock = {
@@ -96,6 +104,7 @@ describe('ReceiptSubmitComponent', () => {
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     }).compileComponents();
 
