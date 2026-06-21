@@ -12,12 +12,15 @@ FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /app
 
 RUN apk add --no-cache \
+    icu-data-full \
+    icu-libs \
     poppler-utils \
     tesseract-ocr \
     tesseract-ocr-data-deu \
     tesseract-ocr-data-eng
 
 ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 EXPOSE 8080
 
 COPY --from=build /app/publish .
