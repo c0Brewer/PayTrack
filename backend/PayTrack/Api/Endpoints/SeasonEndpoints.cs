@@ -30,13 +30,16 @@ namespace PayTrack.Api.Endpoints
             group.MapGet("/", SeasonHandler.GetSeasonsAsync);
 
             group.MapPost("/", SeasonHandler.CreateSeasonAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPut("/{id:int}", SeasonHandler.UpdateSeasonAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapDelete("/{id:int}", SeasonHandler.DeleteSeasonAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }

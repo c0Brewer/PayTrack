@@ -1,35 +1,81 @@
-<div class="season-management">
+<div class="main-page-container season-management">
   <div class="season-management__header">
-    <h2>Season Management</h2>
+    <div class="d-flex flex-column gap-1">
+      <h1 class="m-0">Season Management</h1>
+      <p class="mb-0 text-body-secondary">
+        Manage reimbursement seasons and control when they are active.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="btn btn-secondary season-management__inactive-toggle"
+      [class.active]="showInactiveSeasons"
+      (click)="toggleInactiveSeasons()"
+    >
+      <span class="material-symbols-outlined">visibility</span>
+      {{ showInactiveSeasons ? 'Show Active Seasons' : 'Inactive Seasons' }}
+    </button>
+  </div>
+  <app-season-form-component (createSeason)="createSeason($event)" />
+
+  <div class="season-management__page-size">
+    <label for="season-page-size">Items per page</label>
+    <select id="season-page-size" class="form-select" [value]="limit" (change)="onLimitChange($event)">
+      @for (option of limitSelection; track option) {
+        <option [value]="option">{{ option }}</option>
+      }
+    </select>
   </div>
 
-  <form class="season-management__create" (ngSubmit)="createSeason()">
-    <label>
-      Name
-      <input
-        name="seasonName"
-        [(ngModel)]="newSeasonName"
-        placeholder="e.g. 2026"
-        autocomplete="off"
-      />
-    </label>
-    <button type="submit">Create</button>
-  </form>
+  <app-season-list-component
+    [seasons]="seasons"
+    [showInactive]="showInactiveSeasons"
+    (updateSeason)="updateSeason($event)"
+    (deleteSeason)="openDeleteSeason($event)"
+    (reactivateSeason)="reactivateSeason($event)"
+  />
 
-  <table class="season-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Budgets</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (season of seasons; track season.id) {
-        <tr>
-          <td>{{ season.name }}</td>
-          <td>{{ season.budgets?.length ?? 0 }}</td>
-        </tr>
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+
+  <app-modal-component
+    [visible]="seasonToDelete !== null"
+    title="Delete Season"
+    icon="delete"
+    (closeEvent)="closeDeleteSeasonModal()"
+  >
+    @if (seasonToDelete; as selectedSeason) {
+      <p class="season-delete-modal__text">
+        You are about to delete <strong>{{ selectedSeason.name }}</strong
+        >.
+      </p>
+
+      @if (selectedSeasonHasDependencies) {
+        <div class="season-delete-modal__warning">
+          <p>This season has linked records and will be deactivated instead of deleted:</p>
+          <ul>
+            <li>{{ selectedSeason.budgets?.length ?? 0 }} budget(s)</li>
+          </ul>
+        </div>
+      } @else {
+        <p class="season-delete-modal__text">Are you sure? This action cannot be undone.</p>
       }
-    </tbody>
-  </table>
+
+      <div class="season-delete-modal__actions">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="closeDeleteSeasonModal()">
+          <span class="material-symbols-outlined">cancel</span>
+          Cancel</button>
+        <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="confirmDeleteSeason()">
+          <span class="material-symbols-outlined">          {{ selectedSeasonHasDependencies ? 'block' : 'delete' }}</span>
+          {{ selectedSeasonHasDependencies ? 'Deactivate' : 'Delete' }}
+        </button>
+      </div>
+    }
+  </app-modal-component>
 </div>

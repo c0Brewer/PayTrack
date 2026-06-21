@@ -1,23 +1,19 @@
 @use 'variables' as v;
 
-
-div:first-child {
-  background: v.$background-light;
-
-}
-
-select,input {
+.cost-centre-filter select,
+.cost-centre-filter input {
   background-color: v.$TUR-secondary-background;
-  border: 1px solid white;
+  border: 1px solid v.$TUR-border-color;
   height: 2.5rem;
 }
 
-select:focus, input:focus {
+.cost-centre-filter select:focus,
+.cost-centre-filter input:focus {
   border-color: v.$TUR-primary-orange;
   box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
   outline: none;
 }
 
-select {
+.cost-centre-filter select {
   cursor: pointer;
 }

@@ -31,8 +31,9 @@ namespace PayTrack.Application.Services.Model
         /// Gets a specific User by their Email.
         /// </summary>
         /// <param name="email">email of User to find.</param>
+        /// <param name="query">Optional query options (e.g. IncludeTeam).</param>
         /// <returns>User with given email.</returns>
-        Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByEmailAsync(string email, GetUserQueryById? query = null);
 
         /// <summary>
         /// Creates a User using the given input.

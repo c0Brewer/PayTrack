@@ -22,6 +22,7 @@
             <th>Name</th>
             <th>Season</th>
             <th>Team</th>
+            <th>Type</th>
             <th>Amount</th>
             <th>Period Start</th>
             <th>Period End</th>
@@ -34,7 +35,8 @@
               <td>{{ budget.name }}</td>
               <td>{{ getSeasonName(budget.seasonId) }}</td>
               <td>{{ getTeamName(budget.teamId) }}</td>
-              <td>{{ budget.targetAmount }}</td>
+              <td>{{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}</td>
+              <td>{{ budget.targetAmount | euro }}</td>
               <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
               <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
               <td>
@@ -55,6 +57,7 @@
             <th>Name</th>
             <th>Season</th>
             <th>Team</th>
+            <th>Type</th>
             <th>Amount</th>
             <th>Period Start</th>
             <th>Period End</th>
@@ -67,7 +70,8 @@
               <td>{{ budget.name }}</td>
               <td>{{ getSeasonName(budget.seasonId) }}</td>
               <td>{{ getTeamName(budget.teamId) }}</td>
-              <td>{{ budget.targetAmount }}</td>
+              <td>{{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}</td>
+              <td>{{ budget.targetAmount | euro }}</td>
               <td>{{ budget.periodStart }}</td>
               <td>{{ budget.periodEnd }}</td>
               <td>
@@ -93,6 +97,13 @@
         }
       </label>
       <label>
+        Type
+        <select [(ngModel)]="newBudgetDraft.type">
+          <option [ngValue]="BudgetType.Expense">Expense</option>
+          <option [ngValue]="BudgetType.Income">Income</option>
+        </select>
+      </label>
+      <label>
         Season
         <select
           [(ngModel)]="newBudgetDraft.seasonId"
@@ -100,7 +111,7 @@
           (blur)="onBudgetFieldBlur('seasonId')"
         >
           <option [ngValue]="0" disabled>Select season</option>
-          @for (season of seasons; track season.id) {
+          @for (season of activeSeasons; track season.id) {
             <option [ngValue]="season.id">{{ season.name }}</option>
           }
         </select>
@@ -126,19 +137,21 @@
           <span class="field-error">{{ getBudgetFieldError('teamId') }}</span>
         }
       </label>
-      <label>
-        Amount
-        <input
-          type="number"
-          [(ngModel)]="newBudgetDraft.targetAmount"
-          [class.input-error]="hasBudgetFieldError('targetAmount')"
-          (blur)="onBudgetFieldBlur('targetAmount')"
-          placeholder="0.00"
-        />
-        @if (hasBudgetFieldError('targetAmount')) {
-          <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
-        }
-      </label>
+      @if (newBudgetDraft.type !== BudgetType.Income) {
+        <label>
+          Amount
+          <input
+            type="number"
+            [(ngModel)]="newBudgetDraft.targetAmount"
+            [class.input-error]="hasBudgetFieldError('targetAmount')"
+            (blur)="onBudgetFieldBlur('targetAmount')"
+            placeholder="0.00"
+          />
+          @if (hasBudgetFieldError('targetAmount')) {
+            <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+          }
+        </label>
+      }
       <label class="budget-period-field">
         Period Start
         <input

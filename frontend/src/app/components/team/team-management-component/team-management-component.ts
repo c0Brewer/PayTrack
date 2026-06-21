@@ -121,7 +121,7 @@ export class TeamManagementComponent {
   }
 
   loadSeasons(): void {
-    this.seasonService.getSeasons().subscribe({
+    this.seasonService.getSeasons({ IncludeInactive: true }).subscribe({
       next: (seasons) => {
         this.seasons = seasons;
         this.cdr.markForCheck();
@@ -200,7 +200,8 @@ export class TeamManagementComponent {
     return this.teams.reduce(
       (sum, team) =>
         sum +
-        (team.budgets?.reduce((budgetSum, budget) => budgetSum + budget.targetAmount, 0) ?? 0),
+        (team.budgets?.reduce((budgetSum, budget) => budgetSum + (budget.targetAmount ?? 0), 0) ??
+          0),
       0,
     );
   }

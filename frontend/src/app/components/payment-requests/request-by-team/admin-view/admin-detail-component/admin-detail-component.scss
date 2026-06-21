@@ -1,14 +1,115 @@
 @use 'variables' as v;
 
-.notification-actions {
+.invoice-detail {
+  h3 {
+    margin: 0 0 v.$size-s;
+  }
+
+  .info-table {
+    border-collapse: collapse;
+    font-size: v.$font-s;
+    margin-bottom: 0;
+    width: 100%;
+
+    th {
+      color: v.$text-muted;
+      font-weight: v.$font-medium;
+      padding: v.$size-xs v.$size-m v.$size-xs 0;
+      text-align: left;
+      width: 180px;
+    }
+
+    td {
+      padding: v.$size-xs 0;
+    }
+  }
+
+  .invoice-info-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .status-history-box {
+    margin-bottom: v.$size-l;
+  }
+
+  .history-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    min-width: 42rem;
+  }
+
+  .notification-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$size-xs;
+
+    .btn {
+      align-items: center;
+      display: inline-flex;
+      gap: v.$size-xxs;
+    }
+  }
+}
+
+label {
+  color: v.$text-color;
+  display: flex;
+  flex-direction: column;
+  font-size: v.$font-s;
+  margin-bottom: v.$size-m;
+}
+
+textarea {
+  background: v.$TUR-secondary-background;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.45rem;
+  color: v.$text-color;
+  font-size: v.$font-s;
+  margin-top: v.$size-xs;
+  padding: 0.5rem 0.8rem;
+  resize: vertical;
+
+  &:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
+  }
+}
+
+.modal-actions {
   display: flex;
   gap: v.$size-s;
-  margin-top: v.$size-m;
-  padding: 0 v.$size-m;
+  justify-content: flex-end;
+  margin-top: v.$size-l;
+}
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: v.$size-xs;
+@media (max-width: 767.98px) {
+  .invoice-detail {
+    .info-table {
+      th {
+        display: block;
+        padding: v.$size-xs 0 0;
+        width: auto;
+      }
+
+      td {
+        display: block;
+        padding: 0 0 v.$size-xs;
+      }
+    }
+
+    .notification-actions {
+      width: 100%;
+
+      .btn {
+        justify-content: center;
+        width: 100%;
+      }
+    }
   }
 }

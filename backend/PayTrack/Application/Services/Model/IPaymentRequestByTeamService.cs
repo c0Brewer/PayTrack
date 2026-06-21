@@ -36,7 +36,7 @@ namespace PayTrack.Application.Services.Model
         /// <param name="amount">Amount.</param>
         /// <param name="purposeOfPayment">Purpose.</param>
         /// <param name="dueDate">Due date requested by the finance team.</param>
-        /// <param name="costCentreId">Optional cost centre to assign.</param>
+        /// <param name="budgetId">Optional budget to assign.</param>
         /// <returns>Instance of created PaymentRequestByTeam object.</returns>
         Task<PaymentRequestByTeam> CreatePaymentRequestByTeamAsync(
             int userToAssignToId,
@@ -45,7 +45,7 @@ namespace PayTrack.Application.Services.Model
             decimal amount,
             string purposeOfPayment,
             DateTime dueDate,
-            int? costCentreId = null);
+            int? budgetId = null);
 
         /// <summary>
         /// Update a PaymentRequestByTeam using the given input.
@@ -62,6 +62,24 @@ namespace PayTrack.Application.Services.Model
             decimal? amount = null,
             string? purposeOfPayment = null,
             DateTime? paidAt = null);
+
+        /// <summary>
+        /// Marks a PaymentRequestByTeam as Paid and records the status change in history.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByTeam to mark as paid.</param>
+        /// <param name="adminUserId">The id of the admin user performing the action.</param>
+        /// <param name="comment">An optional comment to store with the status history entry.</param>
+        /// <returns>The updated PaymentRequestByTeam.</returns>
+        Task<PaymentRequestByTeam> MarkAsPaidAsync(int id, int adminUserId, string? comment);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByTeam. Only allowed when Status is Submitted.
+        /// Sends a deletion notification to the assigned user if configured.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByTeam to delete.</param>
+        /// <param name="reason">Optional reason provided by the admin.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeletePaymentRequestByTeamAsync(int id, string? reason = null);
 
         /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.

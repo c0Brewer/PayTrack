@@ -1,43 +1,46 @@
-<div class="m-0 row g-3 mb-4 p-3 rounded-2">
-  <div class="col-12 col-md-6 col-xl">
-    <input
-      class="form-control"
-      type="text"
-      placeholder="Name..."
-      (input)="onNameFilterChange($event)"
-    />
+<div class="toolbar team-filter">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <span class="filter-icon material-symbols-outlined" aria-hidden="true">filter_alt</span>
+    <h5 class="m-0">Filter</h5>
   </div>
 
-  <div class="col-12 col-md-6 col-xl-4">
-    <input
-      class="form-control"
-      type="text"
-      placeholder="Description..."
-      (input)="onDescriptionFilterChange($event)"
-    />
-  </div>
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl">
+      <input
+        class="form-control"
+        type="text"
+        placeholder="Name..."
+        (input)="onNameFilterChange($event)"
+      />
+    </div>
 
-  <div class="col-12 col-md-6 col-xl-auto">
-    <select
-      class="form-select"
-      [(ngModel)]="filterIsActive"
-      (ngModelChange)="onIsActiveFilterChange()"
-    >
-      <option [ngValue]="undefined">All Teams</option>
-      <option [ngValue]="true">Only Active</option>
-      <option [ngValue]="false">Only Inactive</option>
-    </select>
-  </div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <input
+        class="form-control"
+        type="text"
+        placeholder="Description..."
+        (input)="onDescriptionFilterChange($event)"
+      />
+    </div>
 
-  <div class="col-12 col-md-6 col-xl-auto">
-    <select
-      class="form-select"
-      [(ngModel)]="limit"
-      (change)="onLimitChange()"
-    >
-      @for (l of limitSelection; track l) {
-        <option [value]="l">{{ l }} per page</option>
-      }
-    </select>
+    <div class="col-12 col-md-6 col-xl-auto">
+      <select
+        class="form-select"
+        [(ngModel)]="filterIsActive"
+        (ngModelChange)="onIsActiveFilterChange()"
+      >
+        <option [ngValue]="undefined">All Teams</option>
+        <option [ngValue]="true">Only Active</option>
+        <option [ngValue]="false">Only Inactive</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-auto">
+      <select class="form-select" [(ngModel)]="limit" (change)="onLimitChange()">
+        @for (l of limitSelection; track l) {
+          <option [value]="l">{{ l }} per page</option>
+        }
+      </select>
+    </div>
   </div>
 </div>

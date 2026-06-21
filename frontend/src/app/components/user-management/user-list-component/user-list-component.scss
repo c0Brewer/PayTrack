@@ -1,5 +1,40 @@
 @use 'variables' as v;
 
+.user-table-wrapper {
+  border-radius: v.$size-xs;
+  width: 100%;
+}
+
+:host-context(.user-management) {
+  .user-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .user-table {
+    min-width: 82rem;
+    table-layout: fixed;
+
+    th,
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      height: 5rem;
+    }
+
+    .status-col {
+      min-width: 8.5rem;
+      width: 8.5rem;
+    }
+
+    .actions-col {
+      min-width: 7rem;
+      width: 7rem;
+    }
+  }
+}
+
   .user-summary {
     display: flex;
     flex-direction: column;
@@ -20,27 +55,25 @@
   }
 
   .role {
-    border-radius: 999px;
-    display: inline-flex;
-    font-size: v.$font-xs;
-    font-weight: v.$font-semibold;
-    line-height: 1;
-    padding: 0.35rem 0.7rem;
+    text-align: center;
   }
 
   .regular_user {
-    background-color: #e0e7ff;
-    color: #4f46e5;
+    --table-badge-background: #eff6ff;
+    --table-badge-border-color: #bfdbfe;
+    --table-badge-color: #1d4ed8;
   }
 
   .team_lead {
-    background-color: #fef3c7;
-    color: #d97706;
+    --table-badge-background: #fffbeb;
+    --table-badge-border-color: #fde68a;
+    --table-badge-color: #b45309;
   }
 
   .admin {
-    background-color: #fee2e2;
-    color: #dc2626;
+    --table-badge-background: #fef2f2;
+    --table-badge-border-color: #fecaca;
+    --table-badge-color: #b91c1c;
   }
 
   .team {
@@ -72,20 +105,53 @@
   }
 
   .status-col {
-    width: 14%;
+    text-align: center;
   }
 
   .actions-col {
-    width: 16%;
-  }
-
-  .actions-col {
-    text-align: left;
+    text-align: right;
     white-space: nowrap;
   }
 
 
 @media (max-width: 767.98px) {
+  :host-context(.user-management) {
+    .user-table-wrapper {
+      overflow-x: visible;
+    }
+
+    .user-table {
+      min-width: 0;
+      width: 100%;
+
+      td {
+        align-items: center;
+        text-align: right;
+      }
+
+      td::before {
+        content: attr(data-label);
+      }
+
+      td.actions-col {
+        display: grid;
+      }
+
+      .status-col {
+        min-width: 0;
+        width: auto;
+      }
+
+      .actions-col {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .icon-hover-btn {
+        justify-self: end;
+      }
+    }
+  }
 
     .user-summary {
       align-items: center;

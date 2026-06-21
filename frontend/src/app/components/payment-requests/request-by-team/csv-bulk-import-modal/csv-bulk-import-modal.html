@@ -1,0 +1,271 @@
+<app-modal-component title="Bulk CSV Import" icon="upload_file" (closeEvent)="onClose()">
+
+  <!-- ─── STEP STEPPER (steps 1 & 2 only) ─── -->
+  @if (step !== 'results') {
+    <div class="step-stepper">
+      <button type="button" class="step-stepper__step"
+              [class.active]="step === 'configure'"
+              (click)="onStepClicked(1)">
+        <span class="step-num">1</span>
+        Configure
+      </button>
+      <span class="step-stepper__arrow">›</span>
+      <button type="button" class="step-stepper__step"
+              [class.active]="step === 'preview'"
+              [disabled]="parsedRows.length === 0 || configForm.invalid"
+              (click)="onStepClicked(2)">
+        <span class="step-num">2</span>
+        Preview &amp; Assign
+      </button>
+    </div>
+  }
+
+  <!-- ─── STEP 1: Configure ─── -->
+  @if (step === 'configure') {
+
+    <p class="file-info">
+      <span class="material-symbols-outlined">description</span>
+      {{ file.name }} &mdash; {{ parsedRows.length }} valid row(s) found
+    </p>
+
+    @if (parsedRows.length === 0) {
+      <p class="no-rows-warning">
+        <span class="material-symbols-outlined">warning</span>
+        No valid rows were found in the CSV. Make sure the file has a "{{ csvColName }}" and
+        "{{ csvColSumme }}" column with non-zero amounts.
+      </p>
+    }
+
+    <form [formGroup]="configForm" novalidate>
+      <div class="row gx-3 gy-3">
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-teamId">Team <span class="required">*</span></label><br />
+          <select id="csv-teamId" formControlName="teamId" [class.is-invalid]="isInvalid('teamId')">
+            <option [ngValue]="null" disabled>Select team…</option>
+            @for (team of teams; track team.id) {
+              <option [ngValue]="team.id">{{ team.name }}</option>
+            }
+          </select><br />
+          @if (getError('teamId')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('teamId') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-budgetId">Budget <span class="required">*</span></label><br />
+          <select id="csv-budgetId" formControlName="budgetId" [class.is-invalid]="isInvalid('budgetId')" [attr.disabled]="configForm.get('teamId')?.value == null ? true : null">
+            @if (configForm.get('teamId')?.value == null) {
+              <option [ngValue]="null" disabled>Select a team first…</option>
+            } @else if (budgets.length === 0) {
+              <option [ngValue]="null" disabled>No active budgets for this team…</option>
+            } @else {
+              <option [ngValue]="null" disabled>Select budget…</option>
+            }
+            @for (budget of budgets; track budget.id) {
+              <option [ngValue]="budget.id">{{ budget.name }} ({{ getCostCentreName(budget.costCentreId) }})</option>
+            }
+          </select><br />
+          @if (getError('budgetId')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('budgetId') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-12 input-wrapper">
+          <label for="csv-purposeOfPayment">Purpose of Payment <span class="required">*</span></label><br />
+          <input
+            id="csv-purposeOfPayment"
+            type="text"
+            formControlName="purposeOfPayment"
+            placeholder="e.g. Order list spring 2026"
+            [class.is-invalid]="isInvalid('purposeOfPayment')"
+          /><br />
+          @if (getError('purposeOfPayment')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('purposeOfPayment') }}
+            </span>
+          }
+        </div>
+
+        <div class="col-md-6 col-sm-12 input-wrapper">
+          <label for="csv-dueDate">Due Date <span class="required">*</span></label><br />
+          <input
+            id="csv-dueDate"
+            type="date"
+            formControlName="dueDate"
+            [class.is-invalid]="isInvalid('dueDate')"
+          /><br />
+          @if (getError('dueDate')) {
+            <span class="error-msg">
+              <span class="material-symbols-outlined">error</span>{{ getError('dueDate') }}
+            </span>
+          }
+        </div>
+
+      </div>
+    </form>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        appDisableOfflineAction
+        [disabled]="parsedRows.length === 0 || offlineService.isOffline()"
+        (click)="onNextClicked()"
+      >
+        Next: Preview ({{ parsedRows.length }})
+      </button>
+    </div>
+
+  }
+
+  <!-- ─── WARNING SUB-MODAL (unmatched names) ─── -->
+  @if (showWarningModal) {
+    <app-modal-component
+      title="Some Names Need Manual Assignment"
+      icon="person_search"
+      (closeEvent)="showWarningModal = false"
+    >
+      <p class="warning-modal-text">
+        The following names could not be automatically matched to a user. You will be able to
+        assign them manually in the preview step:
+      </p>
+      <ul class="unmatched-list">
+        @for (name of unmatchedNames; track name) {
+          <li>{{ name }}</li>
+        }
+      </ul>
+      <div class="modal-actions">
+      <button type="button" class="btn btn-primary" (click)="onWarningOkClicked()">
+        OK, Continue to Preview
+      </button>
+      </div>
+    </app-modal-component>
+  }
+
+  <!-- ─── STEP 2: Preview ─── -->
+  @if (step === 'preview') {
+
+    @if (!allRowsAssigned || configForm.invalid) {
+      <div class="submit-blocked-banner">
+        <span class="material-symbols-outlined">warning</span>
+        <div class="submit-blocked-banner__messages">
+          @if (configForm.invalid) {
+            <span>Step 1 has incomplete required fields — go back to fix them.</span>
+          }
+          @if (!allRowsAssigned) {
+            <span>{{ unassignedCount }} row(s) still need a user assigned.</span>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="table-wrapper">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>CSV Name</th>
+            <th>Assigned User</th>
+            <th class="col-amount">Amount (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of previewRows; track $index; let i = $index) {
+            <tr [class.row-unmatched]="row.userId === null">
+              <td>{{ row.rawName }}</td>
+              <td>
+                <app-typeahead-select
+                  [items]="allUsers"
+                  placeholder="Search by name…"
+                  [isInvalid]="row.userId === null"
+                  [initialItem]="row.userId !== null ? { id: row.userId, primaryText: row.displayName!, secondaryText: row.displayEmail ?? undefined } : null"
+                  (itemSelected)="onUserAssigned(i, $event)"
+                  (cleared)="onUserCleared(i)"
+                />
+              </td>
+              <td class="col-amount">{{ row.amount | euro }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="onBackClicked()">Back</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        appDisableOfflineAction
+        [disabled]="!canSubmit || offlineService.isOffline()"
+        (click)="onSubmitAll()"
+      >
+        @if (isSubmitting) {
+          <span>Submitting…</span>
+        } @else {
+          <span>Confirm &amp; Submit All ({{ previewRows.length }})</span>
+        }
+      </button>
+    </div>
+
+  }
+
+  <!-- ─── STEP 3: Results ─── -->
+  @if (step === 'results') {
+
+    <p class="step-indicator">Results</p>
+
+    <p class="results-summary">
+      <span class="result-ok">{{ successCount }} succeeded</span>,
+      @if (failureCount > 0) {
+        <span class="result-err">{{ failureCount }} failed</span>
+      } @else {
+        <span>{{ failureCount }} failed</span>
+      }
+    </p>
+
+    <div class="table-wrapper">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th class="col-amount">Amount (€)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of previewRows; track $index) {
+            <tr
+              [class.row-success]="row.status === 'success'"
+              [class.row-error]="row.status === 'error'"
+            >
+              <td>{{ row.displayName ?? row.rawName }}</td>
+              <td class="col-amount">{{ row.amount | euro }}</td>
+              <td class="status-cell">
+                <span class="status-content">
+                  @if (row.status === 'success') {
+                    <span class="material-symbols-outlined status-ok">check_circle</span>
+                  }
+                  @if (row.status === 'error') {
+                    <span class="material-symbols-outlined status-err">error</span>
+                    <span class="error-detail">{{ row.errorMessage }}</span>
+                  }
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-primary" (click)="onClose()">Close</button>
+    </div>
+
+  }
+
+</app-modal-component>

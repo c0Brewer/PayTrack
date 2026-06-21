@@ -9,10 +9,11 @@ import { PaymentRequestByTeamService } from '../../../services/payment-request-b
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestStatusRefreshService } from '../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { Role, TransactionStatus, UserDto } from '../../../types/exporter';
+import { ModalComponent } from '../../general/modal-component/modal-component';
 
 @Component({
   selector: 'app-navbar-component',
-  imports: [AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [AsyncPipe, ModalComponent, RouterLink, RouterLinkActive],
   templateUrl: './navbar-component.html',
   styleUrl: './navbar-component.scss',
 })
@@ -21,6 +22,10 @@ export class NavbarComponent {
   currentUser$;
   protected readonly role = Role;
   protected readonly mobileMenuOpen = signal(false);
+  protected readonly managementMenuOpen = signal(false);
+  protected readonly requestsMenuOpen = signal(false);
+  protected readonly signOutModalOpen = signal(false);
+  protected readonly currentUrl = signal('');
   protected readonly submittedCount = signal(0);
   protected readonly teamRequestCount = signal(0);
   protected readonly invoiceChangesRequestedCount = signal(0);
@@ -36,6 +41,7 @@ export class NavbarComponent {
   ) {
     this.loggedIn$ = this.authService.loggedIn$;
     this.currentUser$ = this.authService.currentUser$;
+    this.currentUrl.set(this.router.url);
 
     this.currentUser$.pipe(takeUntilDestroyed()).subscribe((user) => {
       this.currentUser = user;
@@ -53,6 +59,7 @@ export class NavbarComponent {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
+        this.currentUrl.set(this.router.url);
         this.refreshCounts();
       });
   }
@@ -115,9 +122,55 @@ export class NavbarComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+    this.managementMenuOpen.set(false);
+    this.requestsMenuOpen.set(false);
+  }
+
+  toggleManagementMenu(): void {
+    this.managementMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  toggleRequestsMenu(): void {
+    this.requestsMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  openSignOutModal(): void {
+    this.signOutModalOpen.set(true);
+  }
+
+  closeSignOutModal(): void {
+    this.signOutModalOpen.set(false);
+  }
+
+  isManagementMenuExpanded(): boolean {
+    return this.managementMenuOpen() || this.isManagementRouteActive();
+  }
+
+  isRequestsMenuExpanded(): boolean {
+    return this.requestsMenuOpen() || this.isRequestsRouteActive();
+  }
+
+  private isManagementRouteActive(): boolean {
+    const url = this.currentUrl();
+    return (
+      url.startsWith('/user') ||
+      url.startsWith('/team') ||
+      url.startsWith('/cost-centre') ||
+      url.startsWith('/season')
+    );
+  }
+
+  private isRequestsRouteActive(): boolean {
+    const url = this.currentUrl();
+    return (
+      url.startsWith('/create-payment-request') ||
+      url.startsWith('/payment-requests-by-team') ||
+      url.startsWith('/requests')
+    );
   }
 
   logout(): void {
+    this.closeSignOutModal();
     this.closeMobileMenu();
     this.authService.logout();
   }

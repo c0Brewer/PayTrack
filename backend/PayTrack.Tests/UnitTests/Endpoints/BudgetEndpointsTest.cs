@@ -79,6 +79,25 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
+        public async Task GetBudgets_ForwardsTypeQueryParamToService()
+        {
+            // Arrange
+            this.factory.ServiceMock
+                .Setup(s => s.GetBudgetsAsync(It.IsAny<GetBudgetQuery?>()))
+                .ReturnsAsync((new List<Budget>(), 0));
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            // Act
+            await client.GetAsync("api/v1/budget?Type=Income");
+
+            // Assert
+            this.factory.ServiceMock.Verify(s => s.GetBudgetsAsync(
+                It.Is<GetBudgetQuery?>(q => q != null && q.Type == BudgetType.Income)), Times.Once);
+        }
+
+        [Fact]
         public async Task GetBudgetById_ReturnsOk_WhenExists()
         {
             // Arrange
@@ -152,6 +171,44 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<BudgetDto>();
             result!.Name.Should().Be("2026 budget");
+        }
+
+        [Fact]
+        public async Task CreateBudget_ReturnsBadRequest_WhenIncomeBudgetHasTargetAmount()
+        {
+            // Arrange
+            var requestDto = new CreateBudgetRequestDto(
+                "Merch sales",
+                null,
+                2,
+                3,
+                4,
+                500,
+                new DateTime(2026, 1, 1),
+                new DateTime(2026, 12, 31),
+                BudgetType.Income);
+
+            this.factory.ServiceMock
+                .Setup(s => s.CreateBudgetAsync(
+                    requestDto.Name,
+                    requestDto.Description,
+                    requestDto.TeamId,
+                    requestDto.CostCentreId,
+                    requestDto.SeasonId,
+                    requestDto.TargetAmount,
+                    requestDto.PeriodStart,
+                    requestDto.PeriodEnd,
+                    BudgetType.Income))
+                .ThrowsAsync(new InvalidStateException("Target amount must not be provided for Income budgets."));
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/budget", requestDto);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -287,6 +344,13 @@ namespace PayTrack.Tests.UnitTests.Endpoints
     public class BudgetApiFactory : WebApplicationFactory<Program>
     {
         public Mock<IBudgetService> ServiceMock { get; } = new();
+        public Mock<IAuthService> AuthServiceMock { get; } = new();
+
+        public BudgetApiFactory()
+        {
+            AuthServiceMock.Setup(a => a.GetCurrentUser(null))
+                .ReturnsAsync(new User { Id = 1, IsActive = true, Role = Role.Admin });
+        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -319,7 +383,15 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     services.Remove(serviceDescriptor);
                 }
 
+                var authServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IAuthService));
+                if (authServiceDescriptor is not null)
+                {
+                    services.Remove(authServiceDescriptor);
+                }
+
                 services.AddSingleton(this.ServiceMock.Object);
+                services.AddSingleton(this.AuthServiceMock.Object);
             });
         }
     }

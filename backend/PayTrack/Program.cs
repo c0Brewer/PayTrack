@@ -22,7 +22,7 @@ using PayTrack.Data.Repositories.Implementation;
 using PayTrack.Data.Repositories.Model;
 
 var builder = WebApplication.CreateBuilder(args);
-LoadGoogleConfigFromDotEnv(builder);
+LoadSecretsFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
 
@@ -42,6 +42,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IHomeDashboardService, HomeDashboardService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
@@ -49,6 +50,8 @@ builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<IGoogleDriveArchiveClient, GoogleDriveArchiveClient>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+builder.Services.AddScoped<IReceiptExtractionService, ReceiptExtractionService>();
+builder.Services.AddSingleton<IReceiptParser, ReceiptParser>();
 
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
@@ -56,6 +59,9 @@ builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slac
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddHostedService<PaymentReminderHostedService>();
+builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
@@ -66,6 +72,7 @@ builder.Services.AddScoped<ICostCentreRepository, CostCentreRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -177,12 +184,14 @@ var apiV1 = app
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
+apiV1.MapDashboardEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
 apiV1.MapBudgetEndpoints();
 apiV1.MapSeasonEndpoints();
 apiV1.MapNotificationEndpoints();
+apiV1.MapAdminSettingsEndpoints();
 
 if (hasFrontendBundle)
 {
@@ -191,18 +200,51 @@ if (hasFrontendBundle)
 
 await app.RunAsync();
 
-static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
+static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
 {
-    var dotEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
-
-    if (!File.Exists(dotEnvPath))
-    {
-        return;
-    }
-
     var values = new Dictionary<string, string?>();
 
-    foreach (var rawLine in File.ReadLines(dotEnvPath))
+    var rootEnvPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env"));
+    if (File.Exists(rootEnvPath))
+    {
+        foreach (var (key, value) in ParseDotEnvFile(rootEnvPath))
+        {
+            switch (key)
+            {
+                case "GOOGLE_CLIENT_ID":
+                    values["Authentication:Google:ClientId"] = value;
+                    break;
+                case "GOOGLE_CLIENT_SECRET":
+                    values["Authentication:Google:ClientSecret"] = value;
+                    break;
+                case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
+                    values["GoogleDrive:ServiceAccountKeyBase64"] = value;
+                    break;
+                case "JWT_SECRET":
+                    values["JWT:Secret"] = value;
+                    break;
+                case "EMAIL_SMTP_USER":
+                    values["Email:SmtpUser"] = value;
+                    break;
+                case "EMAIL_SMTP_PASSWORD":
+                    values["Email:SmtpPassword"] = value;
+                    break;
+                case "SLACK_BOT_TOKEN":
+                    values["Slack:BotToken"] = value;
+                    break;
+            }
+        }
+    }
+
+    if (values.Count > 0)
+    {
+        builder.Configuration.AddInMemoryCollection(values);
+    }
+}
+
+static IEnumerable<(string Key, string Value)> ParseDotEnvFile(string path)
+{
+    foreach (var rawLine in File.ReadLines(path))
     {
         var line = rawLine.Trim();
 
@@ -215,22 +257,6 @@ static void LoadGoogleConfigFromDotEnv(WebApplicationBuilder builder)
         var key = line[..separatorIndex].Trim();
         var value = line[(separatorIndex + 1)..].Trim().Trim('"');
 
-        switch (key)
-        {
-            case "GOOGLE_CLIENT_ID":
-                values["Authentication:Google:ClientId"] = value;
-                break;
-            case "GOOGLE_CLIENT_SECRET":
-                values["Authentication:Google:ClientSecret"] = value;
-                break;
-            case "GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64":
-                values["GoogleDrive:ServiceAccountKeyBase64"] = value;
-                break;
-        }
-    }
-
-    if (values.Count > 0)
-    {
-        builder.Configuration.AddInMemoryCollection(values);
+        yield return (key, value);
     }
 }

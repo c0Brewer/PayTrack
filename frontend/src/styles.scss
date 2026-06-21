@@ -8,7 +8,6 @@
 }
 
 .main-page-container {
-  background-color: v.$TUR-secondary-background;
   margin: 4rem;
 }
 
@@ -67,6 +66,31 @@ body {
   }
 }
 
+.toolbar {
+  background-color: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  padding: v.$size-m;
+
+  .filter-icon {
+    color: v.$TUR-primary-orange;
+    font-size: 1.25rem;
+  }
+
+  .filter-label {
+    color: v.$gray-500;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  hr {
+    border-color: v.$TUR-border-color;
+    opacity: 1;
+  }
+}
+
 .btn-secondary {
   --bs-btn-active-bg: white;
   --bs-btn-active-border-color: rgb(235 106 0);
@@ -115,19 +139,128 @@ body {
 }
 
 .btn-secondary:active {
-
   box-shadow: 0 0.15rem 0.45rem rgb(235 106 0 / 18%);
 
   transform: translateY(0);
+}
 
+
+/* Global Input Styling*/
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']),
+select,
+textarea,
+.form-control:not([type='color']),
+.form-select {
+  --bs-form-control-bg: #{v.$TUR-secondary-background};
+  --bs-form-select-bg: #{v.$TUR-secondary-background};
+  --bs-border-color: #{v.$TUR-border-color};
+  --bs-body-color: #{v.$text-color};
+  --bs-focus-ring-color: #{rgba(v.$TUR-primary-orange, 0.14)};
+
+  background: v.$TUR-secondary-background;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 0.45rem;
+  color: v.$text-color;
+  font-size: v.$font-s;
+  height: 2.6rem;
+  padding: 0 0.8rem;
+}
+
+input[type='date'],
+input[type='date'].form-control {
+  align-items: center;
+  display: block;
+  line-height: normal;
+  min-height: 2.6rem;
+  padding-bottom: 0;
+  padding-right: 2.5rem;
+  padding-top: 0;
+  position: relative;
+}
+
+input[type='date']::-webkit-datetime-edit {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  padding: 0;
+}
+
+input[type='date']::-webkit-date-and-time-value {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  margin: 0;
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+textarea,
+.form-control:is(textarea) {
+  height: auto;
+  min-height: 6rem;
+  padding: 0.7rem 0.8rem;
+}
+
+select,
+.form-select {
+  cursor: pointer;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):focus,
+select:focus,
+textarea:focus,
+.form-control:not([type='color']):focus,
+.form-select:focus {
+  border-color: v.$TUR-primary-orange;
+  box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  outline: none;
+}
+
+.app-modal {
+  /*select,
+  input:not([type='checkbox']) {
+    background-color: v.$TUR-secondary-background;
+    border: 1px solid white;
+    height: 2.5rem;
+  }
+
+  select:focus,
+  input:not([type='checkbox']):focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+    outline: none;
+  }
+
+  select {
+    cursor: pointer;
+  }*/
+
+  .form-switch .form-check-input:checked {
+    background-color: v.$TUR-primary-orange;
+    border-color: v.$TUR-primary-orange;
+  }
+
+  .form-switch .form-check-input:focus {
+    border-color: v.$TUR-primary-orange;
+    box-shadow: 0 0 0 0.18rem rgba(v.$TUR-primary-orange, 0.14);
+  }
 }
 
 /* Table Styling*/
-.status-btn {
+.status-btn,
+.table-badge {
   align-items: center;
-  border: 1px solid transparent;
+  border: 1px solid var(--table-badge-border-color, transparent);
   border-radius: 999px;
-  color: v.$text-color;
+  color: var(--table-badge-color, #{v.$text-color});
   display: inline-flex;
   justify-content: center;
   font-size: v.$font-s;
@@ -137,6 +270,20 @@ body {
   min-height: 2rem;
   min-width: 6.25rem;
   padding: 0.35rem 0.7rem;
+}
+
+.status-btn {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.table-badge {
+  background: var(--table-badge-background, #ecfdf5);
+  text-align: center;
+  text-decoration: none;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease,
@@ -185,10 +332,13 @@ body {
 }
 
 .actions-col {
+  text-align: right;
+
   .action-buttons {
     display: inline-flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: v.$size-xs;
+    justify-content: flex-end;
   }
 
   .btn + .btn,
@@ -212,6 +362,10 @@ body {
   overflow: hidden;
   table-layout: fixed;
   width: 100%;
+
+  .actions-col {
+    text-align: right;
+  }
 
   thead {
     background: v.$background-dark;
@@ -369,4 +523,76 @@ body {
   color: v.$accent-dark;
   font-size: v.$font-xxs;
   font-weight: v.$font-semibold;
+}
+
+/* Show text on CRUD buttons */
+
+.icon-hover-btn {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    gap 0.2s ease,
+    transform 0.2s ease;
+}
+
+.icon-hover-btn .material-symbols-outlined {
+  font-size: 20px;
+  transition: transform 0.25s ease;
+}
+
+.icon-hover-btn .btn-text {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(6px);
+  overflow: hidden;
+  transition:
+    max-width 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.25s ease;
+}
+
+.icon-hover-btn:hover,
+.icon-hover-btn:focus-visible {
+  gap: 0.4rem;
+  transform: translateX(2px);
+}
+
+.icon-hover-btn:hover .btn-text,
+.icon-hover-btn:focus-visible .btn-text {
+  max-width: 4rem;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.icon-hover-btn:hover .material-symbols-outlined,
+.icon-hover-btn:focus-visible .material-symbols-outlined {
+  transform: translateX(2px);
+}
+
+@media (max-width: 767.98px) {
+  .icon-hover-btn {
+    gap: 0.4rem;
+  }
+
+  .icon-hover-btn .btn-text {
+    max-width: 4rem;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .icon-hover-btn .material-symbols-outlined {
+    transform: translateX(2px);
+  }
+}
+
+
+.main-page-container{
+  p:first-of-type {
+    color: v.$TUR-primary-grey;
+    font-size: 1.2rem;
+  }
 }

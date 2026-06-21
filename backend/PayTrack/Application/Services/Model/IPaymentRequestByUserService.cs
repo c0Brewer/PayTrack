@@ -45,8 +45,10 @@ namespace PayTrack.Application.Services.Model
         /// <param name="PaidAt">When the invoice was paid at.</param>
         /// <param name="invoiceNumber">InvoiceNumber of PaymentRequestByUser.</param>
         /// <param name="comment">Optional comment.</param>
-        /// <param name="payoutType">payout type (to user or to external).</param>
+        /// <param name="payoutType">payout type (to user, not yet paid, or already paid).</param>
         /// <param name="bankAccountId">id of bank account to use.</param>
+        /// <param name="creditorName">name of the external creditor, required for NotYetPaid.</param>
+        /// <param name="dueDate">due date of the invoice, required for NotYetPaid.</param>
         /// <returns>Instance of created PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> CreatePaymentRequestByUserAsync(
             int userId,
@@ -58,7 +60,9 @@ namespace PayTrack.Application.Services.Model
             string invoiceNumber,
             string? comment,
             PayoutType payoutType,
-            int? bankAccountId);
+            int? bankAccountId,
+            string? creditorName,
+            DateTime? dueDate);
 
         /// <summary>
         /// Checks possible duplicates of a PaymentRequestByUser with exact matching criteria.
@@ -66,11 +70,19 @@ namespace PayTrack.Application.Services.Model
         /// <param name="userId">Current user id for matching.</param>
         /// <param name="teamId">Team id for matching.</param>
         /// <param name="amount">Amount for matching.</param>
+        /// <param name="paidAt">Paid-at day for matching.</param>
+        /// <param name="invoiceNumber">Invoice number for matching.</param>
+        /// <param name="paymentRequestByUserId">Optional source payment request id to exclude dismissed pairs.</param>
+        /// <param name="includeOtherUsers">Whether duplicates from other users may be returned.</param>
         /// <returns>A sorted list of duplicate matches, descending by score.</returns>
         Task<List<DuplicatePaymentRequestByUserMatch>> GetDuplicatePaymentRequestsByUserAsync(
             int userId,
             int teamId,
-            decimal amount);
+            decimal amount,
+            DateTime paidAt,
+            string? invoiceNumber = null,
+            int? paymentRequestByUserId = null,
+            bool includeOtherUsers = false);
 
         /// <summary>
         /// Update a PaymentRequestByUser using the given input.
@@ -114,6 +126,21 @@ namespace PayTrack.Application.Services.Model
             PayoutType payoutType,
             int? bankAccountId,
             IFormFile? receipt);
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeletePaymentRequestByUserAsync(int id);
+
+        /// <summary>
+        /// Dismisses a potential duplicate warning between two PaymentRequestByUser entries.
+        /// </summary>
+        /// <param name="paymentRequestByUserId">Source PaymentRequestByUser id.</param>
+        /// <param name="duplicatePaymentRequestByUserId">Potential duplicate PaymentRequestByUser id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DismissDuplicatePaymentRequestByUserAsync(int paymentRequestByUserId, int duplicatePaymentRequestByUserId);
 
         /// <summary>
         /// Marks a PaymentRequestByUser as paid and stores the status history entry.

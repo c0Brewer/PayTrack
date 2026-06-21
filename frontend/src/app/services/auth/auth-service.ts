@@ -5,6 +5,7 @@ import { BehaviorSubject, from, Observable } from 'rxjs';
 import { client } from '../../client';
 import { GoogleAuthCallbackDto, GoogleAuthResponseDto, UserDto } from '../../types/exporter';
 import { NotificationService } from '../notification/notification-service';
+import { OFFLINE_READ_MESSAGE, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +31,11 @@ export class AuthService {
     try {
       await this.fetchAndStoreUser();
     } catch (error) {
+      if (error instanceof Error && error.message === OFFLINE_READ_MESSAGE) {
+        this.notificationService.showError(OFFLINE_READ_MESSAGE, 5000);
+        return;
+      }
+
       this.notificationService.showError('Error while loading User' + error);
       this.logout();
     }
@@ -76,7 +82,12 @@ export class AuthService {
   }
 
   public async fetchAndStoreUser(): Promise<UserDto> {
-    const { data, error } = await client.GET('/api/v1/auth/currentuser', { params: {} });
+    const { data, error } = await withOfflineReadFallback(
+      client.GET('/api/v1/auth/currentuser', {
+        params: { query: { IncludeTeam: true } },
+      }),
+      'Error while loading user',
+    );
 
     if (error) {
       throw new Error(error.detail ?? 'Unexpected Error');

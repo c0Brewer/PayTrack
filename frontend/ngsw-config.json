@@ -17,5 +17,25 @@
         "files": ["/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "core-api-views",
+      "urls": [
+        "/api/v1/auth/currentuser**",
+        "/api/v1/transaction/user**",
+        "/api/v1/transaction/team**",
+        "/api/v1/team**",
+        "/api/v1/budget**",
+        "/api/v1/cost-centre**",
+        "/api/v1/bankaccount**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 200,
+        "maxAge": "6h",
+        "timeout": "5s"
+      }
+    }
   ]
 }

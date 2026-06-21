@@ -9,6 +9,7 @@ using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Handler
 {
@@ -65,7 +66,8 @@ namespace PayTrack.Api.Handler
                 dto.SeasonId,
                 dto.TargetAmount,
                 dto.PeriodStart,
-                dto.PeriodEnd);
+                dto.PeriodEnd,
+                dto.Type ?? BudgetType.Expense);
 
             return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }
@@ -91,7 +93,8 @@ namespace PayTrack.Api.Handler
                 dto.SeasonId,
                 dto.TargetAmount,
                 dto.PeriodStart,
-                dto.PeriodEnd);
+                dto.PeriodEnd,
+                dto.Type);
 
             return TypedResults.Ok(BudgetMapper.ToDto(budget));
         }

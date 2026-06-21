@@ -1,39 +1,222 @@
 <div class="main-page-container">
-  <h1 class="mb-5">{{ greeting }}</h1>
-  <div class="row gx-4 gx-xl-5 gy-4">
-    <div class="col-12 col-sm-6 col-xl-3">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="small">
-      </app-box-component>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="small">
-      </app-box-component>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="small">
-      </app-box-component>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="small">
-      </app-box-component>
-    </div>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h2 class="m-0">{{ welcomeMessage }}</h2>
+    <p class="m-0 text-body-secondary">Your current invoice and payment-request overview.</p>
   </div>
 
-  <div class="row gx-4 gx-xl-5 gy-4 mt-1">
-    <div class="col-12 col-xl-6">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="medium">
-      </app-box-component>
+  @if (dashboard; as data) {
+    <div class="row g-3 align-items-stretch">
+      <app-stat-box-component
+        header="Open Invoice Amount"
+        [content]="data.invoices.openAmount | euro"
+        icon="receipt_long"
+        iconColor="#3b82f6"
+        iconBackgroundColor="#EFF6FF"
+        size="small"
+        class="col-12 col-sm-6 col-xl-3"
+      />
+      <app-stat-box-component
+        header="Open Invoices"
+        [content]="data.invoices.openCount"
+        icon="schedule"
+        iconColor="#f59e0b"
+        iconBackgroundColor="#FFFBEB"
+        size="small"
+        class="col-12 col-sm-6 col-xl-3"
+      />
+      <app-stat-box-component
+        header="Open Requests"
+        [content]="data.paymentRequests.openCount"
+        icon="payments"
+        iconColor="#10b981"
+        iconBackgroundColor="#ECFDF5"
+        size="small"
+        class="col-12 col-sm-6 col-xl-3"
+      />
+      <app-stat-box-component
+        header="Needs Attention"
+        [content]="data.actions.needsAttentionCount"
+        icon="warning"
+        iconColor="#dc2626"
+        iconBackgroundColor="#FEF2F2"
+        size="small"
+        class="col-12 col-sm-6 col-xl-3"
+      />
     </div>
-    <div class="col-12 col-xl-6">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="medium">
-      </app-box-component>
-    </div>
-  </div>
 
-  <div class="row gx-4 gx-xl-5 gy-4 mt-1">
-    <div class="col-12">
-      <app-box-component title="Offene Zahlungen" subtitle="Noch ausstehend" size="large">
-      </app-box-component>
+    <div class="row g-3 mt-1 align-items-stretch">
+      <div class="col-12 col-xl-6">
+        <app-box-component
+          title="Invoices"
+          subtitle="Current totals and your most recent invoice activity."
+          size="medium"
+        >
+          <div class="dashboard-card-content">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.invoices.submittedCount }}</span>
+              <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.invoices.paidCount }}</span>
+              @if (data.invoices.lastPaidAt) {
+                <span class="badge rounded-pill dashboard-summary-badge">
+                  Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
+                </span>
+              }
+            </div>
+
+            @if (data.invoices.recent.length > 0) {
+              <div class="list-group list-group-flush">
+                @for (item of data.invoices.recent; track item.id) {
+                  <a
+                    class="list-group-item list-group-item-action px-0"
+                    [routerLink]="['/my-invoices', item.id]"
+                  >
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                      <div class="min-w-0">
+                        <p class="fw-semibold mb-1 text-truncate">{{ getInvoiceReference(item) }}</p>
+                        <p class="mb-0 text-body-secondary small">
+                          {{ item.teamName || 'No team assigned' }}
+                          @if (item.createdAt) {
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                          }
+                        </p>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                        <strong>{{ item.amount | euro }}</strong>
+                        <span class="status-pill" [class]="getStatusClass(item.status)">
+                          {{ getStatusLabel(item.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                }
+              </div>
+              @if (data.invoices.totalRecentCount > data.invoices.recent.length) {
+                <p class="recent-note mb-0 mt-3 text-danger small"> {{data.invoices.totalRecentCount - data.invoices.recent.length}} more entries available!</p>
+              }
+            } @else {
+              <p class="mb-0 text-body-secondary">No invoice activity yet.</p>
+            }
+
+            <a class="btn btn-secondary mt-auto align-self-start" routerLink="/my-invoices">
+              <span class="material-symbols-outlined">description</span>
+              View My Invoices</a>
+          </div>
+        </app-box-component>
+      </div>
+
+      <div class="col-12 col-xl-6">
+        <app-box-component
+          title="Payment Requests"
+          subtitle="Your assigned payment requests and recent updates."
+          size="medium"
+        >
+          <div class="dashboard-card-content">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="badge rounded-pill dashboard-summary-badge">Submitted: {{ data.paymentRequests.submittedCount }}</span>
+              <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.paymentRequests.paidCount }}</span>
+              @if (data.paymentRequests.lastPaidAt) {
+                <span class="badge rounded-pill dashboard-summary-badge">
+                  Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
+                </span>
+              }
+            </div>
+
+            @if (data.paymentRequests.recent.length > 0) {
+              <div class="list-group list-group-flush">
+                @for (item of data.paymentRequests.recent; track item.id) {
+                  <a
+                    class="list-group-item list-group-item-action px-0"
+                    [routerLink]="['/my-team-requests', item.id]"
+                  >
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                      <div class="min-w-0">
+                        <p class="fw-semibold mb-1 text-truncate">{{ getPaymentRequestReference(item) }}</p>
+                        <p class="mb-0 text-body-secondary small">
+                          {{ item.userName || 'No assignee' }}
+                          @if (item.createdAt) {
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                          }
+                        </p>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                        <strong>{{ item.amount | euro }}</strong>
+                        <span class="status-pill" [class]="getStatusClass(item.status)">
+                          {{ getStatusLabel(item.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                }
+              </div>
+              @if (data.paymentRequests.totalRecentCount > data.paymentRequests.recent.length) {
+                <p class="recent-note mb-0 mt-3 text-danger small"> {{data.paymentRequests.totalRecentCount - data.paymentRequests.recent.length}} more entries available!</p>
+              }
+            } @else {
+              <p class="mb-0 text-body-secondary">No payment request activity yet.</p>
+            }
+
+            <a class="btn btn-secondary mt-auto align-self-start" routerLink="/my-team-requests">
+              <span class="material-symbols-outlined">receipt_long</span>
+              View My Payment Requests
+            </a>
+          </div>
+        </app-box-component>
+      </div>
     </div>
-  </div>
+
+    <div class="row g-3 mt-1 align-items-stretch">
+      <div class="col-12">
+        <app-box-component title="Action required" subtitle="Items that still need your attention." size="small">
+          <div class="d-flex flex-column gap-3">
+            @if (data.actions.missingBankAccount) {
+              <div class="alert alert-warning mb-0">
+                Bank account details are missing. Add them before submitting payout-to-user invoices.
+              </div>
+            }
+
+            @if (data.actions.needsAttentionCount > 0) {
+              <div class="alert alert-danger mb-0">
+                {{ data.actions.needsAttentionCount }}
+                item{{ data.actions.needsAttentionCount === 1 ? '' : 's' }} need attention because changes were requested.
+              </div>
+            }
+
+            @if (
+              !data.actions.missingBankAccount &&
+              data.actions.needsAttentionCount === 0
+            ) {
+              <p class="mb-0 text-body-secondary">Nothing urgent right now.</p>
+            }
+
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn btn-secondary" routerLink="/submit">
+                <span class="material-symbols-outlined">upload</span>
+                Submit an Invoice</a>
+              <a class="btn btn-secondary"
+                 [routerLink]="['/my-invoices']"
+                 [queryParams]="{ status: 1 }"
+              >
+                <span class="material-symbols-outlined">description</span>
+                Review Corresponding Invoices</a>
+              @if (data.actions.missingBankAccount) {
+                <a class="btn btn-secondary" routerLink="/bankaccount">
+                  <span class="material-symbols-outlined">add</span>
+                  Add Bank Account</a>
+              }
+            </div>
+          </div>
+        </app-box-component>
+      </div>
+    </div>
+  } @else if (isLoading) {
+    <app-box-component title="Dashboard" subtitle="Loading your current overview." size="medium">
+      <p class="mb-0 text-body-secondary">Fetching the latest home page data.</p>
+    </app-box-component>
+  } @else {
+    <app-box-component title="Dashboard" subtitle="The overview could not be loaded." size="medium">
+      <div class="d-flex flex-column align-items-start gap-3">
+        <p class="mb-0 text-body-secondary">Try loading the dashboard again.</p>
+        <button class="btn btn-secondary" type="button" (click)="loadDashboard()">Reload</button>
+      </div>
+    </app-box-component>
+  }
 </div>

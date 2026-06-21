@@ -154,11 +154,11 @@ describe('UserManagementComponent', () => {
     expect(component.editingUser).toBeNull();
   });
 
-  it('saveUser should call updateUser and reload', () => {
-    const user = { ...mockUsers[0] };
-    component.saveUser(user);
-    expect(userServiceMock.updateUser).toHaveBeenCalled();
-    expect(notificationServiceMock.showSuccess).toHaveBeenCalled();
+  it('onUserSaved should reload users and close the edit modal', () => {
+    component.editingUser = { ...mockUsers[0] };
+    component.onUserSaved();
+
+    expect(userServiceMock.getUser).toHaveBeenCalled();
     expect(component.editingUser).toBeNull();
   });
 

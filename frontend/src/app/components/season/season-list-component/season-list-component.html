@@ -1,0 +1,75 @@
+<div class="box season-list">
+  <h5 class="season-list__title">
+    {{ showInactive ? 'Inactive Seasons' : 'Active Seasons' }} ({{ visibleSeasons.length }})
+  </h5>
+
+  <div class="season-list__rows">
+    @for (season of visibleSeasons; track season.id) {
+      <div class="season-list__row">
+        <div class="season-list__icon" aria-hidden="true">
+          <span class="material-symbols-outlined">calendar_month</span>
+        </div>
+
+        <div class="season-list__content">
+          @if (editingSeasonId === season.id) {
+            <form class="season-list__edit-form" (ngSubmit)="submitEdit(season)">
+              <input
+                name="seasonName-{{ season.id }}"
+                [(ngModel)]="editedSeasonName"
+                autocomplete="off"
+                aria-label="Season name"
+              />
+              <button class="btn btn-primary season-list__icon-button" type="submit" aria-label="Save season">
+                <span class="material-symbols-outlined">check</span>
+              </button>
+              <button class="btn btn-outline-secondary season-list__icon-button" type="button" (click)="cancelEdit()" aria-label="Cancel edit">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </form>
+          } @else {
+            <span class="season-list__name">{{ season.name }}</span>
+            <span class="season-list__meta">
+              {{ season.budgets?.length ?? 0 }} Budgets zugewiesen
+            </span>
+          }
+        </div>
+
+        @if (editingSeasonId !== season.id) {
+          <div class="season-list__actions">
+            @if (showInactive) {
+              <button
+                class="btn btn-secondary season-list__reactivate"
+                type="button"
+                (click)="requestReactivate(season)"
+              >
+                <span class="material-symbols-outlined">restart_alt</span>
+                Reactivate
+              </button>
+            } @else {
+              <button
+                class="btn btn-secondary d-inline-flex align-items-center icon-hover-btn"
+                type="button"
+                (click)="startEdit(season)"
+                aria-label="Edit season"
+              >
+                <span class="material-symbols-outlined">edit</span>
+                <span class="btn-text">Edit</span>
+              </button>
+              <button
+                class="btn btn-outline-danger d-inline-flex align-items-center icon-hover-btn"
+                type="button"
+                (click)="requestDelete(season)"
+                aria-label="Delete season"
+              >
+                <span class="material-symbols-outlined">delete</span>
+                <span class="btn-text">Delete</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    } @empty {
+      <div class="season-list__empty">No seasons found.</div>
+    }
+  </div>
+</div>

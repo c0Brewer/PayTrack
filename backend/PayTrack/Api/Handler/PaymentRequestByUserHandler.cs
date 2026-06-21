@@ -9,6 +9,7 @@ using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
+using PayTrack.Data.Entities;
 
 namespace PayTrack.Api.Handler
 {
@@ -87,6 +88,10 @@ namespace PayTrack.Api.Handler
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
+            var comment = string.IsNullOrWhiteSpace(createPaymentRequestByUserDto.Comment)
+                ? null
+                : createPaymentRequestByUserDto.Comment.Trim();
+
             var createdPaymentRequestByUser = await paymentRequestByUserService.CreatePaymentRequestByUserAsync(
                     user.Id,
                     createPaymentRequestByUserDto.Transaction.TeamId,
@@ -95,13 +100,31 @@ namespace PayTrack.Api.Handler
                     createPaymentRequestByUserDto.Receipt,
                     createPaymentRequestByUserDto.Transaction.PaidAt,
                     createPaymentRequestByUserDto.InvoiceNumber,
-                    createPaymentRequestByUserDto.Comment,
+                    comment,
                     createPaymentRequestByUserDto.PayoutType,
-                    createPaymentRequestByUserDto.BankAccountId);
+                    createPaymentRequestByUserDto.BankAccountId,
+                    createPaymentRequestByUserDto.CreditorName,
+                    createPaymentRequestByUserDto.DueDate);
 
             var createdPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(createdPaymentRequestByUser);
 
             return TypedResults.Ok(createdPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Extracts invoice data from a receipt without persisting the uploaded file.
+        /// </summary>
+        /// <param name="receipt">Receipt to inspect.</param>
+        /// <param name="receiptExtractionService">Dependency-injected receipt extraction service.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The extracted invoice fields and their confidence values.</returns>
+        public static async Task<Ok<ReceiptExtractionDto>> ExtractReceiptAsync(
+            IFormFile receipt,
+            IReceiptExtractionService receiptExtractionService,
+            CancellationToken cancellationToken)
+        {
+            var result = await receiptExtractionService.ExtractAsync(receipt, cancellationToken);
+            return TypedResults.Ok(result);
         }
 
         /// <summary>
@@ -118,10 +141,27 @@ namespace PayTrack.Api.Handler
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current User not found");
 
+            if (getDuplicatePaymentRequestsByUserDto.PaymentRequestByUserId.HasValue)
+            {
+                var sourcePaymentRequest = await paymentRequestByUserService.GetPaymentRequestByUserByIdAsync(
+                        getDuplicatePaymentRequestsByUserDto.PaymentRequestByUserId.Value,
+                        null)
+                    ?? throw new NotFoundException("PaymentRequestByUser could not be found");
+
+                if (!paymentRequestByUserService.ValidateAccessToInvoice(sourcePaymentRequest, user))
+                {
+                    throw new ForbiddenException("You do not have permission to access this invoice.");
+                }
+            }
+
             var duplicatePaymentRequests = await paymentRequestByUserService.GetDuplicatePaymentRequestsByUserAsync(
                     user.Id,
                     getDuplicatePaymentRequestsByUserDto.TeamId,
-                    getDuplicatePaymentRequestsByUserDto.Amount);
+                    getDuplicatePaymentRequestsByUserDto.Amount,
+                    getDuplicatePaymentRequestsByUserDto.PaidAt,
+                    getDuplicatePaymentRequestsByUserDto.InvoiceNumber,
+                    getDuplicatePaymentRequestsByUserDto.PaymentRequestByUserId,
+                    user.Role == Role.Admin);
 
             var duplicatePaymentRequestsDto = PaymentRequestByUserMapper.DuplicateListToDto(duplicatePaymentRequests);
 
@@ -154,6 +194,38 @@ namespace PayTrack.Api.Handler
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
 
             return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Deletes a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeletePaymentRequestByUserAsync(
+            [FromRoute] int id,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            await paymentRequestByUserService.DeletePaymentRequestByUserAsync(id);
+
+            return TypedResults.NoContent();
+        }
+
+        /// <summary>
+        /// Dismisses a duplicate warning between two PaymentRequestByUser entries.
+        /// </summary>
+        /// <param name="id">Source PaymentRequestByUser id.</param>
+        /// <param name="duplicateId">Potential duplicate PaymentRequestByUser id.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DismissDuplicatePaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromRoute] int duplicateId,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            await paymentRequestByUserService.DismissDuplicatePaymentRequestByUserAsync(id, duplicateId);
+
+            return TypedResults.NoContent();
         }
 
         /// <summary>

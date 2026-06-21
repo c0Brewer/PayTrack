@@ -1,9 +1,6 @@
 <app-modal-component [title]="title" (closeEvent)="cancel.emit()">
-  @if (errorMessage) {
-    <p class="error-message">{{ errorMessage }}</p>
-  }
-  @if (validationMessage) {
-    <p class="error-message">{{ validationMessage }}</p>
+  @if (topLevelErrorMessage) {
+    <p class="error-message">{{ topLevelErrorMessage }}</p>
   }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
@@ -25,8 +22,8 @@
         placeholder="AT61 1904 3002 3457 3201"
         (input)="onIbanInput($event)"
       />
-      @if (form.controls.iban.touched && form.controls.iban.invalid) {
-        <small class="hint-error">Use 15-34 characters.</small>
+      @if (ibanErrorMessage) {
+        <small class="hint-error">{{ ibanErrorMessage }}</small>
       }
     </label>
 
@@ -45,8 +42,8 @@
     </label>
 
     <div class="actions">
-      <button type="button" class="secondary" (click)="cancel.emit()">Cancel</button>
-      <button type="submit">{{ submitLabel }}</button>
+      <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="cancel.emit()"><span class="material-symbols-outlined">cancel</span> Cancel</button>
+      <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined">save</span> {{ submitLabel }}</button>
     </div>
   </form>
 </app-modal-component>

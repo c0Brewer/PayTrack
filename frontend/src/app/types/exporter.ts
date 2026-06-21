@@ -42,6 +42,7 @@ export type RequestChangesPaymentRequestByUserDto =
   components['schemas']['RequestChangesPaymentRequestByUserDto'];
 export type DuplicatePaymentRequestByUserDto =
   components['schemas']['DuplicatePaymentRequestByUserDto'];
+export type ReceiptExtractionDto = components['schemas']['ReceiptExtractionDto'];
 
 export type GetPaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user']['get']['parameters']['query'];
@@ -52,12 +53,19 @@ export type GetDuplicatePaymentRequestsByUserOptions =
 
 export enum PayoutType {
   User = 0,
-  External = 1,
+  NotYetPaid = 1,
+  AlreadyPaid = 2,
+}
+
+export enum BudgetType {
+  Expense = 0,
+  Income = 1,
 }
 
 export const PayoutTypeLabels: Record<PayoutType, string> = {
   [PayoutType.User]: 'Pay to User',
-  [PayoutType.External]: 'Pay to Supplier',
+  [PayoutType.NotYetPaid]: 'Pay to Supplier',
+  [PayoutType.AlreadyPaid]: 'Already Paid',
 };
 
 // Roles
@@ -78,7 +86,7 @@ export enum TransactionStatus {
 
 export const TransactionStatusLabels: Record<TransactionStatus, string> = {
   [TransactionStatus.Submitted]: 'Submitted',
-  [TransactionStatus.ChangesRequested]: 'Changes requested',
+  [TransactionStatus.ChangesRequested]: 'Changes Requested',
   [TransactionStatus.Approved]: 'Approved',
   [TransactionStatus.Paid]: 'Paid',
   [TransactionStatus.Declined]: 'Declined',
@@ -123,11 +131,15 @@ export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['paramete
 
 // Season
 export type SeasonDto = components['schemas']['SeasonDto'];
+export type SeasonDtoPaginatedResponse = components['schemas']['SeasonDtoPaginatedResponse'];
 export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
 export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+export type GetSeasonOptions = paths['/api/v1/season']['get']['parameters']['query'];
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
+export type MarkAsPaidPaymentRequestByTeamDto =
+  components['schemas']['MarkAsPaidPaymentRequestByTeamDto'];
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
@@ -139,3 +151,31 @@ export type GetPaymentRequestsByTeamByIdOptions =
 export type BankAccountDto = components['schemas']['BankAccountDto'];
 export type CreateBankAccountRequestDto = components['schemas']['CreateBankAccountRequestDto'];
 export type UpdateBankAccountRequestDto = components['schemas']['UpdateBankAccountRequestDto'];
+
+// Bank Statement Matching
+export type BankStatementEntryDto = components['schemas']['BankStatementEntryDto'];
+export type BankStatementMatchedTransactionDto =
+  components['schemas']['BankStatementMatchedTransactionDto'];
+export type BankStatementMatchResponseDto = components['schemas']['BankStatementMatchResponseDto'];
+export type BankStatementMatchResultDto = components['schemas']['BankStatementMatchResultDto'];
+export type BankStatementUpdateRequestDto = components['schemas']['BankStatementUpdateRequestDto'];
+export type TransactionDto = components['schemas']['TransactionDto'];
+
+// Admin Settings
+export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
+export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelGroupsDto = {
+  creation: NotificationChannelDto;
+  confirmation: NotificationChannelDto;
+  reminders: NotificationChannelDto;
+  deletion: NotificationChannelDto;
+};
+export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
+export type ReminderScheduleDto = {
+  daysBeforeDue: number[];
+  runAtHourUtc: number;
+  runAtMinuteUtc: number;
+  emailDelayMs: number;
+};
+export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;

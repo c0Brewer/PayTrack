@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
+import { BudgetType, CostCentreDto, SeasonDto, TeamDto } from '../../../types/exporter';
 
 import { TeamEditModalComponent } from './team-edit-modal-component';
 
@@ -26,8 +26,9 @@ describe('TeamEditModalComponent', () => {
     },
   ];
   const seasons: SeasonDto[] = [
-    { id: 1, name: '2025', budgets: [] },
-    { id: 2, name: '2026', budgets: [] },
+    { id: 1, name: '2025', isActive: true, budgets: [] },
+    { id: 2, name: '2026', isActive: true, budgets: [] },
+    { id: 3, name: '2027', isActive: false, budgets: [] },
   ];
 
   function clickAddBudgetButton(): void {
@@ -246,7 +247,10 @@ describe('TeamEditModalComponent', () => {
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -316,9 +320,10 @@ describe('TeamEditModalComponent', () => {
       description: null,
       costCentreId: 0,
       seasonId: 0,
-      targetAmount: 0,
+      targetAmount: null,
       periodStart: '',
       periodEnd: '',
+      type: 0,
     });
 
     component.removeNewBudget(0);
@@ -422,7 +427,10 @@ describe('TeamEditModalComponent', () => {
           targetAmount: 100,
           periodStart: '2026-01-01',
           periodEnd: '2026-12-31',
+          type: 0,
           transactionIds: [],
+          paidAmount: 0,
+          approvedAmount: 0,
         },
       ],
     };
@@ -450,6 +458,28 @@ describe('TeamEditModalComponent', () => {
 
     expect(component.getSeasonName(2)).toBe('2026');
     expect(component.getSeasonName(99)).toBe('Season #99');
+  });
+
+  it('should label inactive season options and prevent adding them to new budgets', () => {
+    component.costCentres = costCentres;
+    component.seasons = seasons;
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Blocked budget',
+      costCentreId: 1,
+      seasonId: 3,
+      targetAmount: 500,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      type: BudgetType.Expense,
+    };
+
+    component.addNewBudget();
+
+    expect(component.getSeasonOptionLabel(seasons[2])).toBe('2027 (inactive)');
+    expect(component.isSeasonActive(1)).toBe(true);
+    expect(component.isSeasonActive(3)).toBe(false);
+    expect(component.newBudgets).toEqual([]);
   });
 
   it('should label inactive cost centre options and prevent adding them to new budgets', () => {
@@ -501,8 +531,24 @@ describe('TeamEditModalComponent', () => {
 
     const seasonOption = Array.from(
       fixture.nativeElement.querySelectorAll('option') as NodeListOf<HTMLOptionElement>,
-    ).find((option) => option.textContent?.trim() === '2026');
+    ).find((option) => option.textContent?.trim() === '2027 (inactive)');
 
     expect(seasonOption).toBeTruthy();
+    expect(seasonOption?.disabled).toBe(true);
+  });
+
+  it('getBudgetFieldError should skip amount validation for Income budgets', () => {
+    component.newBudgetDraft = {
+      id: null,
+      name: 'Merch sales',
+      costCentreId: 1,
+      seasonId: 1,
+      targetAmount: null,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      type: BudgetType.Income,
+    };
+
+    expect(component.getBudgetFieldError('targetAmount')).toBe('');
   });
 });

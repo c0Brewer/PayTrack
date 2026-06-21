@@ -60,6 +60,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PaymentRequestByUser> PaymentRequestsByUser => this.Set<PaymentRequestByUser>();
 
     /// <summary>
+    /// Database set for dismissed duplicate PaymentRequestByUser warning pairs.
+    /// </summary>
+    public DbSet<DismissedDuplicatePaymentRequestByUser> DismissedDuplicatePaymentRequestsByUser => this.Set<DismissedDuplicatePaymentRequestByUser>();
+
+    /// <summary>
     /// Database set for all PaymentRequestsByTeam.
     /// </summary>
     public DbSet<PaymentRequestByTeam> PaymentRequestsByTeam => this.Set<PaymentRequestByTeam>();
@@ -68,6 +73,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     /// Database set for all TransactionStatusHistories.
     /// </summary>
     public DbSet<TransactionStatusHistory> TransactionStatusHistories => this.Set<TransactionStatusHistory>();
+
+    /// <summary>
+    /// Database set for all admin-configurable SystemSettings.
+    /// </summary>
+    public DbSet<SystemSetting> SystemSettings => this.Set<SystemSetting>();
 
     /// <summary>
     /// Overrides OnModelCreating to manually adjust the connections and constraints.
@@ -181,6 +191,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(b => b.TargetAmount).HasColumnType("decimal(18,2)");
 
+            e.Property(b => b.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .HasDefaultValue(BudgetType.Expense);
+
             e.HasMany(b => b.Transactions)
                 .WithOne(tx => tx.Budget)
                 .HasForeignKey(tx => tx.BudgetId)
@@ -234,6 +249,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(p => p.BankAccount)
                 .WithMany()
                 .HasForeignKey(p => p.BankAccountId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // -------------------------------------------------------
+        // DismissedDuplicatePaymentRequestByUser
+        // -------------------------------------------------------
+        modelBuilder.Entity<DismissedDuplicatePaymentRequestByUser>(e =>
+        {
+            e.HasIndex(d => new { d.FirstPaymentRequestByUserId, d.SecondPaymentRequestByUserId })
+                .IsUnique();
+
+            e.HasOne(d => d.FirstPaymentRequestByUser)
+                .WithMany()
+                .HasForeignKey(d => d.FirstPaymentRequestByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(d => d.SecondPaymentRequestByUser)
+                .WithMany()
+                .HasForeignKey(d => d.SecondPaymentRequestByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // -------------------------------------------------------
+        // SystemSetting
+        // -------------------------------------------------------
+        modelBuilder.Entity<SystemSetting>(e =>
+        {
+            e.HasIndex(s => s.Key).IsUnique();
+
+            e.HasOne(s => s.LastModifiedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.LastModifiedByUserId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
         });

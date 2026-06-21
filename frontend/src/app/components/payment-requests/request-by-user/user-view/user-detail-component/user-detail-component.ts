@@ -4,11 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
-import { InvoiceDetailComponent } from '../../general/detail-component/detail-component';
+import { UserInvoiceDetailComponent } from '../detail-component/detail-component';
 
 @Component({
   selector: 'app-my-invoice-detail-component',
-  imports: [InvoiceDetailComponent],
+  imports: [UserInvoiceDetailComponent],
   templateUrl: './user-detail-component.html',
   styleUrl: './user-detail-component.scss',
 })

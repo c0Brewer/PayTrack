@@ -14,10 +14,13 @@ import {
   MarkPaymentRequestByUserAsPaidDto,
   PaginatedPaymentRequestByUserDto,
   PaymentRequestByUserDto,
+  PayoutType,
+  ReceiptExtractionDto,
   RequestChangesPaymentRequestByUserDto,
   UpdatePaymentRequestByUserDto,
 } from '../../types/exporter';
 import { AuthService } from '../auth/auth-service';
+import { ensureOnlineForMutation, withOfflineReadFallback } from '../offline/offline-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -25,10 +28,16 @@ import { AuthService } from '../auth/auth-service';
 export class PaymentRequestByUserService {
   constructor(private readonly authService: AuthService) {}
 
+  private getApiUrl(path: string): string {
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   private getUploadUrl(): string {
-    return environment.apiBaseUrl
-      ? new URL('/api/v1/transaction/user', environment.apiBaseUrl).toString()
-      : '/api/v1/transaction/user';
+    return this.getApiUrl('/api/v1/transaction/user');
+  }
+
+  private getReceiptExtractionUrl(): string {
+    return this.getApiUrl('/api/v1/transaction/user/receipt/extract');
   }
 
   private getUndoStatusChangeUrl(id: number): string {
@@ -55,7 +64,7 @@ export class PaymentRequestByUserService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public getPaymentRequestsByUserById(
@@ -76,13 +85,15 @@ export class PaymentRequestByUserService {
         return data;
       });
 
-    return from(promise);
+    return from(withOfflineReadFallback(promise));
   }
 
   public createPaymentRequestByUser(
     updateRequest: CreatePaymentRequestByUserDto,
     file: File,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     // DISCLAIMER: This method is intentionally not using the client for requests.
     // This is not the standard and is only needed for this method because of file
     // upload. Do not copy!!
@@ -93,8 +104,14 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    if (updateRequest.bankAccountId && updateRequest.bankAccountId > 0) {
+    if (updateRequest.payoutType === PayoutType.User && (updateRequest.bankAccountId ?? 0) > 0) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
+    if (updateRequest.dueDate != null) {
+      fd.append('dueDate', updateRequest.dueDate);
     }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
@@ -116,6 +133,29 @@ export class PaymentRequestByUserService {
       return res.json() as Promise<PaymentRequestByUserDto>;
     });
 
+    return from(withOfflineReadFallback(promise));
+  }
+
+  public extractReceiptData(file: File): Observable<ReceiptExtractionDto> {
+    ensureOnlineForMutation();
+
+    const fd = new FormData();
+    fd.append('receipt', file);
+
+    const promise = fetch(this.getReceiptExtractionUrl(), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+      body: fd,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Receipt extraction failed.');
+      }
+      return res.json() as Promise<ReceiptExtractionDto>;
+    });
+
     return from(promise);
   }
 
@@ -130,8 +170,14 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    if (updateRequest.bankAccountId && updateRequest.bankAccountId > 0) {
+    if (updateRequest.payoutType === PayoutType.User && (updateRequest.bankAccountId ?? 0) > 0) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
+    if (updateRequest.dueDate != null) {
+      fd.append('dueDate', updateRequest.dueDate);
     }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
@@ -156,7 +202,7 @@ export class PaymentRequestByUserService {
   }
 
   public getDuplicatePaymentRequestsByUser(
-    queryOptions: GetDuplicatePaymentRequestsByUserOptions,
+    queryOptions: GetDuplicatePaymentRequestsByUserOptions & { PaymentRequestByUserId?: number },
   ): Observable<DuplicatePaymentRequestByUserDto[]> {
     const promise = client
       .GET('/api/v1/transaction/user/duplicate', {
@@ -179,10 +225,56 @@ export class PaymentRequestByUserService {
     return from(promise);
   }
 
+  public deletePaymentRequestByUser(id: number): Observable<void> {
+    ensureOnlineForMutation();
+
+    const promise = fetch(this.getApiUrl(`/api/v1/transaction/user/${id}`), {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
+
+    return from(promise);
+  }
+
+  public dismissDuplicatePaymentRequestByUser(
+    paymentRequestByUserId: number,
+    duplicatePaymentRequestByUserId: number,
+  ): Observable<void> {
+    ensureOnlineForMutation();
+
+    const promise = fetch(
+      this.getApiUrl(
+        `/api/v1/transaction/user/${paymentRequestByUserId}/duplicate/${duplicatePaymentRequestByUserId}/dismiss`,
+      ),
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+    });
+
+    return from(promise);
+  }
+
   public updatePaymentRequestByUser(
     id: number,
     updateRequest: UpdatePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .PUT('/api/v1/transaction/user/{id}', {
         params: {
@@ -204,6 +296,8 @@ export class PaymentRequestByUserService {
     id: number,
     markPaidRequest: MarkPaymentRequestByUserAsPaidDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/mark-paid', {
         params: {
@@ -225,6 +319,8 @@ export class PaymentRequestByUserService {
     id: number,
     approveRequest: ApprovePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/approve', {
         params: {
@@ -246,6 +342,8 @@ export class PaymentRequestByUserService {
     id: number,
     declineRequest: DeclinePaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/decline', {
         params: {
@@ -267,6 +365,8 @@ export class PaymentRequestByUserService {
     id: number,
     requestChangesRequest: RequestChangesPaymentRequestByUserDto,
   ): Observable<PaymentRequestByUserDto> {
+    ensureOnlineForMutation();
+
     const promise = client
       .POST('/api/v1/transaction/user/{id}/request-changes', {
         params: {

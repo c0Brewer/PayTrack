@@ -1,19 +1,30 @@
 <div class="main-page-container">
-  <h1 class="mb-3">Settings</h1>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Settings</h1>
+    <p class="mb-0 text-body-secondary">
+      Manage your profile, payout details, notifications, and security settings.
+    </p>
+  </div>
   @let user = authService.currentUser$ | async;
 
   <div class="settings-tabs" aria-label="Settings sections">
-    @for (tab of tabs; track tab.id) {
+    @for (tab of filteredTabs(user); track tab.id) {
       <a
         class="settings-tabs__item gap-2"
         [class.settings-tabs__item--active]="isActiveTab(tab.id)"
+        [class.settings-tabs__item--warning]="tab.id === 'bank-accounts' && hasNoBankAccounts(user)"
+        [attr.data-tooltip]="
+          tab.id === 'bank-accounts' && hasNoBankAccounts(user)
+            ? 'You have no Bank Account set'
+            : null
+        "
         [routerLink]="['/settings']"
         [fragment]="tab.id"
       >
         <span class="material-symbols-outlined">{{ tab.icon }}</span>
         <span>{{ tab.label }}</span>
         @if (tab.id === 'bank-accounts' && hasNoBankAccounts(user)) {
-          <div class="warning-badge-wrapper" title="You have no Bank Account set">
+          <div class="warning-badge-wrapper">
             <div class="warning-badge">
               <span class="material-symbols-outlined">error</span>
             </div>
@@ -33,6 +44,9 @@
     }
     @case ('notifications') {
       <app-notifications-settings-page [user]="user" />
+    }
+    @case ('admin-settings') {
+      <app-admin-settings-settings-page />
     }
     @default {
       <app-profile-settings-page [user]="user" />

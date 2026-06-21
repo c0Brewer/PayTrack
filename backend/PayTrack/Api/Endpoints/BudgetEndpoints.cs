@@ -31,13 +31,16 @@ namespace PayTrack.Api.Endpoints
             group.MapGet("/{id:int}", BudgetHandler.GetBudgetByIdAsync);
 
             group.MapPost("/", BudgetHandler.CreateBudgetAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPut("/{id:int}", BudgetHandler.UpdateBudgetAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapDelete("/{id:int}", BudgetHandler.DeleteBudgetAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }

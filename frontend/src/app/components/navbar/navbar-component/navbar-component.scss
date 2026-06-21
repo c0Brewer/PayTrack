@@ -105,6 +105,37 @@
   margin-top: v.$size-s;
   padding-top: v.$size-s;
 }
+
+.sidebar__dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xxs;
+}
+
+.sidebar__dropdown-toggle {
+  text-align: left;
+}
+
+.sidebar__dropdown-toggle.is-active {
+  background: rgba(v.$TUR-primary-orange, 1);
+  color: white;
+}
+
+.sidebar__dropdown-chevron {
+  margin-left: auto;
+}
+
+.sidebar__dropdown-menu {
+  display: none;
+  flex-direction: column;
+  gap: v.$size-xxs;
+  padding-left: v.$size-m;
+}
+
+.sidebar__dropdown-menu--open {
+  display: flex;
+}
+
 .sidebar__logo img {
   padding-bottom: 2rem;
   border-bottom: 3px solid v.$TUR-primary-orange;
@@ -119,16 +150,22 @@
   padding-top: v.$size-s;
 }
 .nav-badge {
+  align-items: center;
   background: #dc3545;
-  border-radius: 10px;
+  border-radius: 50%;
   color: white;
-  font-size: 0.7rem;
+  display: inline-flex;
+  flex: 0 0 1.875rem;
+  font-size: 0.8rem;
   font-weight: bold;
+  height: 1.875rem;
+  justify-content: center;
   line-height: 1;
   margin-left: auto;
-  min-width: 1.2rem;
-  padding: 0.2rem 0.4rem;
+  min-width: 1.875rem;
+  padding: 0;
   text-align: center;
+  width: 1.875rem;
 }
 
 .sidebar__settings,
@@ -140,10 +177,50 @@
   position: relative;
 }
 
+.sidebar__settings--warning::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  z-index: 10;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: v.$size-xs;
+  background: #111827;
+  color: white;
+  content: attr(data-tooltip);
+  font-size: v.$font-xs;
+  font-weight: v.$font-medium;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.25rem);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  white-space: normal;
+}
+
+.sidebar__settings--warning:hover::after,
+.sidebar__settings--warning:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .sidebar__settings .material-symbols-outlined,
 .sidebar__logout .material-symbols-outlined {
   display: block;
   line-height: 1;
+}
+
+.signout-modal__text {
+  margin: 0 0 v.$size-m;
+}
+
+.signout-modal__actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
 }
 
 @media (max-width: 767.98px) {

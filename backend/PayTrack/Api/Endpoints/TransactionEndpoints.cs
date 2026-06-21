@@ -27,48 +27,81 @@ namespace PayTrack.Api.Endpoints
                 .WithTags(GroupName)
                 .RequireAuthorization();
 
+            /*
+             * PaymentRequest by USER
+             */
             group.MapGet("/user", PaymentRequestByUserHandler.GetPaymentRequestByUsersAsync);
 
             group.MapGet("/user/{id:int}", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdAsync);
 
-            group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery(); // Needed because of the way the file upload works. This is intentional
+            group.MapPost("/user", PaymentRequestByUserHandler.CreatePaymentRequestByUserAsync).DisableAntiforgery().RequireActiveUser(); // Needed because of the way the file upload works. This is intentional
+
+            group.MapPost("/user/receipt/extract", PaymentRequestByUserHandler.ExtractReceiptAsync)
+                .DisableAntiforgery() // JWT-authenticated multipart upload; no CSRF token needed.
+                .RequireActiveUser();
 
             group.MapPut("/user/{id:int}", PaymentRequestByUserHandler.UpdatePaymentRequestByUserAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+
+            group.MapDelete("/user/{id:int}", PaymentRequestByUserHandler.DeletePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPost("/user/{id:int}/resubmit", PaymentRequestByUserHandler.ResubmitPaymentRequestByUserAsync)
                 .DisableAntiforgery();
 
             group.MapPost("/user/{id:int}/mark-paid", PaymentRequestByUserHandler.MarkPaymentRequestByUserAsPaidAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPost("/user/{id:int}/approve", PaymentRequestByUserHandler.ApprovePaymentRequestByUserAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPost("/user/{id:int}/decline", PaymentRequestByUserHandler.DeclinePaymentRequestByUserAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPost("/user/{id:int}/request-changes", PaymentRequestByUserHandler.RequestChangesPaymentRequestByUserAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             group.MapPost("/user/{id:int}/undo-status-change", PaymentRequestByUserHandler.UndoLastPaymentRequestByUserStatusChangeAsync)
                 .RequireRole(Role.Admin);
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
+            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
+            group.MapPost("/user/{id:int}/duplicate/{duplicateId:int}/dismiss", PaymentRequestByUserHandler.DismissDuplicatePaymentRequestByUserAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
+            /*
+             * PaymentRequest by TEAM
+             */
             group.MapGet("/team", PaymentRequestByTeamHandler.GetPaymentRequestByTeamsAsync);
             group.MapGet("/team/{id:int}", PaymentRequestByTeamHandler.GetPaymentRequestByTeamByIdAsync);
-            group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync);
+            group.MapPost("/team", PaymentRequestByTeamHandler.CreatePaymentRequestByTeamAsync).RequireActiveUser();
             group.MapPut("/team/{id:int}", PaymentRequestByTeamHandler.UpdatePaymentRequestByTeamAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+            group.MapPost("/team/{id:int}/mark-as-paid", PaymentRequestByTeamHandler.MarkAsPaidPaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
-            group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);
+            group.MapDelete("/team/{id:int}", PaymentRequestByTeamHandler.DeletePaymentRequestByTeamAsync)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
-            //Send the same information as in `create`, but without the file
-            //Return if it matches -> empty list
-            //If there are duplicates -> list of duplicates (maximum 10)
-            //Custom DTO for duplicates in `PaymentRequestByUser GetDuplicatePaymentRequestsByUserDto`
-            //Invoice number, Amount (perhaps a fuzzy matcher)
+            /*
+             * Bankstatement Matching
+             */
+            group.MapPost("/bank-statement-matches", BankStatementMatchingHandler.GetBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
+            group.MapPut("/bank-statement-matches", BankStatementMatchingHandler.UpdateBankStatementMatches)
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
         }
     }
 }

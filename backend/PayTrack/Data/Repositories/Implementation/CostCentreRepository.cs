@@ -28,12 +28,12 @@ namespace PayTrack.Data.Repositories.Implementation
 
             if (!string.IsNullOrWhiteSpace(query?.Name))
             {
-                dbQuery = dbQuery.Where(c => EF.Functions.Like(c.Name, $"%{query.Name}%"));
+                dbQuery = dbQuery.Where(c => c.Name.ToLower().Contains(query.Name.ToLower()));
             }
 
             if (!string.IsNullOrWhiteSpace(query?.Description))
             {
-                dbQuery = dbQuery.Where(c => c.Description != null && EF.Functions.Like(c.Description, $"%{query.Description}%"));
+                dbQuery = dbQuery.Where(c => c.Description != null && c.Description.ToLower().Contains(query.Description.ToLower()));
             }
 
             if (query?.MinBudget.HasValue == true || query?.MaxBudget.HasValue == true)
@@ -141,6 +141,7 @@ namespace PayTrack.Data.Repositories.Implementation
                             TargetAmount = entry.TargetAmount,
                             PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc),
                             PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc),
+                            Type = entry.Type,
                         });
                     }
                     else
@@ -154,6 +155,7 @@ namespace PayTrack.Data.Repositories.Implementation
                         existing.TargetAmount = entry.TargetAmount;
                         existing.PeriodStart = DateTime.SpecifyKind(entry.PeriodStart, DateTimeKind.Utc);
                         existing.PeriodEnd = DateTime.SpecifyKind(entry.PeriodEnd, DateTimeKind.Utc);
+                        existing.Type = entry.Type;
                     }
                 }
             }

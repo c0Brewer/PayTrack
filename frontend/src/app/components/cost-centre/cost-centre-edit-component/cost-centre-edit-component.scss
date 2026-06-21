@@ -1,0 +1,125 @@
+@use 'variables' as v;
+
+label {
+  color: v.$text-color;
+  display: flex;
+  flex-direction: column;
+  font-size: v.$font-s;
+  margin-bottom: v.$size-m;
+}
+
+.budgets-section {
+  border-top: 1px solid v.$border-color;
+  margin-top: v.$size-m;
+  padding-top: v.$size-m;
+
+  h4 {
+    color: v.$text-color;
+    font-size: v.$font-s;
+    margin: 0 0 v.$size-s;
+  }
+}
+
+.budget-table {
+  border-collapse: collapse;
+  font-size: v.$font-s;
+  margin-bottom: v.$size-s;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid v.$border-color;
+    padding: v.$size-xs v.$size-s;
+    text-align: left;
+  }
+
+  th {
+    color: v.$text-color;
+    font-weight: v.$font-medium;
+  }
+
+  tr.deleted td {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+}
+
+.new-budgets tr td {
+  color: v.$TUR-primary-orange;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: v.$TUR-primary-orange;
+  cursor: pointer;
+  font-size: v.$font-s;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.add-budget-form {
+  align-items: flex-end;
+  display: grid;
+  gap: v.$size-s;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  margin-top: v.$size-s;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.btn-add-budget {
+  align-self: flex-end;
+  background: v.$TUR-primary-orange;
+  border: 1px solid v.$TUR-primary-orange;
+  border-radius: 0.5rem;
+  color: v.$background-light;
+  font-size: v.$font-s;
+  font-weight: v.$font-semibold;
+  min-height: 2.4rem;
+  padding: v.$size-xs v.$size-s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #f3852d;
+    border-color: #f3852d;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: v.$size-s;
+  justify-content: flex-end;
+  margin-top: v.$size-l;
+}
+
+@media (max-width: 991.98px) {
+  .add-budget-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .add-budget-form {
+    grid-template-columns: 1fr;
+  }
+
+  .budget-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}

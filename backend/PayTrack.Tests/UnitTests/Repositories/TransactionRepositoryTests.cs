@@ -63,8 +63,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Teams.Add(new Team { Id = 1, Name = "test123" });
 
             context.Transactions.AddRange(
-                new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },
-                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.External, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out }
+                new PaymentRequestByUser { Id = 1, PurposeOfPayment = "123", Amount = 100, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.NotYetPaid, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out },
+                new PaymentRequestByUser { Id = 2, PurposeOfPayment = "123", Amount = 200, CreatedAt = DateTime.UtcNow, InvoiceNumber = "123", PayoutType = PayoutType.NotYetPaid, BankAccountId = 1, PaymentReference = "123", Status = TransactionStatus.Submitted, UserId = 1, TeamId = 1, PaymentDirection = PaymentDirection.Out }
             );
 
             await context.SaveChangesAsync();
@@ -75,7 +75,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var (transaction, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery
             {
                 InvoiceNumber = "12",
-                PayoutType = PayoutType.External,
+                PayoutType = PayoutType.NotYetPaid,
                 BankAccountId = 1,
                 IncludeBankAccount = true,
 
@@ -123,6 +123,128 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             result.Should().HaveCount(2);
             count.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetHomeDashboardInvoiceSectionAsync_ShouldReturnEmptySection_WhenNoInvoicesExist()
+        {
+            await using var context = GetInMemoryDbContext("DashboardInvoiceSectionEmpty");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetHomeDashboardInvoiceSectionAsync(42, 5);
+
+            result.OpenCount.Should().Be(0);
+            result.SubmittedCount.Should().Be(0);
+            result.PaidCount.Should().Be(0);
+            result.OpenAmount.Should().Be(0m);
+            result.LastPaidAt.Should().BeNull();
+            result.TotalRecentCount.Should().Be(0);
+            result.NeedsAttentionCount.Should().Be(0);
+            result.Recent.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetHomeDashboardInvoiceSectionAsync_ShouldClampLimitAndOrderRecentsDeterministically()
+        {
+            await using var context = GetInMemoryDbContext("DashboardInvoiceSectionClampOrder");
+
+            context.User.Add(new User { Id = 1, Email = "user@test.com", Name = "User" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team" });
+
+            var sharedCreatedAt = new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser
+                {
+                    Id = 1,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 100m,
+                    InvoiceNumber = "INV-1",
+                    CreatedAt = sharedCreatedAt,
+                    Status = TransactionStatus.Submitted,
+                },
+                new PaymentRequestByUser
+                {
+                    Id = 2,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 200m,
+                    InvoiceNumber = "INV-2",
+                    CreatedAt = sharedCreatedAt,
+                    Status = TransactionStatus.ChangesRequested,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var negativeLimitResult = await repo.GetHomeDashboardInvoiceSectionAsync(1, -3);
+            var orderedResult = await repo.GetHomeDashboardInvoiceSectionAsync(1, 50);
+
+            negativeLimitResult.Recent.Should().BeEmpty();
+            orderedResult.Recent.Select(item => item.Id).Should().Equal(2, 1);
+            orderedResult.NeedsAttentionCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetHomeDashboardPaymentRequestSectionAsync_ShouldClampLimitAndBuildSummary()
+        {
+            await using var context = GetInMemoryDbContext("DashboardPaymentRequestSectionSummary");
+
+            context.User.Add(new User { Id = 1, Email = "assignee@test.com", Name = "Assignee" });
+            context.User.Add(new User { Id = 2, Email = "requester@test.com", Name = "Requester" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam
+                {
+                    Id = 1,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 100m,
+                    CreatedAt = new DateTime(2026, 6, 3, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.Submitted,
+                    PaymentReference = "PR-1",
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 2,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 120m,
+                    CreatedAt = new DateTime(2026, 6, 2, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.ChangesRequested,
+                    PaymentReference = "PR-2",
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 3,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 130m,
+                    CreatedAt = new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.Paid,
+                    PaidAt = new DateTime(2026, 6, 4, 12, 0, 0, DateTimeKind.Utc),
+                    PaymentReference = "PR-3",
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetHomeDashboardPaymentRequestSectionAsync(1, 100);
+
+            result.OpenCount.Should().Be(2);
+            result.SubmittedCount.Should().Be(1);
+            result.PaidCount.Should().Be(1);
+            result.OpenAmount.Should().Be(220m);
+            result.LastPaidAt.Should().Be(new DateTime(2026, 6, 4, 12, 0, 0, DateTimeKind.Utc));
+            result.TotalRecentCount.Should().Be(3);
+            result.NeedsAttentionCount.Should().Be(1);
+            result.Recent.Should().HaveCount(3);
+            result.Recent.First().Reference.Should().Be("PR-1");
         }
 
         [Fact]
@@ -232,6 +354,153 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             totalCount.Should().Be(1);
             transactions.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequests_ShouldMarkPotentialDuplicates()
+        {
+            await using var context = GetInMemoryDbContext("MarkPotentialDuplicates");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" });
+            context.Teams.AddRange(
+                new Team { Id = 1, Name = "Team 1" },
+                new Team { Id = 2, Name = "Team 2" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-1" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt.AddHours(2), InvoiceNumber = "DUP-2" },
+                new PaymentRequestByUser { Id = 3, UserId = 1, TeamId = 2, Amount = 50, PaidAt = paidAt, InvoiceNumber = "OTHER-AMOUNT" },
+                new PaymentRequestByUser { Id = 4, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt.AddDays(1), InvoiceNumber = "OTHER-DAY" },
+                new PaymentRequestByUser { Id = 5, UserId = 1, TeamId = 1, Amount = 100, PaidAt = null, InvoiceNumber = "NO-DAY" },
+                new PaymentRequestByUser { Id = 6, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-1" });
+
+            await context.SaveChangesAsync();
+
+            var fileRepo = new Mock<IFileRepository>();
+            var repo = new TransactionRepository(context, fileRepo.Object);
+
+            var (transactions, totalCount) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery());
+
+            totalCount.Should().Be(6);
+            transactions.Single(t => t.Id == 1).HasPotentialDuplicate.Should().BeTrue();
+            transactions.Single(t => t.Id == 2).HasPotentialDuplicate.Should().BeTrue();
+            transactions.Single(t => t.Id == 3).HasPotentialDuplicate.Should().BeFalse();
+            transactions.Single(t => t.Id == 4).HasPotentialDuplicate.Should().BeFalse();
+            transactions.Single(t => t.Id == 5).HasPotentialDuplicate.Should().BeFalse();
+            transactions.Single(t => t.Id == 6).HasPotentialDuplicate.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetAllPaymentRequests_ShouldIgnoreDismissedDuplicatePairs()
+        {
+            await using var context = GetInMemoryDbContext("IgnoreDismissedDuplicates");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-1" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DUP-2" });
+            context.DismissedDuplicatePaymentRequestsByUser.Add(
+                new DismissedDuplicatePaymentRequestByUser
+                {
+                    FirstPaymentRequestByUserId = 1,
+                    SecondPaymentRequestByUserId = 2,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var (transactions, _) = await repo.GetAllAsync(new GetPaymentRequestByUserQuery());
+
+            transactions.Single(t => t.Id == 1).HasPotentialDuplicate.Should().BeFalse();
+            transactions.Single(t => t.Id == 2).HasPotentialDuplicate.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetPotentialDuplicatesAsync_ShouldExcludeDismissedPairsForSource()
+        {
+            await using var context = GetInMemoryDbContext("PotentialDuplicatesDismissed");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" },
+                new User { Id = 3, Email = "user3@paytrack.dev", Name = "User 3" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "SRC" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "DISMISSED" },
+                new PaymentRequestByUser { Id = 3, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "VISIBLE" });
+            context.DismissedDuplicatePaymentRequestsByUser.Add(
+                new DismissedDuplicatePaymentRequestByUser
+                {
+                    FirstPaymentRequestByUserId = 1,
+                    SecondPaymentRequestByUserId = 2,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, null, 1);
+
+            result.Select(t => t.Id).Should().Equal(3);
+        }
+
+        [Fact]
+        public async Task GetPotentialDuplicatesAsync_ShouldOnlyReturnSameUserInvoices()
+        {
+            await using var context = GetInMemoryDbContext("PotentialDuplicatesSameUserOnly");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "INV-100" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt.AddHours(1), InvoiceNumber = "INV-101" },
+                new PaymentRequestByUser { Id = 3, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "INV-100" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, "INV-100", 1);
+
+            result.Select(t => t.Id).Should().Equal(2);
+        }
+
+        [Fact]
+        public async Task GetPotentialDuplicatesAsync_ShouldReturnOtherUsersInvoices_WhenIncluded()
+        {
+            await using var context = GetInMemoryDbContext("PotentialDuplicatesIncludeOtherUsers");
+
+            context.User.AddRange(
+                new User { Id = 1, Email = "user1@paytrack.dev", Name = "User 1" },
+                new User { Id = 2, Email = "user2@paytrack.dev", Name = "User 2" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team 1" });
+
+            var paidAt = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "INV-100" },
+                new PaymentRequestByUser { Id = 2, UserId = 1, TeamId = 1, Amount = 100, PaidAt = paidAt.AddHours(1), InvoiceNumber = "INV-101" },
+                new PaymentRequestByUser { Id = 3, UserId = 2, TeamId = 1, Amount = 100, PaidAt = paidAt, InvoiceNumber = "INV-100" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.GetPotentialDuplicatesAsync(1, 1, 100, paidAt, "INV-100", 1, includeOtherUsers: true);
+
+            result.Select(t => t.Id).Should().Equal(2, 3);
         }
 
         // ----------------------------
@@ -480,6 +749,53 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             ex.Message.Should().Contain("Transaction");
         }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldRemoveInvoice_WhenFound()
+        {
+            await using var context = GetInMemoryDbContext("DeletePaymentRequestByUser");
+            context.PaymentRequestsByUser.Add(new PaymentRequestByUser { Id = 1, InvoiceNumber = "INV-1" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.DeletePaymentRequestByUserAsync(1);
+
+            result.Should().BeTrue();
+            (await context.PaymentRequestsByUser.FindAsync(1)).Should().BeNull();
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldReturnFalse_WhenMissing()
+        {
+            await using var context = GetInMemoryDbContext("DeletePaymentRequestByUserMissing");
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            var result = await repo.DeletePaymentRequestByUserAsync(999);
+
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DismissDuplicatePaymentRequestByUserAsync_ShouldStoreNormalizedPair()
+        {
+            await using var context = GetInMemoryDbContext("DismissDuplicatePair");
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser { Id = 1, InvoiceNumber = "INV-1" },
+                new PaymentRequestByUser { Id = 2, InvoiceNumber = "INV-2" });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, new Mock<IFileRepository>().Object);
+
+            await repo.DismissDuplicatePaymentRequestByUserAsync(2, 1);
+            await repo.DismissDuplicatePaymentRequestByUserAsync(1, 2);
+
+            context.DismissedDuplicatePaymentRequestsByUser.Should().ContainSingle();
+            var dismissal = await context.DismissedDuplicatePaymentRequestsByUser.SingleAsync();
+            dismissal.FirstPaymentRequestByUserId.Should().Be(1);
+            dismissal.SecondPaymentRequestByUserId.Should().Be(2);
+        }
+
 
         // ----------------------------
         // GET BY ID (PaymentRequestByTeam)
@@ -735,7 +1051,75 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         // ----------------------------
-        // GET BY ID PaymentRequestByTeam – includes
+        // UPDATE AND ADD STATUS HISTORY
+        // ----------------------------
+        [Fact]
+        public async Task UpdateAndAddStatusHistoryAsync_ShouldPersistBothChanges()
+        {
+            await using var context = GetInMemoryDbContext("UpdateAndAddStatusHistory");
+
+            context.User.Add(new User { Id = 1, Email = "a@a.com", Name = "A" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+            context.PaymentRequestsByTeam.Add(new PaymentRequestByTeam
+            {
+                Id = 1,
+                UserId = 1,
+                TeamId = 1,
+                Status = TransactionStatus.Submitted,
+            });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var transaction = await context.PaymentRequestsByTeam.FindAsync(1);
+            transaction!.Status = TransactionStatus.Paid;
+            transaction.PaidAt = DateTime.UtcNow;
+
+            var history = new TransactionStatusHistory
+            {
+                TransactionId = 1,
+                ChangedById = 1,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Paid,
+                Comment = "approved",
+            };
+
+            var result = await repo.UpdateAndAddStatusHistoryAsync(transaction, history);
+
+            result.Status.Should().Be(TransactionStatus.Paid);
+
+            var dbTransaction = await context.PaymentRequestsByTeam.FindAsync(1);
+            dbTransaction!.Status.Should().Be(TransactionStatus.Paid);
+
+            var dbHistory = context.TransactionStatusHistories.First();
+            dbHistory.FromStatus.Should().Be(TransactionStatus.Submitted);
+            dbHistory.ToStatus.Should().Be(TransactionStatus.Paid);
+            dbHistory.Comment.Should().Be("approved");
+        }
+
+        [Fact]
+        public async Task UpdateAndAddStatusHistoryAsync_ShouldThrow_WhenSaveFails()
+        {
+            var context = new FailingDbContext("FailUpdateAndAddStatusHistory");
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var transaction = new PaymentRequestByTeam { Id = 1, Status = TransactionStatus.Paid };
+            var history = new TransactionStatusHistory
+            {
+                TransactionId = 1,
+                ChangedById = 1,
+                FromStatus = TransactionStatus.Submitted,
+                ToStatus = TransactionStatus.Paid,
+            };
+
+            async Task act() => await repo.UpdateAndAddStatusHistoryAsync(transaction, history);
+
+            var ex = await Assert.ThrowsAsync<InternalErrorException>(act);
+            ex.Message.Should().Contain("status history");
+        }
+
+        // ----------------------------
+        // GET BY ID PaymentRequestByTeam
         // ----------------------------
         [Fact]
         public async Task GetByIdAsyncTeam_ShouldIncludeNavigationProperties_WhenRequested()
@@ -776,6 +1160,69 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.Budget!.Id.Should().Be(1);
             result.RequestedBy.Should().NotBeNull();
             result.RequestedBy!.Id.Should().Be(2);
+        }
+
+        // ----------------------------
+        // GET DUE REMINDERS
+        // ----------------------------
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldReturnMatchingEntries()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_Match");
+
+            context.User.Add(new User { Id = 1, Email = "a@test.com", Name = "Alice" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            var targetDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = targetDate, Status = TransactionStatus.Submitted },
+                new PaymentRequestByTeam { Id = 2, UserId = 1, TeamId = 1, Amount = 200, DueDate = targetDate.AddDays(1), Status = TransactionStatus.Submitted },
+                new PaymentRequestByTeam { Id = 3, UserId = 1, TeamId = 1, Amount = 300, DueDate = targetDate, Status = TransactionStatus.Paid },
+                new PaymentRequestByTeam { Id = 4, UserId = 1, TeamId = 1, Amount = 400, DueDate = targetDate, Status = TransactionStatus.Declined });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(targetDate);
+
+            results.Should().ContainSingle(t => t.Id == 1);
+        }
+
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldIncludeUser()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_IncludeUser");
+
+            context.User.Add(new User { Id = 1, Email = "a@test.com", Name = "Alice" });
+            context.Teams.Add(new Team { Id = 1, Name = "T" });
+
+            var targetDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc);
+
+            context.PaymentRequestsByTeam.Add(
+                new PaymentRequestByTeam { Id = 1, UserId = 1, TeamId = 1, Amount = 100, DueDate = targetDate, Status = TransactionStatus.Submitted });
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(targetDate);
+
+            results.Should().ContainSingle();
+            results[0].User.Should().NotBeNull();
+            results[0].User.Email.Should().Be("a@test.com");
+        }
+
+        [Fact]
+        public async Task GetPaymentRequestsByTeamDueOnAsync_ShouldReturnEmpty_WhenNoneDue()
+        {
+            await using var context = GetInMemoryDbContext("DueReminders_Empty");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var results = await repo.GetPaymentRequestsByTeamDueOnAsync(DateTime.UtcNow.Date.AddDays(7));
+
+            results.Should().BeEmpty();
         }
     }
 }

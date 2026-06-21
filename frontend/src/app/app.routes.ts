@@ -1,27 +1,28 @@
 import { Routes } from '@angular/router';
 
-import { BankAccountComponent } from './components/bankaccount/bank-account-component/bank-account-component';
 import { CostCentreDetailComponent } from './components/cost-centre/cost-centre-detail-component/cost-centre-detail-component';
 import { CostCentreManagementComponent } from './components/cost-centre/cost-centre-management-component/cost-centre-management-component';
 import { UnauthorizedComponent } from './components/general/unauthorized-component/unauthorized-component';
 import { HomeComponent } from './components/home/home-component/home-component';
 import { InitialLoginBankAccountComponent } from './components/inital-login-bank-account/initial-login-bank-account-component/initial-login-bank-account-component';
 import { LoginComponent } from './components/login/login-component/login-component';
+import { BankStatementDetailComponent } from './components/payment-requests/bank-statement-detail-component/bank-statement-detail-component';
 import { TeamRequestAdminDetailComponent } from './components/payment-requests/request-by-team/admin-view/admin-detail-component/admin-detail-component';
-import { TeamRequestsComponent } from './components/payment-requests/request-by-team/admin-view/admin-list-component/admin-list-component';
+import { TeamRequestAdminOverviewComponent } from './components/payment-requests/request-by-team/admin-view/admin-overview-component/admin-overview-component';
 import { PaymentRequestByTeamComponent } from './components/payment-requests/request-by-team/submission-component/submission-component';
-import { TeamRequestUserDetailComponent } from './components/payment-requests/request-by-team/user-view/user-detail-component/user-detail-component';
-import { TeamRequestUserListComponent } from './components/payment-requests/request-by-team/user-view/user-list-component/user-list-component';
+import { TeamRequestTeamDetailPageComponent } from './components/payment-requests/request-by-team/team-view/team-detail-page-component/team-detail-page-component';
+import { TeamRequestTeamOverviewComponent } from './components/payment-requests/request-by-team/team-view/team-overview-component/team-overview-component';
 import { RequestDetailComponent } from './components/payment-requests/request-by-user/admin-view/admin-detail-component/admin-detail-component';
-import { RequestsComponent } from './components/payment-requests/request-by-user/admin-view/admin-list-component/admin-list-component';
+import { AdminInvoicesOverviewComponent } from './components/payment-requests/request-by-user/admin-view/admin-overview-component/admin-overview-component';
 import { ReceiptSubmitComponent } from './components/payment-requests/request-by-user/submission-component/submission-component';
 import { MyInvoiceDetailComponent } from './components/payment-requests/request-by-user/user-view/user-detail-component/user-detail-component';
-import { MyInvoicesComponent } from './components/payment-requests/request-by-user/user-view/user-list-component/user-list-component';
+import { UserInvoicesOverviewComponent } from './components/payment-requests/request-by-user/user-view/user-overview-component/user-overview-component';
 import { SeasonManagementComponent } from './components/season/season-management-component/season-management-component';
 import { SettingsComponent } from './components/settings/settings-component/settings-component';
 import { TeamDetailComponent } from './components/team/team-detail-component/team-detail-component';
 import { TeamManagementComponent } from './components/team/team-management-component/team-management-component';
 import { UserManagementComponent } from './components/user-management/user-management-component/user-management-component';
+import { activeGuard } from './guards/active-guard/active-guard';
 import { authGuard } from './guards/auth-guard/auth-guard';
 import { guestGuard } from './guards/guest-guard/guest-guard';
 import { roleGuard } from './guards/role-guard/role-guard';
@@ -44,7 +45,7 @@ export const routes: Routes = [
   {
     path: 'my-invoices',
     canActivate: [authGuard],
-    component: MyInvoicesComponent,
+    component: UserInvoicesOverviewComponent,
   },
   {
     path: 'my-invoices/:id',
@@ -58,23 +59,23 @@ export const routes: Routes = [
   },
   {
     path: 'submit',
-    canActivate: [authGuard],
+    canActivate: [authGuard, activeGuard],
     component: ReceiptSubmitComponent,
   },
   {
     path: 'requests',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: RequestsComponent,
+    component: AdminInvoicesOverviewComponent,
+  },
+  {
+    path: 'bank-statement-upload',
+    canActivate: [authGuard, roleGuard(Role.ADMIN)],
+    component: BankStatementDetailComponent,
   },
   {
     path: 'requests/:id',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
     component: RequestDetailComponent,
-  },
-  {
-    path: 'bankaccount',
-    canActivate: [authGuard],
-    component: BankAccountComponent,
   },
   {
     path: 'user',
@@ -124,7 +125,7 @@ export const routes: Routes = [
   {
     path: 'payment-requests-by-team',
     canActivate: [authGuard, roleGuard(Role.ADMIN)],
-    component: TeamRequestsComponent,
+    component: TeamRequestAdminOverviewComponent,
   },
   {
     path: 'payment-requests-by-team/:id',
@@ -134,12 +135,12 @@ export const routes: Routes = [
   {
     path: 'my-team-requests',
     canActivate: [authGuard],
-    component: TeamRequestUserListComponent,
+    component: TeamRequestTeamOverviewComponent,
   },
   {
     path: 'my-team-requests/:id',
     canActivate: [authGuard],
-    component: TeamRequestUserDetailComponent,
+    component: TeamRequestTeamDetailPageComponent,
   },
   {
     path: 'unauthorized',

@@ -1,0 +1,497 @@
+<div class="main-page-container invoice-detail">
+  @if (loading) {
+    <p>Loading...</p>
+  } @else if (invoice) {
+    <app-detail-component
+      [title]="'Invoice ' + invoice.invoiceNumber"
+      [subtitle]="invoice.purposeOfPayment || 'No purpose set.'"
+      eyebrow="Invoice"
+      icon="receipt_long"
+      backLabel="Back"
+      [statusLabel]="getStatusLabel(invoice.status)"
+      statusVariant="neutral"
+      (backClick)="back.emit()"
+    >
+      <div detail-actions class="detail-action-buttons">
+        @if (canManageStatus && canApprove(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'approve' || offlineService.isOffline()"
+            (click)="openActionModal('approve')"
+          >
+            <span class="material-symbols-outlined">check_circle</span>
+            Approve
+          </button>
+        }
+
+        @if (canManageStatus && canRequestChanges(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'requestChanges' || offlineService.isOffline()"
+            (click)="openActionModal('requestChanges')"
+          >
+            <span class="material-symbols-outlined">edit_note</span>
+            Request Changes
+          </button>
+        }
+
+        @if (canManageStatus && canDecline(invoice.status)) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="statusActionPending === 'decline' || offlineService.isOffline()"
+            (click)="openActionModal('decline')"
+          >
+            <span class="material-symbols-outlined">cancel</span>
+            Decline
+          </button>
+        }
+
+        @if (canMarkPaid && invoice.status === TransactionStatus.Approved) {
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1"
+            appDisableOfflineAction
+            [disabled]="markingPaid || offlineService.isOffline()"
+            (click)="openActionModal('markPaid')"
+          >
+            <span class="material-symbols-outlined">payments</span>
+            Mark as Paid
+          </button>
+        }
+      </div>
+
+      <div detail-meta class="invoice-info-card">
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <th>Invoice Number</th>
+              <td>{{ invoice.invoiceNumber }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>
+                <span [class]="'status ' + getStatusClass(invoice.status)">
+                  {{ getStatusLabel(invoice.status) }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>Amount</th>
+              <td>{{ invoice.amount | euro }}</td>
+            </tr>
+            <tr>
+              <th>Team</th>
+              <td>{{ invoice.team?.name ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Purpose</th>
+              <td>{{ invoice.purposeOfPayment || '—' }}</td>
+            </tr>
+            <tr>
+              <th>Payout Type</th>
+              <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+            </tr>
+            <tr>
+              <th>Comment</th>
+              <td>{{ invoice.comment || '—' }}</td>
+            </tr>
+            <tr>
+              <th>Submitted</th>
+              <td>{{ invoice.createdAt | date: 'mediumDate' }}</td>
+            </tr>
+            <tr>
+              <th>Paid At</th>
+              <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
+            </tr>
+            <tr>
+              <th>Finance Paid At</th>
+              <td>
+                {{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '—' }}
+              </td>
+            </tr>
+            <tr>
+              <th>Payment Reference</th>
+              <td>{{ invoice.paymentReference || '—' }}</td>
+            </tr>
+            @if (showUserName) {
+              <tr>
+                <th>User</th>
+                <td>{{ invoice.user?.name ?? '—' }}</td>
+              </tr>
+            }
+            <tr>
+              <th>Bank Account (IBAN)</th>
+              <td>{{ invoice.bankAccount?.iban ?? '—' }}</td>
+            </tr>
+            @if (invoice.payoutType === PayoutType.NotYetPaid) {
+              <tr>
+                <th>Creditor</th>
+                <td>{{ invoice.creditorName ?? '—' }}</td>
+              </tr>
+              <tr>
+                <th>Due Date</th>
+                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate') : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if ((invoice.statusHistory?.length ?? 0) > 0) {
+        <app-box-component title="Status History" size="large" class="status-history-box">
+          <div class="history-table-wrapper">
+            <table class="info-table history-table">
+              <thead>
+                <tr>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Changed By</th>
+                  <th>Changed At</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of invoice.statusHistory ?? []; track entry.changedAt) {
+                  <tr>
+                    <td>
+                      <span [class]="'status ' + getStatusClass(entry.fromStatus)">
+                        {{ getStatusLabel(entry.fromStatus) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span [class]="'status ' + getStatusClass(entry.toStatus)">
+                        {{ getStatusLabel(entry.toStatus) }}
+                      </span>
+                    </td>
+                    <td>{{ entry.changedBy?.name ?? 'User #' + entry.changedById }}</td>
+                    <td>{{ entry.changedAt | date: 'medium' }}</td>
+                    <td>{{ entry.comment || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </app-box-component>
+      }
+
+      <section class="receipt-section text-center">
+        <h3>Receipt</h3>
+        @if (receiptBlobUrl) {
+          @if (isReceiptImage) {
+            <img class="receipt-image" [src]="safeReceiptUrl" alt="Receipt" />
+          } @else {
+            <iframe class="receipt-frame" [src]="safeReceiptUrl" title="Receipt"></iframe>
+          }
+        } @else if (!hasReceipt) {
+          <p>Loading receipt...</p>
+        } @else {
+          <p>Preview not available.</p>
+        }
+        @if (hasReceipt) {
+          <button
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2 m-3"
+            (click)="downloadReceipt.emit()"
+          >
+            <span class="material-symbols-outlined">download</span>
+            Download Receipt
+          </button>
+        }
+      </section>
+    </app-detail-component>
+
+    @if (activeActionModal === 'approve') {
+      <app-modal-component
+        title="Approve Invoice"
+        icon="check_circle"
+        (closeEvent)="closeActionModal()"
+      >
+        <form class="action-modal-form" (ngSubmit)="onApprove()">
+          <p class="action-modal-form__description">
+            Approve this invoice and assign the budget that should be charged.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Budget</span>
+              <select name="approvalBudgetId" [(ngModel)]="approvalBudgetId" required>
+                <option [ngValue]="null">Select budget</option>
+                @for (budget of budgets; track budget.id) {
+                  <option [ngValue]="budget.id">
+                    {{ budget.name }} ({{ budget.periodStart | date: 'mediumDate' }} -
+                    {{ budget.periodEnd | date: 'mediumDate' }})
+                  </option>
+                }
+              </select>
+            </label>
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="approvalReason"
+                [(ngModel)]="approvalReason"
+                [minlength]="reasonMinLength"
+                [maxlength]="reasonMaxLength"
+                placeholder="Enter a reason..."
+              ></textarea>
+              @if (isTextTooShort(approvalReason, reasonMinLength)) {
+                <span class="field-error"
+                  >Reason must be at least {{ reasonMinLength }} characters long.</span
+                >
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                statusActionPending === 'approve' ||
+                !approvalBudgetId ||
+                !isOptionalTextLengthValid(approvalReason, reasonMinLength, reasonMaxLength) ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">check_circle</span>
+              {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'requestChanges') {
+      <app-modal-component
+        title="Request Changes"
+        icon="edit_note"
+        (closeEvent)="closeActionModal()"
+      >
+        <form class="action-modal-form" (ngSubmit)="onRequestChanges()">
+          <p class="action-modal-form__description">
+            Ask the submitter to update the invoice before it can continue through review.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="changeRequestReason"
+                [(ngModel)]="changeRequestReason"
+                (blur)="markFieldBlurred('changeRequestReason')"
+                placeholder="Enter a reason..."
+                rows="6"
+                [minlength]="reasonMinLength"
+                [maxlength]="reasonMaxLength"
+                required
+              ></textarea>
+              @if (changeRequestReasonBlurred && !changeRequestReason.trim()) {
+                <span class="field-error">Reason is required.</span>
+              } @else if (
+                changeRequestReasonBlurred && isTextTooShort(changeRequestReason, reasonMinLength)
+              ) {
+                <span class="field-error"
+                  >Reason must be at least {{ reasonMinLength }} characters long.</span
+                >
+              }
+            </label>
+            <label>
+              <span>Contact User</span>
+              <select name="changeRequestContactMethod" [(ngModel)]="changeRequestContactMethod">
+                <option value="none">Do not contact</option>
+                <option value="email" [disabled]="!invoice.user?.email">Email</option>
+                <option value="slack" [disabled]="!invoice.user?.email">Slack</option>
+              </select>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                statusActionPending === 'requestChanges' ||
+                !isTextLengthValid(changeRequestReason, reasonMinLength, reasonMaxLength) ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">edit_note</span>
+              {{ statusActionPending === 'requestChanges' ? 'Saving...' : 'Request Changes' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'decline') {
+      <app-modal-component title="Decline Invoice" icon="cancel" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onDecline()">
+          <p class="action-modal-form__description">
+            Decline this invoice permanently and record the reason for the submitter.
+          </p>
+          <div class="action-modal-form__content">
+            <label>
+              <span>Reason</span>
+              <textarea
+                name="declineReason"
+                [(ngModel)]="declineReason"
+                (blur)="markFieldBlurred('declineReason')"
+                [minlength]="reasonMinLength"
+                [maxlength]="reasonMaxLength"
+                placeholder="Enter a reason..."
+                rows="6"
+                required
+              ></textarea>
+              @if (declineReasonBlurred && !declineReason.trim()) {
+                <span class="field-error">Reason is required.</span>
+              } @else if (declineReasonBlurred && isTextTooShort(declineReason, reasonMinLength)) {
+                <span class="field-error"
+                  >Reason must be at least {{ reasonMinLength }} characters long.</span
+                >
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                statusActionPending === 'decline' ||
+                !isTextLengthValid(declineReason, reasonMinLength, reasonMaxLength) ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">cancel</span>
+              {{ statusActionPending === 'decline' ? 'Saving...' : 'Decline' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+
+    @if (activeActionModal === 'markPaid') {
+      <app-modal-component title="Mark as Paid" icon="payments" (closeEvent)="closeActionModal()">
+        <form class="action-modal-form" (ngSubmit)="onMarkPaid()">
+          <p class="action-modal-form__description">
+            Confirm the payout details that should be stored when this invoice is marked as paid.
+          </p>
+          <div class="action-modal-form__content row g-3">
+            <label class="col-12 col-md-6">
+              <span>Payment Reference</span>
+              <input
+                type="text"
+                name="paymentReference"
+                [(ngModel)]="paymentReference"
+                (blur)="markFieldBlurred('paymentReference')"
+                [minlength]="paymentReferenceMinLength"
+                [maxlength]="paymentReferenceMaxLength"
+                required
+              />
+              @if (paymentReferenceBlurred && !paymentReference.trim()) {
+                <span class="field-error">Payment reference is required.</span>
+              } @else if (
+                paymentReferenceBlurred &&
+                isTextTooShort(paymentReference, paymentReferenceMinLength)
+              ) {
+                <span class="field-error">
+                  Payment reference must be at least {{ paymentReferenceMinLength }} characters
+                  long.
+                </span>
+              }
+            </label>
+            <label class="col-12 col-md-6">
+              <span>Payment Date</span>
+              <input
+                type="date"
+                name="paymentDate"
+                [(ngModel)]="paymentDate"
+                [max]="maxPaymentDate"
+                required
+              />
+            </label>
+            <label class="col-12">
+              <span>Purpose</span>
+              <textarea
+                name="paymentPurpose"
+                [(ngModel)]="paymentPurpose"
+                (blur)="markFieldBlurred('paymentPurpose')"
+                [minlength]="paymentPurposeMinLength"
+                [maxlength]="paymentPurposeMaxLength"
+                required
+              ></textarea>
+              @if (paymentPurposeBlurred && !paymentPurpose.trim()) {
+                <span class="field-error">Purpose is required.</span>
+              } @else if (
+                paymentPurposeBlurred && isTextTooShort(paymentPurpose, paymentPurposeMinLength)
+              ) {
+                <span class="field-error"
+                  >Purpose must be at least {{ paymentPurposeMinLength }} characters long.</span
+                >
+              }
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
+              <span class="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary d-inline-flex align-items-center gap-1"
+              type="submit"
+              appDisableOfflineAction
+              [disabled]="
+                markingPaid ||
+                !isTextLengthValid(
+                  paymentReference,
+                  paymentReferenceMinLength,
+                  paymentReferenceMaxLength
+                ) ||
+                !isTextLengthValid(
+                  paymentPurpose,
+                  paymentPurposeMinLength,
+                  paymentPurposeMaxLength
+                ) ||
+                !paymentDate ||
+                offlineService.isOffline()
+              "
+            >
+              <span class="material-symbols-outlined">payments</span>
+              {{ markingPaid ? 'Saving...' : 'Mark as Paid' }}
+            </button>
+          </div>
+        </form>
+      </app-modal-component>
+    }
+  }
+</div>

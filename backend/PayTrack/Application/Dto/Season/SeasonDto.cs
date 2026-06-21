@@ -17,5 +17,8 @@ namespace PayTrack.Application.Dto.Season
         [property: Required]
         string Name,
 
+        [property: Required]
+        bool IsActive,
+
         IList<BudgetDto>? Budgets);
 }

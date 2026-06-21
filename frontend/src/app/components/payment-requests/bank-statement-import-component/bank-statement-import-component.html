@@ -1,0 +1,451 @@
+<div class="cost-centre-management">
+  @if (showPageHeader()) {
+    <div class="w-100 mb-4">
+      <h2 class="m-0 mb-2">Bank Statement Import</h2>
+      <p>Upload your bank export and reconcile it with your invoices.</p>
+    </div>
+  }
+
+  <!-- ── PHASE 1: UPLOAD ──────────────────────────────────────────────────── -->
+  @if (phase() === 'upload') {
+    <div
+      class="upload-zone"
+      [class.upload-zone--dragging]="isDragging()"
+      [class.upload-zone--selected]="selectedFileName() && !isDragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input
+        #fileInput
+        type="file"
+        accept=".json"
+        class="upload-zone__file-input"
+        (change)="onFileSelected($event)"
+      />
+
+      <div class="upload-zone__content">
+        @if (!selectedFileName()) {
+          <div class="upload-zone__icon">
+            <span class="material-symbols-outlined">upload_file</span>
+          </div>
+          <p class="upload-zone__title">Drop your bank statement here</p>
+          <p class="upload-zone__subtitle">or click to browse — JSON format only</p>
+        } @else {
+          <div class="upload-zone__icon upload-zone__icon--success">
+            <span class="material-symbols-outlined">task_alt</span>
+          </div>
+          <p class="upload-zone__title">{{ selectedFileName() }}</p>
+          <p class="upload-zone__subtitle">
+            {{ parsedEntries().length }} entr{{ parsedEntries().length === 1 ? 'y' : 'ies' }} ready
+            to analyse
+          </p>
+          <button
+            type="button"
+            class="upload-zone__remove"
+            (click)="$event.stopPropagation(); reset()"
+          >
+            Remove file
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="import-actions-upload">
+      <button
+        type="button"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+        appDisableOfflineAction
+        [disabled]="!parsedEntries().length || isLoading() || offlineService.isOffline()"
+        (click)="submitForMatching()"
+      >
+        @if (isLoading()) {
+          <span class="material-symbols-outlined icon--spin" style="font-size: 16px"
+            >progress_activity</span
+          >
+          Analysing…
+        } @else {
+          Find Matches
+          <span class="material-symbols-outlined" style="font-size: 16px">arrow_forward</span>
+        }
+      </button>
+    </div>
+  }
+
+  <!-- ── PHASE 2: REVIEW ──────────────────────────────────────────────────── -->
+  @if (phase() === 'review') {
+    <div class="mb-4 row g-3 align-items-stretch">
+        <app-stat-box-component
+          header="Total Cost Centres"
+          [content]="matchedCount()"
+          icon="check_circle"
+          iconColor="#10b981"
+          iconBackgroundColor="#ECFDF5"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Skipped"
+          [content]="skippedCount()"
+          icon="skip_next"
+          iconColor="#3b82f6"
+          iconBackgroundColor="#EFF6FF"
+          size="small"
+          class="col-12 col-md-4"
+        />
+        <app-stat-box-component
+          header="Unmatched"
+          [content]="unmatchedCount()"
+          icon="no_accounts"
+          iconColor="#eb6a00"
+          iconBackgroundColor="#fff4ea"
+          size="small"
+          class="col-12 col-md-4"
+        />
+    </div>
+
+    <!-- Results -->
+    <div class="result-list-toolbar">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="toggleSortMode()">
+        <span class="material-symbols-outlined" style="font-size: 16px">sort</span>
+        {{ sortMode() === 'score' ? 'Original order' : 'Sort by score' }}
+      </button>
+    </div>
+    <div class="result-list">
+      @for (result of displayResults(); track result._entryId; let idx = $index) {
+        @if (sortMode() === 'score' && idx === 0 && allMatchedCount() > 0) {
+          <div class="result-section-header">
+            Matches <span class="result-section-header__count">({{ allMatchedCount() }})</span>
+          </div>
+        }
+        @if (sortMode() === 'score' && idx === noMatchBoundaryIndex() && unmatchedCount() > 0) {
+          <div class="result-section-header result-section-header--no-match">
+            No matches <span class="result-section-header__count">({{ unmatchedCount() }})</span>
+          </div>
+        }
+        <div
+          class="result-item"
+          [class.result-item--matched]="result.hasMatch && !result.skipped"
+          [class.result-item--unmatched]="!result.hasMatch && !result.skipped"
+          [class.result-item--skipped]="result.skipped"
+          [class.result-item--expanded]="result.expanded"
+        >
+          <!-- ── Summary row ── -->
+          <div class="result-item__layout">
+            <!-- Status icon -->
+            <div class="result-item__icon">
+              @if (result.skipped) {
+                <span class="material-symbols-outlined icon--skipped">block</span>
+              } @else if (result.hasMatch) {
+                <span class="material-symbols-outlined icon--matched">check_circle</span>
+              } @else {
+                <span class="material-symbols-outlined icon--unmatched">help</span>
+              }
+            </div>
+
+            <!-- Entry details -->
+            <div class="result-item__body">
+              <div class="result-item__row">
+                <span class="result-item__name">{{ result.entry?.partnerName || '—' }}</span>
+                <span class="result-item__meta">{{ formatDate(result.entry?.booking) }}</span>
+                <span class="result-item__amount">{{ formatAmount(result.entry) }}</span>
+
+                @if (result.hasMatch && !result.skipped) {
+                  <span [class]="scoreColor(result.matchScore)">
+                    {{ scoreLabel(result.matchScore) }} match
+                  </span>
+                }
+                @if (!result.hasMatch && !result.skipped) {
+                  <span class="confidence-badge confidence-badge--no-match">No match</span>
+                }
+                @if (result.skipped) {
+                  <span class="confidence-badge confidence-badge--skipped">Skipped</span>
+                }
+              </div>
+
+              <div class="result-item__sub">
+                @if (result.entry?.partnerAccount?.iban) {
+                  <span class="result-item__meta">{{
+                    formatIban(result.entry?.partnerAccount?.iban || '')
+                  }}</span>
+                }
+              </div>
+
+              <div class="result-item__sub">
+                @if (result.entry?.receiverReference) {
+                  <span class="result-item__meta">"{{ result.entry?.receiverReference }}"</span>
+                }
+              </div>
+
+              @if (result.hasMatch && result.matchedTransaction?.status && !result.skipped) {
+                <p class="result-item__update">
+                  Status: {{ getStatusLabel(result.matchedTransaction?.status || 0) }} →
+                  {{ getStatusLabel(3) }}
+                </p>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="result-item__actions">
+              @if (result.hasMatch) {
+                <button
+                  type="button"
+                  class="btn btn-secondary skip-or-undo-button d-inline-flex align-items-center justify-content-center gap-1 p-2"
+                  (click)="toggleSkip(result._entryId)"
+                >
+                  <span class="material-symbols-outlined">{{ result.skipped ? 'undo' : 'skip_next' }}</span>
+                  {{ result.skipped ? 'Undo' : 'Skip' }}
+                </button>
+              }
+              <button
+                type="button"
+                class="result-item__expand-btn"
+                [class.result-item__expand-btn--open]="result.expanded"
+                (click)="toggleExpand(result._entryId)"
+                [attr.aria-label]="result.expanded ? 'Collapse details' : 'Expand details'"
+              >
+                <span class="material-symbols-outlined">expand_more</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Detail panel ── -->
+          <div class="result-item__details" [class.result-item__details--open]="result.expanded">
+            <div class="result-item__details-inner">
+              <div class="detail-panel">
+                <!-- Bank statement side -->
+                <div class="detail-panel__side">
+                  <p class="detail-panel__heading">
+                    <span class="material-symbols-outlined">account_balance</span>
+                    Bank Statement Entry
+                  </p>
+                  <dl class="detail-list">
+                    <div class="detail-list__row">
+                      <dt>Partner</dt>
+                      <dd>{{ result.entry?.partnerName || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Date</dt>
+                      <dd>{{ formatDate(result.entry?.booking) }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Amount</dt>
+                      <dd>{{ formatAmount(result.entry) }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>IBAN</dt>
+                      <dd>
+                        {{
+                          result.entry?.partnerAccount?.iban
+                            ? formatIban(result.entry?.partnerAccount?.iban ?? '')
+                            : '—'
+                        }}
+                      </dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>BIC</dt>
+                      <dd>{{ result.entry?.partnerAccount?.bic || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Receiver ref.</dt>
+                      <dd>{{ result.entry?.receiverReference || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row">
+                      <dt>Reference</dt>
+                      <dd>{{ result.entry?.reference || '—' }}</dd>
+                    </div>
+                    <div class="detail-list__row detail-list__row--spacer"></div>
+                    <div class="detail-list__row detail-list__row--spacer"></div>
+                  </dl>
+                </div>
+
+                <!-- Divider -->
+                <div class="detail-panel__divider">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                </div>
+
+                <!-- Transaction side -->
+                @if (result.hasMatch && result.matchedTransaction) {
+                  <div class="detail-panel__side">
+                    <p class="detail-panel__heading">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      Matched Transaction #{{ result.matchedTransaction.id }}
+                    </p>
+                    <dl class="detail-list">
+                      <div class="detail-list__row">
+                        <dt>User</dt>
+                        <dd>{{ result.matchedTransaction.userName || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Paid at</dt>
+                        <dd>{{ formatDate(result.matchedTransaction.paidAt ?? undefined) }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Amount</dt>
+                        <dd>{{ result.matchedTransaction.amount | euro }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>IBAN</dt>
+                        <dd>
+                          {{
+                            result.matchedTransaction.bankAccount?.iban
+                              ? formatIban(result.matchedTransaction.bankAccount?.iban ?? '')
+                              : '—'
+                          }}
+                        </dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>BIC</dt>
+                        <dd>{{ result.matchedTransaction.bankAccount?.bic || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Invoice no.</dt>
+                        <dd>{{ result.matchedTransaction.invoiceNumber || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Purpose</dt>
+                        <dd>{{ result.matchedTransaction.purposeOfPayment || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row">
+                        <dt>Payment ref.</dt>
+                        <dd>{{ result.matchedTransaction.paymentReference || '—' }}</dd>
+                      </div>
+                      <div class="detail-list__row detail-list__row--highlight">
+                        <dt>Status</dt>
+                        <dd>
+                          {{ getStatusLabel(result.matchedTransaction.status) }}
+                          <span class="material-symbols-outlined status-arrow">arrow_forward</span>
+                          {{ getStatusLabel(3) }}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                } @else {
+                  <div class="detail-panel__side detail-panel__side--empty">
+                    <p class="detail-panel__heading">
+                      <span class="material-symbols-outlined">search_off</span>
+                      No Match Found
+                    </p>
+                    <p class="detail-panel__empty-text">
+                      No transaction in the database matched this bank entry. You can skip it or
+                      wait until a matching transaction is created.
+                    </p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Actions -->
+    <div class="import-actions-review">
+      <button type="button" class="btn btn-secondary" (click)="reset()">
+        <span class="material-symbols-outlined">repeat</span>
+        Start over</button>
+      <button
+        type="button"
+        class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+        appDisableOfflineAction
+        [disabled]="isLoading() || matchedCount() === 0 || offlineService.isOffline()"
+        (click)="confirmUpdates()"
+      >
+        @if (isLoading()) {
+          <span class="material-symbols-outlined icon--spin" style="font-size: 16px"
+            >progress_activity</span
+          >
+          Updating…
+        } @else {
+          <span class="material-symbols-outlined">update</span>
+          Confirm {{ matchedCount() }} Update{{ matchedCount() === 1 ? '' : 's' }}
+        }
+      </button>
+    </div>
+
+    <!-- ── Non-approved warning modal ── -->
+    <app-modal-component
+      title="Some transactions are not Approved"
+      icon="warning"
+      [visible]="showNonApprovedWarning()"
+      (closeEvent)="showNonApprovedWarning.set(false)"
+    >
+      <p class="warning-modal-text">
+        {{ nonApprovedMatches().length }} matched transaction{{
+          nonApprovedMatches().length === 1 ? '' : 's'
+        }}
+        {{ nonApprovedMatches().length === 1 ? 'has' : 'have' }} a status other than
+        <strong>Approved</strong>. <br><br>Marking them as Paid now may be premature.
+      </p>
+      <ul class="warning-modal-list">
+        @for (r of nonApprovedMatches(); track r._entryId) {
+          <li>
+            <span class="warning-modal-list__name">{{ r.entry?.partnerName || '—' }}</span>
+            <span class="warning-modal-list__amount">{{ formatAmount(r.entry) }}</span>
+            <span class="warning-modal-list__status">{{
+              getStatusLabel(r.matchedTransaction?.status ?? 0)
+            }}</span>
+          </li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showNonApprovedWarning.set(false)">
+          <span class="material-symbols-outlined">redo</span>
+          Re-check entries
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger d-inline-flex align-items-center justify-content-center gap-1 p-2"
+          appDisableOfflineAction
+          [disabled]="offlineService.isOffline()"
+          (click)="confirmAnyway()"
+        >
+          <span class="material-symbols-outlined">warning</span>
+          Submit anyway
+        </button>
+      </div>
+    </app-modal-component>
+
+    <!-- ── Final confirmation modal ── -->
+    <app-modal-component
+      title="Confirm Updates"
+      icon="check_circle"
+      [visible]="showFinalConfirm()"
+      (closeEvent)="showFinalConfirm.set(false)"
+    >
+      <p class="warning-modal-text">
+        The following {{ matchedUpdates().length }}
+        transaction{{ matchedUpdates().length === 1 ? '' : 's' }} will be marked as
+        <strong>Paid</strong>:
+      </p>
+      <ul class="warning-modal-list">
+        @for (r of matchedUpdates(); track r._entryId) {
+          <li>
+            <span class="warning-modal-list__name">{{ r.entry?.partnerName || '—' }}</span>
+            <span class="warning-modal-list__amount">{{ formatAmount(r.entry) }}</span>
+            <span class="warning-modal-list__status">{{
+              getStatusLabel(r.matchedTransaction?.status ?? 0)
+            }}</span>
+          </li>
+        }
+      </ul>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="showFinalConfirm.set(false)">
+          <span class="material-symbols-outlined">cancel</span>
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+          appDisableOfflineAction
+          [disabled]="offlineService.isOffline()"
+          (click)="proceedWithSubmit()"
+        >
+          <span class="material-symbols-outlined">check</span>
+          Confirm &amp; Submit
+        </button>
+      </div>
+    </app-modal-component>
+  }
+</div>

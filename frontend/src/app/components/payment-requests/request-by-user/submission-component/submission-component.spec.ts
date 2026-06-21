@@ -2,15 +2,19 @@
 
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { TeamService } from '../../../../services/team/team-service';
-import { PaymentRequestByUserDto, PayoutType, TransactionStatus } from '../../../../types/exporter';
+import {
+  CreatePaymentRequestByUserDto,
+  DuplicatePaymentRequestByUserDto,
+  PayoutType,
+} from '../../../../types/exporter';
 
 import { ReceiptSubmitComponent } from './submission-component';
 
@@ -20,8 +24,7 @@ describe('ReceiptSubmitComponent', () => {
   const paymentServiceMock = {
     createPaymentRequestByUser: vi.fn(),
     getDuplicatePaymentRequestsByUser: vi.fn(),
-    getPaymentRequestsByUserById: vi.fn(),
-    resubmitPaymentRequestByUser: vi.fn(),
+    extractReceiptData: vi.fn(),
   };
 
   const teamServiceMock = {
@@ -37,18 +40,12 @@ describe('ReceiptSubmitComponent', () => {
     showError: vi.fn(),
   };
 
-  const statusRefreshMock = {
-    requestRefresh: vi.fn(),
-  };
-
   const routerMock = {
     navigate: vi.fn(),
   };
 
-  const routeMock = {
-    snapshot: {
-      paramMap: convertToParamMap({}),
-    },
+  const authServiceMock = {
+    currentUser$: of(null),
   };
 
   const setValidFormValues = (): void => {
@@ -62,35 +59,42 @@ describe('ReceiptSubmitComponent', () => {
       purposeOfPayment: 'test',
       paidAt: '2025-01-01',
       receipt: 'ok.pdf',
+      creditorName: '',
+      dueDate: null,
     });
   };
 
   beforeEach(async () => {
     paymentServiceMock.createPaymentRequestByUser.mockReset();
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReset();
-    paymentServiceMock.getPaymentRequestsByUserById.mockReset();
-    paymentServiceMock.resubmitPaymentRequestByUser.mockReset();
+    paymentServiceMock.extractReceiptData.mockReset();
     teamServiceMock.getTeams.mockReset();
     bankAccountServiceMock.getBankAccounts.mockReset();
     notificationMock.showSuccess.mockReset();
     notificationMock.showError.mockReset();
-    statusRefreshMock.requestRefresh.mockReset();
     routerMock.navigate.mockReset();
 
     teamServiceMock.getTeams.mockReturnValue(of({ items: [] }));
     bankAccountServiceMock.getBankAccounts.mockReturnValue(of([]));
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
-    routeMock.snapshot.paramMap = convertToParamMap({});
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: false,
+        message: 'No reliable invoice details were detected.',
+        amount: { value: null, confidence: 0 },
+        invoiceDate: { value: null, confidence: 0 },
+        invoiceNumber: { value: null, confidence: 0 },
+      }),
+    );
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ReceiptSubmitComponent],
       providers: [
+        { provide: AuthService, useValue: authServiceMock },
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
-        { provide: PaymentRequestStatusRefreshService, useValue: statusRefreshMock },
-        { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
@@ -190,6 +194,113 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.selectedFile).toBe(file);
     expect(component.form.get('receipt')?.value).toBe('ok.pdf');
     expect(component.form.get('receipt')?.errors).toBeNull();
+    expect(paymentServiceMock.extractReceiptData).toHaveBeenCalledWith(file);
+  });
+
+  it('should prefill empty fields from receipt extraction suggestions', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: true,
+        message: null,
+        amount: { value: 128.5, confidence: 0.82 },
+        invoiceDate: { value: '2026-06-10T00:00:00Z', confidence: 0.75 },
+        invoiceNumber: { value: 'RE-2026-004812', confidence: 0.78 },
+      }),
+    );
+    const file = new File(['ok'], 'ok.pdf', { type: 'application/pdf' });
+
+    component.onFileSelected({ target: { files: [file] } } as unknown as Event);
+
+    expect(component.form.get('amount')?.value).toBe(128.5);
+    expect(component.form.get('paidAt')?.value).toBe('2026-06-10');
+    expect(component.form.get('invoiceNumber')?.value).toBe('RE-2026-004812');
+    expect(component.form.get('creditorName')?.value).toBeNull();
+    expect(component.receiptExtractionStatus).toBe('success');
+    expect(component.receiptExtractionMessage).toContain('Pre-filled 3 fields');
+  });
+
+  it('should not overwrite manually filled fields with receipt extraction suggestions', () => {
+    component.ngOnInit();
+    component.form.patchValue({
+      amount: 99,
+      paidAt: '2026-01-01',
+      invoiceNumber: 'MANUAL-1',
+      creditorName: 'Manual Supplier',
+    });
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: true,
+        message: null,
+        amount: { value: 128.5, confidence: 0.82 },
+        invoiceDate: { value: '2026-06-10', confidence: 0.75 },
+        invoiceNumber: { value: 'RE-2026-004812', confidence: 0.78 },
+      }),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.form.get('amount')?.value).toBe(99);
+    expect(component.form.get('paidAt')?.value).toBe('2026-01-01');
+    expect(component.form.get('invoiceNumber')?.value).toBe('MANUAL-1');
+    expect(component.form.get('creditorName')?.value).toBe('Manual Supplier');
+    expect(component.receiptExtractionStatus).toBe('partial');
+  });
+
+  it('should report only the number of fields actually prefilled', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: true,
+        message: null,
+        amount: { value: 1200, confidence: 0.95 },
+        invoiceDate: { value: null, confidence: 0 },
+        invoiceNumber: { value: 'VC-2026-0617', confidence: 0.95 },
+      }),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'invoice.jpeg', { type: 'image/jpeg' })] },
+    } as unknown as Event);
+
+    expect(component.form.get('amount')?.value).toBe(1200);
+    expect(component.form.get('paidAt')?.value).toBe('');
+    expect(component.form.get('invoiceNumber')?.value).toBe('VC-2026-0617');
+    expect(component.receiptExtractionMessage).toContain('Pre-filled 2 fields');
+  });
+
+  it('should keep the form usable when receipt extraction fails', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      throwError(() => new Error('Extraction failed')),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.selectedFileName).toBe('ok.pdf');
+    expect(component.form.get('receipt')?.errors).toBeNull();
+    expect(component.receiptExtractionStatus).toBe('error');
+    expect(component.receiptExtractionMessage).toBe('Extraction failed');
+  });
+
+  it('should skip receipt extraction while offline', () => {
+    component.ngOnInit();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component as any).offlineService.isOffline.set(true);
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
+    expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toContain('offline');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component as any).offlineService.isOffline.set(false);
   });
 
   it('should ignore file selection when no file is present', () => {
@@ -253,7 +364,7 @@ describe('ReceiptSubmitComponent', () => {
     component.ngOnInit();
     const bankAccountControl = component.form.get('bankAccountId')!;
 
-    component.form.get('payoutType')?.setValue(PayoutType.External);
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
 
     expect(bankAccountControl.value).toBeNull();
     expect(bankAccountControl.errors).toBeNull();
@@ -302,6 +413,34 @@ describe('ReceiptSubmitComponent', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['/settings'], { fragment: 'bank-accounts' });
   });
 
+  it('should return display helpers for pending drafts and duplicate metadata', () => {
+    component.teams = [{ id: 1, name: 'Powertrain' }];
+    const duplicate = {
+      paymentRequestByUser: {
+        user: { name: 'Alex' },
+        team: { name: 'Electronics' },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+
+    expect(component.getPendingStatusLabel('pending')).toBe('Stored Offline');
+    expect(component.getPendingStatusClass('pending')).toContain('offline-queue__badge--pending');
+    expect(component.getTeamName(1)).toBe('Powertrain');
+    expect(component.getTeamName(99)).toBe('Team #99');
+    expect(component.getDuplicateUserName(duplicate)).toBe('Alex');
+    expect(component.getDuplicateTeamName(duplicate)).toBe('Electronics');
+    expect(
+      component.getDuplicateUserName({
+        paymentRequestByUser: {},
+      } as DuplicatePaymentRequestByUserDto),
+    ).toBe('Unknown user');
+    expect(
+      component.getDuplicateTeamName({
+        paymentRequestByUser: {},
+      } as DuplicatePaymentRequestByUserDto),
+    ).toBe('Unknown team');
+  });
+
   // -------------------------
   // DUPLICATE CHECK
   // -------------------------
@@ -321,9 +460,8 @@ describe('ReceiptSubmitComponent', () => {
             user: { id: 11, name: 'Alex' },
             team: { id: 21, name: 'Core Team' },
           },
-          score: 2,
-          isAmountAndUserMatch: true,
-          isAmountAndTeamMatch: true,
+          score: 150,
+          matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
         },
       ]),
     );
@@ -332,6 +470,12 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledOnce();
+    expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
+      TeamId: 1,
+      Amount: 100,
+      PaidAt: '2025-01-01',
+      InvoiceNumber: 'INV-1',
+    });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
     expect(component.isDuplicateModalOpen).toBe(true);
     expect(component.pendingSubmissionPayload).not.toBeNull();
@@ -353,7 +497,7 @@ describe('ReceiptSubmitComponent', () => {
         teamId: 1,
         amount: 100,
         purposeOfPayment: 'test',
-        paidAt: '2025-01-01T00:00:00.000Z',
+        paidAt: '2025-01-01',
       },
     };
 
@@ -369,9 +513,8 @@ describe('ReceiptSubmitComponent', () => {
           user: { id: 11, name: 'Alex' },
           team: { id: 21, name: 'Core Team' },
         },
-        score: 2,
-        isAmountAndUserMatch: true,
-        isAmountAndTeamMatch: true,
+        score: 150,
+        matchedFields: ['invoiceNumber', 'amount', 'payday', 'user', 'team'],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
@@ -382,6 +525,27 @@ describe('ReceiptSubmitComponent', () => {
 
     expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(payload, file);
     expect(component.isDuplicateModalOpen).toBe(false);
+    expect(component.pendingSubmissionPayload).toBeNull();
+    expect(component.pendingSubmissionFile).toBeNull();
+  });
+
+  it('should clear duplicate modal state on cancel', () => {
+    component.isDuplicateModalOpen = true;
+    component.pendingSubmissionPayload = {} as CreatePaymentRequestByUserDto;
+    component.pendingSubmissionFile = new File(['ok'], 'ok.pdf');
+    component.duplicateCandidates = [
+      {
+        paymentRequestByUser: { id: 1 },
+        score: 1,
+        matchedFields: [],
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ] as any;
+
+    component.onDuplicateModalCancel();
+
+    expect(component.isDuplicateModalOpen).toBe(false);
+    expect(component.duplicateCandidates).toEqual([]);
     expect(component.pendingSubmissionPayload).toBeNull();
     expect(component.pendingSubmissionFile).toBeNull();
   });
@@ -423,6 +587,29 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.isSubmitting).toBe(false);
   });
 
+  it('should submit external payouts without a bank account id', () => {
+    component.ngOnInit();
+
+    const file = new File(['ok'], 'ok.pdf');
+    setValidFormValues();
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form.get('creditorName')?.setValue('Acme GmbH');
+    component.form.get('dueDate')?.setValue('2025-12-31');
+    component.selectedFile = file;
+
+    paymentServiceMock.createPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.createPaymentRequestByUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payoutType: PayoutType.NotYetPaid,
+        bankAccountId: null,
+      }),
+      file,
+    );
+  });
+
   // -------------------------
   // SUBMIT ERROR
   // -------------------------
@@ -457,88 +644,5 @@ describe('ReceiptSubmitComponent', () => {
     component.onSubmit();
 
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
-  });
-
-  it('should load and prefill an invoice with requested changes in edit mode', () => {
-    routeMock.snapshot.paramMap = convertToParamMap({ id: '7' });
-    paymentServiceMock.getPaymentRequestsByUserById.mockReturnValue(
-      of({
-        id: 7,
-        invoiceNumber: 'INV-7',
-        comment: 'Updated note',
-        payoutType: PayoutType.External,
-        team: { id: 2, name: 'Team' },
-        amount: 42,
-        purposeOfPayment: 'Travel',
-        paidAt: '2026-05-01T00:00:00Z',
-        status: TransactionStatus.ChangesRequested,
-        statusHistory: [
-          {
-            fromStatus: TransactionStatus.Submitted,
-            toStatus: TransactionStatus.ChangesRequested,
-            changedById: 1,
-            changedAt: '2026-05-02T00:00:00Z',
-            comment: 'Please correct the amount',
-          },
-        ],
-      } as unknown as PaymentRequestByUserDto),
-    );
-
-    component.ngOnInit();
-
-    expect(component.isEditMode).toBe(true);
-    expect(component.form.get('invoiceNumber')?.value).toBe('INV-7');
-    expect(component.form.get('receipt')?.hasError('required')).toBe(false);
-    expect(component.changeRequestMessage).toBe('Please correct the amount');
-  });
-
-  it('should resubmit an edited invoice without requiring a replacement receipt', () => {
-    component.ngOnInit();
-    component.isEditMode = true;
-    component.editingInvoiceId = 7;
-    component.form.get('receipt')?.clearValidators();
-    component.form.get('receipt')?.updateValueAndValidity();
-    setValidFormValues();
-    component.form.get('receipt')?.setValue(null);
-    paymentServiceMock.resubmitPaymentRequestByUser.mockReturnValue(of({}));
-
-    component.onSubmit();
-
-    expect(paymentServiceMock.resubmitPaymentRequestByUser).toHaveBeenCalledWith(
-      7,
-      expect.any(Object),
-      null,
-    );
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 7]);
-    expect(statusRefreshMock.requestRefresh).toHaveBeenCalledOnce();
-  });
-
-  it('should resubmit an external edited invoice without a bank account id', () => {
-    component.ngOnInit();
-    component.isEditMode = true;
-    component.editingInvoiceId = 7;
-    component.form.get('receipt')?.clearValidators();
-    component.form.get('receipt')?.updateValueAndValidity();
-    setValidFormValues();
-    component.form.patchValue({
-      payoutType: PayoutType.External,
-      bankAccountId: null,
-    });
-    component.form.get('receipt')?.setValue(null);
-    paymentServiceMock.resubmitPaymentRequestByUser.mockReturnValue(of({}));
-
-    component.onSubmit();
-
-    const payload = paymentServiceMock.resubmitPaymentRequestByUser.mock.calls[0][1];
-    expect(payload.payoutType).toBe(PayoutType.External);
-    expect(payload).not.toHaveProperty('bankAccountId');
-  });
-
-  it('should navigate back to invoice detail when editing is cancelled', () => {
-    component.editingInvoiceId = 7;
-
-    component.onCancelEdit();
-
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/my-invoices', 7]);
   });
 });

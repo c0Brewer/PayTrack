@@ -1,0 +1,83 @@
+<div class="main-page-container requests">
+  <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 w-100 mb-1">
+    <div class="d-flex flex-column gap-1">
+      <h1 class="m-0">Invoices</h1>
+      <p class="mb-0 text-body-secondary">
+        Review submitted invoices, duplicates, and payout progress.
+      </p>
+    </div>
+    <button class="btn btn-primary align-self-start align-self-sm-auto d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="navigateBankStatementUpload()">
+      <span class="material-symbols-outlined">upload</span>
+      Upload Bank Statement
+    </button>
+  </div>
+
+  <div class="row g-3 align-items-stretch">
+    <app-stat-box-component
+      header="Total Requests"
+      [content]="totalCount"
+      icon="docs"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Total Amount"
+      [content]="getTotalAmount() | euro"
+      icon="trending_up"
+      iconColor="#3b82f6"
+      iconBackgroundColor="#EFF6FF"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Declined"
+      [content]="getDeclinedRequestCount()"
+      icon="cancel"
+      iconColor="#dc2626"
+      iconBackgroundColor="#FEF2F2"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+    <app-stat-box-component
+      header="Paid"
+      [content]="getPaidRequestCount()"
+      icon="paid"
+      iconColor="#10b981"
+      iconBackgroundColor="#ECFDF5"
+      size="small"
+      class="col-12 col-sm-6 col-xl-3"
+    />
+  </div>
+
+  <app-admin-invoice-filter-component
+    [limitSelection]="limitSelection"
+    (updateFilter)="updateFilterOptions($event)"
+  ></app-admin-invoice-filter-component>
+
+  <app-admin-invoice-list-component
+    [invoices]="invoices"
+    (openDetail)="onOpenDetail($event)"
+    (openDuplicates)="onOpenDuplicates($event)"
+  ></app-admin-invoice-list-component>
+
+  <app-duplicate-list-modal-component
+    [visible]="isDuplicateModalOpen"
+    [loading]="isDuplicateModalLoading"
+    [actionInvoiceId]="duplicateActionInvoiceId"
+    [sourceInvoice]="selectedDuplicateInvoice"
+    [duplicates]="duplicateCandidates"
+    (closeModal)="onCloseDuplicateModal()"
+    (openDetail)="onOpenDuplicateDetail($event)"
+    (deleteInvoice)="onDeleteDuplicateInvoice($event)"
+    (dismissDuplicate)="onDismissDuplicate($event)"
+  ></app-duplicate-list-modal-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

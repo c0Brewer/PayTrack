@@ -1,6 +1,10 @@
-<div id="payment-request-page">
-  <h1>Create Payment Request</h1>
-  <p>Assign a payment request to a user on behalf of the finance team.</p>
+<div id="payment-request-page" class="main-page-container">
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Create Payment Request</h1>
+    <p class="mb-0 text-body-secondary">
+      Assign a payment request to a user on behalf of the finance team.
+    </p>
+  </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <div class="row gx-4 gx-xl-5 gy-4 mt-1">
@@ -70,7 +74,7 @@
 
       <!-- Right box: Assignment -->
       <div class="col-12 col-xl-6">
-        <app-box-component title="Assignment" subtitle="Choose the user, team and cost centre." size="medium">
+        <app-box-component title="Assignment" subtitle="Choose the user, team and budget." size="medium">
 
           <!-- User search -->
           <div class="row mb-3">
@@ -110,20 +114,26 @@
             </div>
           </div>
 
-          <!-- Cost Centre -->
+          <!-- Budget -->
           <div class="row">
             <div class="col-12 input-wrapper">
-              <label for="costCentreId">Cost Centre <span class="required">*</span></label><br />
-              <select id="costCentreId" formControlName="costCentreId" [class.is-invalid]="isInvalid('costCentreId')">
-                <option [ngValue]="null" disabled>Select cost centre…</option>
-                @for (cc of costCentres; track cc.id) {
-                  <option [ngValue]="cc.id">{{ cc.name }}</option>
+              <label for="budgetId">Budget <span class="required">*</span></label><br />
+              <select id="budgetId" formControlName="budgetId" [class.is-invalid]="isInvalid('budgetId')" [attr.disabled]="form.get('teamId')?.value == null ? true : null">
+                @if (form.get('teamId')?.value == null) {
+                  <option [ngValue]="null" disabled>Select a team first…</option>
+                } @else if (budgets.length === 0) {
+                  <option [ngValue]="null" disabled>No active budgets for this team…</option>
+                } @else {
+                  <option [ngValue]="null" disabled>Select budget…</option>
+                }
+                @for (budget of budgets; track budget.id) {
+                  <option [ngValue]="budget.id">{{ budget.name }} ({{ getCostCentreName(budget.costCentreId) }})</option>
                 }
               </select>
               <br />
-              @if (getError('costCentreId')) {
+              @if (getError('budgetId')) {
                 <span class="error-msg">
-                  <span class="material-symbols-outlined">error</span>{{ getError('costCentreId') }}
+                  <span class="material-symbols-outlined">error</span>{{ getError('budgetId') }}
                 </span>
               }
             </div>
@@ -133,17 +143,21 @@
       </div>
     </div>
 
-    <div class="row gx-4 gx-xl-5 mt-1">
+    <div class="row gx-4 gx-xl-5 mt-2">
       <div class="col-12">
         <div class="form-actions">
-          <button type="submit" class="btn" [disabled]="isSubmitting">
+          <button
+            type="submit"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+            appDisableOfflineAction
+            [disabled]="isSubmitting || offlineService.isOffline()"
+          >
             @if (!isSubmitting) {
-              <span class="submit-button__content">
                 <span class="material-symbols-outlined">add_card</span>
                 Create Payment Request
-              </span>
             }
             @if (isSubmitting) {
+              <span class="material-symbols-outlined">hourglass</span>
               <span>Submitting…</span>
             }
           </button>
@@ -152,4 +166,51 @@
     </div>
 
   </form>
+
+  <!-- ─── Bulk CSV Import ─── -->
+  <div class="row gx-4 gx-xl-5 mt-4">
+    <div class="col-12">
+      <app-box-component
+        title="Bulk CSV Import"
+        subtitle="Upload a CSV file to create multiple payment requests at once."
+        size="medium"
+      >
+        <div class="csv-import-area">
+          <input
+            #csvFileInput
+            type="file"
+            accept=".csv"
+            class="csv-file-input-hidden"
+            (change)="onCsvFileInputChange($event)"
+          />
+          <button
+            type="button"
+            class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2"
+            (click)="onOpenCsvPicker()"
+          >
+            <span class="material-symbols-outlined">upload_file</span>
+            Select CSV File
+          </button>
+          <p class="csv-hint">
+            One row = one payment request. Rows with no name or &euro;&thinsp;0.00 are skipped automatically.
+            The CSV must contain a <strong>{{ csvColName }}</strong> (recipient name) and a
+            <strong>{{ csvColSumme }}</strong> (amount) column. Admins can change these names under
+            <em>Settings &rarr; Administration</em>.
+          </p>
+        </div>
+      </app-box-component>
+    </div>
+  </div>
+
+  @if (isCsvModalOpen && csvImportFile) {
+    <app-csv-bulk-import-modal
+      [file]="csvImportFile"
+      [teams]="teams"
+      [costCentres]="costCentres"
+      [allUsers]="allUsers"
+      [incomeBudgets]="allIncomeBudgets"
+      (closeEvent)="onCsvModalClose()"
+    />
+  }
+
 </div>

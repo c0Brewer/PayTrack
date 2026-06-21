@@ -25,11 +25,12 @@ namespace PayTrack.Application.Services.Implementation
             int teamId,
             int costCentreId,
             int seasonId,
-            decimal targetAmount,
+            decimal? targetAmount,
             DateTime periodStart,
-            DateTime periodEnd)
+            DateTime periodEnd,
+            BudgetType type = BudgetType.Expense)
         {
-            ValidatePeriod(periodStart, periodEnd);
+            BudgetEntryValidation.EnsureValid(targetAmount, type, periodStart, periodEnd);
 
             return await this.repo.AddAsync(
                 name,
@@ -39,7 +40,8 @@ namespace PayTrack.Application.Services.Implementation
                 seasonId,
                 targetAmount,
                 DateTime.SpecifyKind(periodStart, DateTimeKind.Utc),
-                DateTime.SpecifyKind(periodEnd, DateTimeKind.Utc));
+                DateTime.SpecifyKind(periodEnd, DateTimeKind.Utc),
+                type);
         }
 
         /// <inheritdoc/>
@@ -64,11 +66,12 @@ namespace PayTrack.Application.Services.Implementation
             int? seasonId = null,
             decimal? targetAmount = null,
             DateTime? periodStart = null,
-            DateTime? periodEnd = null)
+            DateTime? periodEnd = null,
+            BudgetType? type = null)
         {
-            if (periodStart.HasValue && periodEnd.HasValue)
+            if (periodStart.HasValue && periodEnd.HasValue && periodEnd.Value < periodStart.Value)
             {
-                ValidatePeriod(periodStart.Value, periodEnd.Value);
+                throw new InvalidStateException("Budget period end must be after period start.");
             }
 
             return await this.repo.UpdateAsync(
@@ -80,21 +83,14 @@ namespace PayTrack.Application.Services.Implementation
                 seasonId,
                 targetAmount,
                 periodStart.HasValue ? DateTime.SpecifyKind(periodStart.Value, DateTimeKind.Utc) : null,
-                periodEnd.HasValue ? DateTime.SpecifyKind(periodEnd.Value, DateTimeKind.Utc) : null);
+                periodEnd.HasValue ? DateTime.SpecifyKind(periodEnd.Value, DateTimeKind.Utc) : null,
+                type);
         }
 
         /// <inheritdoc/>
         public async Task DeleteBudgetAsync(int id)
         {
             await this.repo.DeleteAsync(id);
-        }
-
-        private static void ValidatePeriod(DateTime periodStart, DateTime periodEnd)
-        {
-            if (periodEnd < periodStart)
-            {
-                throw new InvalidStateException("Budget period end must be after period start.");
-            }
         }
     }
 }

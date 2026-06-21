@@ -85,7 +85,7 @@ namespace PayTrack.Api.Handler
                     createPaymentRequestByTeamDto.Transaction.Amount,
                     createPaymentRequestByTeamDto.Transaction.PurposeOfPayment,
                     createPaymentRequestByTeamDto.DueDate,
-                    createPaymentRequestByTeamDto.CostCentreId);
+                    createPaymentRequestByTeamDto.Transaction.BudgetId);
 
             var createdPaymentRequestByTeamDto = PaymentRequestByTeamMapper.ToDto(createdPaymentRequestByTeam);
 
@@ -114,6 +114,45 @@ namespace PayTrack.Api.Handler
             var updatedPaymentRequestByTeamDto = PaymentRequestByTeamMapper.ToDto(updatedPaymentRequestByTeam);
 
             return TypedResults.Ok(updatedPaymentRequestByTeamDto);
+        }
+
+        /// <summary>
+        /// Marks a PaymentRequestByTeam as paid.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByTeam to mark as paid.</param>
+        /// <param name="dto">Request body containing the optional comment.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByTeamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByTeamDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> MarkAsPaidPaymentRequestByTeamAsync(
+            [FromRoute] int id,
+            [FromBody] MarkAsPaidPaymentRequestByTeamDto dto,
+            IAuthService authService,
+            IPaymentRequestByTeamService paymentRequestByTeamService)
+        {
+            var currentUser = await authService.GetCurrentUser()
+                ?? throw new NotFoundException("Current user not found");
+
+            var updated = await paymentRequestByTeamService.MarkAsPaidAsync(id, currentUser.Id, dto.Comment);
+
+            return TypedResults.Ok(PaymentRequestByTeamMapper.ToDto(updated));
+        }
+
+        /// <summary>
+        /// Deletes a PaymentRequestByTeam. Only allowed when Status is Submitted.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByTeam to delete.</param>
+        /// <param name="dto">Optional request body containing the deletion reason.</param>
+        /// <param name="paymentRequestByTeamService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeletePaymentRequestByTeamAsync(
+            [FromRoute] int id,
+            [FromBody] DeletePaymentRequestByTeamDto? dto,
+            IPaymentRequestByTeamService paymentRequestByTeamService)
+        {
+            await paymentRequestByTeamService.DeletePaymentRequestByTeamAsync(id, dto?.Reason);
+
+            return TypedResults.NoContent();
         }
     }
 }

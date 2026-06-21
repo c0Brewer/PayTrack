@@ -1,5 +1,6 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../services/auth/auth-service';
@@ -42,11 +43,14 @@ declare global {
 })
 export class LoginComponent implements AfterViewInit {
   private codeClient?: GoogleCodeClient;
+  isLoggingIn = false;
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly notificationService: NotificationService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly ngZone: NgZone,
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
@@ -62,11 +66,19 @@ export class LoginComponent implements AfterViewInit {
       client_id: environment.googleClientId,
       scope: 'openid email profile',
       ux_mode: 'popup',
-      callback: (response: GoogleCodeResponse) => this.handleGoogleCodeResponse(response),
+      callback: (response: GoogleCodeResponse) => {
+        this.ngZone.run(() => {
+          void this.handleGoogleCodeResponse(response);
+        });
+      },
     });
   }
 
   signInWithGoogle(): void {
+    if (this.isLoggingIn) {
+      return;
+    }
+
     if (!this.codeClient) {
       this.notificationService.showError('Google login is not ready yet.');
       return;
@@ -75,22 +87,34 @@ export class LoginComponent implements AfterViewInit {
     this.codeClient.requestCode();
   }
 
-  handleGoogleCodeResponse(response: GoogleCodeResponse): void {
+  async handleGoogleCodeResponse(response: GoogleCodeResponse): Promise<void> {
     if (!response?.code) {
       this.notificationService.showError('Google login failed.');
       return;
     }
 
-    this.authService.handleGoogleCallback(response.code).subscribe({
-      next: async (data) => {
-        const user = await this.authService.storeToken(data.jwtToken);
-        const target = this.authService.needsBankInformation(user) ? ['initial-setup'] : [''];
-        this.router.navigate(target);
-      },
-      error: (err): void => {
-        console.error(err);
-        this.notificationService.showError(err instanceof Error ? err.message : String(err));
-      },
+    await this.showLoginProgress();
+
+    try {
+      const data = await firstValueFrom(this.authService.handleGoogleCallback(response.code));
+      const user = await this.authService.storeToken(data.jwtToken);
+      const target = this.authService.needsBankInformation(user) ? ['initial-setup'] : [''];
+      await this.router.navigate(target);
+    } catch (err) {
+      console.error(err);
+      this.notificationService.showError(err instanceof Error ? err.message : String(err));
+    } finally {
+      this.isLoggingIn = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private async showLoginProgress(): Promise<void> {
+    this.isLoggingIn = true;
+    this.cdr.detectChanges();
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
     });
   }
 }

@@ -18,13 +18,13 @@ import {
 import { ExternalNotificationComponent } from '../../../../general/external-notification-component/external-notification-component';
 import {
   ChangeRequestContactMethod,
-  InvoiceDetailComponent,
   RequestChangesSubmission,
-} from '../../general/detail-component/detail-component';
+} from '../detail-component/detail-component';
+import { AdminInvoiceDetailComponent } from '../detail-component/detail-component';
 
 @Component({
   selector: 'app-request-detail-component',
-  imports: [InvoiceDetailComponent, ExternalNotificationComponent],
+  imports: [AdminInvoiceDetailComponent, ExternalNotificationComponent],
   templateUrl: './admin-detail-component.html',
   styleUrl: './admin-detail-component.scss',
 })

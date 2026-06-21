@@ -36,7 +36,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var periodEnd = new DateTime(2026, 12, 31);
 
             // Act
-            var result = await repo.AddAsync("Q1 budget", null, team.Id, costCentre.Id, 1, 1000m, periodStart, periodEnd);
+            var result = await repo.AddAsync("Q1 budget", null, team.Id, costCentre.Id, 1, 1000m, periodStart, periodEnd, BudgetType.Expense);
 
             // Assert
             result.Should().NotBeNull();
@@ -45,6 +45,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
             result.CostCentreId.Should().Be(costCentre.Id);
             result.SeasonId.Should().Be(1);
             result.TargetAmount.Should().Be(1000m);
+            result.Type.Should().Be(BudgetType.Expense);
             result.PeriodStart.Should().Be(periodStart);
             result.PeriodEnd.Should().Be(periodEnd);
             var dbEntity = await context.Budgets.FindAsync(result.Id);
@@ -408,6 +409,33 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
                 async () => await repo.UpdateAsync(999, targetAmount: 100m));
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithTypeFilter_ShouldReturnMatchingBudgets()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllBudgets_Type");
+            var team = new Team { Name = "Team Alpha" };
+            var costCentre = new CostCentre { Name = "Aero" };
+            context.Teams.Add(team);
+            context.CostCentres.Add(costCentre);
+            await context.SaveChangesAsync();
+
+            context.Budgets.AddRange(
+                new Budget { Name = "Expense budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = 100m, Type = BudgetType.Expense, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) },
+                new Budget { Name = "Income budget", TeamId = team.Id, CostCentreId = costCentre.Id, TargetAmount = null, Type = BudgetType.Income, PeriodStart = new DateTime(2026, 1, 1), PeriodEnd = new DateTime(2026, 12, 31) });
+            await context.SaveChangesAsync();
+
+            var repo = new BudgetRepository(context);
+
+            // Act
+            var (items, totalCount) = await repo.GetAllAsync(new GetBudgetQuery { Type = BudgetType.Income });
+
+            // Assert
+            items.Should().HaveCount(1);
+            items[0].Type.Should().Be(BudgetType.Income);
+            totalCount.Should().Be(1);
         }
 
         [Fact]

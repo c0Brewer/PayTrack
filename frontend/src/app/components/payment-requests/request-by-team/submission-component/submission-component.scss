@@ -19,17 +19,6 @@
 .form-actions {
   display: flex;
   justify-content: flex-end;
-
-  button {
-    background-color: rgb(235 106 0);
-    color: white;
-    font-size: 1.2rem;
-  }
-
-  button:hover {
-    cursor: pointer;
-    background-color: rgb(214 98 2);
-  }
 }
 
 .submit-button__content {
@@ -49,12 +38,6 @@
   select,
   textarea {
     width: 100%;
-    border: 1px solid white;
-    background-color: v.$TUR-secondary-background;
-    height: 2.2rem;
-    padding: 0 1rem;
-    border-radius: 0.2rem;
-    font-size: 1rem;
   }
 
   label {
@@ -83,4 +66,23 @@
 
 .required {
   color: #ef4444;
+}
+
+.csv-import-area {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: v.$size-xs;
+  padding: v.$size-s 0;
+}
+
+.csv-file-input-hidden {
+  display: none;
+}
+
+.csv-hint {
+  color: v.$text-muted;
+  font-size: v.$font-xs;
+  margin: 0;
+  text-align: center;
 }
