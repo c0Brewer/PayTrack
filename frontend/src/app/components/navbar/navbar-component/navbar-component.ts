@@ -2,13 +2,13 @@ import { AsyncPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter, switchMap, take } from 'rxjs';
+import { filter } from 'rxjs';
 
 import { AuthService } from '../../../services/auth/auth-service';
 import { PaymentRequestByTeamService } from '../../../services/payment-request-by-team/payment-request-by-team-service';
 import { PaymentRequestByUserService } from '../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestStatusRefreshService } from '../../../services/payment-request-by-user/payment-request-status-refresh-service';
-import { Role, TransactionStatus } from '../../../types/exporter';
+import { Role, TransactionStatus, UserDto } from '../../../types/exporter';
 
 @Component({
   selector: 'app-navbar-component',
@@ -25,6 +25,7 @@ export class NavbarComponent {
   protected readonly teamRequestCount = signal(0);
   protected readonly invoiceChangesRequestedCount = signal(0);
   public hasNoBankAccounts = false;
+  private currentUser: UserDto | null = null;
 
   constructor(
     private readonly authService: AuthService,
@@ -37,7 +38,9 @@ export class NavbarComponent {
     this.currentUser$ = this.authService.currentUser$;
 
     this.currentUser$.pipe(takeUntilDestroyed()).subscribe((user) => {
+      this.currentUser = user;
       this.hasNoBankAccounts = !!user && (user.bankAccounts?.length ?? 0) === 0;
+      this.refreshCounts();
     });
 
     this.statusRefreshService.refreshRequested$.pipe(takeUntilDestroyed()).subscribe(() => {
@@ -59,58 +62,47 @@ export class NavbarComponent {
   }
 
   private refreshCounts(): void {
-    this.loadSubmittedCount();
-    this.loadTeamRequestCount();
-    this.loadInvoiceChangesRequestedCount();
+    if (!this.currentUser) {
+      return;
+    }
+
+    this.loadSubmittedCount(this.currentUser);
+    this.loadTeamRequestCount(this.currentUser);
+    this.loadInvoiceChangesRequestedCount(this.currentUser);
   }
 
-  private loadSubmittedCount(): void {
-    this.currentUser$
-      .pipe(
-        filter((user) => user?.role === Role.ADMIN),
-        take(1),
-        switchMap(() =>
-          this.paymentRequestService.getPaymentRequestsByUser({ Status: 0, Limit: 1 }),
-        ),
-      )
-      .subscribe({
-        next: (result) => this.submittedCount.set(result?.totalCount ?? 0),
-        error: () => {},
-      });
+  private loadSubmittedCount(user: UserDto): void {
+    if (user.role !== Role.ADMIN) {
+      this.submittedCount.set(0);
+      return;
+    }
+
+    this.paymentRequestService.getPaymentRequestsByUser({ Status: 0, Limit: 1 }).subscribe({
+      next: (result) => this.submittedCount.set(result?.totalCount ?? 0),
+      error: () => {},
+    });
   }
 
-  private loadTeamRequestCount(): void {
-    this.currentUser$
-      .pipe(
-        filter((user) => !!user),
-        take(1),
-        switchMap((user) =>
-          this.teamRequestService.getPaymentRequestsByTeam({
-            Status: TransactionStatus.Submitted,
-            UserId: user!.id,
-            Limit: 1,
-          }),
-        ),
-      )
+  private loadTeamRequestCount(user: UserDto): void {
+    this.teamRequestService
+      .getPaymentRequestsByTeam({
+        Status: TransactionStatus.Submitted,
+        UserId: user.id,
+        Limit: 1,
+      })
       .subscribe({
         next: (result) => this.teamRequestCount.set(result?.totalCount ?? 0),
         error: () => {},
       });
   }
 
-  private loadInvoiceChangesRequestedCount(): void {
-    this.currentUser$
-      .pipe(
-        filter((user) => !!user),
-        take(1),
-        switchMap((user) =>
-          this.paymentRequestService.getPaymentRequestsByUser({
-            Status: TransactionStatus.ChangesRequested,
-            UserId: user!.id,
-            Limit: 1,
-          }),
-        ),
-      )
+  private loadInvoiceChangesRequestedCount(user: UserDto): void {
+    this.paymentRequestService
+      .getPaymentRequestsByUser({
+        Status: TransactionStatus.ChangesRequested,
+        UserId: user.id,
+        Limit: 1,
+      })
       .subscribe({
         next: (result) => this.invoiceChangesRequestedCount.set(result?.totalCount ?? 0),
         error: () => {},
