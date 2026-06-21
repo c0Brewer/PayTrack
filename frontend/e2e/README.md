@@ -1,19 +1,19 @@
 # End-to-End Tests
 
-This folder contains Playwright tests that run against the Angular application in a browser.
+This folder contains Cypress tests that run against the Angular application in a browser.
 
 ## Structure
 
-- `smoke.spec.ts`: first stable checks that verify the app starts and anonymous users reach the login page.
+- `smoke.cy.ts`: first stable checks that verify the app starts and anonymous users reach the login page.
 - `helpers/`: shared test helpers, for example login helpers or API setup once the backend test setup is stable.
-- `fixtures/`: reusable test data or Playwright fixtures.
+- `fixtures/`: reusable Cypress fixture data.
 
 ## Commands
 
-- `npm run e2e`: runs the tests headlessly.
-- `npm run e2e:ui`: opens the Playwright UI runner for local debugging.
-- `npm run e2e:debug`: runs tests in debug mode.
-- `npm run e2e:install`: installs Playwright browser binaries if they are missing.
+- `npm run e2e`: starts the Angular dev server and runs Cypress headlessly.
+- `npm run e2e:run`: runs Cypress headlessly against an already running app.
+- `npm run e2e:open`: opens the Cypress app for local debugging.
+- `npm run e2e:debug`: alias for opening Cypress in interactive mode.
 
 ## Conventions
 

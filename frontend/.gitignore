@@ -39,9 +39,10 @@ testem.log
 /typings
 __screenshots__/
 
-# Playwright
-/playwright-report/
-/test-results/
+# Cypress
+/cypress/screenshots/
+/cypress/videos/
+/cypress/downloads/
 
 # System files
 .DS_Store
