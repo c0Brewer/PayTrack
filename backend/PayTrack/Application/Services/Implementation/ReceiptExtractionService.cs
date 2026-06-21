@@ -21,7 +21,7 @@ namespace PayTrack.Application.Services.Implementation
     {
         private const long MaximumFileSize = 20 * 1024 * 1024;
         private const int MinimumEmbeddedPdfTextLength = 40; // Below this threshold, treat the PDF as scanned and use OCR.
-        private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(15); // Bounds external tools to a timeout
+        private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(45); // Bounds external tools to a timeout
         private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".pdf", ".jpg", ".jpeg", ".png",
@@ -187,7 +187,7 @@ namespace PayTrack.Application.Services.Implementation
             var outputPrefix = Path.Combine(tempDirectory, "page");
             await RunProcessAsync(
                 "pdftoppm",
-                ["-png", "-r", "300", inputPath, outputPrefix],
+                ["-png", "-r", "200", inputPath, outputPrefix],
                 cancellationToken);
 
             var builder = new StringBuilder();
