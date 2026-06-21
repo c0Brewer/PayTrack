@@ -1,6 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../../../services/auth/auth-service';
@@ -28,6 +28,12 @@ describe('UserInvoicesOverviewComponent', () => {
     navigate: vi.fn(),
   };
 
+  const activatedRouteMock = {
+    snapshot: {
+      queryParams: {},
+    },
+  };
+
   const notificationMock = {
     showError: vi.fn(),
   };
@@ -47,6 +53,7 @@ describe('UserInvoicesOverviewComponent', () => {
   beforeEach(async () => {
     authServiceMock.getCurrentUser.mockReturnValue(of(null));
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
+    activatedRouteMock.snapshot.queryParams = {};
 
     await TestBed.configureTestingModule({
       imports: [UserInvoicesOverviewComponent],
@@ -56,6 +63,7 @@ describe('UserInvoicesOverviewComponent', () => {
         { provide: NotificationService, useValue: notificationMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
         { provide: TeamService, useValue: teamServiceMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
         { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
@@ -137,6 +145,35 @@ describe('UserInvoicesOverviewComponent', () => {
 
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith(
       expect.objectContaining({ UserId: admin.id }),
+    );
+  });
+
+  it('should apply filter options from query params on init', () => {
+    const user = { id: 7 } as UserDto;
+    authServiceMock.getCurrentUser.mockReturnValue(of(user));
+    activatedRouteMock.snapshot.queryParams = {
+      status: '2',
+      purposeOfPayment: 'Hardware',
+      minAmount: '25',
+    };
+
+    component.ngOnInit();
+
+    expect(component.filterOptions).toEqual(
+      expect.objectContaining({
+        IncludeTeam: true,
+        Status: 2,
+        PurposeOfPayment: 'Hardware',
+        MinAmount: 25,
+      }),
+    );
+    expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        UserId: user.id,
+        Status: 2,
+        PurposeOfPayment: 'Hardware',
+        MinAmount: 25,
+      }),
     );
   });
 

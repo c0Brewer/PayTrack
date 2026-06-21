@@ -191,9 +191,12 @@
               <a class="btn btn-secondary" routerLink="/submit">
                 <span class="material-symbols-outlined">upload</span>
                 Submit an Invoice</a>
-              <a class="btn btn-secondary" routerLink="/my-invoices">
+              <a class="btn btn-secondary"
+                 [routerLink]="['/my-invoices']"
+                 [queryParams]="{ status: 1 }"
+              >
                 <span class="material-symbols-outlined">description</span>
-                Review Invoices</a>
+                Review Corresponding Invoices</a>
               @if (data.actions.missingBankAccount) {
                 <a class="btn btn-secondary" routerLink="/bankaccount">
                   <span class="material-symbols-outlined">add</span>

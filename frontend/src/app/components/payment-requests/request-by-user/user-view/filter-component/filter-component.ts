@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
 
@@ -18,9 +18,10 @@ import {
   templateUrl: './filter-component.html',
   styleUrl: './filter-component.scss',
 })
-export class UserInvoiceFilterComponent implements OnInit {
+export class UserInvoiceFilterComponent implements OnInit, OnChanges {
   @Input() limitSelection: number[] = [];
   @Input() limit: number = 10;
+  @Input() initialFilterOptions: GetPaymentRequestsByUserOptions | null = null;
 
   @Output() updateFilter = new EventEmitter<GetPaymentRequestsByUserOptions>();
   @Output() limitChange = new EventEmitter<number>();
@@ -70,6 +71,8 @@ export class UserInvoiceFilterComponent implements OnInit {
     this.filterMaxCreatedAt = new Date().toISOString().split('T')[0];
     this.filterMinPaidAt = new Date(0).toISOString().split('T')[0];
     this.filterMaxPaidAt = new Date().toISOString().split('T')[0];
+
+    this.applyInitialFilterOptions();
 
     this.teamService.getTeams({ Limit: 1000 }).subscribe({
       next: (data) => {
@@ -132,6 +135,12 @@ export class UserInvoiceFilterComponent implements OnInit {
       this.filterPayoutType = value;
       this.emitFilter();
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialFilterOptions']) {
+      this.applyInitialFilterOptions();
+    }
   }
 
   emitFilter(): void {
@@ -205,5 +214,29 @@ export class UserInvoiceFilterComponent implements OnInit {
 
   onLimitChange(): void {
     this.limitChange.emit(this.limit);
+  }
+
+  private applyInitialFilterOptions(): void {
+    if (!this.initialFilterOptions) {
+      return;
+    }
+
+    this.filterInvoiceNumber = this.initialFilterOptions.InvoiceNumber ?? '';
+    this.filterStatus = this.initialFilterOptions.Status;
+    this.filterMinCreatedAt = this.initialFilterOptions.MinCreatedAt ?? this.filterMinCreatedAt;
+    this.filterMaxCreatedAt = this.initialFilterOptions.MaxCreatedAt ?? this.filterMaxCreatedAt;
+    this.filterMinPaidAt = this.initialFilterOptions.MinPaidAt ?? this.filterMinPaidAt;
+    this.filterMaxPaidAt = this.initialFilterOptions.MaxPaidAt ?? this.filterMaxPaidAt;
+    this.filterMinAmount =
+      this.initialFilterOptions.MinAmount !== undefined
+        ? String(this.initialFilterOptions.MinAmount)
+        : '';
+    this.filterMaxAmount =
+      this.initialFilterOptions.MaxAmount !== undefined
+        ? String(this.initialFilterOptions.MaxAmount)
+        : '';
+    this.filterPurpose = this.initialFilterOptions.PurposeOfPayment ?? '';
+    this.filterTeamId = this.initialFilterOptions.TeamId;
+    this.filterPayoutType = this.initialFilterOptions.PayoutType;
   }
 }
