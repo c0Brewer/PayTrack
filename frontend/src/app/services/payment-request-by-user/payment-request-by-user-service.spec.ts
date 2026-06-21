@@ -189,6 +189,73 @@ describe('PaymentRequestByUserService', () => {
     );
   });
 
+  it('should resubmit an edited payment request without invalid bank account id', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: 'corrected',
+      receipt: '',
+      payoutType: PayoutType.NotYetPaid,
+      bankAccountId: 0,
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'corrected purpose',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+    const apiResponse = { id: 7 } as PaymentRequestByUserDto;
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    const result = await firstValueFrom(service.resubmitPaymentRequestByUser(7, dto, null));
+
+    const expectedUrl = environment.apiBaseUrl
+      ? new URL('/api/v1/transaction/user/7/resubmit', environment.apiBaseUrl).toString()
+      : '/api/v1/transaction/user/7/resubmit';
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expectedUrl,
+      expect.objectContaining({
+        method: 'POST',
+        headers: { Authorization: 'Bearer test-token' },
+      }),
+    );
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
+    expect(request.body).toBeInstanceOf(FormData);
+    expect((request.body as FormData).has('bankAccountId')).toBe(false);
+    expect(result).toEqual(apiResponse);
+  });
+
+  it('should resubmit an edited user payout payment request with bank account id', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: 'corrected',
+      receipt: '',
+      payoutType: PayoutType.User,
+      bankAccountId: 12,
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'corrected purpose',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+    const apiResponse = { id: 7 } as PaymentRequestByUserDto;
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => apiResponse,
+    });
+
+    await firstValueFrom(service.resubmitPaymentRequestByUser(7, dto, null));
+
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
+    expect((request.body as FormData).get('bankAccountId')).toBe('12');
+  });
+
   // -----------------------
   // GET LIST
   // -----------------------
@@ -440,7 +507,7 @@ describe('PaymentRequestByUserService', () => {
 
   it('should approve payment request', async () => {
     const apiResponse = { id: 1 } as PaymentRequestByUserDto;
-    const request = { costCentreId: 5, reason: 'ok' };
+    const request = { budgetId: 5, reason: 'ok' };
 
     vi.spyOn(client, 'POST').mockResolvedValue({
       data: apiResponse,

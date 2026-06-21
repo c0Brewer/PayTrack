@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../../../types/exporter';
+import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
 import { UserInvoiceDetailComponent } from '../detail-component/detail-component';
 
 @Component({
@@ -27,6 +27,26 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
   receiptMimeType: string = '';
   isReceiptImage: boolean = false;
   loading: boolean = true;
+
+  get latestChangeRequestMessage(): string | null {
+    if (!this.invoice || this.invoice.status !== TransactionStatus.ChangesRequested) {
+      return null;
+    }
+
+    const latestChangeRequest = [...(this.invoice.statusHistory ?? [])]
+      .filter(
+        (entry) => entry.toStatus === TransactionStatus.ChangesRequested && !!entry.comment?.trim(),
+      )
+      .sort(
+        (left, right) => new Date(right.changedAt).getTime() - new Date(left.changedAt).getTime(),
+      )[0];
+
+    return latestChangeRequest?.comment?.trim() ?? null;
+  }
+
+  get canEditRequestedChanges(): boolean {
+    return this.invoice?.status === TransactionStatus.ChangesRequested;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -95,5 +115,11 @@ export class MyInvoiceDetailComponent implements OnInit, OnDestroy {
 
   onBack(): void {
     this.router.navigate(['/my-invoices']);
+  }
+
+  onEdit(): void {
+    if (this.invoice?.status === TransactionStatus.ChangesRequested) {
+      this.router.navigate(['/my-invoices', this.invoice.id, 'edit']);
+    }
   }
 }

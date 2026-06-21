@@ -9,7 +9,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
@@ -22,6 +22,7 @@ import {
 } from '../../../../services/offline/offline-invoice-submission-queue.service';
 import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
@@ -29,6 +30,8 @@ import {
   CreatePaymentRequestByUserDto,
   PayoutType,
   BankAccount,
+  PaymentRequestByUserDto,
+  TransactionStatus,
   ReceiptExtractionDto,
 } from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
@@ -88,6 +91,9 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   isDuplicateModalOpen = false;
   pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
   pendingSubmissionFile: File | null = null;
+  isEditMode = false;
+  editingInvoiceId: number | null = null;
+  changeRequestMessage: string | null = null;
   isExtractingReceiptData = false;
   receiptExtractionMessage = '';
   receiptExtractionStatus: 'idle' | 'loading' | 'success' | 'partial' | 'error' = 'idle';
@@ -113,9 +119,11 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
+    private readonly statusRefreshService: PaymentRequestStatusRefreshService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
@@ -126,6 +134,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
+    this.loadInvoiceForEditing();
   }
 
   ngOnDestroy(): void {
@@ -176,6 +185,66 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         creditorCtrl?.updateValueAndValidity();
         dueDateCtrl?.updateValueAndValidity();
       });
+  }
+
+  private loadInvoiceForEditing(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) return;
+
+    this.isEditMode = true;
+    this.editingInvoiceId = id;
+    this.form.get('receipt')?.clearValidators();
+    this.form.get('receipt')?.updateValueAndValidity();
+
+    this.paymentRequestByUserService
+      .getPaymentRequestsByUserById(id, {
+        IncludeTeam: true,
+        IncludeBankAccount: true,
+        IncludeStatusHistory: true,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (invoice) => {
+          if (invoice.status !== TransactionStatus.ChangesRequested) {
+            this.notificationService.showError(
+              'Only invoices with requested changes can be edited.',
+            );
+            this.router.navigate(['/my-invoices', id]);
+            return;
+          }
+
+          this.patchInvoice(invoice);
+          this.changeDetectorRef.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load invoice: ' + err.message);
+          this.router.navigate(['/my-invoices']);
+        },
+      });
+  }
+
+  private patchInvoice(invoice: PaymentRequestByUserDto): void {
+    this.form.patchValue({
+      invoiceNumber: invoice.invoiceNumber,
+      comment: invoice.comment ?? '',
+      payoutType: invoice.payoutType,
+      bankAccountId: invoice.bankAccount?.id ?? null,
+      teamId: invoice.team?.id ?? null,
+      amount: invoice.amount,
+      purposeOfPayment: invoice.purposeOfPayment,
+      paidAt: invoice.paidAt?.slice(0, 10) ?? '',
+    });
+
+    this.changeRequestMessage =
+      [...(invoice.statusHistory ?? [])]
+        .filter(
+          (entry) =>
+            entry.toStatus === TransactionStatus.ChangesRequested && !!entry.comment?.trim(),
+        )
+        .sort(
+          (left, right) => new Date(right.changedAt).getTime() - new Date(left.changedAt).getTime(),
+        )[0]
+        ?.comment?.trim() ?? null;
   }
 
   private loadTeams(): void {
@@ -431,7 +500,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.form.markAllAsTouched();
-    if (this.form.invalid || !this.selectedFile) return;
+    if (this.form.invalid || (!this.isEditMode && !this.selectedFile)) return;
 
     this.isSubmitting = true;
     const v = this.form.value;
@@ -443,7 +512,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload: CreatePaymentRequestByUserDto = {
+    const payload = {
       invoiceNumber: v.invoiceNumber,
       comment: v.comment,
       payoutType: payoutType,
@@ -460,10 +529,15 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         purposeOfPayment: v.purposeOfPayment,
         paidAt: v.paidAt,
       },
-    };
+    } as CreatePaymentRequestByUserDto;
+
+    if (this.isEditMode) {
+      this.resubmitPaymentRequest(payload);
+      return;
+    }
 
     if (this.offlineService.isOffline()) {
-      void this.queueOfflineSubmission(payload, this.selectedFile);
+      void this.queueOfflineSubmission(payload, this.selectedFile!);
       return;
     }
 
@@ -500,6 +574,29 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  private resubmitPaymentRequest(payload: CreatePaymentRequestByUserDto): void {
+    this.paymentRequestByUserService
+      .resubmitPaymentRequestByUser(this.editingInvoiceId!, payload, this.selectedFile)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Invoice updated and returned for review.');
+          this.statusRefreshService.requestRefresh();
+          this.isSubmitting = false;
+          this.router.navigate(['/my-invoices', this.editingInvoiceId]);
+        },
+        error: (err: Error) => {
+          this.notificationService.showError(err.message ?? 'Invoice update failed.');
+          this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
+        },
+      });
+  }
+
+  onCancelEdit(): void {
+    this.router.navigate(['/my-invoices', this.editingInvoiceId]);
   }
 
   onDuplicateModalCancel(): void {

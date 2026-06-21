@@ -16,7 +16,7 @@ import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { OfflineService } from '../../../../../services/offline/offline-service';
 import {
   ApprovePaymentRequestByUserDto,
-  CostCentreDto,
+  BudgetDto,
   DeclinePaymentRequestByUserDto,
   MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
@@ -64,7 +64,7 @@ export class UserInvoiceDetailComponent implements OnChanges {
   @Input() markingPaid: boolean = false;
   @Input() canManageStatus: boolean = false;
   @Input() statusActionPending: string | null = null;
-  @Input() costCentres: CostCentreDto[] = [];
+  @Input() budgets: BudgetDto[] = [];
   @Output() downloadReceipt = new EventEmitter<void>();
   @Output() approve = new EventEmitter<ApprovePaymentRequestByUserDto>();
   @Output() decline = new EventEmitter<DeclinePaymentRequestByUserDto>();
@@ -80,7 +80,7 @@ export class UserInvoiceDetailComponent implements OnChanges {
   paymentPurpose: string = '';
   paymentDate: string = new Date().toISOString().split('T')[0];
   maxPaymentDate: string = new Date().toISOString().split('T')[0];
-  approvalCostCentreId: number | null = null;
+  approvalBudgetId: number | null = null;
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
@@ -148,12 +148,12 @@ export class UserInvoiceDetailComponent implements OnChanges {
   }
 
   onApprove(): void {
-    if (!this.approvalCostCentreId) {
+    if (!this.approvalBudgetId) {
       return;
     }
 
     this.approve.emit({
-      costCentreId: this.approvalCostCentreId,
+      budgetId: this.approvalBudgetId,
       reason: this.approvalReason.trim() || null,
     });
   }

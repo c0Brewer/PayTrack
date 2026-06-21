@@ -48,6 +48,9 @@ namespace PayTrack.Api.Endpoints
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
 
+            group.MapPost("/user/{id:int}/resubmit", PaymentRequestByUserHandler.ResubmitPaymentRequestByUserAsync)
+                .DisableAntiforgery();
+
             group.MapPost("/user/{id:int}/mark-paid", PaymentRequestByUserHandler.MarkPaymentRequestByUserAsPaidAsync)
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
@@ -63,6 +66,9 @@ namespace PayTrack.Api.Endpoints
             group.MapPost("/user/{id:int}/request-changes", PaymentRequestByUserHandler.RequestChangesPaymentRequestByUserAsync)
                 .RequireRole(Role.Admin)
                 .RequireActiveUser();
+
+            group.MapPost("/user/{id:int}/undo-status-change", PaymentRequestByUserHandler.UndoLastPaymentRequestByUserStatusChangeAsync)
+                .RequireRole(Role.Admin);
 
             group.MapGet("/user/{id:int}/receipt", PaymentRequestByUserHandler.GetPaymentRequestByUserByIdReceiptAsync);
             group.MapGet("/user/duplicate", PaymentRequestByUserHandler.GetDuplicatePaymentRequestsByUserAsync);

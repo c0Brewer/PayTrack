@@ -211,23 +211,23 @@ describe('UserInvoiceDetailComponent', () => {
   it('should emit approve with trimmed optional reason when cost centre is selected', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.approvalReason = ' approved ';
 
     component.onApprove();
 
-    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+    expect(emitted).toHaveBeenCalledWith({ budgetId: 12, reason: 'approved' });
   });
 
   it('should emit approve with null reason when optional reason is blank', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.approvalReason = ' ';
 
     component.onApprove();
 
-    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: null });
+    expect(emitted).toHaveBeenCalledWith({ budgetId: 12, reason: null });
   });
 
   it('should not emit approve without cost centre', () => {
@@ -355,7 +355,14 @@ describe('UserInvoiceDetailComponent', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.costCentres = [{ id: 12, name: 'CC-Finance' }];
+    component.budgets = [
+      {
+        id: 12,
+        name: 'Finance 2026',
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
+    ] as typeof component.budgets;
 
     fixture.detectChanges();
 

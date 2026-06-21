@@ -103,7 +103,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        /// AI generated but manually reviewed  
+        /// AI generated but manually reviewed
         public async Task<HomeDashboardSectionProjection> GetHomeDashboardInvoiceSectionAsync(int userId, int recentItemsLimit)
         {
             // Bound the dashboard preview size even if a future caller passes an invalid or excessive limit.
@@ -166,7 +166,7 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
-        /// AI generated but manually reviewed  
+        /// AI generated but manually reviewed
         public async Task<HomeDashboardSectionProjection> GetHomeDashboardPaymentRequestSectionAsync(int userId, int recentItemsLimit)
         {
             // Bound the dashboard preview size even if a future caller passes an invalid or excessive limit.

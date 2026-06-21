@@ -111,7 +111,9 @@
             </tr>
             <tr>
               <th>Finance Paid At</th>
-              <td>{{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '—' }}</td>
+              <td>
+                {{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '—' }}
+              </td>
             </tr>
             <tr>
               <th>Payment Reference</th>
@@ -167,7 +169,7 @@
                         {{ getStatusLabel(entry.toStatus) }}
                       </span>
                     </td>
-                    <td>{{ entry.changedBy?.name ?? ('User #' + entry.changedById) }}</td>
+                    <td>{{ entry.changedBy?.name ?? 'User #' + entry.changedById }}</td>
                     <td>{{ entry.changedAt | date: 'medium' }}</td>
                     <td>{{ entry.comment || '—' }}</td>
                   </tr>
@@ -204,18 +206,22 @@
     </app-detail-component>
 
     @if (activeActionModal === 'approve') {
-      <app-modal-component title="Approve Invoice" icon="check_circle" (closeEvent)="closeActionModal()">
+      <app-modal-component
+        title="Approve Invoice"
+        icon="check_circle"
+        (closeEvent)="closeActionModal()"
+      >
         <form class="action-modal-form" (ngSubmit)="onApprove()">
           <p class="action-modal-form__description">
             Approve this invoice and assign the cost centre that should be charged.
           </p>
           <div class="action-modal-form__content">
             <label>
-              <span>Cost Centre</span>
-              <select name="approvalCostCentreId" [(ngModel)]="approvalCostCentreId" required>
-                <option [ngValue]="null">Select cost centre</option>
-                @for (costCentre of costCentres; track costCentre.id) {
-                  <option [ngValue]="costCentre.id">{{ costCentre.name }}</option>
+              <span>Budget</span>
+              <select name="approvalBudgetId" [(ngModel)]="approvalBudgetId" required>
+                <option [ngValue]="null">Select budget</option>
+                @for (budget of budgets; track budget.id) {
+                  <option [ngValue]="budget.id">{{ budget.name }}</option>
                 }
               </select>
             </label>
@@ -229,7 +235,11 @@
             </label>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
               <span class="material-symbols-outlined">close</span>
               Cancel
             </button>
@@ -237,7 +247,9 @@
               class="btn btn-primary d-inline-flex align-items-center gap-1"
               type="submit"
               appDisableOfflineAction
-              [disabled]="statusActionPending === 'approve' || !approvalCostCentreId || offlineService.isOffline()"
+              [disabled]="
+                statusActionPending === 'approve' || !approvalBudgetId || offlineService.isOffline()
+              "
             >
               <span class="material-symbols-outlined">check_circle</span>
               {{ statusActionPending === 'approve' ? 'Saving...' : 'Approve' }}
@@ -248,7 +260,11 @@
     }
 
     @if (activeActionModal === 'requestChanges') {
-      <app-modal-component title="Request Changes" icon="edit_note" (closeEvent)="closeActionModal()">
+      <app-modal-component
+        title="Request Changes"
+        icon="edit_note"
+        (closeEvent)="closeActionModal()"
+      >
         <form class="action-modal-form" (ngSubmit)="onRequestChanges()">
           <p class="action-modal-form__description">
             Ask the submitter to update the invoice before it can continue through review.
@@ -266,13 +282,21 @@
               ></textarea>
               @if (changeRequestReasonBlurred && !changeRequestReason.trim()) {
                 <span class="field-error">Reason is required.</span>
-              } @else if (changeRequestReasonBlurred && isTextTooShort(changeRequestReason, reasonMinLength)) {
-                <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+              } @else if (
+                changeRequestReasonBlurred && isTextTooShort(changeRequestReason, reasonMinLength)
+              ) {
+                <span class="field-error"
+                  >Reason must be at least {{ reasonMinLength }} characters long.</span
+                >
               }
             </label>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
               <span class="material-symbols-outlined">close</span>
               Cancel
             </button>
@@ -314,12 +338,18 @@
               @if (declineReasonBlurred && !declineReason.trim()) {
                 <span class="field-error">Reason is required.</span>
               } @else if (declineReasonBlurred && isTextTooShort(declineReason, reasonMinLength)) {
-                <span class="field-error">Reason must be at least {{ reasonMinLength }} characters long.</span>
+                <span class="field-error"
+                  >Reason must be at least {{ reasonMinLength }} characters long.</span
+                >
               }
             </label>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
               <span class="material-symbols-outlined">close</span>
               Cancel
             </button>
@@ -361,15 +391,25 @@
               />
               @if (paymentReferenceBlurred && !paymentReference.trim()) {
                 <span class="field-error">Payment reference is required.</span>
-              } @else if (paymentReferenceBlurred && isTextTooShort(paymentReference, paymentReferenceMinLength)) {
+              } @else if (
+                paymentReferenceBlurred &&
+                isTextTooShort(paymentReference, paymentReferenceMinLength)
+              ) {
                 <span class="field-error">
-                  Payment reference must be at least {{ paymentReferenceMinLength }} characters long.
+                  Payment reference must be at least {{ paymentReferenceMinLength }} characters
+                  long.
                 </span>
               }
             </label>
             <label class="col-12 col-md-6">
               <span>Payment Date</span>
-              <input type="date" name="paymentDate" [(ngModel)]="paymentDate" [max]="maxPaymentDate" required />
+              <input
+                type="date"
+                name="paymentDate"
+                [(ngModel)]="paymentDate"
+                [max]="maxPaymentDate"
+                required
+              />
             </label>
             <label class="col-12">
               <span>Purpose</span>
@@ -383,13 +423,21 @@
               ></textarea>
               @if (paymentPurposeBlurred && !paymentPurpose.trim()) {
                 <span class="field-error">Purpose is required.</span>
-              } @else if (paymentPurposeBlurred && isTextTooShort(paymentPurpose, paymentPurposeMinLength)) {
-                <span class="field-error">Purpose must be at least {{ paymentPurposeMinLength }} characters long.</span>
+              } @else if (
+                paymentPurposeBlurred && isTextTooShort(paymentPurpose, paymentPurposeMinLength)
+              ) {
+                <span class="field-error"
+                  >Purpose must be at least {{ paymentPurposeMinLength }} characters long.</span
+                >
               }
             </label>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="closeActionModal()">
+            <button
+              type="button"
+              class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              (click)="closeActionModal()"
+            >
               <span class="material-symbols-outlined">close</span>
               Cancel
             </button>
@@ -399,8 +447,16 @@
               appDisableOfflineAction
               [disabled]="
                 markingPaid ||
-                !isTextLengthValid(paymentReference, paymentReferenceMinLength, paymentReferenceMaxLength) ||
-                !isTextLengthValid(paymentPurpose, paymentPurposeMinLength, paymentPurposeMaxLength) ||
+                !isTextLengthValid(
+                  paymentReference,
+                  paymentReferenceMinLength,
+                  paymentReferenceMaxLength
+                ) ||
+                !isTextLengthValid(
+                  paymentPurpose,
+                  paymentPurposeMinLength,
+                  paymentPurposeMaxLength
+                ) ||
                 !paymentDate ||
                 offlineService.isOffline()
               "
