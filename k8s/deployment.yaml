@@ -211,6 +211,8 @@ kind: Ingress
 metadata:
   name: paytrack
   namespace: __NAMESPACE__
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
 spec:
   rules:
     - host: __HOST__
