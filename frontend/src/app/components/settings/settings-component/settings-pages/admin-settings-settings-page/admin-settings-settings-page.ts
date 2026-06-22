@@ -66,18 +66,29 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
       this.notifSettings.deletion.sendEmail !== this.notifOriginal.deletion.sendEmail ||
       this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack ||
       this.notifSettings.deletion.sendPush !== this.notifOriginal.deletion.sendPush ||
-      this.notifSettings.invoiceApproval.sendEmail !== this.notifOriginal.invoiceApproval.sendEmail ||
-      this.notifSettings.invoiceApproval.sendSlack !== this.notifOriginal.invoiceApproval.sendSlack ||
+      this.notifSettings.invoiceApproval.sendEmail !==
+        this.notifOriginal.invoiceApproval.sendEmail ||
+      this.notifSettings.invoiceApproval.sendSlack !==
+        this.notifOriginal.invoiceApproval.sendSlack ||
       this.notifSettings.invoiceApproval.sendPush !== this.notifOriginal.invoiceApproval.sendPush ||
-      this.notifSettings.invoiceRejection.sendEmail !== this.notifOriginal.invoiceRejection.sendEmail ||
-      this.notifSettings.invoiceRejection.sendSlack !== this.notifOriginal.invoiceRejection.sendSlack ||
-      this.notifSettings.invoiceRejection.sendPush !== this.notifOriginal.invoiceRejection.sendPush ||
-      this.notifSettings.invoiceChangesRequested.sendEmail !== this.notifOriginal.invoiceChangesRequested.sendEmail ||
-      this.notifSettings.invoiceChangesRequested.sendSlack !== this.notifOriginal.invoiceChangesRequested.sendSlack ||
-      this.notifSettings.invoiceChangesRequested.sendPush !== this.notifOriginal.invoiceChangesRequested.sendPush ||
-      this.notifSettings.invoicePaymentCompleted.sendEmail !== this.notifOriginal.invoicePaymentCompleted.sendEmail ||
-      this.notifSettings.invoicePaymentCompleted.sendSlack !== this.notifOriginal.invoicePaymentCompleted.sendSlack ||
-      this.notifSettings.invoicePaymentCompleted.sendPush !== this.notifOriginal.invoicePaymentCompleted.sendPush
+      this.notifSettings.invoiceRejection.sendEmail !==
+        this.notifOriginal.invoiceRejection.sendEmail ||
+      this.notifSettings.invoiceRejection.sendSlack !==
+        this.notifOriginal.invoiceRejection.sendSlack ||
+      this.notifSettings.invoiceRejection.sendPush !==
+        this.notifOriginal.invoiceRejection.sendPush ||
+      this.notifSettings.invoiceChangesRequested.sendEmail !==
+        this.notifOriginal.invoiceChangesRequested.sendEmail ||
+      this.notifSettings.invoiceChangesRequested.sendSlack !==
+        this.notifOriginal.invoiceChangesRequested.sendSlack ||
+      this.notifSettings.invoiceChangesRequested.sendPush !==
+        this.notifOriginal.invoiceChangesRequested.sendPush ||
+      this.notifSettings.invoicePaymentCompleted.sendEmail !==
+        this.notifOriginal.invoicePaymentCompleted.sendEmail ||
+      this.notifSettings.invoicePaymentCompleted.sendSlack !==
+        this.notifOriginal.invoicePaymentCompleted.sendSlack ||
+      this.notifSettings.invoicePaymentCompleted.sendPush !==
+        this.notifOriginal.invoicePaymentCompleted.sendPush
     );
   }
 
