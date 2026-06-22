@@ -51,6 +51,42 @@ namespace PayTrack.Application.Services.Model
         /// <summary>Notification channels: send push notification when a payment request is deleted.</summary>
         public const string NotificationsDeletionPush = "notifications.deletion.push";
 
+        /// <summary>Notification channels: send email when an invoice submission is approved.</summary>
+        public const string NotificationsInvoiceApprovalEmail = "notifications.invoice.approval.email";
+
+        /// <summary>Notification channels: send Slack when an invoice submission is approved.</summary>
+        public const string NotificationsInvoiceApprovalSlack = "notifications.invoice.approval.slack";
+
+        /// <summary>Notification channels: send push notification when an invoice submission is approved.</summary>
+        public const string NotificationsInvoiceApprovalPush = "notifications.invoice.approval.push";
+
+        /// <summary>Notification channels: send email when an invoice submission is rejected.</summary>
+        public const string NotificationsInvoiceRejectionEmail = "notifications.invoice.rejection.email";
+
+        /// <summary>Notification channels: send Slack when an invoice submission is rejected.</summary>
+        public const string NotificationsInvoiceRejectionSlack = "notifications.invoice.rejection.slack";
+
+        /// <summary>Notification channels: send push notification when an invoice submission is rejected.</summary>
+        public const string NotificationsInvoiceRejectionPush = "notifications.invoice.rejection.push";
+
+        /// <summary>Notification channels: send email when changes are requested for an invoice submission.</summary>
+        public const string NotificationsInvoiceChangesRequestedEmail = "notifications.invoice.changes-requested.email";
+
+        /// <summary>Notification channels: send Slack when changes are requested for an invoice submission.</summary>
+        public const string NotificationsInvoiceChangesRequestedSlack = "notifications.invoice.changes-requested.slack";
+
+        /// <summary>Notification channels: send push notification when changes are requested for an invoice submission.</summary>
+        public const string NotificationsInvoiceChangesRequestedPush = "notifications.invoice.changes-requested.push";
+
+        /// <summary>Notification channels: send email when an invoice payment is completed.</summary>
+        public const string NotificationsInvoicePaymentCompletedEmail = "notifications.invoice.payment-completed.email";
+
+        /// <summary>Notification channels: send Slack when an invoice payment is completed.</summary>
+        public const string NotificationsInvoicePaymentCompletedSlack = "notifications.invoice.payment-completed.slack";
+
+        /// <summary>Notification channels: send push notification when an invoice payment is completed.</summary>
+        public const string NotificationsInvoicePaymentCompletedPush = "notifications.invoice.payment-completed.push";
+
         /// <summary>Reminder schedule: comma-separated list of days before due date (e.g. "7,2,1").</summary>
         public const string RemindersDaysBeforeDue = "reminders.days-before-due";
 

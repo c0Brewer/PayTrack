@@ -170,6 +170,10 @@ export type NotificationChannelGroupsDto = {
   confirmation: NotificationChannelDto;
   reminders: NotificationChannelDto;
   deletion: NotificationChannelDto;
+  invoiceApproval: NotificationChannelDto;
+  invoiceRejection: NotificationChannelDto;
+  invoiceChangesRequested: NotificationChannelDto;
+  invoicePaymentCompleted: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
 export type ReminderScheduleDto = {

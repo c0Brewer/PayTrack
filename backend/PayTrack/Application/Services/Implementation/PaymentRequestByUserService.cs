@@ -21,7 +21,8 @@ namespace PayTrack.Application.Services.Implementation
         IBudgetService _budgetService,
         INotificationDispatchService? _notificationDispatchService = null,
         ILogger<PaymentRequestByUserService>? _logger = null,
-        IPushNotificationService? _pushNotifications = null) : IPaymentRequestByUserService
+        IPushNotificationService? _pushNotifications = null,
+        ISystemSettingService? _systemSettings = null) : IPaymentRequestByUserService
     {
         private const int MaxDuplicateResults = 10;
 
@@ -37,6 +38,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly INotificationDispatchService? notificationDispatchService = _notificationDispatchService;
         private readonly ILogger<PaymentRequestByUserService>? logger = _logger;
         private readonly IPushNotificationService? pushNotifications = _pushNotifications;
+        private readonly ISystemSettingService? systemSettings = _systemSettings;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -343,6 +345,9 @@ namespace PayTrack.Application.Services.Implementation
 
             return await this.SaveStatusChangeAndNotifyAsync(
                 transaction,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedPush,
                 "Payment completed",
                 "Your invoice payment has been completed.");
         }
@@ -386,6 +391,9 @@ namespace PayTrack.Application.Services.Implementation
 
             return await this.SaveStatusChangeAndNotifyAsync(
                 transaction,
+                SystemSettingKeys.NotificationsInvoiceApprovalEmail,
+                SystemSettingKeys.NotificationsInvoiceApprovalSlack,
+                SystemSettingKeys.NotificationsInvoiceApprovalPush,
                 "Invoice approved",
                 "Your submitted invoice has been approved.");
         }
@@ -414,6 +422,9 @@ namespace PayTrack.Application.Services.Implementation
 
             return await this.SaveStatusChangeAndNotifyAsync(
                 transaction,
+                SystemSettingKeys.NotificationsInvoiceRejectionEmail,
+                SystemSettingKeys.NotificationsInvoiceRejectionSlack,
+                SystemSettingKeys.NotificationsInvoiceRejectionPush,
                 "Invoice rejected",
                 $"Your submitted invoice was rejected: {normalizedReason}");
         }
@@ -442,6 +453,9 @@ namespace PayTrack.Application.Services.Implementation
 
             return await this.SaveStatusChangeAndNotifyAsync(
                 transaction,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedPush,
                 "Invoice changes requested",
                 $"Changes were requested for your invoice: {normalizedReason}");
         }
@@ -742,12 +756,17 @@ namespace PayTrack.Application.Services.Implementation
 
         private async Task<PaymentRequestByUser> SaveStatusChangeAndNotifyAsync(
             PaymentRequestByUser transaction,
+            string? emailSettingKey = null,
+            string? slackSettingKey = null,
+            string? pushSettingKey = null,
             string? pushTitle = null,
             string? pushBody = null)
         {
             var updatedTransaction = await this.repo.UpdateAsync(transaction);
-            await this.NotifyUserAboutStatusChangeAsync(updatedTransaction);
-            if (pushTitle != null && pushBody != null)
+            await this.NotifyUserAboutStatusChangeAsync(updatedTransaction, emailSettingKey, slackSettingKey);
+            if (pushTitle != null
+                && pushBody != null
+                && await this.IsNotificationEnabledAsync(pushSettingKey, true))
             {
                 await this.SendInvoiceStatusPushAsync(updatedTransaction, pushTitle, pushBody);
             }
@@ -755,7 +774,10 @@ namespace PayTrack.Application.Services.Implementation
             return updatedTransaction;
         }
 
-        private async Task NotifyUserAboutStatusChangeAsync(PaymentRequestByUser transaction)
+        private async Task NotifyUserAboutStatusChangeAsync(
+            PaymentRequestByUser transaction,
+            string? emailSettingKey,
+            string? slackSettingKey)
         {
             if (this.notificationDispatchService == null
                 || transaction.User == null
@@ -782,21 +804,52 @@ namespace PayTrack.Application.Services.Implementation
                 PayTrack
                 """;
 
-            try
+            if (await this.IsNotificationEnabledAsync(emailSettingKey, true))
             {
-                await this.notificationDispatchService.SendEmailAsync(
-                    transaction.User.Email,
-                    subject,
-                    body);
+                try
+                {
+                    await this.notificationDispatchService.SendEmailAsync(
+                        transaction.User.Email,
+                        subject,
+                        body);
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
             }
-            catch (Exception exception)
+
+            if (await this.IsNotificationEnabledAsync(slackSettingKey, false))
             {
-                this.logger?.LogError(
-                    exception,
-                    "Sending status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
-                    transaction.InvoiceNumber,
-                    transaction.User.Email);
+                try
+                {
+                    await this.notificationDispatchService.SendSlackAsync(
+                        transaction.User.Email,
+                        $"{subject}\n\n{body}");
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending Slack status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
             }
+        }
+
+        private async Task<bool> IsNotificationEnabledAsync(string? settingKey, bool defaultValue)
+        {
+            if (settingKey == null || this.systemSettings == null)
+            {
+                return defaultValue;
+            }
+
+            return await this.systemSettings.GetBoolSettingAsync(settingKey, defaultValue);
         }
 
         private async Task SendInvoiceStatusPushAsync(PaymentRequestByUser transaction, string title, string body)
