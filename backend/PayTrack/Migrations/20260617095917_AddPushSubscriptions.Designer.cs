@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PayTrack.Data;
@@ -11,9 +12,11 @@ using PayTrack.Data;
 namespace PayTrack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617095917_AddPushSubscriptions")]
+    partial class AddPushSubscriptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,9 +225,6 @@ namespace PayTrack.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -236,39 +236,6 @@ namespace PayTrack.Migrations
                         .IsUnique();
 
                     b.ToTable("Seasons");
-                });
-
-            modelBuilder.Entity("PayTrack.Data.Entities.SystemSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("LastModifiedByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Key")
-                        .IsUnique();
-
-                    b.HasIndex("LastModifiedByUserId");
-
-                    b.ToTable("SystemSettings");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.Team", b =>
@@ -574,16 +541,6 @@ namespace PayTrack.Migrations
                     b.Navigation("FirstPaymentRequestByUser");
 
                     b.Navigation("SecondPaymentRequestByUser");
-                });
-
-            modelBuilder.Entity("PayTrack.Data.Entities.SystemSetting", b =>
-                {
-                    b.HasOne("PayTrack.Data.Entities.User", "LastModifiedByUser")
-                        .WithMany()
-                        .HasForeignKey("LastModifiedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("LastModifiedByUser");
                 });
 
             modelBuilder.Entity("PayTrack.Data.Entities.PushSubscription", b =>

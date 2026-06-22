@@ -92,5 +92,10 @@ namespace PayTrack.Data.Entities
         /// Reference to payment requests (which this user created).
         /// </summary>
         public ICollection<PaymentRequestByTeam> RequestedByTeamPayments { get; set; } = [];
+
+        /// <summary>
+        /// Reference to browser push subscriptions.
+        /// </summary>
+        public ICollection<PushSubscription> PushSubscriptions { get; set; } = [];
     }
 }

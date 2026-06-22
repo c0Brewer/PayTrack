@@ -30,16 +30,24 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
   }
 
   notifSettings: NotificationChannelGroupsDto = {
-    creation: { sendEmail: true, sendSlack: false },
-    confirmation: { sendEmail: true, sendSlack: false },
-    reminders: { sendEmail: true, sendSlack: false },
-    deletion: { sendEmail: true, sendSlack: false },
+    creation: { sendEmail: true, sendSlack: false, sendPush: true },
+    confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+    reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+    deletion: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   private notifOriginal: NotificationChannelGroupsDto = {
-    creation: { sendEmail: true, sendSlack: false },
-    confirmation: { sendEmail: true, sendSlack: false },
-    reminders: { sendEmail: true, sendSlack: false },
-    deletion: { sendEmail: true, sendSlack: false },
+    creation: { sendEmail: true, sendSlack: false, sendPush: true },
+    confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+    reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+    deletion: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   notifLoading = false;
   notifSaving = false;
@@ -48,12 +56,39 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     return (
       this.notifSettings.creation.sendEmail !== this.notifOriginal.creation.sendEmail ||
       this.notifSettings.creation.sendSlack !== this.notifOriginal.creation.sendSlack ||
+      this.notifSettings.creation.sendPush !== this.notifOriginal.creation.sendPush ||
       this.notifSettings.confirmation.sendEmail !== this.notifOriginal.confirmation.sendEmail ||
       this.notifSettings.confirmation.sendSlack !== this.notifOriginal.confirmation.sendSlack ||
+      this.notifSettings.confirmation.sendPush !== this.notifOriginal.confirmation.sendPush ||
       this.notifSettings.reminders.sendEmail !== this.notifOriginal.reminders.sendEmail ||
       this.notifSettings.reminders.sendSlack !== this.notifOriginal.reminders.sendSlack ||
+      this.notifSettings.reminders.sendPush !== this.notifOriginal.reminders.sendPush ||
       this.notifSettings.deletion.sendEmail !== this.notifOriginal.deletion.sendEmail ||
-      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack
+      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack ||
+      this.notifSettings.deletion.sendPush !== this.notifOriginal.deletion.sendPush ||
+      this.notifSettings.invoiceApproval.sendEmail !==
+        this.notifOriginal.invoiceApproval.sendEmail ||
+      this.notifSettings.invoiceApproval.sendSlack !==
+        this.notifOriginal.invoiceApproval.sendSlack ||
+      this.notifSettings.invoiceApproval.sendPush !== this.notifOriginal.invoiceApproval.sendPush ||
+      this.notifSettings.invoiceRejection.sendEmail !==
+        this.notifOriginal.invoiceRejection.sendEmail ||
+      this.notifSettings.invoiceRejection.sendSlack !==
+        this.notifOriginal.invoiceRejection.sendSlack ||
+      this.notifSettings.invoiceRejection.sendPush !==
+        this.notifOriginal.invoiceRejection.sendPush ||
+      this.notifSettings.invoiceChangesRequested.sendEmail !==
+        this.notifOriginal.invoiceChangesRequested.sendEmail ||
+      this.notifSettings.invoiceChangesRequested.sendSlack !==
+        this.notifOriginal.invoiceChangesRequested.sendSlack ||
+      this.notifSettings.invoiceChangesRequested.sendPush !==
+        this.notifOriginal.invoiceChangesRequested.sendPush ||
+      this.notifSettings.invoicePaymentCompleted.sendEmail !==
+        this.notifOriginal.invoicePaymentCompleted.sendEmail ||
+      this.notifSettings.invoicePaymentCompleted.sendSlack !==
+        this.notifOriginal.invoicePaymentCompleted.sendSlack ||
+      this.notifSettings.invoicePaymentCompleted.sendPush !==
+        this.notifOriginal.invoicePaymentCompleted.sendPush
     );
   }
 
@@ -184,12 +219,20 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
           deletion: { ...data.deletion },
+          invoiceApproval: { ...data.invoiceApproval },
+          invoiceRejection: { ...data.invoiceRejection },
+          invoiceChangesRequested: { ...data.invoiceChangesRequested },
+          invoicePaymentCompleted: { ...data.invoicePaymentCompleted },
         };
         this.notifOriginal = {
           creation: { ...data.creation },
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
           deletion: { ...data.deletion },
+          invoiceApproval: { ...data.invoiceApproval },
+          invoiceRejection: { ...data.invoiceRejection },
+          invoiceChangesRequested: { ...data.invoiceChangesRequested },
+          invoicePaymentCompleted: { ...data.invoicePaymentCompleted },
         };
         this.notifLoading = false;
         this.cdr.detectChanges();
@@ -211,6 +254,10 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           confirmation: { ...this.notifSettings.confirmation },
           reminders: { ...this.notifSettings.reminders },
           deletion: { ...this.notifSettings.deletion },
+          invoiceApproval: { ...this.notifSettings.invoiceApproval },
+          invoiceRejection: { ...this.notifSettings.invoiceRejection },
+          invoiceChangesRequested: { ...this.notifSettings.invoiceChangesRequested },
+          invoicePaymentCompleted: { ...this.notifSettings.invoicePaymentCompleted },
         };
         this.notifSaving = false;
         this.notificationService.showSuccess('Notification channel settings saved.');
