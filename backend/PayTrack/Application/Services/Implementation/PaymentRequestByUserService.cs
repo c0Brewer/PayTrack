@@ -20,7 +20,7 @@ namespace PayTrack.Application.Services.Implementation
         ICostCentreService _costCentreService,
         IBudgetService _budgetService,
         INotificationDispatchService? _notificationDispatchService = null,
-        ILogger<PaymentRequestByUserService>? _logger = null) : IPaymentRequestByUserService
+        ILogger<PaymentRequestByUserService>? _logger = null,
         IPushNotificationService? _pushNotifications = null) : IPaymentRequestByUserService
     {
         private const int MaxDuplicateResults = 10;
@@ -302,7 +302,6 @@ namespace PayTrack.Application.Services.Implementation
                         IncludeUser = true,
                         IncludeStatusHistory = true,
                     })
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (string.IsNullOrWhiteSpace(paymentReference))
@@ -342,10 +341,10 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 $"Payment reference: {transaction.PaymentReference}");
 
-            return await this.SaveStatusChangeAndNotifyAsync(transaction);
-            var updated = await this.repo.UpdateAsync(transaction);
-            await this.SendInvoiceStatusPushAsync(updated, "Payment completed", "Your invoice payment has been completed.");
-            return updated;
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                "Payment completed",
+                "Your invoice payment has been completed.");
         }
 
         /// <inheritdoc/>
@@ -362,7 +361,6 @@ namespace PayTrack.Application.Services.Implementation
                         IncludeUser = true,
                         IncludeStatusHistory = true,
                     })
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (budgetId <= 0)
@@ -386,10 +384,10 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 NormalizeOptionalReason(reason));
 
-            return await this.SaveStatusChangeAndNotifyAsync(transaction);
-            var updated = await this.repo.UpdateAsync(transaction);
-            await this.SendInvoiceStatusPushAsync(updated, "Invoice approved", "Your submitted invoice has been approved.");
-            return updated;
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                "Invoice approved",
+                "Your submitted invoice has been approved.");
         }
 
         /// <inheritdoc/>
@@ -405,7 +403,6 @@ namespace PayTrack.Application.Services.Implementation
                         IncludeUser = true,
                         IncludeStatusHistory = true,
                     })
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
@@ -415,10 +412,10 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.SaveStatusChangeAndNotifyAsync(transaction);
-            var updated = await this.repo.UpdateAsync(transaction);
-            await this.SendInvoiceStatusPushAsync(updated, "Invoice rejected", $"Your submitted invoice was rejected: {normalizedReason}");
-            return updated;
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                "Invoice rejected",
+                $"Your submitted invoice was rejected: {normalizedReason}");
         }
 
         /// <inheritdoc/>
@@ -434,7 +431,6 @@ namespace PayTrack.Application.Services.Implementation
                         IncludeUser = true,
                         IncludeStatusHistory = true,
                     })
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true, IncludeUser = true })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
@@ -444,7 +440,10 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.SaveStatusChangeAndNotifyAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                "Invoice changes requested",
+                $"Changes were requested for your invoice: {normalizedReason}");
         }
 
         /// <inheritdoc/>
@@ -555,9 +554,6 @@ namespace PayTrack.Application.Services.Implementation
             UndoStatusChange(transaction, latestStatusChange.FromStatus, changedById);
 
             return await this.SaveStatusChangeAndNotifyAsync(transaction);
-            var updated = await this.repo.UpdateAsync(transaction);
-            await this.SendInvoiceStatusPushAsync(updated, "Invoice changes requested", $"Changes were requested for your invoice: {normalizedReason}");
-            return updated;
         }
 
         /// <inheritdoc/>
@@ -745,10 +741,17 @@ namespace PayTrack.Application.Services.Implementation
         }
 
         private async Task<PaymentRequestByUser> SaveStatusChangeAndNotifyAsync(
-            PaymentRequestByUser transaction)
+            PaymentRequestByUser transaction,
+            string? pushTitle = null,
+            string? pushBody = null)
         {
             var updatedTransaction = await this.repo.UpdateAsync(transaction);
             await this.NotifyUserAboutStatusChangeAsync(updatedTransaction);
+            if (pushTitle != null && pushBody != null)
+            {
+                await this.SendInvoiceStatusPushAsync(updatedTransaction, pushTitle, pushBody);
+            }
+
             return updatedTransaction;
         }
 
