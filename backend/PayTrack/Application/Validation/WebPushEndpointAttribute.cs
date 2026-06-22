@@ -3,7 +3,6 @@
 // </copyright>
 
 //AI helped with the functions
-
 using System.ComponentModel.DataAnnotations;
 
 namespace PayTrack.Application.Validation
