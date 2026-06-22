@@ -9,8 +9,10 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using PayTrack.Application.Dto.Notification;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
 using PayTrack.Application.Settings;
+using PayTrack.Application.Validation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
 
@@ -46,6 +48,11 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task SaveSubscriptionAsync(int userId, SavePushSubscriptionDto subscription)
         {
+            if (!WebPushEndpointAttribute.IsAllowedEndpoint(subscription.Endpoint))
+            {
+                throw new InvalidStateException("The push subscription endpoint is not supported.");
+            }
+
             await this.repository.UpsertAsync(new PushSubscription
             {
                 UserId = userId,
@@ -258,6 +265,14 @@ namespace PayTrack.Application.Services.Implementation
         {
             try
             {
+                if (!WebPushEndpointAttribute.IsAllowedEndpoint(subscription.Endpoint))
+                {
+                    this.logger.LogWarning(
+                        "Push notification delivery skipped for subscription {SubscriptionId} because the endpoint is not supported.",
+                        subscription.Id);
+                    return;
+                }
+
                 var encryptedPayload = BuildEncryptedPayload(payload, subscription.P256dh, subscription.Auth);
                 using var request = new HttpRequestMessage(HttpMethod.Post, subscription.Endpoint)
                 {

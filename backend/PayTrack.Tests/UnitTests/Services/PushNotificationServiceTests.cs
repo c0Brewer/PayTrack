@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using PayTrack.Application.Dto.Notification;
+using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Application.Settings;
 using PayTrack.Data.Entities;
@@ -40,7 +41,7 @@ namespace PayTrack.Tests.UnitTests.Services
                 42,
                 new SavePushSubscriptionDto
                 {
-                    Endpoint = "https://push.example.test/send/123",
+                    Endpoint = "https://fcm.googleapis.com/fcm/send/123",
                     P256dh = "p256dh",
                     Auth = "auth",
                 });
@@ -48,11 +49,32 @@ namespace PayTrack.Tests.UnitTests.Services
             repo.Verify(
                 r => r.UpsertAsync(It.Is<PushSubscription>(s =>
                     s.UserId == 42 &&
-                    s.Endpoint == "https://push.example.test/send/123" &&
+                    s.Endpoint == "https://fcm.googleapis.com/fcm/send/123" &&
                     s.P256dh == "p256dh" &&
                     s.Auth == "auth" &&
                     s.IsEnabled)),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task SaveSubscriptionAsync_RejectsUnsupportedEndpoint()
+        {
+            var repo = new Mock<IPushSubscriptionRepository>();
+            var service = BuildService(repo, CreateVapidSettings(), new SequentialHttpHandler());
+
+            var action = async () => await service.SaveSubscriptionAsync(
+                42,
+                new SavePushSubscriptionDto
+                {
+                    Endpoint = "https://127.0.0.1/push",
+                    P256dh = "p256dh",
+                    Auth = "auth",
+                });
+
+            await action.Should()
+                .ThrowAsync<InvalidStateException>()
+                .WithMessage("The push subscription endpoint is not supported.");
+            repo.Verify(r => r.UpsertAsync(It.IsAny<PushSubscription>()), Times.Never);
         }
 
         [Fact]
@@ -114,6 +136,20 @@ namespace PayTrack.Tests.UnitTests.Services
             handler.Requests.Should().BeEmpty();
         }
 
+        [Fact]
+        public async Task SendWorkflowStatusChangedAsync_SkipsDelivery_WhenStoredEndpointIsUnsupported()
+        {
+            var subscription = CreateSubscription("https://127.0.0.1/push");
+            var repo = new Mock<IPushSubscriptionRepository>();
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([subscription]);
+            var handler = new SequentialHttpHandler();
+            var service = BuildService(repo, CreateVapidSettings(), handler);
+
+            await service.SendWorkflowStatusChangedAsync(42, "Invoice approved", "Your invoice was approved.", "/my-invoices/7");
+
+            handler.Requests.Should().BeEmpty();
+        }
+
         private static PushNotificationService BuildService(
             Mock<IPushSubscriptionRepository> repo,
             PushNotificationSettings settings,
@@ -139,7 +175,7 @@ namespace PayTrack.Tests.UnitTests.Services
             };
         }
 
-        private static PushSubscription CreateSubscription()
+        private static PushSubscription CreateSubscription(string endpoint = "https://fcm.googleapis.com/fcm/send/123")
         {
             using var key = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
             var parameters = key.ExportParameters(false);
@@ -148,7 +184,7 @@ namespace PayTrack.Tests.UnitTests.Services
             {
                 Id = 12,
                 UserId = 42,
-                Endpoint = "https://push.example.test/send/123",
+                Endpoint = endpoint,
                 P256dh = Base64UrlEncode(ExportRawPublicKey(parameters)),
                 Auth = Base64UrlEncode(RandomNumberGenerator.GetBytes(16)),
                 IsEnabled = true,

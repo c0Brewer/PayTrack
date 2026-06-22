@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using PayTrack.Application.Validation;
 
 namespace PayTrack.Application.Dto.Notification
 {
@@ -15,6 +16,8 @@ namespace PayTrack.Application.Dto.Notification
         /// Gets or sets the browser push endpoint.
         /// </summary>
         [Required]
+        [MaxLength(2048)]
+        [WebPushEndpoint]
         public string Endpoint { get; set; } = null!;
 
         /// <summary>
