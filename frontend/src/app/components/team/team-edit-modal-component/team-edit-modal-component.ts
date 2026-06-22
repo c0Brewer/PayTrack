@@ -280,7 +280,15 @@ export class TeamEditModalComponent implements OnChanges {
 
         return '';
       case 'seasonId':
-        return this.newBudgetDraft.seasonId ? '' : 'Season is required.';
+        if (!this.newBudgetDraft.seasonId) {
+          return 'Season is required.';
+        }
+
+        if (!this.isSeasonActive(this.newBudgetDraft.seasonId)) {
+          return 'Select an active season.';
+        }
+
+        return '';
       case 'periodStart':
         return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
       case 'periodEnd':
@@ -318,6 +326,14 @@ export class TeamEditModalComponent implements OnChanges {
 
   getSeasonName(seasonId: number): string {
     return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
+  }
+
+  getSeasonOptionLabel(season: SeasonDto): string {
+    return season.isActive === false ? `${season.name} (inactive)` : season.name;
+  }
+
+  isSeasonActive(seasonId: number): boolean {
+    return this.seasons.find((season) => season.id === seasonId)?.isActive !== false;
   }
 
   getCostCentreOptionLabel(costCentre: CostCentreDto): string {

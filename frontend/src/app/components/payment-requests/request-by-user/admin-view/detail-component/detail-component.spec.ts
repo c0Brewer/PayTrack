@@ -45,13 +45,12 @@ describe('AdminInvoiceDetailComponent', () => {
     return buttons.find((button) => (button.textContent ?? '').includes(text)) ?? null;
   }
 
-  function getStatusFormButton(title: string): HTMLButtonElement | null {
-    const forms = Array.from(
-      fixture.nativeElement.querySelectorAll('.status-form'),
-    ) as HTMLFormElement[];
-    const form = forms.find((item) => (item.textContent ?? '').includes(title));
+  function getModal(): HTMLElement | null {
+    return fixture.nativeElement.querySelector('.app-modal');
+  }
 
-    return form?.querySelector('button') ?? null;
+  function getModalPrimaryButton(): HTMLButtonElement | null {
+    return getModal()?.querySelector('.modal-actions .btn-primary') ?? null;
   }
 
   it('should create', () => {
@@ -187,12 +186,12 @@ describe('AdminInvoiceDetailComponent', () => {
   it('should emit approve with trimmed optional reason when cost centre is selected', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.approvalReason = ' approved ';
 
     component.onApprove();
 
-    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+    expect(emitted).toHaveBeenCalledWith({ budgetId: 12, reason: 'approved' });
   });
 
   it('should not emit approve without cost centre', () => {
@@ -231,7 +230,10 @@ describe('AdminInvoiceDetailComponent', () => {
 
     component.onRequestChanges();
 
-    expect(emitted).toHaveBeenCalledWith({ reason: 'upload clearer receipt' });
+    expect(emitted).toHaveBeenCalledWith({
+      reason: 'upload clearer receipt',
+      contactMethod: 'none',
+    });
   });
 
   it('should not emit request changes without reason', () => {
@@ -272,31 +274,40 @@ describe('AdminInvoiceDetailComponent', () => {
     expect(emitted).not.toHaveBeenCalled();
   });
 
-  it('should render status admin controls when management is enabled for submitted invoice', () => {
+  it('should render top action buttons when management is enabled for submitted invoice', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.costCentres = [{ id: 12, name: 'CC-Finance' }];
+    component.budgets = [
+      {
+        id: 12,
+        name: 'Finance 2026',
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
+    ] as typeof component.budgets;
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.status-actions')).not.toBeNull();
-    expect(getStatusFormButton('Approve')).not.toBeNull();
-    expect(getStatusFormButton('Request Changes')).not.toBeNull();
-    expect(getStatusFormButton('Decline')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.detail-action-buttons')).not.toBeNull();
+    expect(getButtonByText('Approve')).not.toBeNull();
+    expect(getButtonByText('Request Changes')).not.toBeNull();
+    expect(getButtonByText('Decline')).not.toBeNull();
   });
 
-  it('should hide status admin controls when management is disabled', () => {
+  it('should hide top action buttons when management is disabled', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = false;
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.status-actions')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Approve');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Request Changes');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Decline');
   });
 
-  it('should render only decline and mark paid controls for approved invoice', () => {
+  it('should render only decline and mark paid top actions for approved invoice', () => {
     component.invoice = {
       ...mockInvoice,
       status: TransactionStatus.Approved,
@@ -307,9 +318,9 @@ describe('AdminInvoiceDetailComponent', () => {
 
     fixture.detectChanges();
 
-    expect(getStatusFormButton('Approve')).toBeNull();
-    expect(getStatusFormButton('Request Changes')).toBeNull();
-    expect(getStatusFormButton('Decline')).not.toBeNull();
+    expect(getButtonByText('Approve')).toBeNull();
+    expect(getButtonByText('Request Changes')).toBeNull();
+    expect(getButtonByText('Decline')).not.toBeNull();
     expect(getButtonByText('Mark as Paid')).not.toBeNull();
   });
 
@@ -323,20 +334,71 @@ describe('AdminInvoiceDetailComponent', () => {
     expect(getButtonByText('Mark as Paid')).toBeNull();
   });
 
-  it('should disable pending action buttons', () => {
+  it('should disable pending top action buttons', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.approvalCostCentreId = 12;
-    component.changeRequestReason = 'missing receipt';
-    component.declineReason = 'duplicate';
     component.statusActionPending = 'requestChanges';
 
     fixture.detectChanges();
 
-    expect(getStatusFormButton('Request Changes')?.disabled).toBe(true);
-    expect(getStatusFormButton('Approve')?.disabled).toBe(false);
-    expect(getStatusFormButton('Decline')?.disabled).toBe(false);
+    expect(getButtonByText('Request Changes')?.disabled).toBe(true);
+    expect(getButtonByText('Approve')?.disabled).toBe(false);
+    expect(getButtonByText('Decline')?.disabled).toBe(false);
+  });
+
+  it('should open a decline modal with inline validation for too-short reason', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+    component.declineReason = 'ab';
+    component.openActionModal('decline');
+    component.markFieldBlurred('declineReason');
+
+    fixture.detectChanges();
+
+    expect(getModal()).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Reason must be at least 3 characters long.',
+    );
+    expect(getModalPrimaryButton()?.disabled).toBe(true);
+  });
+
+  it('should open a mark-paid modal and disable submit for too-short payment reference', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canMarkPaid = true;
+    component.paymentReference = 'ab';
+    component.paymentPurpose = 'Supplier payout';
+    component.paymentDate = '2026-02-03';
+    component.openActionModal('markPaid');
+
+    fixture.detectChanges();
+
+    expect(getModal()).not.toBeNull();
+    expect(getModalPrimaryButton()?.disabled).toBe(true);
+  });
+
+  it('should open and close the approve modal from the top action', () => {
+    component.invoice = mockInvoice;
+    component.loading = false;
+    component.canManageStatus = true;
+
+    fixture.detectChanges();
+    getButtonByText('Approve')?.click();
+    fixture.detectChanges();
+
+    expect(component.activeActionModal).toBe('approve');
+    expect(getModal()?.textContent ?? '').toContain('Approve Invoice');
+
+    getButtonByText('Cancel')?.click();
+    fixture.detectChanges();
+
+    expect(component.activeActionModal).toBeNull();
+    expect(getModal()).toBeNull();
   });
 
   it('should disable mark paid button while marking paid', () => {
@@ -350,6 +412,7 @@ describe('AdminInvoiceDetailComponent', () => {
     component.paymentReference = 'REF-123';
     component.paymentPurpose = 'Supplier payout';
     component.paymentDate = '2026-02-03';
+    component.openActionModal('markPaid');
 
     fixture.detectChanges();
 

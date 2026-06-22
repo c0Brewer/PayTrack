@@ -2,6 +2,7 @@
 
 using FluentAssertions;
 using Moq;
+using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Services.Implementation;
 using PayTrack.Data.Entities;
 using PayTrack.Data.Repositories.Model;
@@ -28,16 +29,18 @@ namespace PayTrack.Tests.UnitTests.Services
                 new() { Id = 1, Name = "2025" },
                 new() { Id = 2, Name = "2026" },
             };
-            this.repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(seasons);
+            var query = new GetSeasonQuery { IncludeInactive = true };
+            this.repoMock.Setup(r => r.GetAllAsync(query)).ReturnsAsync((seasons, seasons.Count));
 
             // Act
-            var result = await this.service.GetAllAsync();
+            var result = await this.service.GetAllAsync(query);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().ContainSingle(s => s.Name == "2025");
-            result.Should().ContainSingle(s => s.Name == "2026");
-            this.repoMock.Verify(r => r.GetAllAsync(), Times.Once);
+            result.seasons.Should().HaveCount(2);
+            result.totalCount.Should().Be(2);
+            result.seasons.Should().ContainSingle(s => s.Name == "2025");
+            result.seasons.Should().ContainSingle(s => s.Name == "2026");
+            this.repoMock.Verify(r => r.GetAllAsync(query), Times.Once);
         }
 
         [Fact]
@@ -95,26 +98,27 @@ namespace PayTrack.Tests.UnitTests.Services
         {
             // Arrange
             var updated = new Season { Id = 3, Name = "2027" };
-            this.repoMock.Setup(r => r.UpdateAsync(3, "2027")).ReturnsAsync(updated);
+            this.repoMock.Setup(r => r.UpdateAsync(3, "2027", false)).ReturnsAsync(updated);
 
             // Act
-            var result = await this.service.UpdateAsync(3, "2027");
+            var result = await this.service.UpdateAsync(3, "2027", false);
 
             // Assert
             result.Should().Be(updated);
-            this.repoMock.Verify(r => r.UpdateAsync(3, "2027"), Times.Once);
+            this.repoMock.Verify(r => r.UpdateAsync(3, "2027", false), Times.Once);
         }
 
         [Fact]
         public async Task DeleteAsync_ShouldCallRepo()
         {
             // Arrange
-            this.repoMock.Setup(r => r.DeleteAsync(7)).Returns(Task.CompletedTask);
+            this.repoMock.Setup(r => r.DeleteAsync(7)).ReturnsAsync((Season?)null);
 
             // Act
-            await this.service.DeleteAsync(7);
+            var result = await this.service.DeleteAsync(7);
 
             // Assert
+            result.Should().BeNull();
             this.repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
         }
     }

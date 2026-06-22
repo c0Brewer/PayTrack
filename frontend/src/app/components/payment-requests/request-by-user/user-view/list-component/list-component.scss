@@ -23,6 +23,11 @@
       height: 5rem;
     }
 
+    .status-badge {
+      min-width: 8.5rem;
+      width: 8.5rem;
+    }
+
     .actions-col {
       min-width: 7rem;
       width: 7rem;
@@ -53,6 +58,16 @@
         display: grid;
       }
 
+      .status-badge {
+        min-width: 0;
+        width: auto;
+      }
+
+      .status-badge .status {
+        justify-self: end;
+        max-width: min(14rem, 100%);
+      }
+
       .actions-col {
         min-width: 0;
         width: 100%;
@@ -72,10 +87,19 @@
   border-radius: v.$size-xs;
   overflow: hidden;
 
-
-  .status-badge span{
+  .status-badge {
     text-align: center;
   }
+
+  .status-badge .status {
+    display: inline-flex;
+    justify-content: center;
+    max-width: 100%;
+    text-align: center;
+    word-break: normal;
+    white-space: normal;
+  }
+
   thead {
     background: v.$background-dark;
 

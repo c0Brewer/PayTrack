@@ -21,7 +21,9 @@ namespace PayTrack.Application.Services.Implementation
     {
         private const long MaximumFileSize = 20 * 1024 * 1024;
         private const int MinimumEmbeddedPdfTextLength = 40; // Below this threshold, treat the PDF as scanned and use OCR.
-        private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(15); // Bounds external tools to a timeout
+        private const int ScannedPdfRenderDpi = 150;
+        private const string TesseractPageSegmentationMode = "1";
+        private static readonly TimeSpan ExternalProcessTimeout = TimeSpan.FromSeconds(45); // Bounds external tools to a timeout
         private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".pdf", ".jpg", ".jpeg", ".png",
@@ -187,7 +189,7 @@ namespace PayTrack.Application.Services.Implementation
             var outputPrefix = Path.Combine(tempDirectory, "page");
             await RunProcessAsync(
                 "pdftoppm",
-                ["-png", "-r", "300", inputPath, outputPrefix],
+                ["-png", "-r", ScannedPdfRenderDpi.ToString(), inputPath, outputPrefix],
                 cancellationToken);
 
             var builder = new StringBuilder();
@@ -209,7 +211,7 @@ namespace PayTrack.Application.Services.Implementation
         {
             return RunProcessAsync(
                 "tesseract",
-                [inputPath, "stdout", "-l", "eng+deu", "--psm", "1"],
+                [inputPath, "stdout", "-l", "eng+deu", "--psm", TesseractPageSegmentationMode],
                 cancellationToken);
         }
 

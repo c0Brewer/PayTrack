@@ -8,6 +8,7 @@ import {
   CreateBankAccountRequestDto,
   UpdateBankAccountRequestDto,
 } from '../../../../../services/bank-account/bank-account-service';
+import { NotificationService } from '../../../../../services/notification/notification-service';
 import { UserDto } from '../../../../../types/exporter';
 import { BankAccountEditorComponent } from '../../../../bankaccount/bank-account-editor/bank-account-editor';
 import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
@@ -33,6 +34,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
   constructor(
     private readonly bankAccountService: BankAccountService,
     private readonly authService: AuthService,
+    private readonly notificationService: NotificationService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -101,9 +103,11 @@ export class BankAccountsSettingsPageComponent implements OnInit {
 
     this.bankAccountService.deleteBankAccount(id).subscribe({
       next: () => {
+        this.notificationService.showSuccess('Bank account deleted.');
         this.closeDeleteModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account deleted successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -119,6 +123,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account created successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
@@ -145,6 +150,7 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
+        this.notificationService.showSuccess('Bank account updated successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {

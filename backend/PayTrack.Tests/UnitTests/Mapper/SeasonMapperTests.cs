@@ -37,6 +37,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             dto.Id.Should().Be(3);
             dto.Name.Should().Be("2026");
+            dto.IsActive.Should().BeTrue();
             dto.Budgets.Should().HaveCount(1);
             dto.Budgets![0].Id.Should().Be(10);
             dto.Budgets[0].Name.Should().Be("Season budget");
@@ -47,7 +48,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
         public void ToDto_ShouldMapEmptyBudgets()
         {
             // Arrange
-            var season = new Season { Id = 4, Name = "2027" };
+            var season = new Season { Id = 4, Name = "2027", IsActive = false };
 
             // Act
             var dto = SeasonMapper.ToDto(season);
@@ -55,6 +56,7 @@ namespace PayTrack.Tests.UnitTests.Mapper
             // Assert
             dto.Id.Should().Be(4);
             dto.Name.Should().Be("2027");
+            dto.IsActive.Should().BeFalse();
             dto.Budgets.Should().BeEmpty();
         }
 

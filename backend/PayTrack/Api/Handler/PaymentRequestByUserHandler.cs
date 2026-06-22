@@ -276,7 +276,7 @@ namespace PayTrack.Api.Handler
             var updatedPaymentRequestByUser = await paymentRequestByUserService.ApprovePaymentRequestByUserAsync(
                 id,
                 currentUser.Id,
-                approveDto.CostCentreId,
+                approveDto.BudgetId,
                 approveDto.Reason);
 
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
@@ -330,6 +330,64 @@ namespace PayTrack.Api.Handler
                 id,
                 currentUser.Id,
                 requestChangesDto.Reason);
+
+            var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
+
+            return TypedResults.Ok(updatedPaymentRequestByUserDto);
+        }
+
+        /// <summary>
+        /// Updates an invoice after requested changes and returns it to finance review.
+        /// </summary>
+        /// <param name="id">Id of the invoice to resubmit.</param>
+        /// <param name="resubmitDto">Updated invoice data.</param>
+        /// <param name="receipt">Optional replacement receipt.</param>
+        /// <param name="authService">Dependency-injected authentication service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-injected invoice service.</param>
+        /// <returns>The updated invoice.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> ResubmitPaymentRequestByUserAsync(
+            [FromRoute] int id,
+            [FromForm] ResubmitPaymentRequestByUserDto resubmitDto,
+            [FromForm] IFormFile? receipt,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser()
+                ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.ResubmitPaymentRequestByUserAsync(
+                id,
+                currentUser.Id,
+                resubmitDto.Transaction.TeamId,
+                resubmitDto.Transaction.Amount,
+                resubmitDto.Transaction.PurposeOfPayment,
+                resubmitDto.Transaction.PaidAt,
+                resubmitDto.InvoiceNumber,
+                resubmitDto.Comment,
+                resubmitDto.PayoutType,
+                resubmitDto.BankAccountId,
+                receipt);
+
+            return TypedResults.Ok(PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser));
+        }
+
+        /// <summary>
+        /// Undoes the latest status change for a PaymentRequestByUser.
+        /// </summary>
+        /// <param name="id">Id of the PaymentRequestByUser to update.</param>
+        /// <param name="authService">Dependency-Injected Authentication Service.</param>
+        /// <param name="paymentRequestByUserService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<PaymentRequestByUserDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> UndoLastPaymentRequestByUserStatusChangeAsync(
+            [FromRoute] int id,
+            IAuthService authService,
+            IPaymentRequestByUserService paymentRequestByUserService)
+        {
+            var currentUser = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
+
+            var updatedPaymentRequestByUser = await paymentRequestByUserService.UndoLastStatusChangeAsync(
+                id,
+                currentUser.Id);
 
             var updatedPaymentRequestByUserDto = PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser);
 

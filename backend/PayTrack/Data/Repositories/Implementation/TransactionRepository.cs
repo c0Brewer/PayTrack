@@ -103,6 +103,132 @@ namespace PayTrack.Data.Repositories.Implementation
         }
 
         /// <inheritdoc/>
+        /// AI generated but manually reviewed
+        public async Task<HomeDashboardSectionProjection> GetHomeDashboardInvoiceSectionAsync(int userId, int recentItemsLimit)
+        {
+            // Bound the dashboard preview size even if a future caller passes an invalid or excessive limit.
+            var normalizedRecentItemsLimit = Math.Clamp(recentItemsLimit, 0, 50);
+
+            var baseQuery = this.context.PaymentRequestsByUser
+                .AsNoTracking()
+                .Where(invoice => invoice.UserId == userId);
+
+            var summary = await baseQuery
+                .GroupBy(_ => 1)
+                .Select(group => new
+                {
+                    OpenCount = group.Count(invoice => invoice.Status != TransactionStatus.Paid && invoice.Status != TransactionStatus.Declined),
+                    SubmittedCount = group.Count(invoice => invoice.Status == TransactionStatus.Submitted),
+                    PaidCount = group.Count(invoice => invoice.Status == TransactionStatus.Paid),
+                    OpenAmount = group
+                        .Where(invoice => invoice.Status != TransactionStatus.Paid && invoice.Status != TransactionStatus.Declined)
+                        .Sum(invoice => (decimal?)invoice.Amount) ?? 0m,
+                    LastPaidAt = group
+                        .Where(invoice => invoice.Status == TransactionStatus.Paid)
+                        .Max(invoice => invoice.FinancePaidAt ?? invoice.PaidAt),
+                    TotalRecentCount = group.Count(),
+                    NeedsAttentionCount = group.Count(invoice => invoice.Status == TransactionStatus.ChangesRequested),
+                })
+                .SingleOrDefaultAsync();
+
+            var recent = await baseQuery
+                .OrderByDescending(invoice => invoice.CreatedAt)
+
+                // Use id as a tie-breaker so equal timestamps still yield deterministic recent ordering.
+                .ThenByDescending(invoice => invoice.Id)
+                .Take(normalizedRecentItemsLimit)
+                .Select(invoice => new HomeDashboardRecentItemProjection(
+                    invoice.Id,
+                    invoice.Amount,
+                    invoice.Status,
+                    invoice.CreatedAt,
+                    invoice.FinancePaidAt ?? invoice.PaidAt,
+                    invoice.InvoiceNumber,
+                    invoice.PurposeOfPayment,
+                    invoice.Team.Name,
+                    invoice.User.Name))
+                .ToListAsync();
+
+            if (summary is null)
+            {
+                return new HomeDashboardSectionProjection(0, 0, 0, 0m, null, 0, 0, recent);
+            }
+
+            return new HomeDashboardSectionProjection(
+                summary.OpenCount,
+                summary.SubmittedCount,
+                summary.PaidCount,
+                summary.OpenAmount,
+                summary.LastPaidAt,
+                summary.TotalRecentCount,
+                summary.NeedsAttentionCount,
+                recent);
+        }
+
+        /// <inheritdoc/>
+        /// AI generated but manually reviewed
+        public async Task<HomeDashboardSectionProjection> GetHomeDashboardPaymentRequestSectionAsync(int userId, int recentItemsLimit)
+        {
+            // Bound the dashboard preview size even if a future caller passes an invalid or excessive limit.
+            var normalizedRecentItemsLimit = Math.Clamp(recentItemsLimit, 0, 50);
+
+            var baseQuery = this.context.PaymentRequestsByTeam
+                .AsNoTracking()
+                .Where(paymentRequest => paymentRequest.UserId == userId);
+
+            var summary = await baseQuery
+                .GroupBy(_ => 1)
+                .Select(group => new
+                {
+                    OpenCount = group.Count(paymentRequest => paymentRequest.Status != TransactionStatus.Paid && paymentRequest.Status != TransactionStatus.Declined),
+                    SubmittedCount = group.Count(paymentRequest => paymentRequest.Status == TransactionStatus.Submitted),
+                    PaidCount = group.Count(paymentRequest => paymentRequest.Status == TransactionStatus.Paid),
+                    OpenAmount = group
+                        .Where(paymentRequest => paymentRequest.Status != TransactionStatus.Paid && paymentRequest.Status != TransactionStatus.Declined)
+                        .Sum(paymentRequest => (decimal?)paymentRequest.Amount) ?? 0m,
+                    LastPaidAt = group
+                        .Where(paymentRequest => paymentRequest.Status == TransactionStatus.Paid)
+                        .Max(paymentRequest => paymentRequest.PaidAt),
+                    TotalRecentCount = group.Count(),
+                    NeedsAttentionCount = group.Count(paymentRequest => paymentRequest.Status == TransactionStatus.ChangesRequested),
+                })
+                .SingleOrDefaultAsync();
+
+            var recent = await baseQuery
+                .OrderByDescending(paymentRequest => paymentRequest.CreatedAt)
+
+                // Use id as a tie-breaker so equal timestamps still yield deterministic recent ordering.
+                .ThenByDescending(paymentRequest => paymentRequest.Id)
+                .Take(normalizedRecentItemsLimit)
+                .Select(paymentRequest => new HomeDashboardRecentItemProjection(
+                    paymentRequest.Id,
+                    paymentRequest.Amount,
+                    paymentRequest.Status,
+                    paymentRequest.CreatedAt,
+                    paymentRequest.PaidAt,
+                    paymentRequest.PaymentReference,
+                    paymentRequest.PurposeOfPayment,
+                    paymentRequest.Team.Name,
+                    paymentRequest.User.Name))
+                .ToListAsync();
+
+            if (summary is null)
+            {
+                return new HomeDashboardSectionProjection(0, 0, 0, 0m, null, 0, 0, recent);
+            }
+
+            return new HomeDashboardSectionProjection(
+                summary.OpenCount,
+                summary.SubmittedCount,
+                summary.PaidCount,
+                summary.OpenAmount,
+                summary.LastPaidAt,
+                summary.TotalRecentCount,
+                summary.NeedsAttentionCount,
+                recent);
+        }
+
+        /// <inheritdoc/>
         public async Task<Transaction?> GetByIdAsync(int id, GetTransactionQueryById? query = null)
         {
             IQueryable<Transaction> dbQuery = this.context.Transactions.AsQueryable();

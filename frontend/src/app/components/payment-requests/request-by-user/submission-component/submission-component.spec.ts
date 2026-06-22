@@ -2,7 +2,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
@@ -42,6 +42,14 @@ describe('ReceiptSubmitComponent', () => {
 
   const routerMock = {
     navigate: vi.fn(),
+  };
+
+  const activatedRouteMock = {
+    snapshot: {
+      paramMap: {
+        get: vi.fn(() => null),
+      },
+    },
   };
 
   const authServiceMock = {
@@ -96,6 +104,7 @@ describe('ReceiptSubmitComponent', () => {
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     }).compileComponents();
 
@@ -247,6 +256,29 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.form.get('invoiceNumber')?.value).toBe('MANUAL-1');
     expect(component.form.get('creditorName')?.value).toBe('Manual Supplier');
     expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe(
+      'Invoice details were detected, but your existing input was kept.',
+    );
+  });
+
+  it('should show no reliable details only when receipt extraction found no values', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: false,
+        message: null,
+        amount: { value: null, confidence: 0 },
+        invoiceDate: { value: null, confidence: 0 },
+        invoiceNumber: { value: null, confidence: 0 },
+      }),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe('No reliable invoice details were detected.');
   });
 
   it('should report only the number of fields actually prefilled', () => {
@@ -298,7 +330,9 @@ describe('ReceiptSubmitComponent', () => {
 
     expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
     expect(component.receiptExtractionStatus).toBe('partial');
-    expect(component.receiptExtractionMessage).toContain('offline');
+    expect(component.receiptExtractionMessage).toBe(
+      'Automatic field detection is unavailable while you are offline.',
+    );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (component as any).offlineService.isOffline.set(false);
   });
@@ -473,7 +507,7 @@ describe('ReceiptSubmitComponent', () => {
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
       TeamId: 1,
       Amount: 100,
-      PaidAt: '2025-01-01T00:00:00.000Z',
+      PaidAt: '2025-01-01',
       InvoiceNumber: 'INV-1',
     });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
@@ -497,7 +531,7 @@ describe('ReceiptSubmitComponent', () => {
         teamId: 1,
         amount: 100,
         purposeOfPayment: 'test',
-        paidAt: '2025-01-01T00:00:00.000Z',
+        paidAt: '2025-01-01',
       },
     };
 

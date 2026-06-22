@@ -12,6 +12,7 @@ import { SeasonService } from './season-service';
 const mockSeason: SeasonDto = {
   id: 1,
   name: '2026',
+  isActive: true,
   budgets: [],
 };
 
@@ -34,13 +35,33 @@ describe('SeasonService', () => {
   describe('getSeasons', () => {
     it('should call API and return seasons', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: [mockSeason], error: null });
+      vi.spyOn(client as any, 'GET').mockResolvedValue({
+        data: { items: [mockSeason], totalCount: 1, limit: -1, offset: 0 },
+        error: null,
+      });
 
       const result = await firstValueFrom(service.getSeasons());
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {});
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {
+        params: { query: {} },
+      });
       expect(result).toEqual([mockSeason]);
+    });
+
+    it('should pass query options to API', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client as any, 'GET').mockResolvedValue({
+        data: { items: [mockSeason], totalCount: 1, limit: -1, offset: 0 },
+        error: null,
+      });
+
+      await firstValueFrom(service.getSeasons({ IncludeInactive: true }));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {
+        params: { query: { IncludeInactive: true } },
+      });
     });
 
     it('should return an empty list when API returns no data', async () => {
@@ -50,6 +71,22 @@ describe('SeasonService', () => {
       const result = await firstValueFrom(service.getSeasons());
 
       expect(result).toEqual([]);
+    });
+
+    it('should call API and return paginated seasons', async () => {
+      const response = { items: [mockSeason], totalCount: 1, limit: 10, offset: 0 };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client as any, 'GET').mockResolvedValue({ data: response, error: null });
+
+      const result = await firstValueFrom(
+        service.getSeasonsPaginated({ IsActive: true, Limit: 10, Offset: 0 }),
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((client as any).GET).toHaveBeenCalledWith('/api/v1/season', {
+        params: { query: { IsActive: true, Limit: 10, Offset: 0 } },
+      });
+      expect(result).toEqual(response);
     });
 
     it('should throw error with detail when API returns error', async () => {
@@ -115,16 +152,27 @@ describe('SeasonService', () => {
   });
 
   describe('deleteSeason', () => {
-    it('should call API', async () => {
+    it('should call API and return null when hard-deleted', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ error: null });
+      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ data: undefined, error: null });
 
-      await firstValueFrom(service.deleteSeason(1));
+      const result = await firstValueFrom(service.deleteSeason(1));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((client as any).DELETE).toHaveBeenCalledWith('/api/v1/season/{id}', {
         params: { path: { id: 1 } },
       });
+      expect(result).toBeNull();
+    });
+
+    it('should return deactivated season when delete soft-deletes', async () => {
+      const deactivatedSeason = { ...mockSeason, isActive: false };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client as any, 'DELETE').mockResolvedValue({ data: deactivatedSeason, error: null });
+
+      const result = await firstValueFrom(service.deleteSeason(1));
+
+      expect(result).toEqual(deactivatedSeason);
     });
 
     it('should throw default error when error has no detail', async () => {
