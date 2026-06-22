@@ -86,10 +86,22 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Reminders.SendEmail.Should().BeTrue();
             result.Reminders.SendSlack.Should().BeFalse();
             result.Reminders.SendPush.Should().BeTrue();
+            result.InvoiceApproval.SendEmail.Should().BeTrue();
+            result.InvoiceApproval.SendSlack.Should().BeFalse();
+            result.InvoiceApproval.SendPush.Should().BeTrue();
+            result.InvoiceRejection.SendEmail.Should().BeTrue();
+            result.InvoiceRejection.SendSlack.Should().BeFalse();
+            result.InvoiceRejection.SendPush.Should().BeTrue();
+            result.InvoiceChangesRequested.SendEmail.Should().BeTrue();
+            result.InvoiceChangesRequested.SendSlack.Should().BeFalse();
+            result.InvoiceChangesRequested.SendPush.Should().BeTrue();
+            result.InvoicePaymentCompleted.SendEmail.Should().BeTrue();
+            result.InvoicePaymentCompleted.SendSlack.Should().BeFalse();
+            result.InvoicePaymentCompleted.SendPush.Should().BeTrue();
         }
 
         [Fact]
-        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllTwelveKeys()
+        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllNotificationKeys()
         {
             var repoMock = new Mock<ISystemSettingRepository>();
             var service = BuildService(repoMock);
@@ -98,7 +110,11 @@ namespace PayTrack.Tests.UnitTests.Services
                 Creation: new NotificationChannelDto(true, false, true),
                 Confirmation: new NotificationChannelDto(false, true, false),
                 Reminders: new NotificationChannelDto(true, true, true),
-                Deletion: new NotificationChannelDto(false, false, false));
+                Deletion: new NotificationChannelDto(false, false, false),
+                InvoiceApproval: new NotificationChannelDto(true, false, false),
+                InvoiceRejection: new NotificationChannelDto(false, true, true),
+                InvoiceChangesRequested: new NotificationChannelDto(true, true, false),
+                InvoicePaymentCompleted: new NotificationChannelDto(false, false, true));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -115,7 +131,19 @@ namespace PayTrack.Tests.UnitTests.Services
                     d[SystemSettingKeys.NotificationsRemindersPush] == "True" &&
                     d[SystemSettingKeys.NotificationsDeletionEmail] == "False" &&
                     d[SystemSettingKeys.NotificationsDeletionSlack] == "False" &&
-                    d[SystemSettingKeys.NotificationsDeletionPush] == "False"),
+                    d[SystemSettingKeys.NotificationsDeletionPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionPush] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] == "True"),
                 5), Times.Once);
         }
 

@@ -82,6 +82,10 @@ describe('SystemSettingService', () => {
         confirmation: { sendEmail: false, sendSlack: true, sendPush: true },
         reminders: { sendEmail: true, sendSlack: true, sendPush: false },
         deletion: { sendEmail: false, sendSlack: false, sendPush: false },
+        invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
@@ -116,6 +120,10 @@ describe('SystemSettingService', () => {
             confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
             reminders: { sendEmail: true, sendSlack: false, sendPush: true },
             deletion: { sendEmail: false, sendSlack: false, sendPush: false },
+            invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
           }),
         ),
       ).resolves.toBeUndefined();
@@ -134,6 +142,10 @@ describe('SystemSettingService', () => {
             confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
             reminders: { sendEmail: true, sendSlack: false, sendPush: true },
             deletion: { sendEmail: false, sendSlack: false, sendPush: false },
+            invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
           }),
         ),
       ).rejects.toThrow('Failed to update notification channels');

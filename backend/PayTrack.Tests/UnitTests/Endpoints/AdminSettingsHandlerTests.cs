@@ -103,6 +103,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(false, false, false)));
 
             var client = this.factory.CreateClient();
@@ -128,6 +132,10 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var response = await client.PutAsJsonAsync(
                 "api/v1/admin/settings/notification-channels",
                 new UpdateNotificationChannelGroupsRequestDto(
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false),
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
