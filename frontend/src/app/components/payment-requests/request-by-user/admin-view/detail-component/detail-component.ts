@@ -16,7 +16,7 @@ import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { OfflineService } from '../../../../../services/offline/offline-service';
 import {
   ApprovePaymentRequestByUserDto,
-  CostCentreDto,
+  BudgetDto,
   DeclinePaymentRequestByUserDto,
   MarkPaymentRequestByUserAsPaidDto,
   PaymentRequestByUserDto,
@@ -30,6 +30,11 @@ import {
 import { BoxComponent } from '../../../../general/boxes/box-component/box-component';
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import { ModalComponent } from '../../../../general/modal-component/modal-component';
+
+export type ChangeRequestContactMethod = 'none' | 'email' | 'slack';
+export type RequestChangesSubmission = RequestChangesPaymentRequestByUserDto & {
+  contactMethod: ChangeRequestContactMethod;
+};
 
 @Component({
   selector: 'app-admin-invoice-detail-component',
@@ -64,11 +69,11 @@ export class AdminInvoiceDetailComponent implements OnChanges {
   @Input() markingPaid: boolean = false;
   @Input() canManageStatus: boolean = false;
   @Input() statusActionPending: string | null = null;
-  @Input() costCentres: CostCentreDto[] = [];
+  @Input() budgets: BudgetDto[] = [];
   @Output() downloadReceipt = new EventEmitter<void>();
   @Output() approve = new EventEmitter<ApprovePaymentRequestByUserDto>();
   @Output() decline = new EventEmitter<DeclinePaymentRequestByUserDto>();
-  @Output() requestChanges = new EventEmitter<RequestChangesPaymentRequestByUserDto>();
+  @Output() requestChanges = new EventEmitter<RequestChangesSubmission>();
   @Output() markPaid = new EventEmitter<MarkPaymentRequestByUserAsPaidDto>();
   @Output() back = new EventEmitter<void>();
 
@@ -80,10 +85,11 @@ export class AdminInvoiceDetailComponent implements OnChanges {
   paymentPurpose: string = '';
   paymentDate: string = new Date().toISOString().split('T')[0];
   maxPaymentDate: string = new Date().toISOString().split('T')[0];
-  approvalCostCentreId: number | null = null;
+  approvalBudgetId: number | null = null;
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
+  changeRequestContactMethod: ChangeRequestContactMethod = 'none';
   activeActionModal: 'approve' | 'requestChanges' | 'decline' | 'markPaid' | null = null;
   declineReasonBlurred: boolean = false;
   changeRequestReasonBlurred: boolean = false;
@@ -148,12 +154,19 @@ export class AdminInvoiceDetailComponent implements OnChanges {
   }
 
   onApprove(): void {
-    if (!this.approvalCostCentreId) {
+    if (
+      !this.approvalBudgetId ||
+      !this.isOptionalTextLengthValid(
+        this.approvalReason,
+        this.reasonMinLength,
+        this.reasonMaxLength,
+      )
+    ) {
       return;
     }
 
     this.approve.emit({
-      costCentreId: this.approvalCostCentreId,
+      budgetId: this.approvalBudgetId,
       reason: this.approvalReason.trim() || null,
     });
   }
@@ -177,6 +190,7 @@ export class AdminInvoiceDetailComponent implements OnChanges {
 
     this.requestChanges.emit({
       reason: this.changeRequestReason.trim(),
+      contactMethod: this.changeRequestContactMethod,
     });
   }
 
@@ -218,6 +232,12 @@ export class AdminInvoiceDetailComponent implements OnChanges {
     const trimmedLength = value.trim().length;
 
     return trimmedLength >= minLength && trimmedLength <= maxLength;
+  }
+
+  isOptionalTextLengthValid(value: string, minLength: number, maxLength: number): boolean {
+    const trimmedLength = value.trim().length;
+
+    return trimmedLength === 0 || (trimmedLength >= minLength && trimmedLength <= maxLength);
   }
 
   markFieldBlurred(

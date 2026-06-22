@@ -1,8 +1,24 @@
 <div id="invoice-page" class="main-page-container">
   <div class="d-flex flex-column gap-1 mb-4">
-    <h1 class="m-0">Invoice Submission</h1>
-    <p class="mb-0 text-body-secondary">Upload your invoice and provide the details.</p>
+    <h1 class="m-0">{{ isEditMode ? 'Edit Invoice' : 'Invoice Submission' }}</h1>
+    <p class="mb-0 text-body-secondary">
+      {{
+        isEditMode
+          ? 'Update the requested invoice details and return it for review.'
+          : 'Upload your invoice and provide the details.'
+      }}
+    </p>
   </div>
+
+  @if (isEditMode && changeRequestMessage) {
+    <section class="change-request-message" aria-labelledby="edit-change-request-title">
+      <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
+      <div>
+        <h2 id="edit-change-request-title">Changes requested</h2>
+        <p>{{ changeRequestMessage }}</p>
+      </div>
+    </section>
+  }
 
   @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
     <app-box-component
@@ -398,6 +414,17 @@
         </app-box-component>
       </div>
       <div class="form-actions">
+        @if (isEditMode) {
+          <button
+            type="button"
+            class="btn btn-secondary d-inline-flex align-items-center gap-1"
+            [disabled]="isSubmitting"
+            (click)="onCancelEdit()"
+          >
+            <span class="material-symbols-outlined">close</span>
+            Cancel
+          </button>
+        }
         <button
           type="submit"
           class="btn btn-primary d-inline-flex align-items-center gap-1"
@@ -405,12 +432,24 @@
         >
           @if (!isSubmitting) {
             <span class="material-symbols-outlined">{{
-              offlineService.isOffline() ? 'cloud_upload' : 'check_circle'
+              !isEditMode && offlineService.isOffline() ? 'cloud_upload' : 'check_circle'
             }}</span>
-            {{ offlineService.isOffline() ? 'Save Offline for Sync' : 'Submit Invoice' }}
+            {{
+              isEditMode
+                ? 'Save and Return for Review'
+                : offlineService.isOffline()
+                  ? 'Save Offline for Sync'
+                  : 'Submit Invoice'
+            }}
           }
           @if (isSubmitting) {
-            <span>{{ offlineService.isOffline() ? 'Saving locally…' : 'Submitting…' }}</span>
+            <span>{{
+              isEditMode
+                ? 'Saving...'
+                : offlineService.isOffline()
+                  ? 'Saving locally...'
+                  : 'Submitting...'
+            }}</span>
           }
         </button>
       </div>

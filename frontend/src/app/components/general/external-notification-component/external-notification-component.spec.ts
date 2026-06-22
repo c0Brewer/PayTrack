@@ -121,15 +121,17 @@ describe('ExternalNotificationComponent', () => {
       );
     });
 
-    it('shows success toast and emits closeEvent after a successful send', () => {
+    it('shows success toast and emits sentEvent and closeEvent after a successful send', () => {
       externalNotificationMock.sendEmail.mockReturnValue(of(undefined));
       const closeSpy = vi.spyOn(component.closeEvent, 'emit');
+      const sentSpy = vi.spyOn(component.sentEvent, 'emit');
       component.type = 'email';
       component.recipientEmail = 'user@example.com';
 
       component.onSend();
 
       expect(notificationMock.showSuccess).toHaveBeenCalledWith('Notification sent successfully.');
+      expect(sentSpy).toHaveBeenCalled();
       expect(closeSpy).toHaveBeenCalled();
     });
 

@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.undo-status-action {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 24px 16px;
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}

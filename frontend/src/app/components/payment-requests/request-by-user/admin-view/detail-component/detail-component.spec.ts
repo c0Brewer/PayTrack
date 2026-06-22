@@ -186,12 +186,12 @@ describe('AdminInvoiceDetailComponent', () => {
   it('should emit approve with trimmed optional reason when cost centre is selected', () => {
     const emitted = vi.fn();
     component.approve.subscribe(emitted);
-    component.approvalCostCentreId = 12;
+    component.approvalBudgetId = 12;
     component.approvalReason = ' approved ';
 
     component.onApprove();
 
-    expect(emitted).toHaveBeenCalledWith({ costCentreId: 12, reason: 'approved' });
+    expect(emitted).toHaveBeenCalledWith({ budgetId: 12, reason: 'approved' });
   });
 
   it('should not emit approve without cost centre', () => {
@@ -230,7 +230,10 @@ describe('AdminInvoiceDetailComponent', () => {
 
     component.onRequestChanges();
 
-    expect(emitted).toHaveBeenCalledWith({ reason: 'upload clearer receipt' });
+    expect(emitted).toHaveBeenCalledWith({
+      reason: 'upload clearer receipt',
+      contactMethod: 'none',
+    });
   });
 
   it('should not emit request changes without reason', () => {
@@ -275,7 +278,14 @@ describe('AdminInvoiceDetailComponent', () => {
     component.invoice = mockInvoice;
     component.loading = false;
     component.canManageStatus = true;
-    component.costCentres = [{ id: 12, name: 'CC-Finance' }];
+    component.budgets = [
+      {
+        id: 12,
+        name: 'Finance 2026',
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-12-31T00:00:00Z',
+      },
+    ] as typeof component.budgets;
 
     fixture.detectChanges();
 
