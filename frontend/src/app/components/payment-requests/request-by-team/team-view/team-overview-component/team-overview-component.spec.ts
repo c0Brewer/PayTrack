@@ -21,7 +21,7 @@ describe('TeamRequestTeamOverviewComponent', () => {
   };
 
   const authServiceMock = {
-    getCurrentUser: vi.fn().mockReturnValue(of(mockUser)),
+    refreshUser: vi.fn().mockResolvedValue(mockUser),
   };
 
   const notificationMock = {
@@ -62,26 +62,29 @@ describe('TeamRequestTeamOverviewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch the current user and then load requests on init', () => {
+  it('should fetch the current user and then load requests on init', async () => {
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
       of({ items: [], totalCount: 0, hasNext: false, hasPrevious: false }),
     );
     component.ngOnInit();
-    expect(authServiceMock.getCurrentUser).toHaveBeenCalled();
+    await fixture.whenStable();
+    expect(authServiceMock.refreshUser).toHaveBeenCalled();
     expect(paymentServiceMock.getPaymentRequestsByTeam).toHaveBeenCalled();
   });
 
-  it('should include the current user id in every query', () => {
+  it('should include the current user id in every query', async () => {
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
       of({ items: [], totalCount: 0, hasNext: false, hasPrevious: false }),
     );
     component.ngOnInit();
+    await fixture.whenStable();
     expect(paymentServiceMock.getPaymentRequestsByTeam).toHaveBeenCalledWith(
       expect.objectContaining({ UserId: 42 }),
     );
   });
 
   it('should set requests and pagination state on successful load', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = mockUser;
     const items = [
       { id: 1, amount: 100 },
       { id: 2, amount: 200 },
@@ -99,6 +102,7 @@ describe('TeamRequestTeamOverviewComponent', () => {
   });
 
   it('should load stat requests when requests are loaded', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = mockUser;
     const pageItems = [{ id: 1, amount: 100, status: TransactionStatus.Submitted }];
     const statItems = [
       { id: 1, amount: 100, status: TransactionStatus.Submitted },
@@ -133,6 +137,7 @@ describe('TeamRequestTeamOverviewComponent', () => {
   });
 
   it('should show error on API failure', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = mockUser;
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(throwError(() => 'API error'));
 
     component.loadRequests();
@@ -141,6 +146,7 @@ describe('TeamRequestTeamOverviewComponent', () => {
   });
 
   it('should reset page to 0 and reload when filter options are updated', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = mockUser;
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
       of({ items: [], totalCount: 0, hasNext: false, hasPrevious: false }),
     );
@@ -153,6 +159,7 @@ describe('TeamRequestTeamOverviewComponent', () => {
   });
 
   it('should update limit, reset page, and reload on onUpdateLimit', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = mockUser;
     paymentServiceMock.getPaymentRequestsByTeam.mockReturnValue(
       of({ items: [], totalCount: 0, hasNext: false, hasPrevious: false }),
     );

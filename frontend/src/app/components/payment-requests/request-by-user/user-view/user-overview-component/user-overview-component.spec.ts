@@ -41,11 +41,11 @@ describe('UserInvoicesOverviewComponent', () => {
   };
 
   const authServiceMock = {
-    getCurrentUser: vi.fn(),
+    refreshUser: vi.fn(),
   };
 
   beforeEach(async () => {
-    authServiceMock.getCurrentUser.mockReturnValue(of(null));
+    authServiceMock.refreshUser.mockResolvedValue({ id: 7, role: Role.REGULAR_USER } as UserDto);
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of({ items: [], totalCount: 0 }));
 
     await TestBed.configureTestingModule({
@@ -69,13 +69,18 @@ describe('UserInvoicesOverviewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load invoices on init', () => {
+  it('should load invoices on init', async () => {
     const spy = vi.spyOn(component, 'loadInvoices');
     component.ngOnInit();
+    await fixture.whenStable();
     expect(spy).toHaveBeenCalled();
   });
 
   it('should load invoices successfully', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = {
+      id: 7,
+      role: Role.REGULAR_USER,
+    } as UserDto;
     const apiResponse = {
       items: [
         { id: 1, amount: 100 },
@@ -107,6 +112,10 @@ describe('UserInvoicesOverviewComponent', () => {
   });
 
   it('should load stat invoices with the full filtered count', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = {
+      id: 7,
+      role: Role.REGULAR_USER,
+    } as UserDto;
     const apiResponse = {
       items: [{ id: 1, amount: 100, status: TransactionStatus.Paid }] as PaymentRequestByUserDto[],
       totalCount: 12,
@@ -122,7 +131,7 @@ describe('UserInvoicesOverviewComponent', () => {
     );
   });
 
-  it('should filter my invoices by current admin user id', () => {
+  it('should filter my invoices by current admin user id', async () => {
     const admin = { id: 7, role: Role.ADMIN } as UserDto;
     const apiResponse = {
       items: [{ id: 1, amount: 100 }] as PaymentRequestByUserDto[],
@@ -130,10 +139,11 @@ describe('UserInvoicesOverviewComponent', () => {
       hasNext: false,
       hasPrevious: false,
     };
-    authServiceMock.getCurrentUser.mockReturnValue(of(admin));
+    authServiceMock.refreshUser.mockResolvedValue(admin);
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(of(apiResponse));
 
     component.ngOnInit();
+    await fixture.whenStable();
 
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalledWith(
       expect.objectContaining({ UserId: admin.id }),
@@ -141,6 +151,10 @@ describe('UserInvoicesOverviewComponent', () => {
   });
 
   it('should show error on API failure', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = {
+      id: 7,
+      role: Role.REGULAR_USER,
+    } as UserDto;
     paymentServiceMock.getPaymentRequestsByUser.mockReturnValue(throwError(() => 'API error'));
 
     component.loadInvoices();
@@ -149,6 +163,10 @@ describe('UserInvoicesOverviewComponent', () => {
   });
 
   it('should reset page to 0 and reload when filter options are updated', () => {
+    (component as unknown as { currentUser: UserDto }).currentUser = {
+      id: 7,
+      role: Role.REGULAR_USER,
+    } as UserDto;
     component.page = 3;
 
     component.updateFilterOptions({ Status: 2 as 0 | 1 | 2 | 3 | 4 });
