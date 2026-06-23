@@ -34,12 +34,14 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     confirmation: { sendEmail: true, sendSlack: false },
     reminders: { sendEmail: true, sendSlack: false },
     deletion: { sendEmail: true, sendSlack: false },
+    statusChanges: { sendEmail: true, sendSlack: false },
   };
   private notifOriginal: NotificationChannelGroupsDto = {
     creation: { sendEmail: true, sendSlack: false },
     confirmation: { sendEmail: true, sendSlack: false },
     reminders: { sendEmail: true, sendSlack: false },
     deletion: { sendEmail: true, sendSlack: false },
+    statusChanges: { sendEmail: true, sendSlack: false },
   };
   notifLoading = false;
   notifSaving = false;
@@ -53,7 +55,9 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
       this.notifSettings.reminders.sendEmail !== this.notifOriginal.reminders.sendEmail ||
       this.notifSettings.reminders.sendSlack !== this.notifOriginal.reminders.sendSlack ||
       this.notifSettings.deletion.sendEmail !== this.notifOriginal.deletion.sendEmail ||
-      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack
+      this.notifSettings.deletion.sendSlack !== this.notifOriginal.deletion.sendSlack ||
+      this.notifSettings.statusChanges.sendEmail !== this.notifOriginal.statusChanges.sendEmail ||
+      this.notifSettings.statusChanges.sendSlack !== this.notifOriginal.statusChanges.sendSlack
     );
   }
 
@@ -184,12 +188,14 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
           deletion: { ...data.deletion },
+          statusChanges: { ...data.statusChanges },
         };
         this.notifOriginal = {
           creation: { ...data.creation },
           confirmation: { ...data.confirmation },
           reminders: { ...data.reminders },
           deletion: { ...data.deletion },
+          statusChanges: { ...data.statusChanges },
         };
         this.notifLoading = false;
         this.cdr.detectChanges();
@@ -211,6 +217,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           confirmation: { ...this.notifSettings.confirmation },
           reminders: { ...this.notifSettings.reminders },
           deletion: { ...this.notifSettings.deletion },
+          statusChanges: { ...this.notifSettings.statusChanges },
         };
         this.notifSaving = false;
         this.notificationService.showSuccess('Notification channel settings saved.');

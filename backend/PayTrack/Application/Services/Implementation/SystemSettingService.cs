@@ -62,7 +62,11 @@ namespace PayTrack.Application.Services.Implementation
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, DefaultSendEmail),
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, DefaultSendSlack));
 
-            return new NotificationChannelGroupsDto(creation, confirmation, reminders, deletion);
+            var statusChanges = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesSlack, DefaultSendSlack));
+
+            return new NotificationChannelGroupsDto(creation, confirmation, reminders, deletion, statusChanges);
         }
 
         /// <inheritdoc/>
@@ -79,6 +83,8 @@ namespace PayTrack.Application.Services.Implementation
                     [SystemSettingKeys.NotificationsRemindersSlack] = dto.Reminders.SendSlack.ToString(),
                     [SystemSettingKeys.NotificationsDeletionEmail] = dto.Deletion.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsDeletionSlack] = dto.Deletion.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsStatusChangesEmail] = dto.StatusChanges.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsStatusChangesSlack] = dto.StatusChanges.SendSlack.ToString(),
                 },
                 userId);
         }

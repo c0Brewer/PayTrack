@@ -170,6 +170,7 @@ export type NotificationChannelGroupsDto = {
   confirmation: NotificationChannelDto;
   reminders: NotificationChannelDto;
   deletion: NotificationChannelDto;
+  statusChanges: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
 export type ReminderScheduleDto = {

@@ -810,6 +810,121 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task MarkAsPaid_ShouldNotSendStatusChangeEmail_WhenEmailChannelIsDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var systemSettingsMock = new Mock<ISystemSettingService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+            systemSettingsMock
+                .Setup(service => service.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesEmail, true))
+                .ReturnsAsync(false);
+            systemSettingsMock
+                .Setup(service => service.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesSlack, false))
+                .ReturnsAsync(false);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object,
+                null,
+                systemSettingsMock.Object);
+
+            await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            notificationMock.Verify(service => service.SendEmailAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldSendStatusChangeSlack_WhenSlackChannelIsEnabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var systemSettingsMock = new Mock<ISystemSettingService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+            systemSettingsMock
+                .Setup(service => service.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesEmail, true))
+                .ReturnsAsync(false);
+            systemSettingsMock
+                .Setup(service => service.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesSlack, false))
+                .ReturnsAsync(true);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object,
+                null,
+                systemSettingsMock.Object);
+
+            await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            notificationMock.Verify(service => service.SendSlackAsync(
+                "alice@example.com",
+                It.Is<string>(message =>
+                    message.Contains("Invoice INV-1 status changed to Paid")
+                    && message.Contains("Payment reference: REF-123"))), Times.Once);
+        }
+
+        [Fact]
         public async Task MarkAsPaid_ShouldRemainSuccessful_WhenStatusEmailFails()
         {
             var repoMock = new Mock<ITransactionRepository>();

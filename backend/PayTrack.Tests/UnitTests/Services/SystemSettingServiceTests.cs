@@ -83,10 +83,14 @@ namespace PayTrack.Tests.UnitTests.Services
             result.Confirmation.SendSlack.Should().BeFalse();
             result.Reminders.SendEmail.Should().BeTrue();
             result.Reminders.SendSlack.Should().BeFalse();
+            result.Deletion.SendEmail.Should().BeTrue();
+            result.Deletion.SendSlack.Should().BeFalse();
+            result.StatusChanges.SendEmail.Should().BeTrue();
+            result.StatusChanges.SendSlack.Should().BeFalse();
         }
 
         [Fact]
-        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllEightKeys()
+        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllTenKeys()
         {
             var repoMock = new Mock<ISystemSettingRepository>();
             var service = BuildService(repoMock);
@@ -95,7 +99,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 Creation: new NotificationChannelDto(true, false),
                 Confirmation: new NotificationChannelDto(false, true),
                 Reminders: new NotificationChannelDto(true, true),
-                Deletion: new NotificationChannelDto(false, false));
+                Deletion: new NotificationChannelDto(false, false),
+                StatusChanges: new NotificationChannelDto(true, false));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -108,7 +113,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     d[SystemSettingKeys.NotificationsRemindersEmail] == "True" &&
                     d[SystemSettingKeys.NotificationsRemindersSlack] == "True" &&
                     d[SystemSettingKeys.NotificationsDeletionEmail] == "False" &&
-                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False"),
+                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsStatusChangesEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsStatusChangesSlack] == "False"),
                 5), Times.Once);
         }
 

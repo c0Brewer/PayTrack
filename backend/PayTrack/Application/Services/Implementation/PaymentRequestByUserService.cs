@@ -20,7 +20,8 @@ namespace PayTrack.Application.Services.Implementation
         ICostCentreService _costCentreService,
         IBudgetService _budgetService,
         INotificationDispatchService? _notificationDispatchService = null,
-        ILogger<PaymentRequestByUserService>? _logger = null) : IPaymentRequestByUserService
+        ILogger<PaymentRequestByUserService>? _logger = null,
+        ISystemSettingService? _systemSettings = null) : IPaymentRequestByUserService
     {
         private const int MaxDuplicateResults = 10;
 
@@ -35,6 +36,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IBudgetService budgetService = _budgetService;
         private readonly INotificationDispatchService? notificationDispatchService = _notificationDispatchService;
         private readonly ILogger<PaymentRequestByUserService>? logger = _logger;
+        private readonly ISystemSettingService? systemSettings = _systemSettings;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -743,6 +745,16 @@ namespace PayTrack.Application.Services.Implementation
                 return;
             }
 
+            var sendStatusEmail = this.systemSettings == null
+                || await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesEmail, true);
+            var sendStatusSlack = this.systemSettings != null
+                && await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsStatusChangesSlack, false);
+
+            if (!sendStatusEmail && !sendStatusSlack)
+            {
+                return;
+            }
+
             var statusLabel = GetStatusLabel(transaction.Status);
             var latestComment = transaction.StatusHistory
                 .OrderByDescending(entry => entry.ChangedAt)
@@ -761,20 +773,43 @@ namespace PayTrack.Application.Services.Implementation
                 PayTrack
                 """;
 
-            try
+            if (sendStatusEmail)
             {
-                await this.notificationDispatchService.SendEmailAsync(
-                    transaction.User.Email,
-                    subject,
-                    body);
+                try
+                {
+                    await this.notificationDispatchService.SendEmailAsync(
+                        transaction.User.Email,
+                        subject,
+                        body);
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending status change notification email for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
             }
-            catch (Exception exception)
+
+            if (sendStatusSlack)
             {
-                this.logger?.LogError(
-                    exception,
-                    "Sending status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
-                    transaction.InvoiceNumber,
-                    transaction.User.Email);
+                try
+                {
+                    var slackMessage =
+                        $"Invoice {transaction.InvoiceNumber} status changed to {statusLabel}." +
+                        (string.IsNullOrWhiteSpace(latestComment) ? string.Empty : $" {latestComment.Trim()}");
+
+                    await this.notificationDispatchService.SendSlackAsync(transaction.User.Email, slackMessage);
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending status change notification Slack message for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
             }
         }
 

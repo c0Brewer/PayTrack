@@ -82,6 +82,7 @@ describe('SystemSettingService', () => {
         confirmation: { sendEmail: false, sendSlack: true },
         reminders: { sendEmail: true, sendSlack: true },
         deletion: { sendEmail: false, sendSlack: false },
+        statusChanges: { sendEmail: true, sendSlack: false },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
@@ -116,6 +117,7 @@ describe('SystemSettingService', () => {
             confirmation: { sendEmail: true, sendSlack: false },
             reminders: { sendEmail: true, sendSlack: false },
             deletion: { sendEmail: false, sendSlack: false },
+            statusChanges: { sendEmail: true, sendSlack: false },
           }),
         ),
       ).resolves.toBeUndefined();
@@ -134,6 +136,7 @@ describe('SystemSettingService', () => {
             confirmation: { sendEmail: true, sendSlack: false },
             reminders: { sendEmail: true, sendSlack: false },
             deletion: { sendEmail: false, sendSlack: false },
+            statusChanges: { sendEmail: true, sendSlack: false },
           }),
         ),
       ).rejects.toThrow('Failed to update notification channels');

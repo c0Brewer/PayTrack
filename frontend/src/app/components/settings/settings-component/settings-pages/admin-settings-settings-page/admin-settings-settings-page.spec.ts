@@ -29,6 +29,7 @@ const defaultNotifSettings = {
   confirmation: { sendEmail: true, sendSlack: false },
   reminders: { sendEmail: true, sendSlack: false },
   deletion: { sendEmail: false, sendSlack: false },
+  statusChanges: { sendEmail: true, sendSlack: false },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
@@ -52,6 +53,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
         confirmation: { ...defaultNotifSettings.confirmation },
         reminders: { ...defaultNotifSettings.reminders },
         deletion: { ...defaultNotifSettings.deletion },
+        statusChanges: { ...defaultNotifSettings.statusChanges },
       }),
     );
     mockSystemSettingService.updateNotificationChannelGroups
@@ -197,6 +199,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
         confirmation: { sendEmail: true, sendSlack: false },
         reminders: { sendEmail: false, sendSlack: false },
         deletion: { sendEmail: false, sendSlack: false },
+        statusChanges: { sendEmail: false, sendSlack: true },
       };
 
       component.saveNotifSettings();
@@ -284,7 +287,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
       fixture.detectChanges();
       component.notifSettings = {
         ...component.notifSettings,
-        creation: { ...component.notifSettings.creation, sendSlack: true },
+        statusChanges: { ...component.notifSettings.statusChanges, sendSlack: true },
       };
       expect(component.notifDirty).toBe(true);
     });

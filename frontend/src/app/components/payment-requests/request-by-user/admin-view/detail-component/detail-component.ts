@@ -31,7 +31,7 @@ import { BoxComponent } from '../../../../general/boxes/box-component/box-compon
 import { DetailComponent } from '../../../../general/detail-component/detail-component';
 import { ModalComponent } from '../../../../general/modal-component/modal-component';
 
-export type ChangeRequestContactMethod = 'none' | 'email' | 'slack';
+export type ChangeRequestContactMethod = 'email' | 'slack';
 export type RequestChangesSubmission = RequestChangesPaymentRequestByUserDto & {
   contactMethod: ChangeRequestContactMethod;
 };
@@ -89,7 +89,7 @@ export class AdminInvoiceDetailComponent implements OnChanges {
   approvalReason: string = '';
   declineReason: string = '';
   changeRequestReason: string = '';
-  changeRequestContactMethod: ChangeRequestContactMethod = 'none';
+  changeRequestContactMethod: ChangeRequestContactMethod = 'email';
   activeActionModal: 'approve' | 'requestChanges' | 'decline' | 'markPaid' | null = null;
   declineReasonBlurred: boolean = false;
   changeRequestReasonBlurred: boolean = false;

@@ -14,5 +14,6 @@ namespace PayTrack.Application.Dto.AdminSettings
         NotificationChannelDto Creation,
         NotificationChannelDto Confirmation,
         NotificationChannelDto Reminders,
-        NotificationChannelDto Deletion);
+        NotificationChannelDto Deletion,
+        NotificationChannelDto StatusChanges);
 }
