@@ -810,6 +810,116 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task MarkAsPaid_ShouldNotSendStatusChangeEmail_WhenInvoicePaymentCompletedEmailIsDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationMock = new Mock<INotificationDispatchService>();
+            var settingsMock = new Mock<ISystemSettingService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                User = new User
+                {
+                    Id = 5,
+                    Name = "Alice",
+                    Email = "alice@example.com"
+                },
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+            settingsMock
+                .Setup(service => service.GetBoolSettingAsync(
+                    SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail,
+                    true))
+                .ReturnsAsync(false);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationMock.Object,
+                null,
+                null,
+                settingsMock.Object);
+
+            await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            notificationMock.Verify(service => service.SendEmailAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkAsPaid_ShouldNotSendPush_WhenInvoicePaymentCompletedPushIsDisabled()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var pushMock = new Mock<IPushNotificationService>();
+            var settingsMock = new Mock<ISystemSettingService>();
+            var entity = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = 5,
+                InvoiceNumber = "INV-1",
+                PurposeOfPayment = "Reimbursement May",
+                Status = TransactionStatus.Approved,
+                StatusHistory = []
+            };
+            repoMock
+                .Setup(r => r.GetByIdAsync(1, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(entity);
+            repoMock
+                .Setup(r => r.UpdateAsync(entity))
+                .ReturnsAsync(entity);
+            settingsMock
+                .Setup(service => service.GetBoolSettingAsync(
+                    SystemSettingKeys.NotificationsInvoicePaymentCompletedPush,
+                    true))
+                .ReturnsAsync(false);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                null,
+                null,
+                pushMock.Object,
+                settingsMock.Object);
+
+            await service.MarkPaymentRequestByUserAsPaidAsync(
+                1,
+                42,
+                "REF-123",
+                "Reimbursement May",
+                DateTime.Today);
+
+            pushMock.Verify(service => service.SendWorkflowStatusChangedAsync(
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
         public async Task MarkAsPaid_ShouldRemainSuccessful_WhenStatusEmailFails()
         {
             var repoMock = new Mock<ITransactionRepository>();

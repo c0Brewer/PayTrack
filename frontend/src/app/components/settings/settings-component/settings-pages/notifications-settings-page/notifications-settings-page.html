@@ -1,10 +1,41 @@
 <div class="row gx-4 gx-xl-5 gy-4">
   <div class="col-12 col-xl-6">
     <app-box-component title="Notifications" subtitle="Invoice and account updates" size="medium">
+      <div class="notification-setting">
+        <div>
+          <h4>Workflow push notifications</h4>
+          <p>{{ statusText() }}</p>
+        </div>
+
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="push-notifications-toggle"
+            [checked]="enabled()"
+            [disabled]="!canToggle()"
+            (change)="onToggle($event)"
+          />
+          <label class="form-check-label" for="push-notifications-toggle">
+            {{ enabled() ? 'Enabled' : 'Disabled' }}
+          </label>
+        </div>
+      </div>
     </app-box-component>
   </div>
   <div class="col-12 col-xl-6">
     <app-box-component title="Delivery" subtitle="Email and in-app preferences" size="medium">
+      <div class="delivery-list">
+        <div class="delivery-list__item">
+          <span>Email and Slack</span>
+          <strong>Managed by administrators</strong>
+        </div>
+        <div class="delivery-list__item">
+          <span>Browser push</span>
+          <strong>{{ enabled() ? 'Active' : 'Inactive' }}</strong>
+        </div>
+      </div>
     </app-box-component>
   </div>
 </div>
@@ -12,6 +43,10 @@
 <div class="row gx-4 gx-xl-5 gy-4 mt-1">
   <div class="col-12">
     <app-box-component title="Notification History" subtitle="Recent messages and reminders" size="large">
+      <p class="muted">
+        Status changes are delivered immediately when browser push support and deployment
+        configuration are available.
+      </p>
     </app-box-component>
   </div>
 </div>
