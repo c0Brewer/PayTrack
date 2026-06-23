@@ -296,7 +296,10 @@ describe('AdminSettingsSettingsPageComponent', () => {
       fixture.detectChanges();
       component.notifSettings = {
         ...component.notifSettings,
-        invoicePaymentCompleted: { ...component.notifSettings.invoicePaymentCompleted, sendSlack: true },
+        invoicePaymentCompleted: {
+          ...component.notifSettings.invoicePaymentCompleted,
+          sendSlack: true,
+        },
       };
       expect(component.notifDirty).toBe(true);
     });
