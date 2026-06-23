@@ -143,9 +143,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
       'Could not request changes: ',
       () => this.service.requestChangesForPaymentRequestByUser(this.invoice!.id, request),
       () => {
-        if (contactMethod !== 'none') {
-          this.openChangeRequestNotification(contactMethod, request);
-        }
+        this.openChangeRequestNotification(contactMethod, request);
       },
     );
   }
@@ -298,7 +296,7 @@ export class RequestDetailComponent implements OnInit, OnDestroy {
   }
 
   private openChangeRequestNotification(
-    contactMethod: Exclude<ChangeRequestContactMethod, 'none'>,
+    contactMethod: ChangeRequestContactMethod,
     request: RequestChangesPaymentRequestByUserDto,
   ): void {
     this.pendingChangeRequest = request;
