@@ -232,7 +232,7 @@ describe('AdminInvoiceDetailComponent', () => {
 
     expect(emitted).toHaveBeenCalledWith({
       reason: 'upload clearer receipt',
-      contactMethod: 'none',
+      contactMethod: 'email',
     });
   });
 

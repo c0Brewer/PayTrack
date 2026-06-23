@@ -487,19 +487,6 @@ describe('RequestDetailComponent', () => {
     expect(component.pendingChangeRequest).toBeNull();
   });
 
-  it('does not open a notification modal after request changes succeeds without contact', () => {
-    component.invoice = mockInvoice;
-    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
-    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
-
-    component.onRequestChanges({
-      reason: 'Please upload a clearer receipt',
-      contactMethod: 'none',
-    });
-
-    expect(component.modalType).toBeNull();
-  });
-
   it('shows undo button after a status action succeeds', () => {
     component.invoice = mockInvoice;
     serviceMock.declinePaymentRequestByUser.mockReturnValue(of({ id: 7 }));

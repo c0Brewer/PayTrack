@@ -817,7 +817,7 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     this.logger?.LogError(
                         exception,
-                        "Sending status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        "Sending status change notification email for invoice {InvoiceNumber} to {RecipientEmail} failed.",
                         transaction.InvoiceNumber,
                         transaction.User.Email);
                 }
