@@ -80,6 +80,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SystemSetting> SystemSettings => this.Set<SystemSetting>();
 
     /// <summary>
+    /// Database set for all browser push subscriptions.
+    /// </summary>
+    public DbSet<PushSubscription> PushSubscriptions => this.Set<PushSubscription>();
+
+    /// <summary>
     /// Overrides OnModelCreating to manually adjust the connections and constraints.
     /// </summary>
     /// <param name="modelBuilder">Model Builder.</param>
@@ -138,6 +143,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne(p => p.RequestedBy)
                 .HasForeignKey(p => p.RequestedById)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasMany(u => u.PushSubscriptions)
+                .WithOne(s => s.User)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // -------------------------------------------------------
@@ -301,6 +311,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             // Index for fast lookup of a transaction's history ordered by time
             e.HasIndex(h => new { h.TransactionId, h.ChangedAt });
+        });
+
+        // -------------------------------------------------------
+        // PushSubscription
+        // -------------------------------------------------------
+        modelBuilder.Entity<PushSubscription>(e =>
+        {
+            e.HasIndex(s => s.Endpoint).IsUnique();
+            e.HasIndex(s => new { s.UserId, s.IsEnabled });
         });
     }
 }

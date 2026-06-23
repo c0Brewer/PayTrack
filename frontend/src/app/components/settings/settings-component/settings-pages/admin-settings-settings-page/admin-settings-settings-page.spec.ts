@@ -25,11 +25,14 @@ const mockNotificationService = {
 
 const defaultCsvSettings = { nameColumn: 'Name', summeColumn: 'Summe' };
 const defaultNotifSettings = {
-  creation: { sendEmail: true, sendSlack: false },
-  confirmation: { sendEmail: true, sendSlack: false },
-  reminders: { sendEmail: true, sendSlack: false },
-  deletion: { sendEmail: false, sendSlack: false },
-  statusChanges: { sendEmail: true, sendSlack: false },
+  creation: { sendEmail: true, sendSlack: false, sendPush: true },
+  confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+  reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+  deletion: { sendEmail: false, sendSlack: false, sendPush: true },
+  invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
@@ -53,7 +56,10 @@ describe('AdminSettingsSettingsPageComponent', () => {
         confirmation: { ...defaultNotifSettings.confirmation },
         reminders: { ...defaultNotifSettings.reminders },
         deletion: { ...defaultNotifSettings.deletion },
-        statusChanges: { ...defaultNotifSettings.statusChanges },
+        invoiceApproval: { ...defaultNotifSettings.invoiceApproval },
+        invoiceRejection: { ...defaultNotifSettings.invoiceRejection },
+        invoiceChangesRequested: { ...defaultNotifSettings.invoiceChangesRequested },
+        invoicePaymentCompleted: { ...defaultNotifSettings.invoicePaymentCompleted },
       }),
     );
     mockSystemSettingService.updateNotificationChannelGroups
@@ -195,11 +201,14 @@ describe('AdminSettingsSettingsPageComponent', () => {
     it('should update notifOriginal and show success notification on success', () => {
       fixture.detectChanges();
       component.notifSettings = {
-        creation: { sendEmail: false, sendSlack: true },
-        confirmation: { sendEmail: true, sendSlack: false },
-        reminders: { sendEmail: false, sendSlack: false },
-        deletion: { sendEmail: false, sendSlack: false },
-        statusChanges: { sendEmail: false, sendSlack: true },
+        creation: { sendEmail: false, sendSlack: true, sendPush: true },
+        confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+        reminders: { sendEmail: false, sendSlack: false, sendPush: false },
+        deletion: { sendEmail: false, sendSlack: false, sendPush: false },
+        invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
       };
 
       component.saveNotifSettings();
@@ -287,7 +296,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
       fixture.detectChanges();
       component.notifSettings = {
         ...component.notifSettings,
-        statusChanges: { ...component.notifSettings.statusChanges, sendSlack: true },
+        invoicePaymentCompleted: { ...component.notifSettings.invoicePaymentCompleted, sendSlack: true },
       };
       expect(component.notifDirty).toBe(true);
     });

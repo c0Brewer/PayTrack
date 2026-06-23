@@ -100,11 +100,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             this.factory.ServiceMock
                 .Setup(s => s.GetNotificationChannelGroupsAsync())
                 .ReturnsAsync(new NotificationChannelGroupsDto(
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(false, false),
-                    new NotificationChannelDto(false, false)));
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false)));
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -129,11 +132,14 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var response = await client.PutAsJsonAsync(
                 "api/v1/admin/settings/notification-channels",
                 new UpdateNotificationChannelGroupsRequestDto(
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(true, false),
-                    new NotificationChannelDto(false, false),
-                    new NotificationChannelDto(false, false)));
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(true, false, true),
+                    new NotificationChannelDto(false, false, false)));
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }

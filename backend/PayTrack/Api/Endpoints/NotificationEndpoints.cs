@@ -31,6 +31,16 @@ namespace PayTrack.Api.Endpoints
 
             group.MapPost("/email", NotificationHandler.SendEmailNotificationAsync);
             group.MapPost("/slack", NotificationHandler.SendSlackNotificationAsync);
+
+            var pushGroup = app
+                .MapGroup($"/{GroupRoute}/push")
+                .WithTags(GroupName)
+                .RequireAuthorization()
+                .RequireActiveUser();
+
+            pushGroup.MapGet("/config", NotificationHandler.GetPushNotificationConfigAsync);
+            pushGroup.MapPost("/subscribe", NotificationHandler.SubscribeToPushNotificationsAsync);
+            pushGroup.MapPost("/unsubscribe", NotificationHandler.UnsubscribeFromPushNotificationsAsync);
         }
     }
 }
