@@ -46,3 +46,8 @@ Thumbs.db
 
 .sonarqube
 .scannerwork
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/

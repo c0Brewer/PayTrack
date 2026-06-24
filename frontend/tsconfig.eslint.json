@@ -3,6 +3,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.html",
+    "e2e/**/*.ts",
     "*.ts"
   ]
 }
