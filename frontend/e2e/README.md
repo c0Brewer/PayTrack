@@ -28,11 +28,13 @@ npm run e2e
 
 The Angular e2e target starts the frontend dev server, and Playwright starts the backend in the `E2E` environment before running tests.
 
-The backend startup command is configured in `playwright.config.ts`:
+The backend startup command is configured in `playwright.config.ts` and delegates to:
 
 ```bash
-ASPNETCORE_ENVIRONMENT=E2E dotnet run --no-launch-profile --project ../backend/PayTrack/PayTrack.csproj --urls http://localhost:5154
+sh ./e2e/scripts/start-e2e-backend.sh
 ```
+
+That script starts the dedicated E2E Postgres database from `backend/docker-compose-e2e.yml`, starts the backend on `http://localhost:5154`, and removes the E2E database volume again when the backend process exits. The backend also resets, migrates, and seeds the `paytrack_e2e` database during `E2E` startup.
 
 By default, tests call the backend at `http://localhost:5154`. Override the API URL used by test helpers with:
 

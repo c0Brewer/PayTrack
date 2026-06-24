@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using PayTrack.Api.Endpoints;
 using PayTrack.Api.Middleware;
 using PayTrack.Application.Dto.Health;
@@ -141,6 +142,16 @@ var app = builder.Build();
 var frontendIndexPath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "index.html");
 var hasFrontendBundle = File.Exists(frontendIndexPath);
 
+var resetE2EDatabaseConfig = builder.Configuration.GetValue<bool>("E2E:ResetDatabase");
+if (isE2EEnv && resetE2EDatabaseConfig)
+{
+    EnsureSafeE2EDatabase(builder.Configuration.GetConnectionString("Default"));
+
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureDeletedAsync();
+}
+
 // Auto-apply migrations (According to Config)
 var migrationsRunConfig = builder.Configuration.GetValue<bool>("Migrations:Auto");
 if (migrationsRunConfig && !isTestEnv)
@@ -257,6 +268,21 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
     if (values.Count > 0)
     {
         builder.Configuration.AddInMemoryCollection(values);
+    }
+}
+
+static void EnsureSafeE2EDatabase(string? connectionString)
+{
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("E2E database reset requires a configured connection string.");
+    }
+
+    var databaseName = new NpgsqlConnectionStringBuilder(connectionString).Database;
+    if (string.IsNullOrWhiteSpace(databaseName) ||
+        !databaseName.Contains("e2e", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException("Refusing to reset a database whose name does not contain 'e2e'.");
     }
 }
 

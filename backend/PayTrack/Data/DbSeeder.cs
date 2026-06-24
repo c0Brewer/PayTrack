@@ -374,6 +374,44 @@ public static class DbSeeder
             db.User.Add(unassignedUser);
         }
 
+        var e2eFirstLoginUser = await db.User.FirstOrDefaultAsync(u => u.Email == "e2e.first-login@paytrack.local");
+        if (e2eFirstLoginUser is null)
+        {
+            e2eFirstLoginUser = new User
+            {
+                Name = "E2E First Login User",
+                Email = "e2e.first-login@paytrack.local",
+                Role = Role.RegularUser,
+                IsActive = true,
+            };
+
+            db.User.Add(e2eFirstLoginUser);
+        }
+
+        var e2eSkipBankInformationUserEmails = new[]
+        {
+            "e2e.skip-bank-information-chromium@paytrack.local",
+            "e2e.skip-bank-information-firefox@paytrack.local",
+            "e2e.skip-bank-information-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eSkipBankInformationUserEmails)
+        {
+            var e2eSkipBankInformationUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
+            if (e2eSkipBankInformationUser is null)
+            {
+                e2eSkipBankInformationUser = new User
+                {
+                    Name = "E2E Skip Bank Information User",
+                    Email = email,
+                    Role = Role.RegularUser,
+                    IsActive = true,
+                };
+
+                db.User.Add(e2eSkipBankInformationUser);
+            }
+        }
+
         // Duplicate-name pair — used to test ambiguous CSV matching.
         var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
         if (alexTaylor1 is null)

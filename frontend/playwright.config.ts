@@ -12,8 +12,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e/tests',
   webServer: {
-    command:
-      'ASPNETCORE_ENVIRONMENT=E2E dotnet run --no-launch-profile --project ../backend/PayTrack/PayTrack.csproj --urls http://localhost:5154',
+    command: 'sh ./e2e/scripts/start-e2e-backend.sh',
     url: 'http://localhost:5154/health/live',
     timeout: 120 * 1000,
     reuseExistingServer: false,
