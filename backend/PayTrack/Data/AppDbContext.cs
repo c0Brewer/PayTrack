@@ -211,8 +211,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(tx => tx.BudgetId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Unique constraint: one budget per team+costcentre+season+period
-            e.HasIndex(b => new { b.TeamId, b.CostCentreId, b.SeasonId, b.PeriodStart, b.PeriodEnd })
+            // Unique constraint: one budget per team+costcentre+season+type+period+name
+            e.HasIndex(b => new { b.TeamId, b.CostCentreId, b.SeasonId, b.Type, b.PeriodStart, b.PeriodEnd, b.Name })
                 .IsUnique();
         });
 
