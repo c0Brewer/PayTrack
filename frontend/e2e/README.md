@@ -9,7 +9,7 @@ e2e/
   tests/       Playwright spec files grouped by user workflow
   pages/       Page objects for repeated UI interactions
   fixtures/    Stable test data used by specs and helpers
-  utils/       Shared helpers such as auth, API setup, and data reset utilities
+  utils/       Shared helpers such as E2E authentication utilities
 ```
 
 ## Running Tests
@@ -35,6 +35,8 @@ sh ./e2e/scripts/start-e2e-backend.sh
 ```
 
 That script starts the dedicated E2E Postgres database from `backend/docker-compose-e2e.yml`, starts the backend on `http://localhost:5154`, and removes the E2E database volume again when the backend process exits. The backend also resets, migrates, and seeds the `paytrack_e2e` database during `E2E` startup.
+
+Docker must be running before executing the E2E tests.
 
 By default, tests call the backend at `http://localhost:5154`. Override the API URL used by test helpers with:
 
