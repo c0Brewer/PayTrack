@@ -25,6 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 LoadSecretsFromDotEnv(builder);
 
 var isTestEnv = builder.Environment.IsEnvironment("Test");
+var isE2EEnv = builder.Environment.IsEnvironment("E2E");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -62,7 +63,11 @@ builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
 builder.Services.AddHttpClient<PushNotificationService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
-builder.Services.AddHostedService<PaymentReminderHostedService>();
+if (!isE2EEnv)
+{
+    builder.Services.AddHostedService<PaymentReminderHostedService>();
+}
+
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
