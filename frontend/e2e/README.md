@@ -26,7 +26,21 @@ or:
 npm run e2e
 ```
 
-The Angular e2e target starts the frontend dev server and then runs Playwright.
+The Angular e2e target starts the frontend dev server, and Playwright starts the backend in the `E2E` environment before running tests.
+
+The backend startup command is configured in `playwright.config.ts`:
+
+```bash
+ASPNETCORE_ENVIRONMENT=E2E dotnet run --no-launch-profile --project ../backend/PayTrack/PayTrack.csproj --urls http://localhost:5154
+```
+
+By default, tests call the backend at `http://localhost:5154`. Override the API URL used by test helpers with:
+
+```bash
+PLAYWRIGHT_API_BASE_URL=http://localhost:5154 ng e2e
+```
+
+Make sure no other backend process is already listening on port `5154` before running `ng e2e`.
 
 ## Test Scope
 
