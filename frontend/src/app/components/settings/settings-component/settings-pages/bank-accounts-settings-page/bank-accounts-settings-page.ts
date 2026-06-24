@@ -107,7 +107,6 @@ export class BankAccountsSettingsPageComponent implements OnInit {
         this.closeDeleteModal();
         this.loadBankAccounts();
         this.refreshCurrentUser();
-        this.notificationService.showSuccess('Bank account deleted successfully.');
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
