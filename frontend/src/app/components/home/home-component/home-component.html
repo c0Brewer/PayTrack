@@ -198,7 +198,7 @@
                 <span class="material-symbols-outlined">description</span>
                 Review Corresponding Invoices</a>
               @if (data.actions.missingBankAccount) {
-                <a class="btn btn-secondary" routerLink="/bankaccount">
+                <a class="btn btn-secondary" [routerLink]="['/settings']" fragment="bank-accounts">
                   <span class="material-symbols-outlined">add</span>
                   Add Bank Account</a>
               }
