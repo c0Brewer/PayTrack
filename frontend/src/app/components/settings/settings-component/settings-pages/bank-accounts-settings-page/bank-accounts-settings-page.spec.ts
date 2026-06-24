@@ -8,6 +8,7 @@ import {
   CreateBankAccountRequestDto,
   UpdateBankAccountRequestDto,
 } from '../../../../../services/bank-account/bank-account-service';
+import { NotificationService } from '../../../../../services/notification/notification-service';
 
 import { BankAccountsSettingsPageComponent } from './bank-accounts-settings-page';
 
@@ -22,6 +23,10 @@ describe('BankAccountsSettingsPageComponent', () => {
   };
   let authServiceMock: {
     refreshUser: ReturnType<typeof vi.fn>;
+  };
+  let notificationServiceMock: {
+    showSuccess: ReturnType<typeof vi.fn>;
+    showError: ReturnType<typeof vi.fn>;
   };
   let detectChangesSpy: ReturnType<typeof vi.spyOn>;
 
@@ -42,12 +47,17 @@ describe('BankAccountsSettingsPageComponent', () => {
     authServiceMock = {
       refreshUser: vi.fn().mockResolvedValue(undefined),
     };
+    notificationServiceMock = {
+      showSuccess: vi.fn(),
+      showError: vi.fn(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [BankAccountsSettingsPageComponent],
       providers: [
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
       ],
     }).compileComponents();
 
@@ -161,6 +171,8 @@ describe('BankAccountsSettingsPageComponent', () => {
     expect(component.bankAccountPendingDelete).toBeNull();
     expect(loadSpy).toHaveBeenCalled();
     expect(authServiceMock.refreshUser).toHaveBeenCalled();
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledOnce();
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Bank account deleted.');
   });
 
   it('should set modal error when deleting fails', () => {
