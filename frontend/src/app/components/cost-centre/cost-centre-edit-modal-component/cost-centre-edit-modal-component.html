@@ -1,19 +1,34 @@
 <app-modal-component
   [title]="isCreating ? 'Create Cost Centre' : 'Edit Cost Centre'"
+  [info]="
+    isCreating
+      ? 'Create a cost centre and attach the budgets that belong to it.'
+      : 'Update the cost centre details and manage its budgets.'
+  "
+  [icon]="isCreating ? 'add' : 'edit'"
   (closeEvent)="onClose()"
 >
-  <label>
+  <label class="form-field">
     Name
-    <input [(ngModel)]="costCentre.name" placeholder="Required, min 3 characters" />
+    <input
+      class="form-control"
+      [(ngModel)]="costCentre.name"
+      placeholder="Required, min 3 characters"
+    />
   </label>
 
-  <label>
+  <label class="form-field">
     Description
-    <input [(ngModel)]="costCentre.description" placeholder="Optional" />
+    <input class="form-control" [(ngModel)]="costCentre.description" placeholder="Optional" />
   </label>
 
-  <div class="budgets-section">
-    <h4>Budgets</h4>
+  <div class="budgets-section mb-4">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+      <h4 class="m-0">Budgets</h4>
+      <span class="badge text-bg-light border">
+        {{ workingBudgets.length + newBudgets.length }}
+      </span>
+    </div>
 
     @if (workingBudgets.length > 0) {
       <table class="budget-table">
@@ -83,105 +98,127 @@
       </table>
     }
 
-    <div class="add-budget-form">
-      <label>
-        Name
-        <input
-          [(ngModel)]="newBudgetDraft.name"
-          [class.input-error]="hasBudgetFieldError('name')"
-          (blur)="onBudgetFieldBlur('name')"
-          placeholder="Budget name"
-        />
-        @if (hasBudgetFieldError('name')) {
-          <span class="field-error">{{ getBudgetFieldError('name') }}</span>
-        }
-      </label>
-      <label>
-        Type
-        <select [(ngModel)]="newBudgetDraft.type">
-          <option [ngValue]="BudgetType.Expense">Expense</option>
-          <option [ngValue]="BudgetType.Income">Income</option>
-        </select>
-      </label>
-      <label>
-        Season
-        <select
-          [(ngModel)]="newBudgetDraft.seasonId"
-          [class.input-error]="hasBudgetFieldError('seasonId')"
-          (blur)="onBudgetFieldBlur('seasonId')"
-        >
-          <option [ngValue]="0" disabled>Select season</option>
-          @for (season of activeSeasons; track season.id) {
-            <option [ngValue]="season.id">{{ season.name }}</option>
-          }
-        </select>
-        @if (hasBudgetFieldError('seasonId')) {
-          <span class="field-error">{{ getBudgetFieldError('seasonId') }}</span>
-        }
-      </label>
-      <label>
-        Team
-        <select
-          [(ngModel)]="newBudgetDraft.teamId"
-          [class.input-error]="hasBudgetFieldError('teamId')"
-          (blur)="onBudgetFieldBlur('teamId')"
-        >
-          <option [ngValue]="0" disabled>Select team</option>
-          @for (team of teams; track team.id) {
-            <option [ngValue]="team.id" [disabled]="team.isActive === false">
-              {{ getTeamOptionLabel(team) }}
-            </option>
-          }
-        </select>
-        @if (hasBudgetFieldError('teamId')) {
-          <span class="field-error">{{ getBudgetFieldError('teamId') }}</span>
-        }
-      </label>
-      @if (newBudgetDraft.type !== BudgetType.Income) {
-        <label>
-          Amount
+    <div class="budget-form-card border rounded p-3 mb-3">
+      <div class="row g-3 align-items-start">
+        <label class="col-12 mb-0">
+          Name
           <input
-            type="number"
-            [(ngModel)]="newBudgetDraft.targetAmount"
-            [class.input-error]="hasBudgetFieldError('targetAmount')"
-            (blur)="onBudgetFieldBlur('targetAmount')"
-            placeholder="0.00"
+            class="form-control"
+            [(ngModel)]="newBudgetDraft.name"
+            [class.input-error]="hasBudgetFieldError('name')"
+            (blur)="onBudgetFieldBlur('name')"
+            placeholder="Budget name"
           />
-          @if (hasBudgetFieldError('targetAmount')) {
-            <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+          @if (hasBudgetFieldError('name')) {
+            <span class="field-error">{{ getBudgetFieldError('name') }}</span>
           }
         </label>
-      }
-      <label class="budget-period-field">
-        Period Start
-        <input
-          type="date"
-          [(ngModel)]="newBudgetDraft.periodStart"
-          [class.input-error]="hasBudgetFieldError('periodStart')"
-          (blur)="onBudgetFieldBlur('periodStart')"
-        />
-        @if (hasBudgetFieldError('periodStart')) {
-          <span class="field-error">{{ getBudgetFieldError('periodStart') }}</span>
+        <label class="col-12 col-sm-4 mb-0">
+          Type
+          <select class="form-select" [(ngModel)]="newBudgetDraft.type">
+            <option [ngValue]="BudgetType.Expense">Expense</option>
+            <option [ngValue]="BudgetType.Income">Income</option>
+          </select>
+        </label>
+        <label class="col-12 col-sm-8 mb-0">
+          Season
+          <select
+            class="form-select"
+            [(ngModel)]="newBudgetDraft.seasonId"
+            [class.input-error]="hasBudgetFieldError('seasonId')"
+            (blur)="onBudgetFieldBlur('seasonId')"
+          >
+            <option [ngValue]="0" disabled>Select season</option>
+            @for (season of activeSeasons; track season.id) {
+              <option [ngValue]="season.id">{{ season.name }}</option>
+            }
+          </select>
+          @if (hasBudgetFieldError('seasonId')) {
+            <span class="field-error">{{ getBudgetFieldError('seasonId') }}</span>
+          }
+        </label>
+        <label class="col-12 mb-0">
+          Team
+          <select
+            class="form-select"
+            [(ngModel)]="newBudgetDraft.teamId"
+            [class.input-error]="hasBudgetFieldError('teamId')"
+            (blur)="onBudgetFieldBlur('teamId')"
+          >
+            <option [ngValue]="0" disabled>Select team</option>
+            @for (team of teams; track team.id) {
+              <option [ngValue]="team.id" [disabled]="team.isActive === false">
+                {{ getTeamOptionLabel(team) }}
+              </option>
+            }
+          </select>
+          @if (hasBudgetFieldError('teamId')) {
+            <span class="field-error">{{ getBudgetFieldError('teamId') }}</span>
+          }
+        </label>
+        @if (newBudgetDraft.type !== BudgetType.Income) {
+          <label class="col-12 col-sm-4 mb-0">
+            Amount
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newBudgetDraft.targetAmount"
+              [class.input-error]="hasBudgetFieldError('targetAmount')"
+              (blur)="onBudgetFieldBlur('targetAmount')"
+              placeholder="0.00"
+            />
+            @if (hasBudgetFieldError('targetAmount')) {
+              <span class="field-error">{{ getBudgetFieldError('targetAmount') }}</span>
+            }
+          </label>
         }
-      </label>
-      <label class="budget-period-field">
-        Period End
-        <input
-          type="date"
-          [(ngModel)]="newBudgetDraft.periodEnd"
-          [class.input-error]="hasBudgetFieldError('periodEnd')"
-          (blur)="onBudgetFieldBlur('periodEnd')"
-        />
-        @if (hasBudgetFieldError('periodEnd')) {
-          <span class="field-error">{{ getBudgetFieldError('periodEnd') }}</span>
-        }
-      </label>
-      <button type="button" class="btn-add-budget" (click)="addNewBudget()">+ Add Budget</button>
+        <div class="w-100"></div>
+        <label class="col-12 col-sm-6 mb-0 budget-period-field">
+          Period Start
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="newBudgetDraft.periodStart"
+            [class.input-error]="hasBudgetFieldError('periodStart')"
+            (blur)="onBudgetFieldBlur('periodStart')"
+          />
+          @if (hasBudgetFieldError('periodStart')) {
+            <span class="field-error">{{ getBudgetFieldError('periodStart') }}</span>
+          }
+        </label>
+        <label class="col-12 col-sm-6 mb-0 budget-period-field">
+          Period End
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="newBudgetDraft.periodEnd"
+            [class.input-error]="hasBudgetFieldError('periodEnd')"
+            (blur)="onBudgetFieldBlur('periodEnd')"
+          />
+          @if (hasBudgetFieldError('periodEnd')) {
+            <span class="field-error">{{ getBudgetFieldError('periodEnd') }}</span>
+          }
+        </label>
+        <div class="col-12 d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-secondary btn-add-budget d-inline-flex align-items-center gap-1"
+            (click)="addNewBudget()"
+          >
+            <span class="material-symbols-outlined">add</span>
+            Add Budget
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="modal-actions">
-    <button (click)="onClose()">Cancel</button>
-    <button (click)="onSave()">{{ isCreating ? 'Create' : 'Save' }}</button>
+    <button class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onClose()">
+      <span class="material-symbols-outlined">cancel</span>
+      Cancel</button>
+    <button class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onSave()">
+      <span class="material-symbols-outlined">save</span>
+      {{ isCreating ? 'Create' : 'Save' }}</button>
   </div>
 </app-modal-component>
