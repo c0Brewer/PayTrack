@@ -42,11 +42,27 @@
 
 <div class="row gx-4 gx-xl-5 gy-4 mt-1">
   <div class="col-12">
-    <app-box-component title="Notification History" subtitle="Recent messages and reminders" size="large">
-      <p class="muted">
-        Status changes are delivered immediately when browser push support and deployment
-        configuration are available.
-      </p>
+    <app-box-component title="Active Devices" subtitle="Browsers registered for push notifications" size="large">
+      @if (devices().length) {
+        <div class="device-list">
+          @for (device of devices(); track device.id) {
+            <div class="device-list__item" [class.device-list__item--current]="device.isCurrentDevice">
+              <div>
+                <h4>{{ device.browserName }}</h4>
+                <p>{{ device.deviceName }} - {{ device.platform }}</p>
+              </div>
+              <div class="device-list__meta">
+                @if (device.isCurrentDevice) {
+                  <span>Current browser</span>
+                }
+                <small>Updated {{ device.updatedAt | date: 'short' }}</small>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="muted">No browser is currently registered for push notifications.</p>
+      }
     </app-box-component>
   </div>
 </div>

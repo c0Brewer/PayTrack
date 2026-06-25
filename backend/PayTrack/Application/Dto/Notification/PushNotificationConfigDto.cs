@@ -23,5 +23,10 @@ namespace PayTrack.Application.Dto.Notification
         /// Gets or sets a value indicating whether the current user has enabled push notifications.
         /// </summary>
         public bool Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's enabled push devices.
+        /// </summary>
+        public IReadOnlyCollection<PushSubscriptionDeviceDto> Devices { get; set; } = [];
     }
 }

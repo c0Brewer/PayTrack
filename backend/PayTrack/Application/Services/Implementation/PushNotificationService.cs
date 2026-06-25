@@ -35,13 +35,26 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ILogger<PushNotificationService> logger = logger;
 
         /// <inheritdoc/>
-        public async Task<PushNotificationConfigDto> GetConfigAsync(int userId)
+        public async Task<PushNotificationConfigDto> GetConfigAsync(int userId, string? currentEndpoint = null)
         {
+            var subscriptions = await this.repository.GetEnabledForUserAsync(userId);
+            subscriptions = await this.RemoveUnknownAndDuplicateSubscriptionsAsync(subscriptions, currentEndpoint);
+
             return new PushNotificationConfigDto
             {
                 IsConfigured = this.settings.IsConfigured,
                 VapidPublicKey = this.settings.IsConfigured ? this.settings.PublicKey : null,
-                Enabled = await this.repository.HasEnabledSubscriptionAsync(userId),
+                Enabled = !string.IsNullOrWhiteSpace(currentEndpoint) &&
+                    subscriptions.Any(s => s.Endpoint == currentEndpoint),
+                Devices = subscriptions.Select(s => new PushSubscriptionDeviceDto
+                {
+                    Id = s.Id,
+                    BrowserName = string.IsNullOrWhiteSpace(s.BrowserName) ? "Unknown browser" : s.BrowserName,
+                    DeviceName = string.IsNullOrWhiteSpace(s.DeviceName) ? "Unknown device" : s.DeviceName,
+                    Platform = string.IsNullOrWhiteSpace(s.Platform) ? "Unknown platform" : s.Platform,
+                    IsCurrentDevice = !string.IsNullOrWhiteSpace(currentEndpoint) && s.Endpoint == currentEndpoint,
+                    UpdatedAt = s.UpdatedAt,
+                }).ToArray(),
             };
         }
 
@@ -59,6 +72,9 @@ namespace PayTrack.Application.Services.Implementation
                 Endpoint = subscription.Endpoint,
                 P256dh = subscription.P256dh,
                 Auth = subscription.Auth,
+                BrowserName = subscription.BrowserName,
+                DeviceName = subscription.DeviceName,
+                Platform = subscription.Platform,
                 IsEnabled = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -113,6 +129,22 @@ namespace PayTrack.Application.Services.Implementation
             {
                 await this.SendToSubscriptionAsync(subscription, payload);
             }
+        }
+
+        private static bool IsUnknownDevice(PushSubscription subscription)
+        {
+            return string.IsNullOrWhiteSpace(subscription.BrowserName)
+                || string.IsNullOrWhiteSpace(subscription.DeviceName)
+                || string.IsNullOrWhiteSpace(subscription.Platform);
+        }
+
+        private static string GetDeviceKey(PushSubscription subscription)
+        {
+            return string.Join(
+                '|',
+                subscription.BrowserName?.Trim().ToUpperInvariant(),
+                subscription.DeviceName?.Trim().ToUpperInvariant(),
+                subscription.Platform?.Trim().ToUpperInvariant());
         }
 
         private static byte[] Base64UrlDecode(string value)
@@ -232,6 +264,40 @@ namespace PayTrack.Application.Services.Implementation
                 senderPublicKeyBytes,
                 cipherText,
                 tag);
+        }
+
+        private async Task<List<PushSubscription>> RemoveUnknownAndDuplicateSubscriptionsAsync(
+            List<PushSubscription> subscriptions,
+            string? currentEndpoint)
+        {
+            var subscriptionsToDisable = subscriptions
+                .Where(IsUnknownDevice)
+                .ToList();
+
+            var duplicateSubscriptions = subscriptions
+                .Where(s => !IsUnknownDevice(s))
+                .GroupBy(GetDeviceKey)
+                .SelectMany(group =>
+                {
+                    var keep = group
+                        .OrderByDescending(s => s.Endpoint == currentEndpoint)
+                        .ThenByDescending(s => s.UpdatedAt)
+                        .First();
+
+                    return group.Where(s => s.Endpoint != keep.Endpoint);
+                })
+                .ToList();
+
+            subscriptionsToDisable.AddRange(duplicateSubscriptions);
+
+            foreach (var subscription in subscriptionsToDisable.DistinctBy(s => s.Endpoint))
+            {
+                await this.repository.DisableByEndpointAsync(subscription.Endpoint);
+            }
+
+            return subscriptions
+                .Where(s => subscriptionsToDisable.All(disabled => disabled.Endpoint != s.Endpoint))
+                .ToList();
         }
 
         private string CreateVapidJwt(string endpoint)
