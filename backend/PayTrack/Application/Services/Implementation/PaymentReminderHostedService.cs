@@ -33,6 +33,10 @@ namespace PayTrack.Application.Services.Implementation
 
             var sendEmail = await systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersEmail, true);
             var sendSlack = await systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, false);
+            var sendPush = await systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersPush, true);
+            var pushNotifications = sendPush
+                ? scope.ServiceProvider.GetService<IPushNotificationService>()
+                : null;
             var daysBeforeDue = await systemSettings.GetDaysBeforeDueAsync();
             var emailDelayMs = await systemSettings.GetEmailDelayMsAsync();
 
@@ -106,6 +110,30 @@ namespace PayTrack.Application.Services.Implementation
                                 "Failed to send Slack reminder for transaction {Id} to {Email}.",
                                 request.Id,
                                 request.User.Email);
+                        }
+                    }
+
+                    if (pushNotifications is not null)
+                    {
+                        try
+                        {
+                            await pushNotifications.SendWorkflowStatusChangedAsync(
+                                request.UserId,
+                                "Payment reminder",
+                                $"Payment request due in {daysAhead} day(s): {request.PurposeOfPayment}\nAmount: {request.Amount:C2}",
+                                $"/my-team-requests/{request.Id}");
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            this.logger.LogError(
+                                ex,
+                                "Failed to send push reminder for transaction {Id} to user {UserId}.",
+                                request.Id,
+                                request.UserId);
                         }
                     }
                 }

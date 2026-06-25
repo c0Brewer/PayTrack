@@ -61,7 +61,7 @@ describe('BankAccountEditorComponent', () => {
     expect(component.form.controls.bic.value).toBe('');
   });
 
-  it('onSubmit should set validation message and not emit when form is invalid', () => {
+  it('onSubmit should mark fields as touched and not emit when form is invalid', () => {
     const emitSpy = vi.spyOn(component.submitForm, 'emit');
 
     component.form.setValue({
@@ -72,16 +72,17 @@ describe('BankAccountEditorComponent', () => {
 
     component.onSubmit();
 
-    expect(component.validationMessage).toContain('Please enter valid values');
+    expect(component.form.controls.accountHolder.touched).toBe(true);
+    expect(component.form.controls.iban.touched).toBe(true);
+    expect(component.form.controls.bic.touched).toBe(true);
     expect(emitSpy).not.toHaveBeenCalled();
   });
 
-  it('form value changes should clear validation message', () => {
-    component.validationMessage = 'Some validation error';
+  it('should expose backend iban errors through the inline iban error message', () => {
+    component.errorMessage = 'IBAN is invalid.';
 
-    component.form.controls.accountHolder.setValue('Valid Name');
-
-    expect(component.validationMessage).toBe('');
+    expect(component.ibanErrorMessage).toBe('IBAN is invalid.');
+    expect(component.topLevelErrorMessage).toBe('');
   });
 
   it('should visually group IBAN input in blocks of four characters', () => {

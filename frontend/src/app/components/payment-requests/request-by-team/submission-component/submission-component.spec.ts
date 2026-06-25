@@ -6,6 +6,7 @@ import { BudgetService } from '../../../../services/budget/budget-service';
 import { CostCentreService } from '../../../../services/cost-centre/cost-centre-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import { UserService } from '../../../../services/user/user-service';
 import { BudgetDto } from '../../../../types/exporter';
@@ -22,6 +23,7 @@ describe('PaymentRequestByTeamComponent', () => {
   const mockUserService = { getUser: vi.fn() };
   const mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
   const mockPaymentRequestByTeamService = { createPaymentRequestByTeam: vi.fn() };
+  const mockSystemSettingService = { getCsvColumnSettings: vi.fn() };
 
   beforeEach(async () => {
     mockTeamService.getTeams.mockReset().mockReturnValue(of({ items: [], totalCount: 0 }));
@@ -33,6 +35,9 @@ describe('PaymentRequestByTeamComponent', () => {
     mockNotificationService.showSuccess.mockClear();
     mockNotificationService.showError.mockClear();
     mockPaymentRequestByTeamService.createPaymentRequestByTeam.mockReset().mockReturnValue(of({}));
+    mockSystemSettingService.getCsvColumnSettings
+      .mockReset()
+      .mockReturnValue(of({ nameColumn: 'Name', summeColumn: 'Summe' }));
 
     await TestBed.configureTestingModule({
       imports: [PaymentRequestByTeamComponent, ReactiveFormsModule],
@@ -43,6 +48,7 @@ describe('PaymentRequestByTeamComponent', () => {
         { provide: UserService, useValue: mockUserService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: PaymentRequestByTeamService, useValue: mockPaymentRequestByTeamService },
+        { provide: SystemSettingService, useValue: mockSystemSettingService },
       ],
     }).compileComponents();
 

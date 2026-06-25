@@ -36,7 +36,11 @@
             </div>
           </div>
           <div class="admin-settings__actions">
-            <button type="submit" class="admin-settings__save-btn" [disabled]="csvSaving || !csvDirty">
+            <button
+              type="submit"
+              class="admin-settings__save-btn"
+              [disabled]="csvSaving || !csvDirty"
+            >
               @if (csvSaving) {
                 Saving...
               } @else {
@@ -74,6 +78,10 @@
                     <span class="material-symbols-outlined">chat</span>
                     Slack
                   </th>
+                  <th>
+                    <span class="material-symbols-outlined">notifications</span>
+                    Push
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -97,6 +105,17 @@
                         class="admin-settings__toggle__input"
                         [(ngModel)]="notifSettings.creation.sendSlack"
                         name="creationSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.creation.sendPush"
+                        name="creationPush"
                       />
                       <span class="admin-settings__toggle__track"></span>
                     </label>
@@ -126,6 +145,17 @@
                       <span class="admin-settings__toggle__track"></span>
                     </label>
                   </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.confirmation.sendPush"
+                        name="confirmationPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
                 </tr>
                 <tr>
                   <td>Automatic Reminders</td>
@@ -147,6 +177,17 @@
                         class="admin-settings__toggle__input"
                         [(ngModel)]="notifSettings.reminders.sendSlack"
                         name="remindersSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.reminders.sendPush"
+                        name="remindersPush"
                       />
                       <span class="admin-settings__toggle__track"></span>
                     </label>
@@ -176,6 +217,17 @@
                       <span class="admin-settings__toggle__track"></span>
                     </label>
                   </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.deletion.sendPush"
+                        name="deletionPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -183,10 +235,178 @@
 
           <div class="admin-settings__channels-group">
             <h4 class="admin-settings__channels-group__title">Invoice Submissions</h4>
-            <p class="admin-settings__channels-group__empty">No notification events configured yet.</p>
+            <table class="admin-settings__channels-table">
+              <thead>
+                <tr>
+                  <th class="admin-settings__channels-table__event-col">Event</th>
+                  <th>
+                    <span class="material-symbols-outlined">mail</span>
+                    Email
+                  </th>
+                  <th>
+                    <span class="material-symbols-outlined">chat</span>
+                    Slack
+                  </th>
+                  <th>
+                    <span class="material-symbols-outlined">notifications</span>
+                    Push
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Approved</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceApproval.sendEmail"
+                        name="invoiceApprovalEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceApproval.sendSlack"
+                        name="invoiceApprovalSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceApproval.sendPush"
+                        name="invoiceApprovalPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Rejected</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceRejection.sendEmail"
+                        name="invoiceRejectionEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceRejection.sendSlack"
+                        name="invoiceRejectionSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceRejection.sendPush"
+                        name="invoiceRejectionPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Changes Requested</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceChangesRequested.sendEmail"
+                        name="invoiceChangesRequestedEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceChangesRequested.sendSlack"
+                        name="invoiceChangesRequestedSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceChangesRequested.sendPush"
+                        name="invoiceChangesRequestedPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Payment Completed</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoicePaymentCompleted.sendEmail"
+                        name="invoicePaymentCompletedEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoicePaymentCompleted.sendSlack"
+                        name="invoicePaymentCompletedSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoicePaymentCompleted.sendPush"
+                        name="invoicePaymentCompletedPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <div class="admin-settings__actions">
-            <button type="submit" class="admin-settings__save-btn" [disabled]="notifSaving || !notifDirty">
+            <button
+              type="submit"
+              class="admin-settings__save-btn"
+              [disabled]="notifSaving || !notifDirty"
+            >
               @if (notifSaving) {
                 Saving...
               } @else {
@@ -245,7 +465,9 @@
             </div>
             <div class="admin-settings__field">
               <label for="emailDelayMs" class="admin-settings__label">Email send delay</label>
-              <p class="admin-settings__hint">Milliseconds between reminder emails (SMTP rate-limit guard)</p>
+              <p class="admin-settings__hint">
+                Milliseconds between reminder emails (SMTP rate-limit guard)
+              </p>
               <input
                 id="emailDelayMs"
                 type="number"
@@ -263,7 +485,17 @@
             </div>
           </div>
           <div class="admin-settings__actions">
-            <button type="submit" class="admin-settings__save-btn" [disabled]="reminderSaving || !reminderDirty || !!reminderDaysError || !!reminderTimeError || !!reminderEmailDelayError">
+            <button
+              type="submit"
+              class="admin-settings__save-btn"
+              [disabled]="
+                reminderSaving ||
+                !reminderDirty ||
+                !!reminderDaysError ||
+                !!reminderTimeError ||
+                !!reminderEmailDelayError
+              "
+            >
               @if (reminderSaving) {
                 Saving...
               } @else {

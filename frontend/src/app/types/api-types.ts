@@ -905,6 +905,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notification/push/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PushNotificationConfigDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notification/push/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SavePushSubscriptionDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notification/push/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UnsubscribePushNotificationDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -1013,7 +1149,14 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    IncludeInactive?: boolean;
+                    IsActive?: boolean;
+                    /** Format: int32 */
+                    Limit?: number;
+                    /** Format: int32 */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1026,7 +1169,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["SeasonDto"][];
+                        "application/json": components["schemas"]["SeasonDtoPaginatedResponse"];
                     };
                 };
             };
@@ -1135,6 +1278,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonDto"];
+                    };
+                };
                 /** @description No Content */
                 204: {
                     headers: {
@@ -1731,48 +1883,6 @@ export interface paths {
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/transaction/user/receipt/extract": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "multipart/form-data": {
-                        /** Format: binary */
-                        receipt: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ReceiptExtractionDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2644,7 +2754,7 @@ export interface components {
     schemas: {
         ApprovePaymentRequestByUserDto: {
             /** Format: int32 */
-            costCentreId: number;
+            budgetId: number;
             reason?: string | null;
         };
         BankAccountDto: {
@@ -2861,18 +2971,6 @@ export interface components {
             /** Format: int32 */
             budgetId?: number | null;
         };
-        DateTimeNullableExtractedReceiptFieldDto: {
-            /** Format: date-time */
-            value?: string | null;
-            /** Format: double */
-            confidence?: number;
-        };
-        DecimalNullableExtractedReceiptFieldDto: {
-            /** Format: double */
-            value?: number | null;
-            /** Format: double */
-            confidence?: number;
-        };
         DeclinePaymentRequestByUserDto: {
             reason: string;
         };
@@ -3026,12 +3124,34 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        PushNotificationConfigDto: {
+            isConfigured?: boolean;
+            vapidPublicKey?: string | null;
+            enabled?: boolean;
+        };
         ReceiptExtractionDto: {
-            extractionSucceeded?: boolean;
+            extractionSucceeded: boolean;
             message?: string | null;
-            amount?: components["schemas"]["DecimalNullableExtractedReceiptFieldDto"];
-            invoiceDate?: components["schemas"]["DateTimeNullableExtractedReceiptFieldDto"];
-            invoiceNumber?: components["schemas"]["StringExtractedReceiptFieldDto"];
+            amount: components["schemas"]["NullableDecimalExtractedReceiptFieldDto"];
+            invoiceDate: components["schemas"]["NullableDateTimeExtractedReceiptFieldDto"];
+            invoiceNumber: components["schemas"]["StringExtractedReceiptFieldDto"];
+        };
+        NullableDecimalExtractedReceiptFieldDto: {
+            /** Format: double */
+            value?: number | null;
+            /** Format: double */
+            confidence: number;
+        };
+        NullableDateTimeExtractedReceiptFieldDto: {
+            /** Format: date-time */
+            value?: string | null;
+            /** Format: double */
+            confidence: number;
+        };
+        StringExtractedReceiptFieldDto: {
+            value?: string | null;
+            /** Format: double */
+            confidence: number;
         };
         RequestChangesPaymentRequestByUserDto: {
             reason: string;
@@ -3041,11 +3161,28 @@ export interface components {
          * @enum {integer}
          */
         Role: 0 | 1 | 2;
+        SavePushSubscriptionDto: {
+            endpoint: string;
+            p256dh: string;
+            auth: string;
+        };
         SeasonDto: {
             /** Format: int32 */
             id: number;
             name: string;
+            isActive: boolean;
             budgets?: components["schemas"]["BudgetDto"][] | null;
+        };
+        SeasonDtoPaginatedResponse: {
+            items: components["schemas"]["SeasonDto"][] | null;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            offset: number;
+            readonly hasNext?: boolean;
+            readonly hasPrevious?: boolean;
         };
         SendEmailNotificationDto: {
             /** Format: email */
@@ -3057,11 +3194,6 @@ export interface components {
             /** Format: email */
             recipientEmail: string;
             message: string;
-        };
-        StringExtractedReceiptFieldDto: {
-            value?: string | null;
-            /** Format: double */
-            confidence?: number;
         };
         TeamDto: {
             /** Format: int32 */
@@ -3116,6 +3248,9 @@ export interface components {
             /** Format: date-time */
             changedAt: string;
         };
+        UnsubscribePushNotificationDto: {
+            endpoint: string;
+        };
         UpdateBankAccountRequestDto: {
             accountHolder?: string | null;
             iban?: string | null;
@@ -3158,6 +3293,7 @@ export interface components {
         };
         UpdateSeasonRequestDto: {
             name?: string | null;
+            isActive?: boolean | null;
         };
         UpdateTeamRequestDto: {
             name?: string | null;

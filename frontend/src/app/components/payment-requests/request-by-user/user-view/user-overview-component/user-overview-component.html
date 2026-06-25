@@ -1,5 +1,10 @@
 <div class="main-page-container my-invoices">
-  <h2 class="m-0">My Invoices</h2>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">My Invoices</h1>
+    <p class="mb-0 text-body-secondary">
+      Track your submitted invoices and their reimbursement status.
+    </p>
+  </div>
 
   <div class="row g-3 align-items-stretch">
     <app-stat-box-component
@@ -39,7 +44,7 @@
   </div>
   <app-user-invoice-filter-component
     [limitSelection]="limitSelection"
-    [limit]="limit"
+    [initialFilterOptions]="filterOptions"
     (updateFilter)="updateFilterOptions($event)"
     (limitChange)="onUpdateLimit($event)"
   ></app-user-invoice-filter-component>

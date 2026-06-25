@@ -126,6 +126,128 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task GetHomeDashboardInvoiceSectionAsync_ShouldReturnEmptySection_WhenNoInvoicesExist()
+        {
+            await using var context = GetInMemoryDbContext("DashboardInvoiceSectionEmpty");
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetHomeDashboardInvoiceSectionAsync(42, 5);
+
+            result.OpenCount.Should().Be(0);
+            result.SubmittedCount.Should().Be(0);
+            result.PaidCount.Should().Be(0);
+            result.OpenAmount.Should().Be(0m);
+            result.LastPaidAt.Should().BeNull();
+            result.TotalRecentCount.Should().Be(0);
+            result.NeedsAttentionCount.Should().Be(0);
+            result.Recent.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetHomeDashboardInvoiceSectionAsync_ShouldClampLimitAndOrderRecentsDeterministically()
+        {
+            await using var context = GetInMemoryDbContext("DashboardInvoiceSectionClampOrder");
+
+            context.User.Add(new User { Id = 1, Email = "user@test.com", Name = "User" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team" });
+
+            var sharedCreatedAt = new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc);
+            context.PaymentRequestsByUser.AddRange(
+                new PaymentRequestByUser
+                {
+                    Id = 1,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 100m,
+                    InvoiceNumber = "INV-1",
+                    CreatedAt = sharedCreatedAt,
+                    Status = TransactionStatus.Submitted,
+                },
+                new PaymentRequestByUser
+                {
+                    Id = 2,
+                    UserId = 1,
+                    TeamId = 1,
+                    Amount = 200m,
+                    InvoiceNumber = "INV-2",
+                    CreatedAt = sharedCreatedAt,
+                    Status = TransactionStatus.ChangesRequested,
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var negativeLimitResult = await repo.GetHomeDashboardInvoiceSectionAsync(1, -3);
+            var orderedResult = await repo.GetHomeDashboardInvoiceSectionAsync(1, 50);
+
+            negativeLimitResult.Recent.Should().BeEmpty();
+            orderedResult.Recent.Select(item => item.Id).Should().Equal(2, 1);
+            orderedResult.NeedsAttentionCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetHomeDashboardPaymentRequestSectionAsync_ShouldClampLimitAndBuildSummary()
+        {
+            await using var context = GetInMemoryDbContext("DashboardPaymentRequestSectionSummary");
+
+            context.User.Add(new User { Id = 1, Email = "assignee@test.com", Name = "Assignee" });
+            context.User.Add(new User { Id = 2, Email = "requester@test.com", Name = "Requester" });
+            context.Teams.Add(new Team { Id = 1, Name = "Team" });
+
+            context.PaymentRequestsByTeam.AddRange(
+                new PaymentRequestByTeam
+                {
+                    Id = 1,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 100m,
+                    CreatedAt = new DateTime(2026, 6, 3, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.Submitted,
+                    PaymentReference = "PR-1",
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 2,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 120m,
+                    CreatedAt = new DateTime(2026, 6, 2, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.ChangesRequested,
+                    PaymentReference = "PR-2",
+                },
+                new PaymentRequestByTeam
+                {
+                    Id = 3,
+                    UserId = 1,
+                    RequestedById = 2,
+                    TeamId = 1,
+                    Amount = 130m,
+                    CreatedAt = new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc),
+                    Status = TransactionStatus.Paid,
+                    PaidAt = new DateTime(2026, 6, 4, 12, 0, 0, DateTimeKind.Utc),
+                    PaymentReference = "PR-3",
+                });
+            await context.SaveChangesAsync();
+
+            var repo = new TransactionRepository(context, Mock.Of<IFileRepository>());
+
+            var result = await repo.GetHomeDashboardPaymentRequestSectionAsync(1, 100);
+
+            result.OpenCount.Should().Be(2);
+            result.SubmittedCount.Should().Be(1);
+            result.PaidCount.Should().Be(1);
+            result.OpenAmount.Should().Be(220m);
+            result.LastPaidAt.Should().Be(new DateTime(2026, 6, 4, 12, 0, 0, DateTimeKind.Utc));
+            result.TotalRecentCount.Should().Be(3);
+            result.NeedsAttentionCount.Should().Be(1);
+            result.Recent.Should().HaveCount(3);
+            result.Recent.First().Reference.Should().Be("PR-1");
+        }
+
+        [Fact]
         public async Task GetAllTransactions_FilterByDecimalAmount_ShouldReturnMatchingData()
         {
             await using var context = GetInMemoryDbContext("FilterByDecimalAmount");

@@ -42,6 +42,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IHomeDashboardService, HomeDashboardService>();
 builder.Services.AddScoped<IPaymentRequestByUserService, PaymentRequestByUserService>();
 builder.Services.AddScoped<IPaymentRequestByTeamService, PaymentRequestByTeamService>();
 builder.Services.AddScoped<ICostCentreService, CostCentreService>();
@@ -56,9 +57,12 @@ builder.Services.AddSingleton<IReceiptParser, ReceiptParser>();
 // Notification
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<SlackSettings>(builder.Configuration.GetSection("Slack"));
+builder.Services.Configure<PushNotificationSettings>(builder.Configuration.GetSection("PushNotifications"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient<NotificationDispatchService>();
 builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddHttpClient<PushNotificationService>();
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 builder.Services.AddHostedService<PaymentReminderHostedService>();
 builder.Services.AddScoped<IBankStatementMatchingService, BankStatementMatchingService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
@@ -73,6 +77,7 @@ builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
 builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
+builder.Services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
 
 builder.Services.AddExceptionHandler<EndpointExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -184,6 +189,7 @@ var apiV1 = app
 apiV1.MapTeamEndpoints();
 apiV1.MapAuthEndpoints();
 apiV1.MapUserEndpoints();
+apiV1.MapDashboardEndpoints();
 apiV1.MapTransactionEndpoints();
 apiV1.MapCostCentreEndpoints();
 apiV1.MapBankAccountEndpoints();
@@ -230,6 +236,15 @@ static void LoadSecretsFromDotEnv(WebApplicationBuilder builder)
                     break;
                 case "SLACK_BOT_TOKEN":
                     values["Slack:BotToken"] = value;
+                    break;
+                case "PUSH_VAPID_PUBLIC_KEY":
+                    values["PushNotifications:PublicKey"] = value;
+                    break;
+                case "PUSH_VAPID_PRIVATE_KEY":
+                    values["PushNotifications:PrivateKey"] = value;
+                    break;
+                case "PUSH_VAPID_SUBJECT":
+                    values["PushNotifications:Subject"] = value;
                     break;
             }
         }

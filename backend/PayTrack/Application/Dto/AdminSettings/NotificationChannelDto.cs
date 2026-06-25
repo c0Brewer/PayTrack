@@ -10,5 +10,5 @@ namespace PayTrack.Application.Dto.AdminSettings
     /// Channel toggle state for a single notification event.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public record NotificationChannelDto(bool SendEmail, bool SendSlack);
+    public record NotificationChannelDto(bool SendEmail, bool SendSlack, bool SendPush);
 }

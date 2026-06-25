@@ -1,5 +1,10 @@
 <div class="main-page-container">
-  <h1 class="mb-3">Settings</h1>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">Settings</h1>
+    <p class="mb-0 text-body-secondary">
+      Manage your profile, payout details, notifications, and security settings.
+    </p>
+  </div>
   @let user = authService.currentUser$ | async;
 
   <div class="settings-tabs" aria-label="Settings sections">

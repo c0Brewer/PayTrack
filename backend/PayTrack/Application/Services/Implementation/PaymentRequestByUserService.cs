@@ -2,7 +2,6 @@
 // Copyright (c) PayTrack. All rights reserved.
 // </copyright>
 
-using PayTrack.Application.Dto.Budget;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Exceptions;
 using PayTrack.Application.Services.Model;
@@ -19,7 +18,11 @@ namespace PayTrack.Application.Services.Implementation
         IFileRepository _fileRepo,
         IBankAccountService _bankAccountService,
         ICostCentreService _costCentreService,
-        IBudgetService _budgetService) : IPaymentRequestByUserService
+        IBudgetService _budgetService,
+        INotificationDispatchService? _notificationDispatchService = null,
+        ILogger<PaymentRequestByUserService>? _logger = null,
+        IPushNotificationService? _pushNotifications = null,
+        ISystemSettingService? _systemSettings = null) : IPaymentRequestByUserService
     {
         private const int MaxDuplicateResults = 10;
 
@@ -32,6 +35,10 @@ namespace PayTrack.Application.Services.Implementation
         private readonly IBankAccountService bankAccountService = _bankAccountService;
         private readonly ICostCentreService costCentreService = _costCentreService;
         private readonly IBudgetService budgetService = _budgetService;
+        private readonly INotificationDispatchService? notificationDispatchService = _notificationDispatchService;
+        private readonly ILogger<PaymentRequestByUserService>? logger = _logger;
+        private readonly IPushNotificationService? pushNotifications = _pushNotifications;
+        private readonly ISystemSettingService? systemSettings = _systemSettings;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByUser> paymentRequestByUser, int totalCount)> GetAllAsync(
@@ -292,7 +299,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             if (string.IsNullOrWhiteSpace(paymentReference))
@@ -300,9 +311,19 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException("Payment reference is required");
             }
 
+            if (paymentReference.Trim().Length < 3)
+            {
+                throw new InvalidStateException("Payment reference must be at least 3 characters long");
+            }
+
             if (string.IsNullOrWhiteSpace(purposeOfPayment))
             {
                 throw new InvalidStateException("Purpose of payment is required");
+            }
+
+            if (purposeOfPayment.Trim().Length < 3)
+            {
+                throw new InvalidStateException("Purpose of payment must be at least 3 characters long");
             }
 
             if (paymentDate.Date > DateTime.Today)
@@ -322,37 +343,43 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 $"Payment reference: {transaction.PaymentReference}");
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack,
+                SystemSettingKeys.NotificationsInvoicePaymentCompletedPush,
+                "Payment completed",
+                "Your invoice payment has been completed.");
         }
 
         /// <inheritdoc/>
         public async Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
             int id,
             int changedById,
-            int costCentreId,
+            int budgetId,
             string? reason)
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
-            if (costCentreId <= 0)
+            if (budgetId <= 0)
             {
-                throw new InvalidStateException("Cost centre is required");
+                throw new InvalidStateException("Budget is required");
             }
 
-            var costCentre = await this.costCentreService.GetByIdAsync(costCentreId)
-                ?? throw new NotFoundException("Cost centre not found");
+            var budget = await this.budgetService.GetByIdAsync(budgetId)
+                ?? throw new NotFoundException("Budget not found");
 
-            var (budgets, _) = await this.budgetService.GetBudgetsAsync(new GetBudgetQuery
+            if (budget.TeamId != transaction.TeamId)
             {
-                TeamId = transaction.TeamId,
-                CostCentreId = costCentre.Id,
-                Limit = 1,
-            });
-            var budget = budgets.FirstOrDefault()
-                ?? throw new NotFoundException("Budget for cost centre and team not found");
+                throw new InvalidStateException("Budget does not belong to the invoice team");
+            }
 
             transaction.BudgetId = budget.Id;
 
@@ -362,7 +389,13 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 NormalizeOptionalReason(reason));
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                SystemSettingKeys.NotificationsInvoiceApprovalEmail,
+                SystemSettingKeys.NotificationsInvoiceApprovalSlack,
+                SystemSettingKeys.NotificationsInvoiceApprovalPush,
+                "Invoice approved",
+                "Your submitted invoice has been approved.");
         }
 
         /// <inheritdoc/>
@@ -373,7 +406,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Decline reason is required");
@@ -383,7 +420,13 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                SystemSettingKeys.NotificationsInvoiceRejectionEmail,
+                SystemSettingKeys.NotificationsInvoiceRejectionSlack,
+                SystemSettingKeys.NotificationsInvoiceRejectionPush,
+                "Invoice rejected",
+                $"Your submitted invoice was rejected: {normalizedReason}");
         }
 
         /// <inheritdoc/>
@@ -394,7 +437,11 @@ namespace PayTrack.Application.Services.Implementation
         {
             var transaction = await this.repo.GetByIdAsync(
                     id,
-                    new GetPaymentRequestByUserQueryById { IncludeStatusHistory = true })
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
                 ?? throw new NotFoundException("Transaction not found");
 
             var normalizedReason = NormalizeRequiredReason(reason, "Change request reason is required");
@@ -404,7 +451,123 @@ namespace PayTrack.Application.Services.Implementation
                 changedById,
                 normalizedReason);
 
-            return await this.repo.UpdateAsync(transaction);
+            return await this.SaveStatusChangeAndNotifyAsync(
+                transaction,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack,
+                SystemSettingKeys.NotificationsInvoiceChangesRequestedPush,
+                "Invoice changes requested",
+                $"Changes were requested for your invoice: {normalizedReason}");
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> ResubmitPaymentRequestByUserAsync(
+            int id,
+            int userId,
+            int teamId,
+            decimal amount,
+            string purposeOfPayment,
+            DateTime paidAt,
+            string invoiceNumber,
+            string? comment,
+            PayoutType payoutType,
+            int? bankAccountId,
+            IFormFile? receipt)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
+                ?? throw new NotFoundException("Transaction not found");
+
+            if (transaction.UserId != userId)
+            {
+                throw new ForbiddenException("You do not have permission to edit this invoice.");
+            }
+
+            if (transaction.Status != TransactionStatus.ChangesRequested)
+            {
+                throw new InvalidStateException("Only invoices with requested changes can be edited");
+            }
+
+            var team = await this.teamService.GetTeamByIdAsync(teamId)
+                ?? throw new NotFoundException("Team could not be found");
+
+            if (paidAt.Date > DateTime.Today)
+            {
+                throw new InvalidStateException("Paid at cannot be in the future!");
+            }
+
+            if (payoutType == PayoutType.User)
+            {
+                if (!bankAccountId.HasValue)
+                {
+                    throw new InvalidStateException("If the money should be paid out to you, you must specify a bankAccount");
+                }
+
+                var bankAccounts = await this.bankAccountService.GetBankAccountsAsync(userId)
+                    ?? throw new NotFoundException("Bank Accounts could not be found");
+
+                if (!bankAccounts.Any(bankAccount => bankAccount.Id == bankAccountId.Value))
+                {
+                    throw new InvalidStateException("Could not find specified bank account");
+                }
+            }
+            else
+            {
+                bankAccountId = null;
+            }
+
+            transaction.TeamId = team.Id;
+            transaction.Amount = amount;
+            transaction.PurposeOfPayment = purposeOfPayment;
+            transaction.PaidAt = paidAt.ToUniversalTime();
+            transaction.InvoiceNumber = invoiceNumber;
+            transaction.Comment = comment;
+            transaction.PayoutType = payoutType;
+            transaction.BankAccountId = bankAccountId;
+
+            if (receipt != null)
+            {
+                transaction.ReceiptUrl = await this.fileRepo.SaveFile(
+                    receipt,
+                    $"invoice_{transaction.InvoiceNumber}_{DateTime.UtcNow:yyyyMMdd_HHmmss}");
+            }
+
+            AddStatusHistory(
+                transaction,
+                TransactionStatus.Review,
+                userId,
+                "Invoice resubmitted after requested changes");
+
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
+        }
+
+        /// <inheritdoc/>
+        public async Task<PaymentRequestByUser> UndoLastStatusChangeAsync(
+            int id,
+            int changedById)
+        {
+            var transaction = await this.repo.GetByIdAsync(
+                    id,
+                    new GetPaymentRequestByUserQueryById
+                    {
+                        IncludeUser = true,
+                        IncludeStatusHistory = true,
+                    })
+                ?? throw new NotFoundException("Transaction not found");
+
+            var latestStatusChange = transaction.StatusHistory
+                .OrderByDescending(entry => entry.ChangedAt)
+                .FirstOrDefault(entry => entry.ToStatus == transaction.Status)
+                ?? throw new InvalidStateException("No status change can be undone");
+
+            UndoStatusChange(transaction, latestStatusChange.FromStatus, changedById);
+
+            return await this.SaveStatusChangeAndNotifyAsync(transaction);
         }
 
         /// <inheritdoc/>
@@ -479,6 +642,21 @@ namespace PayTrack.Application.Services.Implementation
             };
         }
 
+        private static string GetStatusLabel(TransactionStatus status)
+        {
+            return status switch
+            {
+                TransactionStatus.ChangesRequested => "Changes requested",
+                TransactionStatus.Review => "In review",
+                _ => status.ToString(),
+            };
+        }
+
+        private static string FormatNotificationComment(string? comment)
+        {
+            return string.IsNullOrWhiteSpace(comment) ? string.Empty : $"Comment: {comment.Trim()}";
+        }
+
         private static void AddStatusHistory(
             PaymentRequestByUser transaction,
             TransactionStatus toStatus,
@@ -503,6 +681,36 @@ namespace PayTrack.Application.Services.Implementation
             });
         }
 
+        private static void UndoStatusChange(
+            PaymentRequestByUser transaction,
+            TransactionStatus restoredStatus,
+            int changedById)
+        {
+            var previousStatus = transaction.Status;
+            transaction.Status = restoredStatus;
+
+            if (previousStatus == TransactionStatus.Approved)
+            {
+                transaction.BudgetId = null;
+            }
+
+            if (previousStatus == TransactionStatus.Paid)
+            {
+                transaction.FinancePaidAt = null;
+                transaction.PaymentReference = string.Empty;
+            }
+
+            transaction.StatusHistory.Add(new TransactionStatusHistory
+            {
+                TransactionId = transaction.Id,
+                ChangedById = changedById,
+                FromStatus = previousStatus,
+                ToStatus = restoredStatus,
+                ChangedAt = DateTime.UtcNow,
+                Comment = "Undo status change",
+            });
+        }
+
         private static string NormalizeRequiredReason(string reason, string errorMessage)
         {
             if (string.IsNullOrWhiteSpace(reason))
@@ -510,12 +718,29 @@ namespace PayTrack.Application.Services.Implementation
                 throw new InvalidStateException(errorMessage);
             }
 
-            return reason.Trim();
+            var normalizedReason = reason.Trim();
+            if (normalizedReason.Length < 3)
+            {
+                throw new InvalidStateException("Reason must be at least 3 characters long");
+            }
+
+            return normalizedReason;
         }
 
         private static string? NormalizeOptionalReason(string? reason)
         {
-            return string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return null;
+            }
+
+            var normalizedReason = reason.Trim();
+            if (normalizedReason.Length < 3)
+            {
+                throw new InvalidStateException("Reason must be at least 3 characters long");
+            }
+
+            return normalizedReason;
         }
 
         private static string GetContentTypeFromPath(string filePath)
@@ -527,6 +752,122 @@ namespace PayTrack.Application.Services.Implementation
                 ".pdf" => "application/pdf",
                 _ => "application/octet-stream",
             };
+        }
+
+        private async Task<PaymentRequestByUser> SaveStatusChangeAndNotifyAsync(
+            PaymentRequestByUser transaction,
+            string? emailSettingKey = null,
+            string? slackSettingKey = null,
+            string? pushSettingKey = null,
+            string? pushTitle = null,
+            string? pushBody = null)
+        {
+            var updatedTransaction = await this.repo.UpdateAsync(transaction);
+            await this.NotifyUserAboutStatusChangeAsync(updatedTransaction, emailSettingKey, slackSettingKey);
+            if (pushTitle != null
+                && pushBody != null
+                && await this.IsNotificationEnabledAsync(pushSettingKey, true))
+            {
+                await this.SendInvoiceStatusPushAsync(updatedTransaction, pushTitle, pushBody);
+            }
+
+            return updatedTransaction;
+        }
+
+        private async Task NotifyUserAboutStatusChangeAsync(
+            PaymentRequestByUser transaction,
+            string? emailSettingKey,
+            string? slackSettingKey)
+        {
+            if (this.notificationDispatchService == null
+                || transaction.User == null
+                || string.IsNullOrWhiteSpace(transaction.User.Email))
+            {
+                return;
+            }
+
+            var statusLabel = GetStatusLabel(transaction.Status);
+            var latestComment = transaction.StatusHistory
+                .OrderByDescending(entry => entry.ChangedAt)
+                .FirstOrDefault()
+                ?.Comment;
+            var subject = $"Invoice {transaction.InvoiceNumber} status changed to {statusLabel}";
+            var body = $"""
+                Hello {transaction.User.Name},
+
+                the status of invoice {transaction.InvoiceNumber} has changed.
+
+                New status: {statusLabel}
+                {FormatNotificationComment(latestComment)}
+
+                Best regards,
+                PayTrack
+                """;
+
+            if (await this.IsNotificationEnabledAsync(emailSettingKey, true))
+            {
+                try
+                {
+                    await this.notificationDispatchService.SendEmailAsync(
+                        transaction.User.Email,
+                        subject,
+                        body);
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending status change notification email for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
+            }
+
+            if (await this.IsNotificationEnabledAsync(slackSettingKey, false))
+            {
+                try
+                {
+                    await this.notificationDispatchService.SendSlackAsync(
+                        transaction.User.Email,
+                        $"{subject}\n\n{body}");
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending Slack status change notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
+            }
+        }
+
+        private async Task<bool> IsNotificationEnabledAsync(string? settingKey, bool defaultValue)
+        {
+            if (settingKey == null || this.systemSettings == null)
+            {
+                return defaultValue;
+            }
+
+            return await this.systemSettings.GetBoolSettingAsync(settingKey, defaultValue);
+        }
+
+        private async Task SendInvoiceStatusPushAsync(PaymentRequestByUser transaction, string title, string body)
+        {
+            if (this.pushNotifications is null)
+            {
+                return;
+            }
+
+            var purpose = string.IsNullOrWhiteSpace(transaction.PurposeOfPayment)
+                ? $"Invoice #{transaction.Id}"
+                : transaction.PurposeOfPayment.Trim();
+
+            await this.pushNotifications.SendWorkflowStatusChangedAsync(
+                transaction.UserId,
+                title,
+                $"{body}\n{purpose}",
+                $"/my-invoices/{transaction.Id}");
         }
 
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(

@@ -98,6 +98,10 @@ export class CostCentreEditModalComponent implements OnChanges {
     return this.costCentre.id === -1;
   }
 
+  get activeSeasons(): SeasonDto[] {
+    return this.seasons.filter((season) => season.isActive !== false);
+  }
+
   hasChanged(): boolean {
     if (!this.originalCostCentre) return false;
 
@@ -141,6 +145,14 @@ export class CostCentreEditModalComponent implements OnChanges {
 
   getSeasonName(seasonId: number): string {
     return this.seasons.find((season) => season.id === seasonId)?.name ?? `Season #${seasonId}`;
+  }
+
+  getSeasonOptionLabel(season: SeasonDto): string {
+    return season.isActive === false ? `${season.name} (inactive)` : season.name;
+  }
+
+  isSeasonActive(seasonId: number): boolean {
+    return this.seasons.find((season) => season.id === seasonId)?.isActive !== false;
   }
 
   isTeamActive(teamId: number): boolean {
@@ -197,7 +209,8 @@ export class CostCentreEditModalComponent implements OnChanges {
 
         return Number(this.newBudgetDraft.targetAmount) < 0 ? 'Amount must be non-negative.' : '';
       case 'seasonId':
-        return this.newBudgetDraft.seasonId ? '' : 'Season is required.';
+        if (!this.newBudgetDraft.seasonId) return 'Season is required.';
+        return this.isSeasonActive(this.newBudgetDraft.seasonId) ? '' : 'Select an active season.';
       case 'periodStart':
         return this.newBudgetDraft.periodStart ? '' : 'Period start is required.';
       case 'periodEnd':

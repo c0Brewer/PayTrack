@@ -142,8 +142,10 @@ export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['paramete
 
 // Season
 export type SeasonDto = components['schemas']['SeasonDto'];
+export type SeasonDtoPaginatedResponse = components['schemas']['SeasonDtoPaginatedResponse'];
 export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
 export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+export type GetSeasonOptions = paths['/api/v1/season']['get']['parameters']['query'];
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
@@ -203,12 +205,16 @@ export type TransactionDto = components['schemas']['TransactionDto'];
 // Admin Settings
 export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
 export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
-export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean; sendPush: boolean };
 export type NotificationChannelGroupsDto = {
   creation: NotificationChannelDto;
   confirmation: NotificationChannelDto;
   reminders: NotificationChannelDto;
   deletion: NotificationChannelDto;
+  invoiceApproval: NotificationChannelDto;
+  invoiceRejection: NotificationChannelDto;
+  invoiceChangesRequested: NotificationChannelDto;
+  invoicePaymentCompleted: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
 export type ReminderScheduleDto = {

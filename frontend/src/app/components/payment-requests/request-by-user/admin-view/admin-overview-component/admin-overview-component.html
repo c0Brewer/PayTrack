@@ -1,6 +1,11 @@
 <div class="main-page-container requests">
   <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 w-100 mb-1">
-    <h2 class="m-0">Invoices</h2>
+    <div class="d-flex flex-column gap-1">
+      <h1 class="m-0">Invoices</h1>
+      <p class="mb-0 text-body-secondary">
+        Review submitted invoices, duplicates, and payout progress.
+      </p>
+    </div>
     <div class="d-flex flex-column align-items-sm-end gap-1">
       <div class="d-flex flex-wrap align-items-center gap-2">
         <button class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Csv)">
@@ -11,7 +16,7 @@
           <span class="material-symbols-outlined">picture_as_pdf</span>
           Export PDF
         </button>
-        <button class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="navigateBankStatementUpload()">
+        <button class="btn btn-primary align-self-start align-self-sm-auto d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="navigateBankStatementUpload()">
           <span class="material-symbols-outlined">upload</span>
           Upload Bank Statement
         </button>
