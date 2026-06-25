@@ -10,6 +10,7 @@ import {
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
   PayoutType,
+  SortDirection,
   TransactionStatus,
   UserDto,
 } from '../../../../../types/exporter';
@@ -54,6 +55,8 @@ export class UserInvoicesOverviewComponent implements OnInit {
   filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
   };
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
 
   private currentUser: UserDto | null = null;
 
@@ -78,6 +81,8 @@ export class UserInvoicesOverviewComponent implements OnInit {
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
@@ -141,6 +146,19 @@ export class UserInvoicesOverviewComponent implements OnInit {
 
   updateFilterOptions(options: GetPaymentRequestsByUserOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onUpdateLimit(newLimit: number): void {
+    this.limit = newLimit;
     this.page = 0;
     this.loadInvoices();
   }

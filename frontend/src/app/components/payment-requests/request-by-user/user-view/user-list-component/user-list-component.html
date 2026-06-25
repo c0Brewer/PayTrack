@@ -1,0 +1,28 @@
+<div class="my-invoices">
+  <h2>My Invoices</h2>
+
+  <app-invoice-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
+  ></app-invoice-filter-component>
+
+  <app-invoice-list-component
+    [invoices]="invoices"
+    [showUserNameColumn]="false"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
+    (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
+  ></app-invoice-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

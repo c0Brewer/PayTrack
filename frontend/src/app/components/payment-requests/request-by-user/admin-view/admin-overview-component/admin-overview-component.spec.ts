@@ -4,11 +4,14 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { TeamService } from '../../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
+  FinancialExportFormat,
+  FinancialExportSource,
   PaymentRequestByUserDto,
   TransactionStatus,
 } from '../../../../../types/exporter';
@@ -29,6 +32,10 @@ describe('AdminInvoicesOverviewComponent', () => {
   const notificationMock = {
     showError: vi.fn(),
     showSuccess: vi.fn(),
+  };
+
+  const financialExportServiceMock = {
+    downloadFinancialData: vi.fn(),
   };
 
   const routerMock = {
@@ -54,11 +61,13 @@ describe('AdminInvoicesOverviewComponent', () => {
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReturnValue(of([]));
     paymentServiceMock.deletePaymentRequestByUser.mockReturnValue(of(undefined));
     paymentServiceMock.dismissDuplicatePaymentRequestByUser.mockReturnValue(of(undefined));
+    financialExportServiceMock.downloadFinancialData.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [AdminInvoicesOverviewComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: FinancialExportService, useValue: financialExportServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -147,6 +156,29 @@ describe('AdminInvoicesOverviewComponent', () => {
 
     expect(component.page).toBe(0);
     expect(paymentServiceMock.getPaymentRequestsByUser).toHaveBeenCalled();
+  });
+
+  it('should export submitted invoices with current filters and without pagination', () => {
+    component.filterOptions = {
+      TeamId: 3,
+      InvoiceNumber: 'INV-7',
+      Limit: 25,
+      Offset: 50,
+    };
+
+    component.exportFinancialData(FinancialExportFormat.Csv);
+
+    expect(financialExportServiceMock.downloadFinancialData).toHaveBeenCalledWith(
+      {
+        TeamId: 3,
+        InvoiceNumber: 'INV-7',
+        Source: FinancialExportSource.SubmittedInvoices,
+        Limit: undefined,
+        Offset: undefined,
+      },
+      FinancialExportFormat.Csv,
+    );
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Financial export downloaded.');
   });
 
   it('should navigate to detail page on open detail', () => {

@@ -67,6 +67,44 @@ describe('TeamRequestAdminFilterComponent', () => {
     expect(options.Status).toBe(TransactionStatus.Approved);
   });
 
+  it('should update text, amount, and due date filters from change handlers', () => {
+    vi.useFakeTimers();
+    fixture.detectChanges();
+
+    component.onPurposeChange({ target: { value: 'Fuel' } } as unknown as Event);
+    component.onMinAmountChange({ target: { value: '50' } } as unknown as Event);
+    component.onMaxAmountChange({ target: { value: '200' } } as unknown as Event);
+    component.onMinDueDateChange({ target: { value: '2026-01-01' } } as unknown as Event);
+    component.onMaxDueDateChange({ target: { value: '2026-01-31' } } as unknown as Event);
+    vi.advanceTimersByTime(400);
+    vi.useRealTimers();
+
+    const options = component.getFilterOptions()!;
+    expect(options.PurposeOfPayment).toBe('Fuel');
+    expect(options.MinAmount).toBe(50);
+    expect(options.MaxAmount).toBe(200);
+    expect(options.MinDueDate).toBe('2026-01-01');
+    expect(options.MaxDueDate).toBe('2026-01-31');
+  });
+
+  it('should update status, team, and user filters from change handlers', () => {
+    vi.useFakeTimers();
+    fixture.detectChanges();
+
+    component.onStatusChange({
+      target: { value: String(TransactionStatus.Paid) },
+    } as unknown as Event);
+    component.onTeamChange({ target: { value: '3' } } as unknown as Event);
+    component.onUserChange({ target: { value: '4' } } as unknown as Event);
+    vi.advanceTimersByTime(100);
+    vi.useRealTimers();
+
+    const options = component.getFilterOptions()!;
+    expect(options.Status).toBe(TransactionStatus.Paid);
+    expect(options.TeamId).toBe(3);
+    expect(options.UserId).toBe(4);
+  });
+
   it('should emit limitChange when onLimitChange is called', () => {
     fixture.detectChanges();
     let emittedLimit: number | undefined;

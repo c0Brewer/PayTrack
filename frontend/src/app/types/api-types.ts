@@ -1599,17 +1599,18 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    InvoiceNumber?: string;
-                    PayoutType?: components["schemas"]["PayoutType"];
-                    BankAccountId?: number;
                     IncludeBankAccount?: boolean;
                     UserId?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
+                    CostCentreId?: number;
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
@@ -1617,10 +1618,13 @@ export interface paths {
                     MaxPaidAt?: string;
                     MinDueDate?: string;
                     MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
+                    IncludeBudget?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -1683,6 +1687,70 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transaction/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    UserId?: number;
+                    RequestById?: number;
+                    MinAmount?: number;
+                    MaxAmount?: number;
+                    PurposeOfPayment?: string;
+                    PaymentReference?: string;
+                    InvoiceNumber?: string;
+                    PayoutType?: components["schemas"]["PayoutType"];
+                    BankAccountId?: number;
+                    Status?: components["schemas"]["TransactionStatus"];
+                    TeamId?: number;
+                    CostCentreId?: number;
+                    PaymentDirection?: components["schemas"]["PaymentDirection"];
+                    MinCreatedAt?: string;
+                    MaxCreatedAt?: string;
+                    MinPaidAt?: string;
+                    MaxPaidAt?: string;
+                    MinDueDate?: string;
+                    MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
+                    Limit?: number;
+                    Offset?: number;
+                    IncludeTeam?: boolean;
+                    IncludeStatusHistory?: boolean;
+                    IncludeBudget?: boolean;
+                    Format?: components["schemas"]["FinancialExportFormat"];
+                    Source?: components["schemas"]["FinancialExportSource"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2171,14 +2239,16 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    RequestById?: number;
+                    VisibleStatusesOnly?: boolean;
                     UserId?: number;
+                    RequestById?: number;
                     MinAmount?: number;
                     MaxAmount?: number;
                     PurposeOfPayment?: string;
                     PaymentReference?: string;
                     Status?: components["schemas"]["TransactionStatus"];
                     TeamId?: number;
+                    CostCentreId?: number;
                     PaymentDirection?: components["schemas"]["PaymentDirection"];
                     MinCreatedAt?: string;
                     MaxCreatedAt?: string;
@@ -2186,10 +2256,13 @@ export interface paths {
                     MaxPaidAt?: string;
                     MinDueDate?: string;
                     MaxDueDate?: string;
+                    SortBy?: string;
+                    SortDirection?: string;
                     Limit?: number;
                     Offset?: number;
                     IncludeTeam?: boolean;
                     IncludeStatusHistory?: boolean;
+                    IncludeBudget?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -2935,6 +3008,16 @@ export interface components {
             score: number;
             matchedFields: string[];
         };
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        FinancialExportFormat: 1 | 2;
+        /**
+         * Format: int32
+         * @enum {integer}
+         */
+        FinancialExportSource: 1 | 2;
         GoogleAuthCallbackDto: {
             code: string;
         };

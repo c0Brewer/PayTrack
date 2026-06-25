@@ -2,10 +2,30 @@
   <table class="TUR-table team-request-table">
     <thead>
       <tr>
-        <th>Amount</th>
-        <th>Due Date</th>
-        <th>Purpose</th>
-        <th>Status</th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Amount')">
+            Amount
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('DueDate')">
+            Due Date
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('DueDate') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Purpose')">
+            Purpose
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Status')">
+            Status
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+          </button>
+        </th>
         <th class="actions-col">Actions</th>
       </tr>
     </thead>
