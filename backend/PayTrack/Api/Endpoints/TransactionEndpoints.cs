@@ -93,7 +93,8 @@ namespace PayTrack.Api.Endpoints
              * Financial Export
              */
             group.MapGet("/export", TransactionHandler.ExportFinancialDataAsync)
-                .RequireRole(Role.Admin);
+                .RequireRole(Role.Admin)
+                .RequireActiveUser();
 
             /*
              * Bankstatement Matching

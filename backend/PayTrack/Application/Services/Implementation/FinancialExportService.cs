@@ -334,6 +334,11 @@ namespace PayTrack.Application.Services.Implementation
                 return string.Empty;
             }
 
+            if (value[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
+            {
+                value = "'" + value;
+            }
+
             var mustQuote = value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r');
             var escaped = value.Replace("\"", "\"\"");
 
@@ -497,7 +502,6 @@ namespace PayTrack.Application.Services.Implementation
         {
             var (transactions, _) = await this.transactionRepository.GetAllAsync(CreatePaymentRequestsExportQuery(query));
             return transactions
-                .Where(transaction => query.Status.HasValue || transaction.Status is TransactionStatus.Submitted or TransactionStatus.Paid)
                 .Cast<Transaction>()
                 .ToList();
         }
@@ -608,7 +612,7 @@ namespace PayTrack.Application.Services.Implementation
                     objects.Add($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 {fontObjectId} 0 R >> >> /Contents {contentObjectId} 0 R >>");
 
                     var content = BuildPageContent(page);
-                    objects.Add($"<< /Length {Encoding.ASCII.GetByteCount(content)} >>\nstream\n{content}\nendstream");
+                    objects.Add($"<< /Length {Encoding.ASCII.GetByteCount(content) + 1} >>\nstream\n{content}\nendstream");
                 }
 
                 objects[1] = $"<< /Type /Pages /Kids [{string.Join(" ", pageObjectIds.Select(id => $"{id} 0 R"))}] /Count {pageObjectIds.Count} >>";

@@ -618,6 +618,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         public async Task ExportFinancialData_ReturnsFile()
         {
             // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
+
             var fileBytes = new byte[] { 1, 2, 3 };
             _factory.FinancialExportServiceMock
                 .Setup(s => s.ExportFinancialDataAsync(It.Is<GetFinancialExportQuery>(q =>

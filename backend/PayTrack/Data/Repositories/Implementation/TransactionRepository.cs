@@ -533,15 +533,13 @@ namespace PayTrack.Data.Repositories.Implementation
                 "amount" => ApplyOrder(dbQuery, transaction => transaction.Amount, descending),
                 "createdat" or "submitted" => ApplyOrder(dbQuery, transaction => transaction.CreatedAt, descending),
                 "duedate" => ApplyOrder(dbQuery, transaction => transaction.DueDate, descending),
-                "invoice" or "invoicenumber" => ApplyOrder(
-                    dbQuery,
-                    transaction => EF.Property<string>(transaction, nameof(PaymentRequestByUser.InvoiceNumber)),
-                    descending),
+                "invoice" or "invoicenumber" => typeof(T) == typeof(PaymentRequestByUser)
+                    ? ApplyOrder(dbQuery, transaction => EF.Property<string>(transaction, nameof(PaymentRequestByUser.InvoiceNumber)), descending)
+                    : ApplyOrder(dbQuery, transaction => transaction.CreatedAt, true),
                 "paidat" => ApplyOrder(dbQuery, transaction => transaction.PaidAt, descending),
-                "payouttype" => ApplyOrder(
-                    dbQuery,
-                    transaction => EF.Property<PayoutType>(transaction, nameof(PaymentRequestByUser.PayoutType)),
-                    descending),
+                "payouttype" => typeof(T) == typeof(PaymentRequestByUser)
+                    ? ApplyOrder(dbQuery, transaction => EF.Property<PayoutType>(transaction, nameof(PaymentRequestByUser.PayoutType)), descending)
+                    : ApplyOrder(dbQuery, transaction => transaction.CreatedAt, true),
                 "purpose" or "purposeofpayment" => ApplyOrder(dbQuery, transaction => transaction.PurposeOfPayment, descending),
                 "status" => ApplyOrder(dbQuery, transaction => transaction.Status, descending),
                 "team" or "teamname" => ApplyOrder(dbQuery, transaction => transaction.Team.Name, descending),

@@ -184,7 +184,13 @@ namespace PayTrack.Tests.UnitTests.Services
             repoMock
                 .Setup(r => r.GetAllAsync(It.IsAny<GetPaymentRequestByTeamQuery>()))
                 .Callback<GetPaymentRequestByTeamQuery>(query => capturedQuery = query)
-                .ReturnsAsync((transactions, transactions.Count));
+                .Returns<GetPaymentRequestByTeamQuery>(q =>
+                {
+                    var filtered = q.VisibleStatusesOnly == true
+                        ? transactions.Where(t => t.Status is TransactionStatus.Submitted or TransactionStatus.Paid).ToList()
+                        : transactions;
+                    return Task.FromResult((filtered, filtered.Count));
+                });
 
             var service = new FinancialExportService(repoMock.Object);
 
