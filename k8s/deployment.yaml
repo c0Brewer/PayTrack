@@ -153,6 +153,21 @@ spec:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: GOOGLE_CLIENT_SECRET
+            - name: PushNotifications__PublicKey
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_PUBLIC_KEY
+            - name: PushNotifications__PrivateKey
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_PRIVATE_KEY
+            - name: PushNotifications__Subject
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_SUBJECT
           resources:
             requests:
               memory: "512Mi"
