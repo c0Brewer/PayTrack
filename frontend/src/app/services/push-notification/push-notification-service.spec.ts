@@ -110,9 +110,13 @@ describe('PushNotificationService', () => {
         updatedAt: '2026-06-25T12:00:00Z',
       },
     ];
-    const fetchSpy = vi.spyOn(window, 'fetch').mockResolvedValue(
-      jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true, devices })),
-    );
+    const fetchSpy = vi
+      .spyOn(window, 'fetch')
+      .mockResolvedValue(
+        jsonResponse(
+          pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true, devices }),
+        ),
+      );
 
     await service.loadConfig();
 
@@ -258,10 +262,13 @@ describe('PushNotificationService', () => {
       }
 
       return Promise.resolve(
-        new Response(JSON.stringify({ detail: 'The push subscription endpoint is not supported.' }), {
-          status: 400,
-          headers: { 'content-type': 'application/json' },
-        }),
+        new Response(
+          JSON.stringify({ detail: 'The push subscription endpoint is not supported.' }),
+          {
+            status: 400,
+            headers: { 'content-type': 'application/json' },
+          },
+        ),
       );
     });
 
