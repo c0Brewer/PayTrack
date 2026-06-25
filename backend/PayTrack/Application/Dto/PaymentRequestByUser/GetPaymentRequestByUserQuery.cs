@@ -13,12 +13,12 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     public class GetPaymentRequestByUserQuery : GetTransactionQuery
     {
         /// <summary>
-        /// Invoice Number to query.
+        /// Invoice number to query.
         /// </summary>
         public string? InvoiceNumber { get; init; }
 
         /// <summary>
-        /// Payout Type to query.
+        /// Payout type to query.
         /// </summary>
         public PayoutType? PayoutType { get; set; }
 
@@ -26,6 +26,11 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
         /// Bank account id to query.
         /// </summary>
         public int? BankAccountId { get; init; }
+
+        /// <summary>
+        /// Cost centre of the assigned budget to query.
+        /// </summary>
+        public int? CostCentreId { get; init; }
 
         /// <summary>
         /// Whether to load the bank account in the query.

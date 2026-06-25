@@ -6,6 +6,8 @@ import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByTeamService } from '../../../../../services/payment-request-by-team/payment-request-by-team-service';
+import { TeamService } from '../../../../../services/team/team-service';
+import { UserService } from '../../../../../services/user/user-service';
 import { PaymentRequestByTeamDto, TransactionStatus, UserDto } from '../../../../../types/exporter';
 
 import { TeamRequestTeamOverviewComponent } from './team-overview-component';
@@ -36,6 +38,14 @@ describe('TeamRequestTeamOverviewComponent', () => {
     markForCheck: vi.fn(),
   };
 
+  const teamServiceMock = {
+    getTeams: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
+  };
+
+  const userServiceMock = {
+    getUser: vi.fn().mockReturnValue(of({ items: [], totalCount: 0 })),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -47,6 +57,8 @@ describe('TeamRequestTeamOverviewComponent', () => {
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
+        { provide: TeamService, useValue: teamServiceMock },
+        { provide: UserService, useValue: userServiceMock },
       ],
     }).compileComponents();
 

@@ -1,0 +1,31 @@
+<div class="team-requests">
+  <h2>My Payment Requests</h2>
+
+  <app-team-request-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    [showTeamFilter]="false"
+    [showUserFilter]="false"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
+  ></app-team-request-filter-component>
+
+  <app-team-request-list-component
+    [requests]="requests"
+    [showTeamColumn]="false"
+    [showUserColumn]="false"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
+    (openDetail)="onOpenDetail($event)"
+    (sortChange)="onSortChange($event)"
+  ></app-team-request-list-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

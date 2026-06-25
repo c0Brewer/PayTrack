@@ -82,6 +82,16 @@ namespace PayTrack.Application.Dto.Transaction
         public DateTime? MaxDueDate { get; init; }
 
         /// <summary>
+        /// Field to sort by.
+        /// </summary>
+        public string? SortBy { get; init; }
+
+        /// <summary>
+        /// Sort direction. Supported values are Asc and Desc.
+        /// </summary>
+        public string? SortDirection { get; init; }
+
+        /// <summary>
         /// Limit of query.
         /// </summary>
         public int? Limit { get; init; }
@@ -100,5 +110,10 @@ namespace PayTrack.Application.Dto.Transaction
         /// Whether to load the status history in the query.
         /// </summary>
         public bool? IncludeStatusHistory { get; init; }
+
+        /// <summary>
+        /// Whether to include the budget and cost centre in the query.
+        /// </summary>
+        public bool? IncludeBudget { get; init; }
     }
 }

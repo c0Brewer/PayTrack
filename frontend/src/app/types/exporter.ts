@@ -45,11 +45,22 @@ export type DuplicatePaymentRequestByUserDto =
 export type ReceiptExtractionDto = components['schemas']['ReceiptExtractionDto'];
 
 export type GetPaymentRequestsByUserOptions =
-  paths['/api/v1/transaction/user']['get']['parameters']['query'];
+  paths['/api/v1/transaction/user']['get']['parameters']['query'] & SortQueryOptions;
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
 export type GetDuplicatePaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user/duplicate']['get']['parameters']['query'];
+
+export type SortDirection = 'Asc' | 'Desc';
+
+export type SortQueryOptions = {
+  SortBy?: string;
+  SortDirection?: SortDirection;
+};
+
+export type PaymentRequestByTeamQueryExtras = {
+  VisibleStatusesOnly?: boolean;
+};
 
 export enum PayoutType {
   User = 0,
@@ -143,9 +154,39 @@ export type MarkAsPaidPaymentRequestByTeamDto =
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
-  paths['/api/v1/transaction/team']['get']['parameters']['query'];
+  paths['/api/v1/transaction/team']['get']['parameters']['query'] &
+    SortQueryOptions &
+    PaymentRequestByTeamQueryExtras;
 export type GetPaymentRequestsByTeamByIdOptions =
   paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
+
+// Financial export
+export enum FinancialExportFormat {
+  Csv = 1,
+  Pdf = 2,
+}
+
+export enum FinancialExportSource {
+  SubmittedInvoices = 1,
+  PaymentRequests = 2,
+}
+
+export type GetFinancialExportOptions = NonNullable<
+  paths['/api/v1/transaction/export']['get']['parameters']['query']
+>;
+
+export type FinancialExportQueryOptions = Omit<
+  GetFinancialExportOptions,
+  'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
+> &
+  SortQueryOptions & {
+    Source: FinancialExportSource;
+    InvoiceNumber?: string;
+    PayoutType?: PayoutType;
+    BankAccountId?: number;
+    RequestById?: number;
+    VisibleStatusesOnly?: boolean;
+  };
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];

@@ -1,0 +1,115 @@
+<table class="invoice-table">
+  <thead>
+    <tr>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('InvoiceNumber')">
+          Invoice Number
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('InvoiceNumber') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Submitted')">
+          Submitted
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Submitted') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('PaidAt')">
+          Paid At
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('PaidAt') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Amount')">
+          Amount
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Purpose')">
+          Purpose
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Team')">
+          Team
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Team') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('PayoutType')">
+          Payout Type
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('PayoutType') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Status')">
+          Status
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+        </button>
+      </th>
+      @if (showUserNameColumn) {
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('User')">
+            User
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('User') }}</span>
+          </button>
+        </th>
+      }
+      @if (showDuplicateIndicator) {
+        <th>Duplicate</th>
+      }
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (invoice of invoices; track invoice.id) {
+      <tr>
+        <td>{{ invoice.invoiceNumber }}</td>
+        <td>{{ invoice.createdAt | date: 'dd.MM.yyyy' }}</td>
+        <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'dd.MM.yyyy') : '—' }}</td>
+        <td>{{ invoice.amount | euro }}</td>
+        <td>{{ invoice.purposeOfPayment }}</td>
+        <td>{{ invoice.team?.name ?? '—' }}</td>
+        <td>{{ getPayoutTypeLabel(invoice.payoutType) }}</td>
+        <td>
+          <span [class]="'status ' + getStatusClass(invoice.status)">
+            {{ getTransactionStatusLabel(invoice.status) }}
+          </span>
+        </td>
+        @if (showUserNameColumn) {
+          <td>{{ invoice.user?.name ?? '—' }}</td>
+        }
+        @if (showDuplicateIndicator) {
+          <td>
+            @if (invoice.hasPotentialDuplicate) {
+              <button
+                type="button"
+                class="duplicate-badge"
+                title="Potential duplicates found"
+                aria-label="Show potential duplicate invoices"
+                (click)="onOpenDuplicates(invoice)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                Duplicates
+              </button>
+            } @else {
+              <span class="duplicate-empty">-</span>
+            }
+          </td>
+        }
+        <td class="actions-col">
+          <button class="view-btn" (click)="onOpenDetail(invoice)">View</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="8 + (showUserNameColumn ? 1 : 0)">
+          No invoices found.
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

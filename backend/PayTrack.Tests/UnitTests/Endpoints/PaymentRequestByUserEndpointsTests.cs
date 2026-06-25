@@ -14,6 +14,7 @@ using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.User;
+using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -703,12 +704,51 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<ReceiptExtractionDto>();
             result.Should().BeEquivalentTo(extraction);
         }
+
+        [Fact]
+        public async Task ExportFinancialData_ReturnsFile()
+        {
+            // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
+
+            var fileBytes = new byte[] { 1, 2, 3 };
+            _factory.FinancialExportServiceMock
+                .Setup(s => s.ExportFinancialDataAsync(It.Is<GetFinancialExportQuery>(q =>
+                    q.Format == FinancialExportFormat.Csv &&
+                    q.Source == FinancialExportSource.SubmittedInvoices &&
+                    q.TeamId == 7 &&
+                    q.CostCentreId == 4)))
+                .ReturnsAsync(new FinancialExportResult(
+                    fileBytes,
+                    "text/csv; charset=utf-8",
+                    "submitted-invoices-export.csv"));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/transaction/export?Format=Csv&Source=SubmittedInvoices&TeamId=7&CostCentreId=4");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
+            response.Content.Headers.ContentDisposition!.FileNameStar.Should().Be("submitted-invoices-export.csv");
+
+            var content = await response.Content.ReadAsByteArrayAsync();
+            content.Should().Equal(fileBytes);
+
+            _factory.FinancialExportServiceMock.Verify(
+                s => s.ExportFinancialDataAsync(It.IsAny<GetFinancialExportQuery>()),
+                Times.Once);
+        }
     }
     public class PaymentRequestByUserApiFactory : WebApplicationFactory<Program>
     {
         public Mock<IPaymentRequestByUserService> ServiceMock { get; } = new();
         public Mock<IAuthService> AuthServiceMock { get; } = new();
         public Mock<IReceiptExtractionService> ReceiptExtractionServiceMock { get; } = new();
+        public Mock<IFinancialExportService> FinancialExportServiceMock { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -747,6 +787,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptorAuth is not null)
                     services.Remove(serviceDescriptorAuth);
 
+                var financialExportServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IFinancialExportService));
+
+                if (financialExportServiceDescriptor is not null)
+                    services.Remove(financialExportServiceDescriptor);
+
                 var receiptExtractionServiceDescriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(IReceiptExtractionService));
 
@@ -756,6 +802,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
                 services.AddSingleton(ServiceMock.Object);
                 services.AddSingleton(AuthServiceMock.Object);
+                services.AddSingleton(FinancialExportServiceMock.Object);
                 services.AddSingleton(ReceiptExtractionServiceMock.Object);
             });
         }

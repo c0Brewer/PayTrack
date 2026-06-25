@@ -2,13 +2,42 @@
   <table class="TUR-table team-request-table">
     <thead>
       <tr>
-        <th>Amount</th>
-        <th>Due Date</th>
-        <th>Purpose</th>
-        <th>Team</th>
-        <th>Status</th>
-        <th>Cost Centre</th>
-        <th>User</th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Amount')">
+            Amount
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('DueDate')">
+            Due Date
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('DueDate') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Purpose')">
+            Purpose
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Team')">
+            Team
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Team') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Status')">
+            Status
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('User')">
+            User
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('User') }}</span>
+          </button>
+        </th>
         <th class="actions-col">Actions</th>
       </tr>
     </thead>
@@ -17,16 +46,15 @@
       @for (request of requests; track request.id) {
         <tr>
           <td data-label="Amount">{{ request.amount | euro }}</td>
-          <td data-label="Due Date">{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '—' }}</td>
-          <td data-label="Purpose">{{ request.purposeOfPayment ?? '—' }}</td>
-          <td data-label="Team">{{ request.team?.name ?? '—' }}</td>
+          <td data-label="Due Date">{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '-' }}</td>
+          <td data-label="Purpose">{{ request.purposeOfPayment ?? '-' }}</td>
+          <td data-label="Team">{{ request.team?.name ?? '-' }}</td>
           <td data-label="Status">
             <span [class]="'status ' + getStatusClass(request.status) + ' text-center'">
               {{ getTransactionStatusLabel(request.status) }}
             </span>
           </td>
-          <td data-label="Cost Centre">{{ request.budget?.name ?? '—' }}</td>
-          <td data-label="User">{{ request.user?.name ?? '—' }}</td>
+          <td data-label="User">{{ request.user?.name ?? '-' }}</td>
           <td class="actions-col" data-label="Actions">
             <button class="btn btn-secondary icon-hover-btn" (click)="onOpenDetail(request)">
               <span class="material-symbols-outlined">bar_chart</span>
@@ -36,7 +64,7 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="8">No payment requests found.</td>
+          <td colspan="7">No payment requests found.</td>
         </tr>
       }
     </tbody>

@@ -43,7 +43,7 @@ describe('TeamRequestAdminListComponent', () => {
     const textContent = (fixture.nativeElement as HTMLElement).textContent;
     expect(textContent).toContain('Alice');
     expect(textContent).toContain('Chassis Team');
-    expect(textContent).toContain('CC-Eng');
+    expect(textContent).not.toContain('CC-Eng');
   });
 
   it('should emit openDetail when view button is clicked', () => {
