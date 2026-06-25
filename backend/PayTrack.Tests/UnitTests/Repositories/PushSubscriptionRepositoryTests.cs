@@ -17,56 +17,6 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task HasEnabledSubscriptionAsync_ShouldReturnTrue_WhenUserHasEnabledSubscription()
-        {
-            await using var context = GetInMemoryDbContext();
-            context.PushSubscriptions.Add(new PushSubscription
-            {
-                UserId = 1,
-                Endpoint = "https://push.test/enabled",
-                P256dh = "key",
-                Auth = "auth",
-                IsEnabled = true,
-            });
-            context.PushSubscriptions.Add(new PushSubscription
-            {
-                UserId = 1,
-                Endpoint = "https://push.test/disabled",
-                P256dh = "key",
-                Auth = "auth",
-                IsEnabled = false,
-            });
-            await context.SaveChangesAsync();
-
-            var repo = new PushSubscriptionRepository(context);
-
-            var result = await repo.HasEnabledSubscriptionAsync(1);
-
-            result.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task HasEnabledSubscriptionAsync_ShouldReturnFalse_WhenUserHasNoEnabledSubscription()
-        {
-            await using var context = GetInMemoryDbContext();
-            context.PushSubscriptions.Add(new PushSubscription
-            {
-                UserId = 1,
-                Endpoint = "https://push.test/disabled",
-                P256dh = "key",
-                Auth = "auth",
-                IsEnabled = false,
-            });
-            await context.SaveChangesAsync();
-
-            var repo = new PushSubscriptionRepository(context);
-
-            var result = await repo.HasEnabledSubscriptionAsync(1);
-
-            result.Should().BeFalse();
-        }
-
-        [Fact]
         public async Task GetEnabledForUserAsync_ShouldReturnOnlyEnabledSubscriptionsForUser()
         {
             await using var context = GetInMemoryDbContext();
@@ -145,11 +95,17 @@ namespace PayTrack.Tests.UnitTests.Repositories
                 Endpoint = "https://push.test/existing",
                 P256dh = "new-key",
                 Auth = "new-auth",
+                BrowserName = "Chrome",
+                DeviceName = "Samsung Galaxy S21",
+                Platform = "Android",
             });
 
             result.UserId.Should().Be(2);
             result.P256dh.Should().Be("new-key");
             result.Auth.Should().Be("new-auth");
+            result.BrowserName.Should().Be("Chrome");
+            result.DeviceName.Should().Be("Samsung Galaxy S21");
+            result.Platform.Should().Be("Android");
             result.IsEnabled.Should().BeTrue();
             context.PushSubscriptions.Should().ContainSingle(s => s.Endpoint == "https://push.test/existing");
         }

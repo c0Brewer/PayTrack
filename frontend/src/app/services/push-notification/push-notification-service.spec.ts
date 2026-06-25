@@ -70,7 +70,7 @@ describe('PushNotificationService', () => {
   it('marks push unavailable when the server has no VAPID config', async () => {
     setServiceWorkerRegistration(createRegistration());
     vi.spyOn(window, 'fetch').mockResolvedValue(
-      jsonResponse({ isConfigured: false, vapidPublicKey: null, enabled: false }),
+      jsonResponse(pushConfig({ isConfigured: false, vapidPublicKey: null, enabled: false })),
     );
 
     await service.loadConfig();
@@ -82,7 +82,7 @@ describe('PushNotificationService', () => {
   it('loads enabled push config when browser and server support push', async () => {
     setServiceWorkerRegistration(createRegistration());
     vi.spyOn(window, 'fetch').mockResolvedValue(
-      jsonResponse({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true }),
+      jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true })),
     );
 
     await service.loadConfig();
@@ -105,7 +105,7 @@ describe('PushNotificationService', () => {
       }
 
       return Promise.resolve(
-        jsonResponse({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false }),
+        jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false })),
       );
     });
 
@@ -122,7 +122,7 @@ describe('PushNotificationService', () => {
     const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation((input) => {
       if (input.toString().includes('/api/v1/notification/push/config')) {
         return Promise.resolve(
-          jsonResponse({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false }),
+          jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true })),
         );
       }
 
@@ -134,13 +134,20 @@ describe('PushNotificationService', () => {
     expect(registration.pushManager.subscribe).toHaveBeenCalled();
     expect(service.enabled()).toBe(true);
 
-    const saveRequest = fetchSpy.mock.calls.at(-1)!;
+    const saveRequest = fetchSpy.mock.calls.find(([input]) =>
+      input.toString().includes('/api/v1/notification/push/subscribe'),
+    )!;
     expect(saveRequest[0].toString()).toContain('/api/v1/notification/push/subscribe');
-    expect(JSON.parse((saveRequest[1] as RequestInit).body as string)).toEqual({
-      endpoint: 'https://push.example.test/send/1',
-      p256dh: 'p256dh-key',
-      auth: 'auth-secret',
-    });
+    expect(JSON.parse((saveRequest[1] as RequestInit).body as string)).toEqual(
+      expect.objectContaining({
+        endpoint: 'https://push.example.test/send/1',
+        p256dh: 'p256dh-key',
+        auth: 'auth-secret',
+        browserName: expect.any(String),
+        deviceName: expect.any(String),
+        platform: expect.any(String),
+      }),
+    );
   });
 
   it('enables push using an existing browser subscription', async () => {
@@ -150,7 +157,7 @@ describe('PushNotificationService', () => {
     vi.spyOn(window, 'fetch').mockImplementation((input) => {
       if (input.toString().includes('/api/v1/notification/push/config')) {
         return Promise.resolve(
-          jsonResponse({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false }),
+          jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: true })),
         );
       }
 
@@ -167,7 +174,7 @@ describe('PushNotificationService', () => {
     const registration = createRegistration(null, true);
     setServiceWorkerRegistration(registration);
     vi.spyOn(window, 'fetch').mockResolvedValue(
-      jsonResponse({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false }),
+      jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false })),
     );
 
     await service.loadConfig();
@@ -181,13 +188,21 @@ describe('PushNotificationService', () => {
   it('disables push by unregistering the backend and browser subscription', async () => {
     const subscription = createSubscription('https://push.example.test/send/disable');
     setServiceWorkerRegistration(createRegistration(subscription));
-    const fetchSpy = vi
-      .spyOn(window, 'fetch')
-      .mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation((input) => {
+      if (input.toString().includes('/api/v1/notification/push/config')) {
+        return Promise.resolve(
+          jsonResponse(pushConfig({ isConfigured: true, vapidPublicKey: 'AQID', enabled: false })),
+        );
+      }
+
+      return Promise.resolve(new Response(null, { status: 200 }));
+    });
 
     await service.disable();
 
-    const unsubscribeRequest = fetchSpy.mock.calls.at(-1)!;
+    const unsubscribeRequest = fetchSpy.mock.calls.find(([input]) =>
+      input.toString().includes('/api/v1/notification/push/unsubscribe'),
+    )!;
     expect(unsubscribeRequest[0].toString()).toContain('/api/v1/notification/push/unsubscribe');
     expect(JSON.parse((unsubscribeRequest[1] as RequestInit).body as string)).toEqual({
       endpoint: 'https://push.example.test/send/disable',
@@ -289,6 +304,22 @@ function jsonResponse(body: unknown): Response {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });
+}
+
+function pushConfig(config: {
+  isConfigured: boolean;
+  vapidPublicKey: string | null;
+  enabled: boolean;
+}): {
+  isConfigured: boolean;
+  vapidPublicKey: string | null;
+  enabled: boolean;
+  devices: unknown[];
+} {
+  return {
+    ...config,
+    devices: [],
+  };
 }
 
 function restoreProperty<T extends object>(

@@ -21,14 +21,56 @@ namespace PayTrack.Tests.UnitTests.Services
         public async Task GetConfigAsync_ReturnsDisabledServerConfig_WhenVapidSettingsAreMissing()
         {
             var repo = new Mock<IPushSubscriptionRepository>();
-            repo.Setup(r => r.HasEnabledSubscriptionAsync(42)).ReturnsAsync(true);
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([CreateSubscription()]);
             var service = BuildService(repo, new PushNotificationSettings(), new SequentialHttpHandler());
 
-            var config = await service.GetConfigAsync(42);
+            var config = await service.GetConfigAsync(42, "https://fcm.googleapis.com/fcm/send/123");
 
             config.IsConfigured.Should().BeFalse();
             config.VapidPublicKey.Should().BeNull();
             config.Enabled.Should().BeTrue();
+            config.Devices.Should().ContainSingle(d => d.IsCurrentDevice);
+        }
+
+        [Fact]
+        public async Task GetConfigAsync_ReturnsDisabledForCurrentBrowser_WhenEndpointDoesNotMatch()
+        {
+            var repo = new Mock<IPushSubscriptionRepository>();
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([CreateSubscription()]);
+            var service = BuildService(repo, CreateVapidSettings(), new SequentialHttpHandler());
+
+            var config = await service.GetConfigAsync(42, "https://fcm.googleapis.com/fcm/send/other");
+
+            config.Enabled.Should().BeFalse();
+            config.Devices.Should().ContainSingle(d => !d.IsCurrentDevice);
+        }
+
+        [Fact]
+        public async Task GetConfigAsync_DisablesUnknownAndDuplicateSubscriptions()
+        {
+            var current = CreateSubscription("https://fcm.googleapis.com/fcm/send/current");
+            current.BrowserName = "Chrome";
+            current.DeviceName = "Windows device";
+            current.Platform = "Windows";
+            current.UpdatedAt = DateTime.UtcNow;
+
+            var duplicate = CreateSubscription("https://fcm.googleapis.com/fcm/send/duplicate");
+            duplicate.BrowserName = "Chrome";
+            duplicate.DeviceName = "Windows device";
+            duplicate.Platform = "Windows";
+            duplicate.UpdatedAt = current.UpdatedAt.AddMinutes(-1);
+
+            var unknown = CreateSubscription("https://fcm.googleapis.com/fcm/send/unknown", includeDeviceMetadata: false);
+            var repo = new Mock<IPushSubscriptionRepository>();
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([current, duplicate, unknown]);
+            var service = BuildService(repo, CreateVapidSettings(), new SequentialHttpHandler());
+
+            var config = await service.GetConfigAsync(42, current.Endpoint);
+
+            config.Devices.Should().ContainSingle();
+            config.Devices.Single().IsCurrentDevice.Should().BeTrue();
+            repo.Verify(r => r.DisableByEndpointAsync(duplicate.Endpoint), Times.Once);
+            repo.Verify(r => r.DisableByEndpointAsync(unknown.Endpoint), Times.Once);
         }
 
         [Fact]
@@ -44,6 +86,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     Endpoint = "https://fcm.googleapis.com/fcm/send/123",
                     P256dh = "p256dh",
                     Auth = "auth",
+                    BrowserName = "Chrome",
+                    DeviceName = "Samsung Galaxy S21",
+                    Platform = "Android",
                 });
 
             repo.Verify(
@@ -52,6 +97,9 @@ namespace PayTrack.Tests.UnitTests.Services
                     s.Endpoint == "https://fcm.googleapis.com/fcm/send/123" &&
                     s.P256dh == "p256dh" &&
                     s.Auth == "auth" &&
+                    s.BrowserName == "Chrome" &&
+                    s.DeviceName == "Samsung Galaxy S21" &&
+                    s.Platform == "Android" &&
                     s.IsEnabled)),
                 Times.Once);
         }
@@ -175,12 +223,14 @@ namespace PayTrack.Tests.UnitTests.Services
             };
         }
 
-        private static PushSubscription CreateSubscription(string endpoint = "https://fcm.googleapis.com/fcm/send/123")
+        private static PushSubscription CreateSubscription(
+            string endpoint = "https://fcm.googleapis.com/fcm/send/123",
+            bool includeDeviceMetadata = true)
         {
             using var key = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
             var parameters = key.ExportParameters(false);
 
-            return new PushSubscription
+            var subscription = new PushSubscription
             {
                 Id = 12,
                 UserId = 42,
@@ -189,6 +239,15 @@ namespace PayTrack.Tests.UnitTests.Services
                 Auth = Base64UrlEncode(RandomNumberGenerator.GetBytes(16)),
                 IsEnabled = true,
             };
+
+            if (includeDeviceMetadata)
+            {
+                subscription.BrowserName = "Chrome";
+                subscription.DeviceName = "Windows device";
+                subscription.Platform = "Windows";
+            }
+
+            return subscription;
         }
 
         private static byte[] ExportRawPublicKey(ECParameters parameters)
