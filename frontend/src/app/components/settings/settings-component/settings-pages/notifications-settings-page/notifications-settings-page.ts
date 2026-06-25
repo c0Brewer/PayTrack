@@ -64,7 +64,8 @@ export class NotificationsSettingsPageComponent implements OnInit {
         );
       })
       .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : 'Could not update push notification settings.';
+        const message =
+          error instanceof Error ? error.message : 'Could not update push notification settings.';
         this.notifications.showError(message);
       })
       .finally(() => {

@@ -256,7 +256,11 @@ export class PushNotificationService {
     }
   }
 
-  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    message: string,
+  ): Promise<T> {
     let timeoutId: number | undefined;
 
     try {
