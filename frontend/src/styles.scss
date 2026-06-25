@@ -508,11 +508,11 @@ textarea:focus,
       }
 
       .action-buttons {
-        justify-content: flex-start;
+        justify-content: flex-end;
       }
     }
     .status-btn {
-      justify-self: start;
+      justify-self: end;
     }
   }
 }
