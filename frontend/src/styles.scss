@@ -486,6 +486,23 @@ textarea:focus,
       white-space: normal;
       width: 100%;
     }
+
+    td[data-label='Status'] {
+      .status,
+      .status-btn {
+        justify-self: end;
+        max-width: min(14rem, 100%);
+      }
+
+      .status {
+        display: inline-flex;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        word-break: normal;
+      }
+    }
+
     .status-btn {
       justify-self: end;
     }
@@ -511,6 +528,14 @@ textarea:focus,
         justify-content: flex-end;
       }
     }
+
+    td[data-label='Status'] {
+      .status,
+      .status-btn {
+        justify-self: end;
+      }
+    }
+
     .status-btn {
       justify-self: end;
     }
