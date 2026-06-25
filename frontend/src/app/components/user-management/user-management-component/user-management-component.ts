@@ -79,11 +79,11 @@ export class UserManagementComponent implements OnInit {
       admins: this.userService.getUser({ ...baseQuery, Role: Role.ADMIN }),
     }).subscribe({
       next: ({ total, active, inactive, admins }) => {
-          this.totalUserCount = total.totalCount ?? 0;
-          this.activeUserCount = active.totalCount ?? 0;
-          this.inactiveUserCount = inactive.totalCount ?? 0;
-          this.adminUserCount = admins.totalCount ?? 0;
-          this.cdr.markForCheck();
+        this.totalUserCount = total.totalCount ?? 0;
+        this.activeUserCount = active.totalCount ?? 0;
+        this.inactiveUserCount = inactive.totalCount ?? 0;
+        this.adminUserCount = admins.totalCount ?? 0;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.notificationService.showError(err);
