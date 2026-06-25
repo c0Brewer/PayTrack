@@ -1,35 +1,35 @@
 @use 'variables' as v;
 
 .team-detail {
-  h3 {
-    margin: 0 0 v.$size-s;
-  }
-
-  h4 {
-    margin: v.$size-m 0 v.$size-s;
-    font-size: v.$font-s;
-    font-weight: v.$font-semibold;
-    color: v.$text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
   .info-table {
     border-collapse: collapse;
     font-size: v.$font-s;
-    margin-bottom: v.$size-m;
+    margin-bottom: 0;
+    width: 100%;
 
     th {
       text-align: left;
       padding: v.$size-xs v.$size-m v.$size-xs 0;
       color: v.$text-muted;
       font-weight: v.$font-medium;
-      width: 140px;
+      width: 180px;
     }
 
     td {
       padding: v.$size-xs 0;
     }
+  }
+
+  .team-info-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .budget-section {
+    display: block;
+    margin-bottom: v.$size-l;
   }
 
   .color-cell {
@@ -64,6 +64,10 @@
     border: 1px solid v.$border-color;
     border-radius: v.$size-xs;
     padding: v.$size-m;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     &--over {
       border-color: v.$accent-color;
@@ -170,5 +174,27 @@
   .budget-card__over-label {
     color: v.$accent-color;
     font-weight: v.$font-semibold;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .team-detail {
+    .info-table {
+      th {
+        display: block;
+        padding: v.$size-xs 0 0;
+        width: auto;
+      }
+
+      td {
+        display: block;
+        padding: 0 0 v.$size-xs;
+      }
+    }
+
+    .budget-card__period,
+    .budget-card__target-label {
+      margin-left: 0;
+    }
   }
 }

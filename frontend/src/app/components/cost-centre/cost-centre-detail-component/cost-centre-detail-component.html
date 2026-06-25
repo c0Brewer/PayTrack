@@ -10,43 +10,123 @@
       [statusVariant]="costCentre.isActive ? 'active' : 'inactive'"
       (backClick)="goBack()"
     >
-      <table detail-meta class="info-table">
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <td>{{ costCentre.name }}</td>
-          </tr>
-          <tr>
-            <th>Description</th>
-            <td>{{ costCentre.description ?? '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>Budgets ({{ (costCentre.budgets ?? []).length }})</h3>
-
-      @if ((costCentre.budgets ?? []).length === 0) {
-        <p class="no-budgets">No budgets assigned.</p>
-      } @else {
-        <table class="budget-table">
-          <thead>
-            <tr>
-              <th>Target Amount</th>
-              <th>Period Start</th>
-              <th>Period End</th>
-            </tr>
-          </thead>
+      <div detail-meta class="cost-centre-info-card">
+        <table class="info-table">
           <tbody>
-            @for (b of costCentre.budgets ?? []; track b.id) {
+            <tr>
+              <th>Name</th>
+              <td>{{ costCentre.name }}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{ costCentre.description ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th>Total Budgets</th>
+              <td>{{ (costCentre.budgets ?? []).length }}</td>
+            </tr>
+            @if (costCentre.displayColor) {
               <tr>
-                <td>{{ b.targetAmount | euro }}</td>
-                <td>{{ b.periodStart | slice: 0 : 10 }}</td>
-                <td>{{ b.periodEnd | slice: 0 : 10 }}</td>
+                <th>Color</th>
+                <td class="color-cell">
+                  <span class="color-swatch" [style.background]="costCentre.displayColor"></span>
+                  {{ costCentre.displayColor }}
+                </td>
               </tr>
             }
           </tbody>
         </table>
-      }
+      </div>
+
+      <app-box-component
+        title="Expense Budgets"
+        [subtitle]="expenseBudgets.length + ' assigned'"
+        size="large"
+        class="budget-section"
+      >
+        @if (expenseBudgets.length === 0) {
+          <p class="no-budgets">None assigned.</p>
+        } @else {
+          <div class="budget-list">
+            @for (budget of expenseBudgets; track budget.id) {
+              <div class="budget-card" [class.budget-card--over]="isOverBudget(budget)">
+                <div class="budget-card__header">
+                  <span class="budget-card__name">{{ budget.name }}</span>
+                  <span class="budget-card__period">
+                    {{ budget.periodStart | slice: 0 : 10 }} – {{ budget.periodEnd | slice: 0 : 10 }}
+                  </span>
+                </div>
+
+                <div class="budget-bar" [attr.aria-label]="'Budget utilization for ' + budget.name">
+                  <div
+                    class="budget-bar__paid"
+                    [style.width.%]="getPaidPercent(budget)"
+                  ></div>
+                  <div
+                    class="budget-bar__approved"
+                    [style.width.%]="getApprovedPercent(budget)"
+                  ></div>
+                </div>
+
+                <div class="budget-card__amounts">
+                  <span class="budget-card__paid-label">
+                    <span class="budget-card__dot budget-card__dot--paid"></span>
+                    Paid: {{ budget.paidAmount | euro }}
+                  </span>
+                  <span class="budget-card__approved-label">
+                    <span class="budget-card__dot budget-card__dot--approved"></span>
+                    Approved: {{ budget.approvedAmount | euro }}
+                  </span>
+                  <span class="budget-card__target-label">
+                    Target: {{ budget.targetAmount | euro }}
+                  </span>
+                  @if (isOverBudget(budget)) {
+                    <span class="budget-card__over-label">Over budget</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </app-box-component>
+
+      <app-box-component
+        title="Income Budgets"
+        [subtitle]="incomeBudgets.length + ' assigned'"
+        size="large"
+        class="budget-section"
+      >
+        @if (incomeBudgets.length === 0) {
+          <p class="no-budgets">None assigned.</p>
+        } @else {
+          <div class="budget-list">
+            @for (budget of incomeBudgets; track budget.id) {
+              <div class="budget-card">
+                <div class="budget-card__header">
+                  <span class="budget-card__name">{{ budget.name }}</span>
+                  <span class="budget-card__period">
+                    {{ budget.periodStart | slice: 0 : 10 }} – {{ budget.periodEnd | slice: 0 : 10 }}
+                  </span>
+                </div>
+
+                <div class="budget-card__amounts">
+                  <span class="budget-card__paid-label">
+                    <span class="budget-card__dot budget-card__dot--paid"></span>
+                    Paid: {{ budget.paidAmount | euro }}
+                  </span>
+                  <span class="budget-card__approved-label">
+                    <span class="budget-card__dot budget-card__dot--approved"></span>
+                    Approved: {{ budget.approvedAmount | euro }}
+                  </span>
+                  <span class="budget-card__target-label">
+                    Target: {{ budget.targetAmount | euro }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </app-box-component>
     </app-detail-component>
   } @else {
     <p>Loading...</p>
