@@ -1,26 +1,35 @@
 @use 'variables' as v;
 
 .cost-centre-detail {
-  h3 {
-    margin: 0 0 v.$size-s;
-  }
-
   .info-table {
     border-collapse: collapse;
     font-size: v.$font-s;
-    margin-bottom: v.$size-m;
+    margin-bottom: 0;
+    width: 100%;
 
     th {
       text-align: left;
       padding: v.$size-xs v.$size-m v.$size-xs 0;
       color: v.$text-muted;
       font-weight: v.$font-medium;
-      width: 140px;
+      width: 180px;
     }
 
     td {
       padding: v.$size-xs 0;
     }
+  }
+
+  .cost-centre-info-card {
+    background: v.$background-light;
+    border: 1px solid v.$border-color;
+    border-radius: v.$size-xs;
+    padding: v.$size-m;
+  }
+
+  .budget-section {
+    display: block;
+    margin-bottom: v.$size-l;
   }
 
   .color-cell {
@@ -38,41 +47,132 @@
     flex-shrink: 0;
   }
 
-  .budget-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: v.$font-s;
+  .budget-list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$size-m;
+  }
+
+  .budget-card {
     background: v.$background-light;
+    border: 1px solid v.$border-color;
     border-radius: v.$size-xs;
+    padding: v.$size-m;
+
+    &--over {
+      border-color: v.$accent-color;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: v.$size-m;
+      margin-bottom: v.$size-s;
+      flex-wrap: wrap;
+    }
+
+    &__name {
+      font-weight: v.$font-semibold;
+      font-size: v.$font-s;
+    }
+
+    &__period {
+      color: v.$text-muted;
+      font-size: v.$font-s;
+      margin-left: auto;
+    }
+  }
+
+  .budget-bar {
+    height: 10px;
+    border-radius: 9999px;
+    background: v.$border-color;
     overflow: hidden;
+    display: flex;
+    margin-bottom: v.$size-s;
 
-    thead {
-      background: v.$background-dark;
-
-      th {
-        text-align: left;
-        padding: v.$size-s;
-        font-weight: v.$font-semibold;
-        color: v.$text-light;
-        border-bottom: 1px solid v.$border-color;
-      }
+    &__paid {
+      height: 100%;
+      background: v.$success-color;
+      transition: width 0.3s ease;
     }
 
-    tbody {
-      td {
-        padding: v.$size-s;
-        border-bottom: 1px solid v.$border-color;
-      }
-
-      tr:hover {
-        background: v.$gray-100;
-      }
+    &__approved {
+      height: 100%;
+      background: v.$info-color;
+      transition: width 0.3s ease;
     }
+  }
+
+  .budget-card--over {
+    .budget-bar__paid,
+    .budget-bar__approved {
+      background: v.$accent-color;
+    }
+  }
+
+  .budget-card__amounts {
+    display: flex;
+    align-items: center;
+    gap: v.$size-m;
+    flex-wrap: wrap;
+    font-size: v.$font-s;
+    color: v.$text-muted;
+  }
+
+  .budget-card__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+
+    &--paid {
+      background: v.$success-color;
+    }
+
+    &--approved {
+      background: v.$info-color;
+    }
+  }
+
+  .budget-card__target-label {
+    margin-left: auto;
+    font-weight: v.$font-semibold;
+    color: v.$text-color;
+  }
+
+  .budget-card__over-label {
+    color: v.$accent-color;
+    font-weight: v.$font-semibold;
   }
 
   .no-budgets {
     color: v.$text-muted;
     font-style: italic;
     font-size: v.$font-s;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cost-centre-detail {
+    .info-table {
+      th {
+        display: block;
+        padding: v.$size-xs 0 0;
+        width: auto;
+      }
+
+      td {
+        display: block;
+        padding: 0 0 v.$size-xs;
+      }
+    }
+
+    .budget-card__period,
+    .budget-card__target-label {
+      margin-left: 0;
+    }
   }
 }

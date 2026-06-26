@@ -86,3 +86,23 @@
   margin: 0;
   text-align: center;
 }
+
+
+@supports (-webkit-touch-callout: none) {
+  .input-wrapper input[type='date'] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 0;
+    padding: 0 2.5rem 0 1rem;
+  }
+
+  .input-wrapper input[type='date']::-webkit-date-and-time-value {
+    margin: 0;
+    min-height: 0;
+    text-align: left;
+  }
+
+  .input-wrapper input[type='date']::-webkit-datetime-edit {
+    padding: 0;
+  }
+}
