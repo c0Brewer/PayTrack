@@ -462,6 +462,31 @@ public static class DbSeeder
             }
         }
 
+        var e2ePaymentRequestFlowUserEmails = new[]
+        {
+            "e2e.payment-request-flow-chromium@paytrack.local",
+            "e2e.payment-request-flow-firefox@paytrack.local",
+            "e2e.payment-request-flow-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2ePaymentRequestFlowUserEmails)
+        {
+            var e2ePaymentRequestFlowUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
+            if (e2ePaymentRequestFlowUser is null)
+            {
+                e2ePaymentRequestFlowUser = new User
+                {
+                    Name = "E2E Payment Request Flow User",
+                    Email = email,
+                    Role = Role.RegularUser,
+                    Team = chassisTeam,
+                    IsActive = true,
+                };
+
+                db.User.Add(e2ePaymentRequestFlowUser);
+            }
+        }
+
         // Duplicate-name pair — used to test ambiguous CSV matching.
         var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
         if (alexTaylor1 is null)
