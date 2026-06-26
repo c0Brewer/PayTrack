@@ -39,6 +39,21 @@ const homeDashboardUsers: Record<string, E2EUser> = {
   },
 };
 
+const invoiceFlowUsers: Record<string, E2EUser> = {
+  chromium: {
+    email: 'e2e.invoice-flow-chromium@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+  firefox: {
+    email: 'e2e.invoice-flow-firefox@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+  webkit: {
+    email: 'e2e.invoice-flow-webkit@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+};
+
 export const e2eUsers = {
   admin: {
     email: 'admin@paytrack.local',
@@ -68,4 +83,8 @@ export function getSkipBankInformationUser(browserName: string): E2EUser {
 
 export function getHomeDashboardUser(browserName: string): E2EUser {
   return homeDashboardUsers[browserName] ?? homeDashboardUsers.chromium;
+}
+
+export function getInvoiceFlowUser(browserName: string): E2EUser {
+  return invoiceFlowUsers[browserName] ?? invoiceFlowUsers.chromium;
 }

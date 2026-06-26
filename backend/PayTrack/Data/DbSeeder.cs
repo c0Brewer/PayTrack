@@ -437,6 +437,31 @@ public static class DbSeeder
             }
         }
 
+        var e2eInvoiceFlowUserEmails = new[]
+        {
+            "e2e.invoice-flow-chromium@paytrack.local",
+            "e2e.invoice-flow-firefox@paytrack.local",
+            "e2e.invoice-flow-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eInvoiceFlowUserEmails)
+        {
+            var e2eInvoiceFlowUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
+            if (e2eInvoiceFlowUser is null)
+            {
+                e2eInvoiceFlowUser = new User
+                {
+                    Name = "E2E Invoice Flow User",
+                    Email = email,
+                    Role = Role.RegularUser,
+                    Team = chassisTeam,
+                    IsActive = true,
+                };
+
+                db.User.Add(e2eInvoiceFlowUser);
+            }
+        }
+
         // Duplicate-name pair — used to test ambiguous CSV matching.
         var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
         if (alexTaylor1 is null)
@@ -531,6 +556,27 @@ public static class DbSeeder
                     Iban = iban,
                     Bic = "BKAUATWW",
                     AccountHolder = "E2E Home Dashboard User",
+                });
+            }
+        }
+
+        foreach (var email in e2eInvoiceFlowUserEmails)
+        {
+            var e2eInvoiceFlowUser = await db.User.FirstAsync(u => u.Email == email);
+            var iban = email.Contains("chromium", StringComparison.OrdinalIgnoreCase)
+                ? "AT611904300234573401"
+                : email.Contains("firefox", StringComparison.OrdinalIgnoreCase)
+                    ? "AT611904300234573402"
+                    : "AT611904300234573403";
+
+            if (!await db.BankAccounts.AnyAsync(b => b.User == e2eInvoiceFlowUser && b.Iban == iban))
+            {
+                db.BankAccounts.Add(new BankAccount
+                {
+                    User = e2eInvoiceFlowUser,
+                    Iban = iban,
+                    Bic = "BKAUATWW",
+                    AccountHolder = "E2E Invoice Flow User",
                 });
             }
         }
