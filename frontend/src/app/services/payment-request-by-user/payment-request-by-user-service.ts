@@ -168,7 +168,9 @@ export class PaymentRequestByUserService {
 
     if (file) fd.append('receipt', file);
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
-    fd.append('comment', updateRequest.comment ?? '');
+    if (updateRequest.comment?.trim()) {
+      fd.append('comment', updateRequest.comment.trim());
+    }
     fd.append('payoutType', String(updateRequest.payoutType));
     if (updateRequest.payoutType === PayoutType.User && (updateRequest.bankAccountId ?? 0) > 0) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));

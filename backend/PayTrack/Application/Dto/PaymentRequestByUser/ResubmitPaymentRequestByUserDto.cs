@@ -4,6 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using PayTrack.Application.Dto.Transaction;
+using PayTrack.Application.Validation;
 using PayTrack.Data.Entities;
 
 namespace PayTrack.Application.Dto.PaymentRequestByUser
@@ -11,19 +12,46 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     /// <summary>
     /// Dto containing updated invoice data after finance requested changes.
     /// </summary>
-    public sealed record class ResubmitPaymentRequestByUserDto(
-        [property: Required]
-        CreateTransactionDto Transaction,
+    public sealed class ResubmitPaymentRequestByUserDto
+    {
+        /// <summary>
+        /// Updated transaction data.
+        /// </summary>
+        [Required]
+        required public CreateTransactionDto Transaction { get; init; }
 
-        [property: Required]
-        [property: MinLength(3)]
-        string InvoiceNumber,
+        /// <summary>
+        /// Updated invoice number.
+        /// </summary>
+        [Required]
+        [MinLength(3)]
+        required public string InvoiceNumber { get; init; }
 
-        [property: MinLength(3)]
-        string? Comment,
+        /// <summary>
+        /// Optional updated comment.
+        /// </summary>
+        [OptionalMinLength(3)]
+        public string? Comment { get; init; }
 
-        [property: Required]
-        PayoutType PayoutType,
+        /// <summary>
+        /// Updated payout type.
+        /// </summary>
+        [Required]
+        public PayoutType PayoutType { get; init; }
 
-        int? BankAccountId);
+        /// <summary>
+        /// Updated optional bank account id.
+        /// </summary>
+        public int? BankAccountId { get; init; }
+
+        /// <summary>
+        /// Updated optional creditor name.
+        /// </summary>
+        public string? CreditorName { get; init; }
+
+        /// <summary>
+        /// Updated optional due date.
+        /// </summary>
+        public DateTime? DueDate { get; init; }
+    }
 }

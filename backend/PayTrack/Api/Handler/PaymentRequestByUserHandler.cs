@@ -354,6 +354,9 @@ namespace PayTrack.Api.Handler
         {
             var currentUser = await authService.GetCurrentUser()
                 ?? throw new NotFoundException("Current user not found");
+            var comment = string.IsNullOrWhiteSpace(resubmitDto.Comment)
+                ? null
+                : resubmitDto.Comment.Trim();
 
             var updatedPaymentRequestByUser = await paymentRequestByUserService.ResubmitPaymentRequestByUserAsync(
                 id,
@@ -363,9 +366,11 @@ namespace PayTrack.Api.Handler
                 resubmitDto.Transaction.PurposeOfPayment,
                 resubmitDto.Transaction.PaidAt,
                 resubmitDto.InvoiceNumber,
-                resubmitDto.Comment,
+                comment,
                 resubmitDto.PayoutType,
                 resubmitDto.BankAccountId,
+                resubmitDto.CreditorName,
+                resubmitDto.DueDate,
                 receipt);
 
             return TypedResults.Ok(PaymentRequestByUserMapper.ToDto(updatedPaymentRequestByUser));
