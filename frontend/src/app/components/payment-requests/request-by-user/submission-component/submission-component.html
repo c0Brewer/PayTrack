@@ -237,11 +237,19 @@
             (drop)="onFileDropped($event)"
           >
             <span class="receipt-upload__icon material-symbols-outlined">upload</span>
-            <span class="receipt-upload__title">Drag a file here or click to upload</span>
-            <span class="receipt-upload__meta">PDF, PNG, JPG (max. 20 MB)</span>
+            <span class="receipt-upload__title">{{
+              isEditMode
+                ? 'Upload a replacement receipt or keep the current one'
+                : 'Drag a file here or click to upload'
+            }}</span>
+            <span class="receipt-upload__meta">{{
+              isEditMode
+                ? 'Leave unchanged to keep the current receipt. PDF, PNG, JPG (max. 20 MB)'
+                : 'PDF, PNG, JPG (max. 20 MB)'
+            }}</span>
             <span class="receipt-upload__button">
               <span class="material-symbols-outlined">upload</span>
-              Select file
+              {{ isEditMode ? 'Replace file' : 'Select file' }}
             </span>
             @if (selectedFileName) {
               <span class="receipt-upload__filename">{{ selectedFileName }}</span>
@@ -298,9 +306,7 @@
             <div class="payout-type__options">
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.User
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.User)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.User" />
                 <span class="payout-type__dot"></span>
@@ -312,9 +318,7 @@
 
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.NotYetPaid
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.NotYetPaid)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.NotYetPaid" />
                 <span class="payout-type__dot"></span>
@@ -326,9 +330,7 @@
 
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.AlreadyPaid
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.AlreadyPaid)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.AlreadyPaid" />
                 <span class="payout-type__dot"></span>
@@ -344,7 +346,7 @@
             }
           </fieldset>
 
-          @if (form.get('payoutType')?.value === PayoutType.User) {
+          @if (isPayoutType(PayoutType.User)) {
             <div class="field input-wrapper payout-type__bank-account">
               <div class="payout-type__legend">
                 <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
@@ -377,7 +379,7 @@
             </div>
           }
 
-          @if (form.get('payoutType')?.value === PayoutType.NotYetPaid) {
+          @if (isPayoutType(PayoutType.NotYetPaid)) {
             <div class="field input-wrapper payout-type__creditor-name">
               <label for="creditorName">Company Name <span class="required">*</span></label>
               <input

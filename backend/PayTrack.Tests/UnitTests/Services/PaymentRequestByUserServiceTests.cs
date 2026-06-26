@@ -1960,11 +1960,15 @@ namespace PayTrack.Tests.UnitTests.Services
                 "Updated",
                 PayoutType.NotYetPaid,
                 null,
+                "Test Company",
+                DateTime.Today.AddDays(7),
                 null);
 
             result.Status.Should().Be(TransactionStatus.Review);
             result.Amount.Should().Be(42);
             result.InvoiceNumber.Should().Be("INV-7");
+            result.CreditorName.Should().Be("Test Company");
+            result.DueDate.Should().NotBeNull();
             result.ReceiptUrl.Should().Be("existing.pdf");
             result.StatusHistory.Should().ContainSingle(entry =>
                 entry.FromStatus == TransactionStatus.ChangesRequested
@@ -2008,6 +2012,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 null,
                 PayoutType.NotYetPaid,
                 null,
+                "Test Company",
+                DateTime.Today.AddDays(7),
                 null);
 
             await act.Should().ThrowAsync<ForbiddenException>();
@@ -2049,6 +2055,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 null,
                 PayoutType.NotYetPaid,
                 null,
+                "Test Company",
+                DateTime.Today.AddDays(7),
                 null);
 
             await act.Should().ThrowAsync<InvalidStateException>();

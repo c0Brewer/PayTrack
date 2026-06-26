@@ -472,6 +472,8 @@ namespace PayTrack.Application.Services.Implementation
             string? comment,
             PayoutType payoutType,
             int? bankAccountId,
+            string? creditorName,
+            DateTime? dueDate,
             IFormFile? receipt)
         {
             var transaction = await this.repo.GetByIdAsync(
@@ -521,6 +523,16 @@ namespace PayTrack.Application.Services.Implementation
                 bankAccountId = null;
             }
 
+            if (payoutType == PayoutType.NotYetPaid && string.IsNullOrWhiteSpace(creditorName))
+            {
+                throw new InvalidStateException("Creditor name is required");
+            }
+
+            if (payoutType == PayoutType.NotYetPaid && !dueDate.HasValue)
+            {
+                throw new InvalidStateException("Due date is required");
+            }
+
             transaction.TeamId = team.Id;
             transaction.Amount = amount;
             transaction.PurposeOfPayment = purposeOfPayment;
@@ -529,6 +541,10 @@ namespace PayTrack.Application.Services.Implementation
             transaction.Comment = comment;
             transaction.PayoutType = payoutType;
             transaction.BankAccountId = bankAccountId;
+            transaction.CreditorName = payoutType == PayoutType.NotYetPaid ? creditorName : null;
+            transaction.DueDate = payoutType == PayoutType.NotYetPaid
+                ? dueDate?.ToUniversalTime()
+                : null;
 
             if (receipt != null)
             {
