@@ -1,0 +1,173 @@
+import { APIRequestContext } from '@playwright/test';
+
+const apiBaseUrl = process.env['PLAYWRIGHT_API_BASE_URL'] ?? 'http://localhost:5154';
+
+interface PaginatedResponse<T> {
+  items: T[];
+}
+
+export interface E2EApiUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface E2ETeam {
+  id: number;
+  name: string;
+}
+
+export interface CreatedInvoice {
+  id: number;
+  invoiceNumber: string;
+  purposeOfPayment: string;
+}
+
+export interface CreatedTeamPaymentRequest {
+  id: number;
+  purposeOfPayment: string;
+}
+
+interface CreateInvoiceOptions {
+  token: string;
+  teamId: number;
+  invoiceNumber: string;
+  amount: number;
+  purposeOfPayment: string;
+  paidAt: string;
+}
+
+interface CreateTeamPaymentRequestOptions {
+  token: string;
+  teamId: number;
+  userToAssignToId: number;
+  amount: number;
+  purposeOfPayment: string;
+  dueDate: string;
+}
+
+function authorizationHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+async function expectOk(response: Awaited<ReturnType<APIRequestContext['get']>>): Promise<void> {
+  if (!response.ok()) {
+    throw new Error(`API request failed with ${response.status()}: ${await response.text()}`);
+  }
+}
+
+export async function getUserByEmail(
+  request: APIRequestContext,
+  token: string,
+  email: string,
+): Promise<E2EApiUser> {
+  const response = await request.get(`${apiBaseUrl}/api/v1/user`, {
+    headers: authorizationHeaders(token),
+  });
+  await expectOk(response);
+
+  const body = (await response.json()) as PaginatedResponse<E2EApiUser>;
+  const user = body.items.find((item) => item.email === email);
+  if (!user) {
+    throw new Error(`E2E user not found: ${email}`);
+  }
+
+  return user;
+}
+
+export async function getTeamByName(
+  request: APIRequestContext,
+  token: string,
+  name: string,
+): Promise<E2ETeam> {
+  const response = await request.get(`${apiBaseUrl}/api/v1/team`, {
+    headers: authorizationHeaders(token),
+  });
+  await expectOk(response);
+
+  const body = (await response.json()) as PaginatedResponse<E2ETeam>;
+  const team = body.items.find((item) => item.name === name);
+  if (!team) {
+    throw new Error(`E2E team not found: ${name}`);
+  }
+
+  return team;
+}
+
+export async function disableNotificationChannels(
+  request: APIRequestContext,
+  token: string,
+): Promise<void> {
+  const disabledChannel = {
+    sendEmail: false,
+    sendSlack: false,
+    sendPush: false,
+  };
+
+  const response = await request.put(`${apiBaseUrl}/api/v1/admin/settings/notification-channels`, {
+    headers: authorizationHeaders(token),
+    data: {
+      creation: disabledChannel,
+      confirmation: disabledChannel,
+      reminders: disabledChannel,
+      deletion: disabledChannel,
+      invoiceApproval: disabledChannel,
+      invoiceRejection: disabledChannel,
+      invoiceChangesRequested: disabledChannel,
+      invoicePaymentCompleted: disabledChannel,
+    },
+  });
+  await expectOk(response);
+}
+
+export async function createInvoice(
+  request: APIRequestContext,
+  options: CreateInvoiceOptions,
+): Promise<CreatedInvoice> {
+  const response = await request.post(`${apiBaseUrl}/api/v1/transaction/user`, {
+    headers: authorizationHeaders(options.token),
+    multipart: {
+      receipt: {
+        name: `${options.invoiceNumber}.txt`,
+        mimeType: 'text/plain',
+        buffer: Buffer.from(`Receipt for ${options.invoiceNumber}`),
+      },
+      invoiceNumber: options.invoiceNumber,
+      comment: 'Created by the home dashboard E2E test.',
+      payoutType: '1',
+      creditorName: 'E2E Supplier',
+      dueDate: options.paidAt,
+      'transaction.teamId': String(options.teamId),
+      'transaction.amount': String(options.amount),
+      'transaction.purposeOfPayment': options.purposeOfPayment,
+      'transaction.paidAt': options.paidAt,
+    },
+  });
+  await expectOk(response);
+
+  return (await response.json()) as CreatedInvoice;
+}
+
+export async function createTeamPaymentRequest(
+  request: APIRequestContext,
+  options: CreateTeamPaymentRequestOptions,
+): Promise<CreatedTeamPaymentRequest> {
+  const response = await request.post(`${apiBaseUrl}/api/v1/transaction/team`, {
+    headers: authorizationHeaders(options.token),
+    data: {
+      userToAssignToId: options.userToAssignToId,
+      dueDate: options.dueDate,
+      transaction: {
+        teamId: options.teamId,
+        amount: options.amount,
+        purposeOfPayment: options.purposeOfPayment,
+        paidAt: options.dueDate,
+      },
+    },
+  });
+  await expectOk(response);
+
+  return (await response.json()) as CreatedTeamPaymentRequest;
+}

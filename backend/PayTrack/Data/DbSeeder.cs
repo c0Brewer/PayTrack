@@ -412,6 +412,31 @@ public static class DbSeeder
             }
         }
 
+        var e2eHomeDashboardUserEmails = new[]
+        {
+            "e2e.home-chromium@paytrack.local",
+            "e2e.home-firefox@paytrack.local",
+            "e2e.home-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eHomeDashboardUserEmails)
+        {
+            var e2eHomeDashboardUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
+            if (e2eHomeDashboardUser is null)
+            {
+                e2eHomeDashboardUser = new User
+                {
+                    Name = "E2E Home Dashboard User",
+                    Email = email,
+                    Role = Role.RegularUser,
+                    Team = chassisTeam,
+                    IsActive = true,
+                };
+
+                db.User.Add(e2eHomeDashboardUser);
+            }
+        }
+
         // Duplicate-name pair — used to test ambiguous CSV matching.
         var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
         if (alexTaylor1 is null)
@@ -487,6 +512,27 @@ public static class DbSeeder
                 Bic = "BKAUATWW",
                 AccountHolder = "Electronics Member",
             });
+        }
+
+        foreach (var email in e2eHomeDashboardUserEmails)
+        {
+            var e2eHomeDashboardUser = await db.User.FirstAsync(u => u.Email == email);
+            var iban = email.Contains("chromium", StringComparison.OrdinalIgnoreCase)
+                ? "AT611904300234573301"
+                : email.Contains("firefox", StringComparison.OrdinalIgnoreCase)
+                    ? "AT611904300234573302"
+                    : "AT611904300234573303";
+
+            if (!await db.BankAccounts.AnyAsync(b => b.User == e2eHomeDashboardUser && b.Iban == iban))
+            {
+                db.BankAccounts.Add(new BankAccount
+                {
+                    User = e2eHomeDashboardUser,
+                    Iban = iban,
+                    Bic = "BKAUATWW",
+                    AccountHolder = "E2E Home Dashboard User",
+                });
+            }
         }
 
         var currentSeason = await db.Seasons.FirstOrDefaultAsync(c => c.Name == "S25/26");

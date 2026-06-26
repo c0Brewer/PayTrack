@@ -24,6 +24,21 @@ const skipBankInformationUsers: Record<string, E2EUser> = {
   },
 };
 
+const homeDashboardUsers: Record<string, E2EUser> = {
+  chromium: {
+    email: 'e2e.home-chromium@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+  firefox: {
+    email: 'e2e.home-firefox@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+  webkit: {
+    email: 'e2e.home-webkit@paytrack.local',
+    role: E2ERole.RegularUser,
+  },
+};
+
 export const e2eUsers = {
   admin: {
     email: 'admin@paytrack.local',
@@ -49,4 +64,8 @@ export const e2eUsers = {
 
 export function getSkipBankInformationUser(browserName: string): E2EUser {
   return skipBankInformationUsers[browserName] ?? skipBankInformationUsers.chromium;
+}
+
+export function getHomeDashboardUser(browserName: string): E2EUser {
+  return homeDashboardUsers[browserName] ?? homeDashboardUsers.chromium;
 }
