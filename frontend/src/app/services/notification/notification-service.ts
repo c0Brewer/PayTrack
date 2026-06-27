@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-import {
-  OFFLINE_READ_MESSAGE,
-  OFFLINE_WRITE_MESSAGE,
-  isBrowserOnline,
-} from '../offline/offline-utils';
+import { isBrowserOnline } from '../offline/offline-utils';
 
 export type NotificationType = 'error' | 'success';
 
@@ -31,7 +27,7 @@ export class NotificationService {
    * @param duration How long to show it in ms (default: 4000).
    */
   showError(message: string, duration = 4000): void {
-    if (!isBrowserOnline() && this.isOfflineMessage(message)) {
+    if (!isBrowserOnline()) {
       return;
     }
 
@@ -49,9 +45,5 @@ export class NotificationService {
 
   private emit(message: string, type: NotificationType, duration: number): void {
     this._notify$.next({ id: ++this.idCounter, message, duration, type });
-  }
-
-  private isOfflineMessage(message: string): boolean {
-    return message === OFFLINE_READ_MESSAGE || message === OFFLINE_WRITE_MESSAGE;
   }
 }
