@@ -51,13 +51,15 @@ describe('NotificationService', () => {
     expect(msg.duration).toBe(customDuration);
   });
 
-  it('should not emit offline error notifications while offline', async () => {
+  it('should not emit error notifications while offline', async () => {
     setBrowserOnline(false);
     const emitted: NotificationMessage[] = [];
     const subscription = service.notify$.subscribe((msg) => emitted.push(msg));
 
     service.showError(OFFLINE_READ_MESSAGE);
     service.showError(OFFLINE_WRITE_MESSAGE);
+    service.showError('Error while loading Items');
+    service.showError('Could not load seasons: NetworkError when attempting to fetch resource.');
 
     await new Promise((resolve) => setTimeout(resolve));
 
