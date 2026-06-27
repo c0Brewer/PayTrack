@@ -56,7 +56,7 @@
                 <div class="duplicate-list__detail">
                   <span class="duplicate-list__detail-label">Paid at</span>
                   <span class="duplicate-list__detail-value">
-                    {{ sourceInvoice.paidAt ? (sourceInvoice.paidAt | date: 'mediumDate') : '-' }}
+                    {{ sourceInvoice.paidAt ? (sourceInvoice.paidAt | date: 'mediumDate' : undefined : 'en-US') : '-' }}
                   </span>
                 </div>
                 <div class="duplicate-list__detail">
@@ -100,7 +100,7 @@
               <div class="duplicate-list__detail">
                 <span class="duplicate-list__detail-label">Paid at</span>
                 <span class="duplicate-list__detail-value">
-                  {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate') : '-' }}
+                  {{ duplicate.paymentRequestByUser.paidAt ? (duplicate.paymentRequestByUser.paidAt | date: 'mediumDate' : undefined : 'en-US') : '-' }}
                 </span>
               </div>
               <div class="duplicate-list__detail">

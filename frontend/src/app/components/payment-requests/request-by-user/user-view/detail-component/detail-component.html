@@ -103,16 +103,16 @@
             </tr>
             <tr>
               <th>Submitted</th>
-              <td>{{ invoice.createdAt | date: 'mediumDate' }}</td>
+              <td>{{ invoice.createdAt | date: 'mediumDate' : undefined : 'en-US' }}</td>
             </tr>
             <tr>
               <th>Paid At</th>
-              <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate') : '—' }}</td>
+              <td>{{ invoice.paidAt ? (invoice.paidAt | date: 'mediumDate' : undefined : 'en-US') : '—' }}</td>
             </tr>
             <tr>
               <th>Finance Paid At</th>
               <td>
-                {{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate') : '—' }}
+                {{ invoice.financePaidAt ? (invoice.financePaidAt | date: 'mediumDate' : undefined : 'en-US') : '—' }}
               </td>
             </tr>
             <tr>
@@ -136,7 +136,7 @@
               </tr>
               <tr>
                 <th>Due Date</th>
-                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate') : '—' }}</td>
+                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate' : undefined : 'en-US') : '—' }}</td>
               </tr>
             }
           </tbody>
@@ -170,7 +170,7 @@
                       </span>
                     </td>
                     <td>{{ entry.changedBy?.name ?? 'User #' + entry.changedById }}</td>
-                    <td>{{ entry.changedAt | date: 'medium' }}</td>
+                    <td>{{ entry.changedAt | date: 'medium' : undefined : 'en-US' }}</td>
                     <td>{{ entry.comment || '—' }}</td>
                   </tr>
                 }
