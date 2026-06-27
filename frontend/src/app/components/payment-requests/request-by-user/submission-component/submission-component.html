@@ -225,10 +225,12 @@
           subtitle="Upload your invoice/receipt and enter the details."
           size="medium"
         >
-          <p class="receipt-upload__hint">
-            Uploading the receipt first may help us pre-fill some invoice fields automatically. You
-            can review and change all values before submitting.
-          </p>
+          @if (receiptExtractionEnabled) {
+            <p class="receipt-upload__hint">
+              Uploading the receipt first may help us pre-fill some invoice fields automatically.
+              You can review and change all values before submitting.
+            </p>
+          }
           <label
             class="receipt-upload"
             for="receiptFile"
@@ -259,7 +261,7 @@
               <span class="material-symbols-outlined">error</span>{{ getError('receipt') }}
             </span>
           }
-          @if (receiptExtractionStatus !== 'idle') {
+          @if (receiptExtractionEnabled && receiptExtractionStatus !== 'idle') {
             <div
               class="receipt-extraction"
               [ngClass]="'receipt-extraction--' + receiptExtractionStatus"

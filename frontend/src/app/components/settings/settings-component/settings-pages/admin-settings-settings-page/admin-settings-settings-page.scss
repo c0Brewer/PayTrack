@@ -69,6 +69,19 @@
     margin: 0;
   }
 
+  &__setting-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: v.$size-m;
+
+    &__control {
+      align-items: center;
+      display: flex;
+      gap: v.$size-s;
+    }
+  }
+
   &__channels-group {
     & + & {
       border-top: 1px solid v.$border-color;

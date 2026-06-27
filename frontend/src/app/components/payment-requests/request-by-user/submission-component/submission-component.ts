@@ -23,6 +23,7 @@ import {
 import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
@@ -95,6 +96,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   editingInvoiceId: number | null = null;
   changeRequestMessage: string | null = null;
   isExtractingReceiptData = false;
+  receiptExtractionEnabled = false;
   receiptExtractionMessage = '';
   receiptExtractionStatus: 'idle' | 'loading' | 'success' | 'partial' | 'error' = 'idle';
   receiptExtractionResult: ReceiptExtractionDto | null = null;
@@ -120,6 +122,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
     private readonly statusRefreshService: PaymentRequestStatusRefreshService,
+    private readonly systemSettingService: SystemSettingService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
@@ -134,6 +137,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
+    this.loadInvoiceSubmissionSettings();
     this.loadInvoiceForEditing();
   }
 
@@ -356,7 +360,30 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.selectedFileName = file.name;
     receiptControl.setValue(file.name);
     receiptControl.setErrors(null);
+    if (!this.receiptExtractionEnabled) {
+      this.clearReceiptExtractionState();
+      return;
+    }
+
     this.extractReceiptData(file);
+  }
+
+  private loadInvoiceSubmissionSettings(): void {
+    this.systemSettingService
+      .getPublicInvoiceSubmissionSettings()
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.receiptExtractionEnabled = settings.receiptExtractionEnabled;
+          if (!settings.receiptExtractionEnabled) {
+            this.clearReceiptExtractionState();
+          }
+          this.changeDetectorRef.detectChanges();
+        },
+        error: () => {
+          this.receiptExtractionEnabled = false;
+        },
+      });
   }
 
   private extractReceiptData(file: File): void {

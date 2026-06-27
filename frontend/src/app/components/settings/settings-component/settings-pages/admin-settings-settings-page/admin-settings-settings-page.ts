@@ -5,6 +5,7 @@ import { NotificationService } from '../../../../../services/notification/notifi
 import { SystemSettingService } from '../../../../../services/system-setting/system-setting-service';
 import type {
   CsvColumnSettingsDto,
+  InvoiceSubmissionSettingsDto,
   NotificationChannelGroupsDto,
   ReminderScheduleDto,
 } from '../../../../../types/exporter';
@@ -110,6 +111,22 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
   reminderTimeError = '';
   reminderEmailDelayError = '';
 
+  invoiceSubmissionSettings: InvoiceSubmissionSettingsDto = {
+    receiptExtractionEnabled: true,
+  };
+  private invoiceSubmissionOriginal: InvoiceSubmissionSettingsDto = {
+    receiptExtractionEnabled: true,
+  };
+  invoiceSubmissionLoading = false;
+  invoiceSubmissionSaving = false;
+
+  get invoiceSubmissionDirty(): boolean {
+    return (
+      this.invoiceSubmissionSettings.receiptExtractionEnabled !==
+      this.invoiceSubmissionOriginal.receiptExtractionEnabled
+    );
+  }
+
   get reminderDirty(): boolean {
     return (
       this.reminderDaysInput !== this.reminderOriginalDaysInput ||
@@ -172,6 +189,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     this.loadCsvSettings();
     this.loadNotifSettings();
     this.loadReminderSettings();
+    this.loadInvoiceSubmissionSettings();
   }
 
   loadCsvSettings(): void {
@@ -336,6 +354,44 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           this.reminderSaving = false;
           this.notificationService.showError(
             error instanceof Error ? error.message : 'Failed to save reminder schedule.',
+          );
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  loadInvoiceSubmissionSettings(): void {
+    this.invoiceSubmissionLoading = true;
+    this.systemSettingService.getInvoiceSubmissionSettings().subscribe({
+      next: (data) => {
+        this.invoiceSubmissionSettings = { ...data };
+        this.invoiceSubmissionOriginal = { ...data };
+        this.invoiceSubmissionLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load invoice submission settings', error);
+        this.invoiceSubmissionLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  saveInvoiceSubmissionSettings(): void {
+    this.invoiceSubmissionSaving = true;
+    this.systemSettingService
+      .updateInvoiceSubmissionSettings(this.invoiceSubmissionSettings)
+      .subscribe({
+        next: () => {
+          this.invoiceSubmissionOriginal = { ...this.invoiceSubmissionSettings };
+          this.invoiceSubmissionSaving = false;
+          this.notificationService.showSuccess('Invoice submission settings saved.');
+          this.cdr.detectChanges();
+        },
+        error: (error: unknown) => {
+          this.invoiceSubmissionSaving = false;
+          this.notificationService.showError(
+            error instanceof Error ? error.message : 'Failed to save invoice submission settings.',
           );
           this.cdr.detectChanges();
         },

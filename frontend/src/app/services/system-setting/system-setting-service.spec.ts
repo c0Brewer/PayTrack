@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { client } from '../../client';
 import {
   CsvColumnSettingsDto,
+  InvoiceSubmissionSettingsDto,
   NotificationChannelGroupsDto,
   ReminderScheduleDto,
 } from '../../types/exporter';
@@ -72,6 +73,30 @@ describe('SystemSettingService', () => {
       await expect(
         firstValueFrom(service.updateCsvColumnSettings({ nameColumn: 'X', summeColumn: 'Y' })),
       ).rejects.toThrow('Failed to update CSV column settings');
+    });
+  });
+
+  describe('getInvoiceSubmissionSettings', () => {
+    it('should return invoice submission settings on success', async () => {
+      const response: InvoiceSubmissionSettingsDto = { receiptExtractionEnabled: false };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
+
+      const result = await firstValueFrom(service.getInvoiceSubmissionSettings());
+
+      expect(result).toEqual(response);
+    });
+
+    it('should throw when API returns error', async () => {
+      vi.spyOn(client, 'GET').mockResolvedValue({
+        data: null,
+        error: { detail: 'Failed to load invoice submission settings' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      await expect(firstValueFrom(service.getInvoiceSubmissionSettings())).rejects.toThrow(
+        'Failed to load invoice submission settings',
+      );
     });
   });
 
