@@ -414,12 +414,16 @@ describe('ReceiptSubmitComponent', () => {
     const bankAccountControl = component.form.get('bankAccountId')!;
     bankAccountControl.setValue(12);
 
-    component.form.get('payoutType')?.setValue(component.getPayoutTypeControlValue(PayoutType.NotYetPaid));
+    component.form
+      .get('payoutType')
+      ?.setValue(component.getPayoutTypeControlValue(PayoutType.NotYetPaid));
 
     expect(bankAccountControl.value).toBe(12);
     expect(bankAccountControl.errors).toBeNull();
 
-    component.form.get('payoutType')?.setValue(component.getPayoutTypeControlValue(PayoutType.User));
+    component.form
+      .get('payoutType')
+      ?.setValue(component.getPayoutTypeControlValue(PayoutType.User));
     bankAccountControl.markAsTouched();
 
     expect(bankAccountControl.errors).toBeNull();

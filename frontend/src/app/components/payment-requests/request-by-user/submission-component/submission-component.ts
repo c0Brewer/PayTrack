@@ -159,10 +159,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     this.form
       .get('payoutType')!
-      .valueChanges.pipe(
-        startWith(this.form.get('payoutType')?.value),
-        takeUntil(this.destroy$),
-      )
+      .valueChanges.pipe(startWith(this.form.get('payoutType')?.value), takeUntil(this.destroy$))
       .subscribe((value) => {
         const payoutType = this.toPayoutType(value);
         const bankCtrl = this.form.get('bankAccountId');
