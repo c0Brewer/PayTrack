@@ -224,3 +224,5 @@ export type ReminderScheduleDto = {
   emailDelayMs: number;
 };
 export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;
+export type InvoiceSubmissionSettingsDto = { receiptExtractionEnabled: boolean };
+export type UpdateInvoiceSubmissionSettingsRequestDto = InvoiceSubmissionSettingsDto;

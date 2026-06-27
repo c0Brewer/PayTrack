@@ -101,5 +101,34 @@ namespace PayTrack.Api.Handler
             await service.UpdateReminderScheduleAsync(request, user.Id);
             return TypedResults.NoContent();
         }
+
+        /// <summary>
+        /// Returns the current invoice submission settings.
+        /// </summary>
+        /// <param name="service">Dependency-injected system setting service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<InvoiceSubmissionSettingsDto>, ProblemHttpResult>> GetInvoiceSubmissionSettingsAsync(
+            ISystemSettingService service)
+        {
+            var dto = await service.GetInvoiceSubmissionSettingsAsync();
+            return TypedResults.Ok(dto);
+        }
+
+        /// <summary>
+        /// Updates the invoice submission settings.
+        /// </summary>
+        /// <param name="request">New invoice submission settings.</param>
+        /// <param name="service">Dependency-injected system setting service.</param>
+        /// <param name="authService">Dependency-injected auth service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<NoContent, NotFound<ProblemDetails>, ProblemHttpResult>> UpdateInvoiceSubmissionSettingsAsync(
+            [Microsoft.AspNetCore.Mvc.FromBody] UpdateInvoiceSubmissionSettingsRequestDto request,
+            ISystemSettingService service,
+            IAuthService authService)
+        {
+            var user = await authService.GetCurrentUser() ?? throw new NotFoundException("User not found.");
+            await service.UpdateInvoiceSubmissionSettingsAsync(request, user.Id);
+            return TypedResults.NoContent();
+        }
     }
 }

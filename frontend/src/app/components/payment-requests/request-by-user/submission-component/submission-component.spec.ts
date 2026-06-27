@@ -9,6 +9,7 @@ import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   CreatePaymentRequestByUserDto,
@@ -28,6 +29,10 @@ describe('ReceiptSubmitComponent', () => {
     resubmitPaymentRequestByUser: vi.fn(),
     getDuplicatePaymentRequestsByUser: vi.fn(),
     extractReceiptData: vi.fn(),
+  };
+
+  const systemSettingServiceMock = {
+    getPublicInvoiceSubmissionSettings: vi.fn(),
   };
 
   const teamServiceMock = {
@@ -80,6 +85,9 @@ describe('ReceiptSubmitComponent', () => {
     paymentServiceMock.resubmitPaymentRequestByUser.mockReset();
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReset();
     paymentServiceMock.extractReceiptData.mockReset();
+    systemSettingServiceMock.getPublicInvoiceSubmissionSettings
+      .mockReset()
+      .mockReturnValue(of({ receiptExtractionEnabled: true }));
     teamServiceMock.getTeams.mockReset();
     bankAccountServiceMock.getBankAccounts.mockReset();
     notificationMock.showSuccess.mockReset();
@@ -104,6 +112,7 @@ describe('ReceiptSubmitComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceMock },
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: SystemSettingService, useValue: systemSettingServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
@@ -339,6 +348,22 @@ describe('ReceiptSubmitComponent', () => {
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (component as any).offlineService.isOffline.set(false);
+  });
+
+  it('should skip receipt extraction when receipt extraction is disabled', () => {
+    systemSettingServiceMock.getPublicInvoiceSubmissionSettings.mockReturnValue(
+      of({ receiptExtractionEnabled: false }),
+    );
+    component.ngOnInit();
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.selectedFileName).toBe('ok.pdf');
+    expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
+    expect(component.receiptExtractionStatus).toBe('idle');
+    expect(component.receiptExtractionMessage).toBe('');
   });
 
   it('should ignore file selection when no file is present', () => {

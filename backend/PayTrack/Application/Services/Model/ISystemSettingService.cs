@@ -41,6 +41,16 @@ namespace PayTrack.Application.Services.Model
         /// <returns>A task representing the async operation.</returns>
         Task UpdateReminderScheduleAsync(UpdateReminderScheduleRequestDto dto, int userId);
 
+        /// <summary>Returns the current invoice submission settings.</summary>
+        /// <returns>The current invoice submission settings.</returns>
+        Task<InvoiceSubmissionSettingsDto> GetInvoiceSubmissionSettingsAsync();
+
+        /// <summary>Persists updated invoice submission settings.</summary>
+        /// <param name="dto">New invoice submission settings.</param>
+        /// <param name="userId">ID of the admin performing the update.</param>
+        /// <returns>A task representing the async operation.</returns>
+        Task UpdateInvoiceSubmissionSettingsAsync(UpdateInvoiceSubmissionSettingsRequestDto dto, int userId);
+
         /// <summary>
         /// Returns a boolean setting from the DB, or <paramref name="defaultValue"/> if no row exists.
         /// Used internally by notification services to read channel toggles at runtime.
