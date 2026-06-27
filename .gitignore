@@ -1,4 +1,5 @@
 .env
+.DS_Store
 .dotnet-home/
 .vs/
 .idea
@@ -7,8 +8,6 @@
 !/backend/PayTrack/uploads/presentation-invoices/
 !/backend/PayTrack/uploads/presentation-invoices/*
 /.idea/
-.dotnet-home/
-.vs/
 /.claude/
 
 

@@ -17,6 +17,7 @@ namespace PayTrack.Application.Services.Implementation
         private const int DefaultRunAtHourUtc = 8;
         private const int DefaultRunAtMinuteUtc = 0;
         private const int DefaultEmailDelayMs = 500;
+        private const bool DefaultReceiptExtractionEnabled = true;
         private static readonly int[] DefaultDaysBeforeDue = [7, 2, 1];
 
         private readonly ISystemSettingRepository repo = repo;
@@ -152,6 +153,26 @@ namespace PayTrack.Application.Services.Implementation
                     [SystemSettingKeys.RemindersRunAtHourUtc] = dto.RunAtHourUtc.ToString(),
                     [SystemSettingKeys.RemindersRunAtMinuteUtc] = dto.RunAtMinuteUtc.ToString(),
                     [SystemSettingKeys.RemindersEmailDelayMs] = dto.EmailDelayMs.ToString(),
+                },
+                userId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<InvoiceSubmissionSettingsDto> GetInvoiceSubmissionSettingsAsync()
+        {
+            return new InvoiceSubmissionSettingsDto(
+                await this.GetBoolSettingAsync(
+                    SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled,
+                    DefaultReceiptExtractionEnabled));
+        }
+
+        /// <inheritdoc/>
+        public async Task UpdateInvoiceSubmissionSettingsAsync(UpdateInvoiceSubmissionSettingsRequestDto dto, int userId)
+        {
+            await this.repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    [SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled] = dto.ReceiptExtractionEnabled.ToString(),
                 },
                 userId);
         }

@@ -37,6 +37,14 @@ namespace PayTrack.Api.Endpoints
 
             group.MapGet("/reminder-schedule", AdminSettingsHandler.GetReminderScheduleAsync);
             group.MapPut("/reminder-schedule", AdminSettingsHandler.UpdateReminderScheduleAsync);
+
+            group.MapGet("/invoice-submission", AdminSettingsHandler.GetInvoiceSubmissionSettingsAsync);
+            group.MapPut("/invoice-submission", AdminSettingsHandler.UpdateInvoiceSubmissionSettingsAsync);
+
+            app.MapGet($"/{GroupRoute}/invoice-submission/public", AdminSettingsHandler.GetInvoiceSubmissionSettingsAsync)
+                .WithTags(GroupName)
+                .RequireAuthorization()
+                .RequireActiveUser();
         }
     }
 }
