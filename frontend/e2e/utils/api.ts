@@ -17,6 +17,13 @@ export interface E2ETeam {
   name: string;
 }
 
+export interface E2EBankAccount {
+  id: number;
+  iban: string;
+  bic: string;
+  accountHolder: string;
+}
+
 export interface CreatedInvoice {
   id: number;
   invoiceNumber: string;
@@ -35,6 +42,8 @@ interface CreateInvoiceOptions {
   amount: number;
   purposeOfPayment: string;
   paidAt: string;
+  payoutType?: 'user' | 'supplier';
+  bankAccountId?: number;
 }
 
 interface ResubmitInvoiceOptions extends CreateInvoiceOptions {
@@ -101,6 +110,24 @@ export async function getTeamByName(
   return team;
 }
 
+export async function getFirstBankAccount(
+  request: APIRequestContext,
+  token: string,
+): Promise<E2EBankAccount> {
+  const response = await request.get(`${apiBaseUrl}/api/v1/bankaccount`, {
+    headers: authorizationHeaders(token),
+  });
+  await expectOk(response);
+
+  const body = (await response.json()) as E2EBankAccount[];
+  const bankAccount = body[0];
+  if (!bankAccount) {
+    throw new Error('E2E bank account not found for current user');
+  }
+
+  return bankAccount;
+}
+
 export async function disableNotificationChannels(
   request: APIRequestContext,
   token: string,
@@ -131,6 +158,8 @@ export async function createInvoice(
   request: APIRequestContext,
   options: CreateInvoiceOptions,
 ): Promise<CreatedInvoice> {
+  const payoutType = options.payoutType ?? 'supplier';
+  const isUserPayout = payoutType === 'user';
   const response = await request.post(`${apiBaseUrl}/api/v1/transaction/user`, {
     headers: authorizationHeaders(options.token),
     multipart: {
@@ -141,9 +170,13 @@ export async function createInvoice(
       },
       invoiceNumber: options.invoiceNumber,
       comment: 'Created by the home dashboard E2E test.',
-      payoutType: '1',
-      creditorName: 'E2E Supplier',
-      dueDate: options.paidAt,
+      payoutType: isUserPayout ? '0' : '1',
+      ...(isUserPayout
+        ? { bankAccountId: String(options.bankAccountId) }
+        : {
+            creditorName: 'E2E Supplier',
+            dueDate: options.paidAt,
+          }),
       'transaction.teamId': String(options.teamId),
       'transaction.amount': String(options.amount),
       'transaction.purposeOfPayment': options.purposeOfPayment,
