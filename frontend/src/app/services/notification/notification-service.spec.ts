@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
+import { OFFLINE_READ_MESSAGE, OFFLINE_WRITE_MESSAGE } from '../offline/offline-utils';
+
 import { NotificationService, NotificationMessage } from './notification-service';
 
 describe('NotificationService', () => {
@@ -9,6 +11,11 @@ describe('NotificationService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(NotificationService);
+    setBrowserOnline(true);
+  });
+
+  afterEach(() => {
+    setBrowserOnline(true);
   });
 
   it('should be created', () => {
@@ -43,4 +50,25 @@ describe('NotificationService', () => {
     const msg: NotificationMessage = await promise;
     expect(msg.duration).toBe(customDuration);
   });
+
+  it('should not emit offline error notifications while offline', async () => {
+    setBrowserOnline(false);
+    const emitted: NotificationMessage[] = [];
+    const subscription = service.notify$.subscribe((msg) => emitted.push(msg));
+
+    service.showError(OFFLINE_READ_MESSAGE);
+    service.showError(OFFLINE_WRITE_MESSAGE);
+
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(emitted).toEqual([]);
+    subscription.unsubscribe();
+  });
 });
+
+function setBrowserOnline(online: boolean): void {
+  Object.defineProperty(navigator, 'onLine', {
+    configurable: true,
+    get: () => online,
+  });
+}
