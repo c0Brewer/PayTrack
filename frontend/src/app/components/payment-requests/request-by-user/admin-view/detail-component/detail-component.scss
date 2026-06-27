@@ -5,6 +5,21 @@ button:disabled {
   pointer-events: auto;
 }
 
+.btn-secondary:disabled {
+  --bs-btn-disabled-bg: white;
+  --bs-btn-disabled-border-color: rgb(235 106 0);
+  --bs-btn-disabled-color: rgb(235 106 0);
+  --bs-btn-disabled-opacity: 0.65;
+}
+
+button.btn.btn-secondary.btn-secondary--pending:disabled {
+  background: white !important;
+  border-color: rgb(235 106 0) !important;
+  box-shadow: none !important;
+  color: rgb(235 106 0) !important;
+  opacity: 0.65 !important;
+}
+
 
 .invoice-detail {
   .field-error {

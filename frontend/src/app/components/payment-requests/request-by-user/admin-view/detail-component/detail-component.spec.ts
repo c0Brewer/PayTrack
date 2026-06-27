@@ -419,6 +419,24 @@ describe('AdminInvoiceDetailComponent', () => {
     expect(getButtonByText('Saving...')?.disabled).toBe(true);
   });
 
+  it('should disable cancel while mark paid is saving', () => {
+    component.invoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Approved,
+    } as PaymentRequestByUserDto;
+    component.loading = false;
+    component.canMarkPaid = true;
+    component.markingPaid = true;
+    component.paymentReference = 'REF-123';
+    component.paymentPurpose = 'Supplier payout';
+    component.paymentDate = '2026-02-03';
+    component.openActionModal('markPaid');
+
+    fixture.detectChanges();
+
+    expect(getButtonByText('Cancel')?.disabled).toBe(true);
+  });
+
   it('should show user name row when showUserName is true', () => {
     component.invoice = mockInvoice;
     component.loading = false;

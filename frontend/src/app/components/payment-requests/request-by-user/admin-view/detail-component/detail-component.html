@@ -248,6 +248,8 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'approve'"
+              [class.btn-secondary--pending]="statusActionPending === 'approve'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -317,6 +319,8 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'requestChanges'"
+              [class.btn-secondary--pending]="statusActionPending === 'requestChanges'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -372,6 +376,8 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'decline'"
+              [class.btn-secondary--pending]="statusActionPending === 'decline'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -460,6 +466,8 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="markingPaid"
+              [class.btn-secondary--pending]="markingPaid"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
