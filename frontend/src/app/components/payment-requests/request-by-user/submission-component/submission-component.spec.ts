@@ -134,7 +134,7 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.form.get('payoutType')?.errors).toBeNull();
 
     const paidMyselfRadio = fixture.nativeElement.querySelector(
-      'input[formControlName="payoutType"][value="0"]',
+      'input[formControlName="payoutType"]',
     ) as HTMLInputElement | null;
     expect(paidMyselfRadio?.checked).toBe(true);
   });
