@@ -1,17 +1,30 @@
 @if (canEditRequestedChanges) {
-  <section class="change-request-message" aria-labelledby="change-request-title">
-    <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
-    <div>
-      <h2 id="change-request-title">Changes requested</h2>
-      @if (latestChangeRequestMessage) {
-        <p>{{ latestChangeRequestMessage }}</p>
-      }
+  <div
+    class="alert alert-warning d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 shadow-sm rounded-4 p-4"
+    role="alert"
+  >
+    <div class="d-flex align-items-start gap-3">
+    <span class="material-symbols-outlined fs-2 text-warning-emphasis" aria-hidden="true">
+      notification_important
+    </span>
+
+      <div>
+        <h4 class="alert-heading mb-1 text-dark">
+          Changes Requested
+        </h4>
+
+        <p class="mb-0">
+          Reason: {{ latestChangeRequestMessage }}
+        </p>
+      </div>
     </div>
-  </section>
-  <div class="change-request-actions">
-    <button type="button" class="btn" (click)="onEdit()">
-      <span class="material-symbols-outlined">edit</span>
-      Edit Invoice
+    <button
+      type="button"
+      class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2 fw-semibold px-4 py-2 text-nowrap shadow-sm align-self-stretch align-self-md-center"
+      (click)="onEdit()"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+      Revise and Resubmit
     </button>
   </div>
 }

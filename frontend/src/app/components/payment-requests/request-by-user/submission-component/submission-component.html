@@ -11,13 +11,26 @@
   </div>
 
   @if (isEditMode && changeRequestMessage) {
-    <section class="change-request-message" aria-labelledby="edit-change-request-title">
-      <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
-      <div>
-        <h2 id="edit-change-request-title">Changes requested</h2>
-        <p>{{ changeRequestMessage }}</p>
+    <div
+      class="alert alert-warning d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 shadow-sm rounded-4 p-4"
+      role="alert"
+    >
+      <div class="d-flex align-items-start gap-3">
+    <span class="material-symbols-outlined fs-2 text-warning-emphasis" aria-hidden="true">
+      notification_important
+    </span>
+
+        <div>
+          <h4 class="alert-heading mb-1 text-dark">
+            Changes Requested
+          </h4>
+
+          <p class="mb-0">
+            Reason: {{ changeRequestMessage }}
+          </p>
+        </div>
       </div>
-    </section>
+    </div>
   }
 
   @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
@@ -430,7 +443,7 @@
           }
         </app-box-component>
       </div>
-      <div class="form-actions">
+      <div class="form-actions d-flex gap-2">
         @if (isEditMode) {
           <button
             type="button"
