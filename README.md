@@ -139,8 +139,18 @@ ng e2e
 - Starts the Angular development server automatically.
 - Starts the backend in the `E2E` environment.
 - Uses a dedicated Docker-backed PostgreSQL database that is reset, migrated, and seeded for the test run.
+- Runs the Playwright suite in Chromium, Firefox, and WebKit.
 
-Docker must be running before executing the E2E tests. See `frontend/e2e/README.md` for the E2E folder structure and test authoring conventions.
+Docker must be running before executing the E2E tests. The E2E login endpoint and database reset behavior are only enabled in the backend `E2E` environment.
+
+To run one spec during local development:
+
+```bash
+cd frontend
+ng e2e --files e2e/tests/auth.spec.ts --reporter=line
+```
+
+See `frontend/e2e/README.md` for the E2E folder structure, fixture conventions, backend startup flow, and test authoring conventions.
 
 ### Linting the Frontend
 

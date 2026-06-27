@@ -57,8 +57,19 @@ The command starts the Angular development server, starts the backend in the `E2
 environment, and runs the Playwright specs against a dedicated Docker-backed
 PostgreSQL database. Docker must be running before executing the command.
 
-See `e2e/README.md` for the E2E folder structure, backend startup flow, and test
-authoring conventions.
+The E2E suite currently runs against Chromium, Firefox, and WebKit. It covers
+authentication, route guards, user management, invoice and payment-request
+workflows, offline behavior, import flows, admin master data, and overview
+filtering.
+
+To run one spec while developing:
+
+```bash
+ng e2e --files e2e/tests/invoice-flow.spec.ts --reporter=line
+```
+
+See `e2e/README.md` for the E2E folder structure, backend startup flow, fixture
+files, and test authoring conventions.
 
 ## Additional Resources
 
