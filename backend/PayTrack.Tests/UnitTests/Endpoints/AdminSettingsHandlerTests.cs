@@ -194,6 +194,66 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
+
+        // ── GET /admin/settings/invoice-submission ────────────────────────────────
+
+        [Fact]
+        public async Task GetInvoiceSubmissionSettings_ReturnsOk_WhenAdmin()
+        {
+            this.factory.ServiceMock
+                .Setup(s => s.GetInvoiceSubmissionSettingsAsync())
+                .ReturnsAsync(new InvoiceSubmissionSettingsDto(false));
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.GetAsync("api/v1/admin/settings/invoice-submission");
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var dto = await response.Content.ReadFromJsonAsync<InvoiceSubmissionSettingsDto>();
+            dto!.ReceiptExtractionEnabled.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetPublicInvoiceSubmissionSettings_ReturnsOk_WhenAuthenticatedUser()
+        {
+            this.factory.ServiceMock
+                .Setup(s => s.GetInvoiceSubmissionSettingsAsync())
+                .ReturnsAsync(new InvoiceSubmissionSettingsDto(true));
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+
+            var response = await client.GetAsync("api/v1/admin/settings/invoice-submission/public");
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var dto = await response.Content.ReadFromJsonAsync<InvoiceSubmissionSettingsDto>();
+            dto!.ReceiptExtractionEnabled.Should().BeTrue();
+        }
+
+        // ── PUT /admin/settings/invoice-submission ────────────────────────────────
+
+        [Fact]
+        public async Task UpdateInvoiceSubmissionSettings_ReturnsNoContent_WhenAdmin()
+        {
+            this.factory.ServiceMock
+                .Setup(s => s.UpdateInvoiceSubmissionSettingsAsync(It.IsAny<UpdateInvoiceSubmissionSettingsRequestDto>(), It.IsAny<int>()))
+                .Returns(Task.CompletedTask);
+
+            var client = this.factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PutAsJsonAsync(
+                "api/v1/admin/settings/invoice-submission",
+                new UpdateInvoiceSubmissionSettingsRequestDto(false));
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            this.factory.ServiceMock.Verify(
+                s => s.UpdateInvoiceSubmissionSettingsAsync(
+                    It.Is<UpdateInvoiceSubmissionSettingsRequestDto>(d => !d.ReceiptExtractionEnabled),
+                    It.IsAny<int>()),
+                Times.Once);
+        }
     }
 
     public class AdminSettingsApiFactory : WebApplicationFactory<Program>
