@@ -411,6 +411,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     It.IsAny<string?>(),
                     It.IsAny<PayoutType>(),
                     It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>(),
                     It.IsAny<IFormFile?>()))
                 .ReturnsAsync(updated);
 
@@ -423,7 +425,9 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 { new StringContent("INV-1"), "InvoiceNumber" },
                 { new StringContent("Corrected"), "Comment" },
                 { new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType" },
-                { new StringContent("0"), "BankAccountId" }
+                { new StringContent("0"), "BankAccountId" },
+                { new StringContent("Test Company"), "CreditorName" },
+                { new StringContent("2026-06-01T00:00:00Z"), "DueDate" }
             };
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -445,8 +449,74 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 "Corrected",
                 PayoutType.NotYetPaid,
                 0,
+                "Test Company",
+                It.IsAny<DateTime?>(),
                 null));
 
+        }
+
+        [Fact]
+        public async Task Resubmit_ReturnsOk_WhenCommentIsEmpty()
+        {
+            var user = new User { Id = 7, Role = Role.RegularUser };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = user.Id,
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Review
+            };
+            _factory.AuthServiceMock.Setup(service => service.GetCurrentUser()).ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(service => service.ResubmitPaymentRequestByUserAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<decimal>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<PayoutType>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>(),
+                    It.IsAny<IFormFile?>()))
+                .ReturnsAsync(updated);
+
+            using var form = new MultipartFormDataContent
+            {
+                { new StringContent("2"), "Transaction.TeamId" },
+                { new StringContent("42"), "Transaction.Amount" },
+                { new StringContent("Travel"), "Transaction.PurposeOfPayment" },
+                { new StringContent("2026-05-01T00:00:00Z"), "Transaction.PaidAt" },
+                { new StringContent("INV-1"), "InvoiceNumber" },
+                { new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType" },
+                { new StringContent("0"), "BankAccountId" },
+                { new StringContent("Test Company"), "CreditorName" },
+                { new StringContent("2026-06-01T00:00:00Z"), "DueDate" }
+            };
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/resubmit", form);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, responseBody);
+            _factory.ServiceMock.Verify(service => service.ResubmitPaymentRequestByUserAsync(
+                1,
+                user.Id,
+                2,
+                42,
+                "Travel",
+                It.IsAny<DateTime>(),
+                "INV-1",
+                null,
+                PayoutType.NotYetPaid,
+                0,
+                "Test Company",
+                It.IsAny<DateTime?>(),
+                null));
         }
 
         [Fact]

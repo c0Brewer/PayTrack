@@ -112,6 +112,8 @@ namespace PayTrack.Application.Services.Model
         /// <param name="comment">The updated optional comment.</param>
         /// <param name="payoutType">The updated payout type.</param>
         /// <param name="bankAccountId">The updated optional bank account id.</param>
+        /// <param name="creditorName">The updated optional creditor name.</param>
+        /// <param name="dueDate">The updated optional due date.</param>
         /// <param name="receipt">An optional replacement receipt.</param>
         /// <returns>The updated invoice in review.</returns>
         Task<PaymentRequestByUser> ResubmitPaymentRequestByUserAsync(
@@ -125,6 +127,8 @@ namespace PayTrack.Application.Services.Model
             string? comment,
             PayoutType payoutType,
             int? bankAccountId,
+            string? creditorName,
+            DateTime? dueDate,
             IFormFile? receipt);
 
         /// <summary>
