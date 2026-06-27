@@ -35,7 +35,6 @@ export class OfflineService {
 
     window.addEventListener('offline', () => {
       this.isOffline.set(true);
-      this.notificationService.showError(OFFLINE_READ_MESSAGE, 5000);
     });
   }
 
