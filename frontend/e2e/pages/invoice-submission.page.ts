@@ -57,6 +57,14 @@ export class InvoiceSubmissionPage {
     await this.invoiceNumberInput.fill(invoiceNumber);
   }
 
+  async fillAmount(amount: string): Promise<void> {
+    await this.amountInput.fill(amount);
+  }
+
+  async fillPaidAt(paidAt: string): Promise<void> {
+    await this.paidAtInput.fill(paidAt);
+  }
+
   async selectTeam(teamName: string): Promise<void> {
     await this.teamSelect.selectOption({ label: teamName });
   }
@@ -73,5 +81,18 @@ export class InvoiceSubmissionPage {
 
   async submit(): Promise<void> {
     await this.page.getByRole('button', { name: 'Submit Invoice' }).click();
+  }
+
+  async expectDuplicateWarning(invoiceNumber: string): Promise<void> {
+    const dialog = this.page.getByRole('dialog').filter({ hasText: 'Potential Duplicates Found' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(invoiceNumber);
+    await expect(dialog).toContainText('Matching invoice');
+    await expect(dialog).toContainText('Matched on:');
+  }
+
+  async submitDuplicateRegardless(): Promise<void> {
+    const dialog = this.page.getByRole('dialog').filter({ hasText: 'Potential Duplicates Found' });
+    await dialog.getByRole('button', { name: 'Submit Regardless' }).click();
   }
 }
