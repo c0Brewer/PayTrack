@@ -37,6 +37,11 @@ interface CreateInvoiceOptions {
   paidAt: string;
 }
 
+interface ResubmitInvoiceOptions extends CreateInvoiceOptions {
+  invoiceId: number;
+  comment: string;
+}
+
 interface CreateTeamPaymentRequestOptions {
   token: string;
   teamId: number;
@@ -145,6 +150,31 @@ export async function createInvoice(
       'transaction.paidAt': options.paidAt,
     },
   });
+  await expectOk(response);
+
+  return (await response.json()) as CreatedInvoice;
+}
+
+export async function resubmitInvoice(
+  request: APIRequestContext,
+  options: ResubmitInvoiceOptions,
+): Promise<CreatedInvoice> {
+  const response = await request.post(
+    `${apiBaseUrl}/api/v1/transaction/user/${options.invoiceId}/resubmit`,
+    {
+      headers: authorizationHeaders(options.token),
+      multipart: {
+        'Transaction.TeamId': String(options.teamId),
+        'Transaction.Amount': String(options.amount),
+        'Transaction.PurposeOfPayment': options.purposeOfPayment,
+        'Transaction.PaidAt': options.paidAt,
+        InvoiceNumber: options.invoiceNumber,
+        Comment: options.comment,
+        PayoutType: '1',
+        BankAccountId: '0',
+      },
+    },
+  );
   await expectOk(response);
 
   return (await response.json()) as CreatedInvoice;
