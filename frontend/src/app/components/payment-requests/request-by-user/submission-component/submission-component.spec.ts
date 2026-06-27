@@ -22,6 +22,7 @@ import { ReceiptSubmitComponent } from './submission-component';
 
 describe('ReceiptSubmitComponent', () => {
   let component: ReceiptSubmitComponent;
+  let fixture: import('@angular/core/testing').ComponentFixture<ReceiptSubmitComponent>;
 
   const paymentServiceMock = {
     createPaymentRequestByUser: vi.fn(),
@@ -63,7 +64,7 @@ describe('ReceiptSubmitComponent', () => {
     component.form.setValue({
       invoiceNumber: 'INV-1',
       comment: '',
-      payoutType: PayoutType.User,
+      payoutType: component.getPayoutTypeControlValue(PayoutType.User),
       bankAccountId: 1,
       teamId: 1,
       amount: 100,
@@ -112,7 +113,7 @@ describe('ReceiptSubmitComponent', () => {
       ],
     }).compileComponents();
 
-    const fixture = TestBed.createComponent(ReceiptSubmitComponent);
+    fixture = TestBed.createComponent(ReceiptSubmitComponent);
     component = fixture.componentInstance;
   });
 
@@ -125,9 +126,17 @@ describe('ReceiptSubmitComponent', () => {
 
   it('should initialize form on ngOnInit', () => {
     component.ngOnInit();
+    fixture.detectChanges();
 
     expect(component.form).toBeDefined();
     expect(component.form.get('invoiceNumber')).toBeTruthy();
+    expect(component.toPayoutType(component.form.get('payoutType')?.value)).toBe(PayoutType.User);
+    expect(component.form.get('payoutType')?.errors).toBeNull();
+
+    const paidMyselfRadio = fixture.nativeElement.querySelector(
+      'input[formControlName="payoutType"][value="0"]',
+    ) as HTMLInputElement | null;
+    expect(paidMyselfRadio?.checked).toBe(true);
   });
 
   it('should load teams and bank accounts on init', () => {
@@ -395,6 +404,8 @@ describe('ReceiptSubmitComponent', () => {
   // -------------------------
   it('should convert payout type correctly', () => {
     expect(component.toPayoutType(PayoutType.User)).toBe(PayoutType.User);
+    expect(component.toPayoutType('')).toBeNull();
+    expect(component.toPayoutType(null)).toBeNull();
     expect(component.toPayoutType(999)).toBeNull();
   });
 
@@ -403,12 +414,12 @@ describe('ReceiptSubmitComponent', () => {
     const bankAccountControl = component.form.get('bankAccountId')!;
     bankAccountControl.setValue(12);
 
-    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form.get('payoutType')?.setValue(component.getPayoutTypeControlValue(PayoutType.NotYetPaid));
 
     expect(bankAccountControl.value).toBe(12);
     expect(bankAccountControl.errors).toBeNull();
 
-    component.form.get('payoutType')?.setValue(PayoutType.User);
+    component.form.get('payoutType')?.setValue(component.getPayoutTypeControlValue(PayoutType.User));
     bankAccountControl.markAsTouched();
 
     expect(bankAccountControl.errors).toBeNull();
@@ -421,9 +432,15 @@ describe('ReceiptSubmitComponent', () => {
     component.form.get('creditorName')?.setValue('Acme GmbH');
     component.form.get('dueDate')?.setValue('2026-06-01');
 
-    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
-    component.form.get('payoutType')?.setValue(PayoutType.User);
-    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form
+      .get('payoutType')
+      ?.setValue(component.getPayoutTypeControlValue(PayoutType.NotYetPaid));
+    component.form
+      .get('payoutType')
+      ?.setValue(component.getPayoutTypeControlValue(PayoutType.User));
+    component.form
+      .get('payoutType')
+      ?.setValue(component.getPayoutTypeControlValue(PayoutType.NotYetPaid));
 
     expect(component.form.get('bankAccountId')?.value).toBe(12);
     expect(component.form.get('creditorName')?.value).toBe('Acme GmbH');

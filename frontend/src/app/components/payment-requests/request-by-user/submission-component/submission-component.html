@@ -308,7 +308,12 @@
                 class="payout-type__option"
                 [class.payout-type__option--selected]="isPayoutType(PayoutType.User)"
               >
-                <input type="radio" formControlName="payoutType" [value]="PayoutType.User" />
+                <input
+                  type="radio"
+                  name="payoutType"
+                  formControlName="payoutType"
+                  [value]="getPayoutTypeControlValue(PayoutType.User)"
+                />
                 <span class="payout-type__dot"></span>
                 <span class="payout-type__title">Paid Myself</span>
                 <span class="payout-type__description">
@@ -320,7 +325,12 @@
                 class="payout-type__option"
                 [class.payout-type__option--selected]="isPayoutType(PayoutType.NotYetPaid)"
               >
-                <input type="radio" formControlName="payoutType" [value]="PayoutType.NotYetPaid" />
+                <input
+                  type="radio"
+                  name="payoutType"
+                  formControlName="payoutType"
+                  [value]="getPayoutTypeControlValue(PayoutType.NotYetPaid)"
+                />
                 <span class="payout-type__dot"></span>
                 <span class="payout-type__title">Not yet paid</span>
                 <span class="payout-type__description">
@@ -332,7 +342,12 @@
                 class="payout-type__option"
                 [class.payout-type__option--selected]="isPayoutType(PayoutType.AlreadyPaid)"
               >
-                <input type="radio" formControlName="payoutType" [value]="PayoutType.AlreadyPaid" />
+                <input
+                  type="radio"
+                  name="payoutType"
+                  formControlName="payoutType"
+                  [value]="getPayoutTypeControlValue(PayoutType.AlreadyPaid)"
+                />
                 <span class="payout-type__dot"></span>
                 <span class="payout-type__title">Already Paid</span>
                 <span class="payout-type__description">
