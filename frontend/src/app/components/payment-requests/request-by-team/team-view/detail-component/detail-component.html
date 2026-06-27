@@ -29,7 +29,7 @@
             </tr>
             <tr>
               <th>Due Date</th>
-              <td>{{ request.dueDate ? (request.dueDate | date: 'mediumDate') : '—' }}</td>
+              <td>{{ request.dueDate ? (request.dueDate | date: 'mediumDate' : undefined : 'en-US') : '—' }}</td>
             </tr>
             <tr>
               <th>Purpose</th>
@@ -41,11 +41,11 @@
             </tr>
             <tr>
               <th>Created At</th>
-              <td>{{ request.createdAt | date: 'mediumDate' }}</td>
+              <td>{{ request.createdAt | date: 'mediumDate' : undefined : 'en-US' }}</td>
             </tr>
             <tr>
               <th>Paid At</th>
-              <td>{{ request.paidAt ? (request.paidAt | date: 'mediumDate') : '—' }}</td>
+              <td>{{ request.paidAt ? (request.paidAt | date: 'mediumDate' : undefined : 'en-US') : '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -76,7 +76,7 @@
                         {{ getStatusLabel(entry.toStatus) }}
                       </span>
                     </td>
-                    <td>{{ entry.changedAt | date: 'medium' }}</td>
+                    <td>{{ entry.changedAt | date: 'medium' : undefined : 'en-US' }}</td>
                     <td>{{ entry.comment || '—' }}</td>
                   </tr>
                 }

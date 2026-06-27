@@ -57,7 +57,7 @@
               <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.invoices.paidCount }}</span>
               @if (data.invoices.lastPaidAt) {
                 <span class="badge rounded-pill dashboard-summary-badge">
-                  Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' }}
+                  Last paid: {{ data.invoices.lastPaidAt | date: 'dd MMM yyyy' : undefined : 'en-US' }}
                 </span>
               }
             </div>
@@ -75,7 +75,7 @@
                         <p class="mb-0 text-body-secondary small">
                           {{ item.teamName || 'No team assigned' }}
                           @if (item.createdAt) {
-                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' : undefined : 'en-US' }}</span>
                           }
                         </p>
                       </div>
@@ -115,7 +115,7 @@
               <span class="badge rounded-pill dashboard-summary-badge">Paid: {{ data.paymentRequests.paidCount }}</span>
               @if (data.paymentRequests.lastPaidAt) {
                 <span class="badge rounded-pill dashboard-summary-badge">
-                  Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' }}
+                  Last paid: {{ data.paymentRequests.lastPaidAt | date: 'dd MMM yyyy' : undefined : 'en-US' }}
                 </span>
               }
             </div>
@@ -133,7 +133,7 @@
                         <p class="mb-0 text-body-secondary small">
                           {{ item.userName || 'No assignee' }}
                           @if (item.createdAt) {
-                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' }}</span>
+                            <span> · {{ item.createdAt | date: 'dd MMM yyyy' : undefined : 'en-US' }}</span>
                           }
                         </p>
                       </div>
