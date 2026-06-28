@@ -18,5 +18,6 @@ namespace PayTrack.Application.Dto.AdminSettings
         NotificationChannelDto InvoiceApproval,
         NotificationChannelDto InvoiceRejection,
         NotificationChannelDto InvoiceChangesRequested,
-        NotificationChannelDto InvoicePaymentCompleted);
+        NotificationChannelDto InvoicePaymentCompleted,
+        NotificationChannelDto InvoiceDeletion);
 }

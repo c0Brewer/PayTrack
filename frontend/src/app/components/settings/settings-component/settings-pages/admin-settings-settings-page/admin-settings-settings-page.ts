@@ -39,6 +39,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
     invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
     invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   private notifOriginal: NotificationChannelGroupsDto = {
     creation: { sendEmail: true, sendSlack: false, sendPush: true },
@@ -49,6 +50,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
     invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
     invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
     invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+    invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
   };
   notifLoading = false;
   notifSaving = false;
@@ -89,7 +91,12 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
       this.notifSettings.invoicePaymentCompleted.sendSlack !==
         this.notifOriginal.invoicePaymentCompleted.sendSlack ||
       this.notifSettings.invoicePaymentCompleted.sendPush !==
-        this.notifOriginal.invoicePaymentCompleted.sendPush
+        this.notifOriginal.invoicePaymentCompleted.sendPush ||
+      this.notifSettings.invoiceDeletion.sendEmail !==
+        this.notifOriginal.invoiceDeletion.sendEmail ||
+      this.notifSettings.invoiceDeletion.sendSlack !==
+        this.notifOriginal.invoiceDeletion.sendSlack ||
+      this.notifSettings.invoiceDeletion.sendPush !== this.notifOriginal.invoiceDeletion.sendPush
     );
   }
 
@@ -241,6 +248,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           invoiceRejection: { ...data.invoiceRejection },
           invoiceChangesRequested: { ...data.invoiceChangesRequested },
           invoicePaymentCompleted: { ...data.invoicePaymentCompleted },
+          invoiceDeletion: { ...data.invoiceDeletion },
         };
         this.notifOriginal = {
           creation: { ...data.creation },
@@ -251,6 +259,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           invoiceRejection: { ...data.invoiceRejection },
           invoiceChangesRequested: { ...data.invoiceChangesRequested },
           invoicePaymentCompleted: { ...data.invoicePaymentCompleted },
+          invoiceDeletion: { ...data.invoiceDeletion },
         };
         this.notifLoading = false;
         this.cdr.detectChanges();
@@ -276,6 +285,7 @@ export class AdminSettingsSettingsPageComponent implements OnInit {
           invoiceRejection: { ...this.notifSettings.invoiceRejection },
           invoiceChangesRequested: { ...this.notifSettings.invoiceChangesRequested },
           invoicePaymentCompleted: { ...this.notifSettings.invoicePaymentCompleted },
+          invoiceDeletion: { ...this.notifSettings.invoiceDeletion },
         };
         this.notifSaving = false;
         this.notificationService.showSuccess('Notification channel settings saved.');

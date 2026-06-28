@@ -270,11 +270,17 @@ namespace PayTrack.Application.Services.Implementation
         /// <inheritdoc/>
         public async Task DeletePaymentRequestByUserAsync(int id)
         {
+            var transaction = await this.repo.GetByIdAsync(id, new GetPaymentRequestByUserQueryById { IncludeUser = true });
             var wasDeleted = await this.repo.DeletePaymentRequestByUserAsync(id);
 
             if (!wasDeleted)
             {
                 throw new NotFoundException("PaymentRequestByUser could not be found");
+            }
+
+            if (transaction is not null)
+            {
+                await this.NotifyUserAboutInvoiceDeletionAsync(transaction);
             }
         }
 
@@ -858,6 +864,74 @@ namespace PayTrack.Application.Services.Implementation
             }
         }
 
+        private async Task NotifyUserAboutInvoiceDeletionAsync(PaymentRequestByUser transaction)
+        {
+            if (transaction.User == null || string.IsNullOrWhiteSpace(transaction.User.Email))
+            {
+                return;
+            }
+
+            var subject = $"Invoice {transaction.InvoiceNumber} deleted";
+            var purpose = string.IsNullOrWhiteSpace(transaction.PurposeOfPayment)
+                ? "No purpose provided"
+                : transaction.PurposeOfPayment.Trim();
+            var body = $"""
+                Hello {transaction.User.Name},
+
+                invoice {transaction.InvoiceNumber} has been deleted by the finance team after duplicate review.
+
+                Amount: {transaction.Amount:C2}
+                Purpose: {purpose}
+
+                Best regards,
+                PayTrack
+                """;
+
+            if (this.notificationDispatchService != null
+                && await this.IsNotificationEnabledAsync(SystemSettingKeys.NotificationsInvoiceDeletionEmail, true))
+            {
+                try
+                {
+                    await this.notificationDispatchService.SendEmailAsync(
+                        transaction.User.Email,
+                        subject,
+                        body);
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending invoice deletion notification email for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
+            }
+
+            if (this.notificationDispatchService != null
+                && await this.IsNotificationEnabledAsync(SystemSettingKeys.NotificationsInvoiceDeletionSlack, false))
+            {
+                try
+                {
+                    await this.notificationDispatchService.SendSlackAsync(
+                        transaction.User.Email,
+                        $"{subject}\n\n{body}");
+                }
+                catch (Exception exception)
+                {
+                    this.logger?.LogError(
+                        exception,
+                        "Sending invoice deletion Slack notification for invoice {InvoiceNumber} to {RecipientEmail} failed.",
+                        transaction.InvoiceNumber,
+                        transaction.User.Email);
+                }
+            }
+
+            if (await this.IsNotificationEnabledAsync(SystemSettingKeys.NotificationsInvoiceDeletionPush, true))
+            {
+                await this.SendInvoiceDeletionPushAsync(transaction, subject, $"Invoice {transaction.InvoiceNumber} was deleted after duplicate review.");
+            }
+        }
+
         private async Task<bool> IsNotificationEnabledAsync(string? settingKey, bool defaultValue)
         {
             if (settingKey == null || this.systemSettings == null)
@@ -884,6 +958,20 @@ namespace PayTrack.Application.Services.Implementation
                 title,
                 $"{body}\n{purpose}",
                 $"/my-invoices/{transaction.Id}");
+        }
+
+        private async Task SendInvoiceDeletionPushAsync(PaymentRequestByUser transaction, string title, string body)
+        {
+            if (this.pushNotifications is null)
+            {
+                return;
+            }
+
+            await this.pushNotifications.SendWorkflowStatusChangedAsync(
+                transaction.UserId,
+                title,
+                body,
+                "/my-invoices");
         }
 
         private DuplicatePaymentRequestByUserMatch CreateDuplicateMatch(

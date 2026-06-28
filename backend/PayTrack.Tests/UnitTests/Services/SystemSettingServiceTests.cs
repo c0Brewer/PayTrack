@@ -98,6 +98,9 @@ namespace PayTrack.Tests.UnitTests.Services
             result.InvoicePaymentCompleted.SendEmail.Should().BeTrue();
             result.InvoicePaymentCompleted.SendSlack.Should().BeFalse();
             result.InvoicePaymentCompleted.SendPush.Should().BeTrue();
+            result.InvoiceDeletion.SendEmail.Should().BeTrue();
+            result.InvoiceDeletion.SendSlack.Should().BeFalse();
+            result.InvoiceDeletion.SendPush.Should().BeTrue();
         }
 
         [Fact]
@@ -114,7 +117,8 @@ namespace PayTrack.Tests.UnitTests.Services
                 InvoiceApproval: new NotificationChannelDto(true, false, false),
                 InvoiceRejection: new NotificationChannelDto(false, true, true),
                 InvoiceChangesRequested: new NotificationChannelDto(true, true, false),
-                InvoicePaymentCompleted: new NotificationChannelDto(false, false, true));
+                InvoicePaymentCompleted: new NotificationChannelDto(false, false, true),
+                InvoiceDeletion: new NotificationChannelDto(true, false, true));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -143,7 +147,10 @@ namespace PayTrack.Tests.UnitTests.Services
                     d[SystemSettingKeys.NotificationsInvoiceChangesRequestedPush] == "False" &&
                     d[SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail] == "False" &&
                     d[SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack] == "False" &&
-                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] == "True"),
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceDeletionEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceDeletionSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceDeletionPush] == "True"),
                 5), Times.Once);
         }
 

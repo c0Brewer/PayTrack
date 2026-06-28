@@ -35,6 +35,7 @@ const defaultNotifSettings = {
   invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
   invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
   invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
@@ -65,6 +66,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
         invoiceRejection: { ...defaultNotifSettings.invoiceRejection },
         invoiceChangesRequested: { ...defaultNotifSettings.invoiceChangesRequested },
         invoicePaymentCompleted: { ...defaultNotifSettings.invoicePaymentCompleted },
+        invoiceDeletion: { ...defaultNotifSettings.invoiceDeletion },
       }),
     );
     mockSystemSettingService.updateNotificationChannelGroups
@@ -241,6 +243,7 @@ describe('AdminSettingsSettingsPageComponent', () => {
         invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
         invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
         invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceDeletion: { sendEmail: false, sendSlack: false, sendPush: true },
       };
 
       component.saveNotifSettings();
