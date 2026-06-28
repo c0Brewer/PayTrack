@@ -422,6 +422,52 @@
 
   <div class="col-12">
     <app-box-component
+      title="Receipt Data Extraction"
+      subtitle="Automatically pre-fill invoice fields from uploaded receipts during submission."
+      size="large"
+    >
+      @if (invoiceSubmissionLoading) {
+        <p class="admin-settings__state">Loading...</p>
+      } @else {
+        <form class="admin-settings__form" (ngSubmit)="saveInvoiceSubmissionSettings()">
+          <div class="admin-settings__setting-row">
+            <div class="admin-settings__setting-row__control">
+              <label class="admin-settings__label" for="receiptExtractionEnabled">
+                Automatic Receipt Data Extraction
+              </label>
+              <label class="admin-settings__toggle">
+                <input
+                  id="receiptExtractionEnabled"
+                  type="checkbox"
+                  class="admin-settings__toggle__input"
+                  [(ngModel)]="invoiceSubmissionSettings.receiptExtractionEnabled"
+                  name="receiptExtractionEnabled"
+                />
+                <span class="admin-settings__toggle__track"></span>
+              </label>
+            </div>
+            <div class="admin-settings__actions">
+              <button
+                type="submit"
+                class="admin-settings__save-btn"
+                [disabled]="invoiceSubmissionSaving || !invoiceSubmissionDirty"
+              >
+                @if (invoiceSubmissionSaving) {
+                  Saving...
+                } @else {
+                  <span class="material-symbols-outlined">save</span>
+                  Save
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      }
+    </app-box-component>
+  </div>
+
+  <div class="col-12">
+    <app-box-component
       title="Reminder Schedule"
       subtitle="When to send payment reminders to users."
       size="large"

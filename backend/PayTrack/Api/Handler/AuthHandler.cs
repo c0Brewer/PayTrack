@@ -33,7 +33,22 @@ namespace PayTrack.Api.Handler
         }
 
         /// <summary>
-        /// Returns the currently signed in User.
+        /// Creates a JWT for E2E tests without going through Google OAuth.
+        /// </summary>
+        /// <param name="login">Requested E2E user identity.</param>
+        /// <param name="jwtService">Dependency-Injected Service.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task<Results<Ok<GoogleAuthResponseDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> E2ELogin(
+            E2ELoginDto login,
+            IJwtService jwtService)
+        {
+            var jwtToken = await jwtService.GenerateJWTToken(login.Email, login.Role);
+
+            return TypedResults.Ok(new GoogleAuthResponseDto(jwtToken));
+        }
+
+        /// <summary>
+        /// Returns the currently signed-in User.
         /// </summary>
         /// <param name="query">Query options for the request.</param>
         /// <param name="authService">Dependency-Injected Service.</param>

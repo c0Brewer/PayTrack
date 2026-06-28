@@ -196,6 +196,8 @@ describe('PaymentRequestByUserService', () => {
       receipt: '',
       payoutType: PayoutType.NotYetPaid,
       bankAccountId: 0,
+      creditorName: 'Test Company',
+      dueDate: '2026-06-01T00:00:00.000Z',
       transaction: {
         teamId: 1,
         amount: 100,
@@ -226,7 +228,37 @@ describe('PaymentRequestByUserService', () => {
     const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
     expect(request.body).toBeInstanceOf(FormData);
     expect((request.body as FormData).has('bankAccountId')).toBe(false);
+    expect((request.body as FormData).get('creditorName')).toBe('Test Company');
+    expect((request.body as FormData).get('dueDate')).toBe('2026-06-01T00:00:00.000Z');
     expect(result).toEqual(apiResponse);
+  });
+
+  it('should resubmit an edited payment request without sending an empty comment', async () => {
+    const dto = {
+      invoiceNumber: 'INV-1',
+      comment: '',
+      receipt: '',
+      payoutType: PayoutType.NotYetPaid,
+      bankAccountId: null,
+      creditorName: 'Test Company',
+      dueDate: '2026-06-01T00:00:00.000Z',
+      transaction: {
+        teamId: 1,
+        amount: 100,
+        purposeOfPayment: 'corrected purpose',
+        paidAt: '2025-01-01',
+      },
+    } as CreatePaymentRequestByUserDto;
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 7 }),
+    });
+
+    await firstValueFrom(service.resubmitPaymentRequestByUser(7, dto, null));
+
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit;
+    expect((request.body as FormData).has('comment')).toBe(false);
   });
 
   it('should resubmit an edited user payout payment request with bank account id', async () => {

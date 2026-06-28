@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
+import { isBrowserOnline } from '../offline/offline-utils';
+
 export type NotificationType = 'error' | 'success';
 
 export interface NotificationMessage {
@@ -25,6 +27,10 @@ export class NotificationService {
    * @param duration How long to show it in ms (default: 4000).
    */
   showError(message: string, duration = 4000): void {
+    if (!isBrowserOnline()) {
+      return;
+    }
+
     this.emit(message, 'error', duration);
   }
 

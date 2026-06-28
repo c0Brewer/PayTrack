@@ -182,6 +182,52 @@ namespace PayTrack.Tests.UnitTests.Services
                 2), Times.Once);
         }
 
+        // ── GetInvoiceSubmissionSettingsAsync ─────────────────────────────────────
+
+        [Fact]
+        public async Task GetInvoiceSubmissionSettingsAsync_ShouldReturnEnabled_WhenNoRowsExist()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            repoMock.Setup(r => r.GetByKeyAsync(It.IsAny<string>())).ReturnsAsync((SystemSetting?)null);
+
+            var service = BuildService(repoMock);
+            var result = await service.GetInvoiceSubmissionSettingsAsync();
+
+            result.ReceiptExtractionEnabled.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetInvoiceSubmissionSettingsAsync_ShouldReturnStoredValue_WhenRowExists()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            repoMock.Setup(r => r.GetByKeyAsync(SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled))
+                .ReturnsAsync(new SystemSetting
+                {
+                    Key = SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled,
+                    Value = "False",
+                });
+
+            var service = BuildService(repoMock);
+            var result = await service.GetInvoiceSubmissionSettingsAsync();
+
+            result.ReceiptExtractionEnabled.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UpdateInvoiceSubmissionSettingsAsync_ShouldUpsertReceiptExtractionKey()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            var service = BuildService(repoMock);
+
+            await service.UpdateInvoiceSubmissionSettingsAsync(
+                new UpdateInvoiceSubmissionSettingsRequestDto(false), userId: 3);
+
+            repoMock.Verify(r => r.UpsertManyAsync(
+                It.Is<IReadOnlyDictionary<string, string>>(d =>
+                    d[SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled] == "False"),
+                3), Times.Once);
+        }
+
         // ── GetBoolSettingAsync ────────────────────────────────────────────────────
 
         [Theory]

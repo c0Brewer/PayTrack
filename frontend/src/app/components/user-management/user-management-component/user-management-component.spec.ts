@@ -104,12 +104,15 @@ describe('UserManagementComponent', () => {
     expect(component.user.length).toBe(2);
     expect(component.totalCount).toBe(2);
     expect(component.totalUserCount).toBe(2);
+    expect(component.activeUserCount).toBe(2);
+    expect(component.inactiveUserCount).toBe(2);
+    expect(component.adminUserCount).toBe(2);
   });
 
   it('updateFilterOptions should update filter and reload users', () => {
     component.updateFilterOptions({ Name: 'Alice' });
     expect(component.page).toBe(0);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3); // initial list + stats + updateFilter
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(6); // initial list + 4 stats + updateFilter
     expect(component.filterOptions?.Name).toBe('Alice');
   });
 
@@ -117,14 +120,14 @@ describe('UserManagementComponent', () => {
     component.onLimitChange(25);
     expect(component.limit).toBe(25);
     expect(component.page).toBe(0);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3); // initial list + stats + limit change
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(6); // initial list + 4 stats + limit change
   });
 
   it('nextPage should increment page and load users', () => {
     component.page = 0;
     component.nextPage();
     expect(component.page).toBe(1);
-    expect(userServiceMock.getUser).toHaveBeenCalledTimes(3);
+    expect(userServiceMock.getUser).toHaveBeenCalledTimes(6);
   });
 
   it('previousPage should decrement page only if page > 0', () => {
@@ -212,6 +215,6 @@ describe('UserManagementComponent', () => {
       'Inactive Users',
       'Admins',
     ]);
-    expect(statBoxes.map((statBox) => statBox.content())).toEqual([2, 12, 2, 2]);
+    expect(statBoxes.map((statBox) => statBox.content())).toEqual([2, 2, 2, 2]);
   });
 });

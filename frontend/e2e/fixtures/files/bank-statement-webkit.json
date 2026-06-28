@@ -1,0 +1,17 @@
+[
+  {
+    "booking": "2026-06-12T00:00:00.000+0200",
+    "partnerName": "E2E Invoice Flow User",
+    "partnerAccount": {
+      "iban": "AT611904300234573403",
+      "bic": "BKAUATWW"
+    },
+    "amount": {
+      "value": 24680,
+      "precision": 2,
+      "currency": "EUR"
+    },
+    "receiverReference": "E2E-BANK-WEBKIT bank statement reconciliation",
+    "reference": "E2E-BANK-WEBKIT"
+  }
+]

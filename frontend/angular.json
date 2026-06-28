@@ -3,7 +3,8 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": ["@schematics/angular", "playwright-ng-schematics"]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -108,6 +109,17 @@
                 "functions": 0,
                 "lines": 0
               }
+            }
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "PayTrack:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "PayTrack:serve:production"
             }
           }
         }

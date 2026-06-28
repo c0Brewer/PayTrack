@@ -4,9 +4,11 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import type {
   CsvColumnSettingsDto,
+  InvoiceSubmissionSettingsDto,
   NotificationChannelGroupsDto,
   ReminderScheduleDto,
   UpdateCsvColumnSettingsRequestDto,
+  UpdateInvoiceSubmissionSettingsRequestDto,
   UpdateNotificationChannelGroupsRequestDto,
   UpdateReminderScheduleRequestDto,
 } from '../../types/exporter';
@@ -71,6 +73,34 @@ export class SystemSettingService {
     return from(
       this.raw.PUT(`${BASE}/reminder-schedule`, { body: dto }).then(({ error }) => {
         if (error) throw new Error(error.detail ?? 'Failed to update reminder schedule');
+      }),
+    );
+  }
+
+  getInvoiceSubmissionSettings(): Observable<InvoiceSubmissionSettingsDto> {
+    return from(
+      this.raw.GET(`${BASE}/invoice-submission`).then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Failed to load invoice submission settings');
+        return data as InvoiceSubmissionSettingsDto;
+      }),
+    );
+  }
+
+  getPublicInvoiceSubmissionSettings(): Observable<InvoiceSubmissionSettingsDto> {
+    return from(
+      this.raw.GET(`${BASE}/invoice-submission/public`).then(({ data, error }) => {
+        if (error) throw new Error(error.detail ?? 'Failed to load invoice submission settings');
+        return data as InvoiceSubmissionSettingsDto;
+      }),
+    );
+  }
+
+  updateInvoiceSubmissionSettings(
+    dto: UpdateInvoiceSubmissionSettingsRequestDto,
+  ): Observable<void> {
+    return from(
+      this.raw.PUT(`${BASE}/invoice-submission`, { body: dto }).then(({ error }) => {
+        if (error) throw new Error(error.detail ?? 'Failed to update invoice submission settings');
       }),
     );
   }

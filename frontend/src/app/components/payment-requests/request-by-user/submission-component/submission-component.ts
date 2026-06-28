@@ -23,6 +23,7 @@ import {
 import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
 import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
@@ -95,6 +96,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   editingInvoiceId: number | null = null;
   changeRequestMessage: string | null = null;
   isExtractingReceiptData = false;
+  receiptExtractionEnabled = false;
   receiptExtractionMessage = '';
   receiptExtractionStatus: 'idle' | 'loading' | 'success' | 'partial' | 'error' = 'idle';
   receiptExtractionResult: ReceiptExtractionDto | null = null;
@@ -120,6 +122,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
     private readonly statusRefreshService: PaymentRequestStatusRefreshService,
+    private readonly systemSettingService: SystemSettingService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
@@ -134,6 +137,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
+    this.loadInvoiceSubmissionSettings();
     this.loadInvoiceForEditing();
   }
 
@@ -161,26 +165,24 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .get('payoutType')!
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((value) => {
+        const payoutType = this.toPayoutType(value);
         const bankCtrl = this.form.get('bankAccountId');
         const creditorCtrl = this.form.get('creditorName');
         const dueDateCtrl = this.form.get('dueDate');
 
-        if (value === PayoutType.User) {
+        if (payoutType === PayoutType.User) {
           bankCtrl?.setValidators([Validators.required, Validators.min(1)]);
         } else {
           bankCtrl?.clearValidators();
-          bankCtrl?.setValue(null);
         }
         bankCtrl?.updateValueAndValidity();
 
-        if (value === PayoutType.NotYetPaid) {
+        if (payoutType === PayoutType.NotYetPaid) {
           creditorCtrl?.setValidators([Validators.required, Validators.maxLength(255)]);
           dueDateCtrl?.setValidators([Validators.required]);
         } else {
           creditorCtrl?.clearValidators();
-          creditorCtrl?.setValue(null);
           dueDateCtrl?.clearValidators();
-          dueDateCtrl?.setValue(null);
         }
         creditorCtrl?.updateValueAndValidity();
         dueDateCtrl?.updateValueAndValidity();
@@ -229,11 +231,20 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       comment: invoice.comment ?? '',
       payoutType: invoice.payoutType,
       bankAccountId: invoice.bankAccount?.id ?? null,
+      creditorName: invoice.creditorName ?? '',
+      dueDate: invoice.dueDate?.slice(0, 10) ?? null,
       teamId: invoice.team?.id ?? null,
       amount: invoice.amount,
       purposeOfPayment: invoice.purposeOfPayment,
       paidAt: invoice.paidAt?.slice(0, 10) ?? '',
     });
+
+    this.selectedFile = null;
+    this.selectedFileName = 'Current receipt will be kept';
+    const receiptControl = this.form.get('receipt');
+    receiptControl?.setValue('existing-receipt');
+    receiptControl?.setErrors(null);
+    receiptControl?.markAsPristine();
 
     this.changeRequestMessage =
       [...(invoice.statusHistory ?? [])]
@@ -356,7 +367,30 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.selectedFileName = file.name;
     receiptControl.setValue(file.name);
     receiptControl.setErrors(null);
+    if (!this.receiptExtractionEnabled) {
+      this.clearReceiptExtractionState();
+      return;
+    }
+
     this.extractReceiptData(file);
+  }
+
+  private loadInvoiceSubmissionSettings(): void {
+    this.systemSettingService
+      .getPublicInvoiceSubmissionSettings()
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.receiptExtractionEnabled = settings.receiptExtractionEnabled;
+          if (!settings.receiptExtractionEnabled) {
+            this.clearReceiptExtractionState();
+          }
+          this.changeDetectorRef.detectChanges();
+        },
+        error: () => {
+          this.receiptExtractionEnabled = false;
+        },
+      });
   }
 
   private extractReceiptData(file: File): void {
@@ -514,7 +548,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     const payload = {
       invoiceNumber: v.invoiceNumber,
-      comment: v.comment,
+      comment: v.comment?.trim() || null,
       payoutType: payoutType,
       bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
       creditorName: payoutType === PayoutType.NotYetPaid ? v.creditorName : null,
@@ -750,6 +784,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  isPayoutType(type: PayoutType): boolean {
+    return this.toPayoutType(this.form.get('payoutType')?.value) === type;
   }
 
   private buildDuplicateSourceInvoice(

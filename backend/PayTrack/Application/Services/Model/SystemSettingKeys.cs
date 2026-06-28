@@ -98,5 +98,8 @@ namespace PayTrack.Application.Services.Model
 
         /// <summary>Reminder schedule: delay in ms between individual reminder emails (SMTP rate-limit guard).</summary>
         public const string RemindersEmailDelayMs = "reminders.email-delay-ms";
+
+        /// <summary>Invoice submission: whether receipt extraction is enabled.</summary>
+        public const string InvoiceSubmissionReceiptExtractionEnabled = "invoice-submission.receipt-extraction.enabled";
     }
 }
