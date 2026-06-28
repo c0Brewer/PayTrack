@@ -38,7 +38,7 @@ namespace PayTrack.Application.Services.Implementation
         public async Task<PushNotificationConfigDto> GetConfigAsync(int userId, string? currentEndpoint = null)
         {
             var subscriptions = await this.repository.GetEnabledForUserAsync(userId);
-            subscriptions = await this.RemoveUnknownAndDuplicateSubscriptionsAsync(subscriptions, currentEndpoint);
+            subscriptions = RemoveDuplicateSubscriptions(subscriptions);
 
             return new PushNotificationConfigDto
             {
@@ -129,22 +129,6 @@ namespace PayTrack.Application.Services.Implementation
             {
                 await this.SendToSubscriptionAsync(subscription, payload);
             }
-        }
-
-        private static bool IsUnknownDevice(PushSubscription subscription)
-        {
-            return string.IsNullOrWhiteSpace(subscription.BrowserName)
-                || string.IsNullOrWhiteSpace(subscription.DeviceName)
-                || string.IsNullOrWhiteSpace(subscription.Platform);
-        }
-
-        private static string GetDeviceKey(PushSubscription subscription)
-        {
-            return string.Join(
-                '|',
-                subscription.BrowserName?.Trim().ToUpperInvariant(),
-                subscription.DeviceName?.Trim().ToUpperInvariant(),
-                subscription.Platform?.Trim().ToUpperInvariant());
         }
 
         private static byte[] Base64UrlDecode(string value)
@@ -266,37 +250,13 @@ namespace PayTrack.Application.Services.Implementation
                 tag);
         }
 
-        private async Task<List<PushSubscription>> RemoveUnknownAndDuplicateSubscriptionsAsync(
-            List<PushSubscription> subscriptions,
-            string? currentEndpoint)
+        private static List<PushSubscription> RemoveDuplicateSubscriptions(List<PushSubscription> subscriptions)
         {
-            var subscriptionsToDisable = subscriptions
-                .Where(IsUnknownDevice)
-                .ToList();
-
-            var duplicateSubscriptions = subscriptions
-                .Where(s => !IsUnknownDevice(s))
-                .GroupBy(GetDeviceKey)
-                .SelectMany(group =>
-                {
-                    var keep = group
-                        .OrderByDescending(s => s.Endpoint == currentEndpoint)
-                        .ThenByDescending(s => s.UpdatedAt)
-                        .First();
-
-                    return group.Where(s => s.Endpoint != keep.Endpoint);
-                })
-                .ToList();
-
-            subscriptionsToDisable.AddRange(duplicateSubscriptions);
-
-            foreach (var subscription in subscriptionsToDisable.DistinctBy(s => s.Endpoint))
-            {
-                await this.repository.DisableByEndpointAsync(subscription.Endpoint);
-            }
-
             return subscriptions
-                .Where(s => subscriptionsToDisable.All(disabled => disabled.Endpoint != s.Endpoint))
+                .GroupBy(s => s.Endpoint)
+                .Select(group => group
+                    .OrderByDescending(s => s.UpdatedAt)
+                    .First())
                 .ToList();
         }
 

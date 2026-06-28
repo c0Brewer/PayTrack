@@ -46,31 +46,62 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetConfigAsync_DisablesUnknownAndDuplicateSubscriptions()
+        public async Task GetConfigAsync_KeepsHeuristicDeviceMatchesAndUnknownMetadata()
         {
             var current = CreateSubscription("https://fcm.googleapis.com/fcm/send/current");
+            current.Id = 1;
             current.BrowserName = "Chrome";
             current.DeviceName = "Windows device";
             current.Platform = "Windows";
             current.UpdatedAt = DateTime.UtcNow;
 
-            var duplicate = CreateSubscription("https://fcm.googleapis.com/fcm/send/duplicate");
-            duplicate.BrowserName = "Chrome";
-            duplicate.DeviceName = "Windows device";
-            duplicate.Platform = "Windows";
-            duplicate.UpdatedAt = current.UpdatedAt.AddMinutes(-1);
+            var sameDeviceMetadata = CreateSubscription("https://fcm.googleapis.com/fcm/send/same-device-metadata");
+            sameDeviceMetadata.Id = 2;
+            sameDeviceMetadata.BrowserName = "Chrome";
+            sameDeviceMetadata.DeviceName = "Windows device";
+            sameDeviceMetadata.Platform = "Windows";
+            sameDeviceMetadata.UpdatedAt = current.UpdatedAt.AddMinutes(-1);
 
             var unknown = CreateSubscription("https://fcm.googleapis.com/fcm/send/unknown", includeDeviceMetadata: false);
+            unknown.Id = 3;
             var repo = new Mock<IPushSubscriptionRepository>();
-            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([current, duplicate, unknown]);
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([current, sameDeviceMetadata, unknown]);
             var service = BuildService(repo, CreateVapidSettings(), new SequentialHttpHandler());
 
             var config = await service.GetConfigAsync(42, current.Endpoint);
 
-            config.Devices.Should().ContainSingle();
-            config.Devices.Single().IsCurrentDevice.Should().BeTrue();
-            repo.Verify(r => r.DisableByEndpointAsync(duplicate.Endpoint), Times.Once);
-            repo.Verify(r => r.DisableByEndpointAsync(unknown.Endpoint), Times.Once);
+            config.Devices.Select(d => d.Id).Should().BeEquivalentTo([1, 2, 3]);
+            config.Devices.Should().ContainSingle(d => d.IsCurrentDevice);
+            config.Devices.Should().ContainSingle(d =>
+                d.Id == unknown.Id &&
+                d.BrowserName == "Unknown browser" &&
+                d.DeviceName == "Unknown device" &&
+                d.Platform == "Unknown platform");
+            repo.Verify(r => r.DisableByEndpointAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetConfigAsync_ReturnsOnlyOneDevicePerEndpoint()
+        {
+            var current = CreateSubscription("https://fcm.googleapis.com/fcm/send/current");
+            current.Id = 1;
+            current.UpdatedAt = DateTime.UtcNow;
+
+            var duplicateEndpoint = CreateSubscription(current.Endpoint);
+            duplicateEndpoint.Id = 2;
+            duplicateEndpoint.UpdatedAt = current.UpdatedAt.AddMinutes(-1);
+
+            var other = CreateSubscription("https://fcm.googleapis.com/fcm/send/other");
+            other.Id = 3;
+            var repo = new Mock<IPushSubscriptionRepository>();
+            repo.Setup(r => r.GetEnabledForUserAsync(42)).ReturnsAsync([duplicateEndpoint, current, other]);
+            var service = BuildService(repo, CreateVapidSettings(), new SequentialHttpHandler());
+
+            var config = await service.GetConfigAsync(42, current.Endpoint);
+
+            config.Devices.Select(d => d.Id).Should().BeEquivalentTo([1, 3]);
+            config.Devices.Should().ContainSingle(d => d.IsCurrentDevice);
+            repo.Verify(r => r.DisableByEndpointAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
