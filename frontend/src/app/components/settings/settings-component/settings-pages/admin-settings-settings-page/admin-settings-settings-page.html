@@ -398,6 +398,42 @@
                     </label>
                   </td>
                 </tr>
+                <tr>
+                  <td>Deleted After Duplicate Review</td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceDeletion.sendEmail"
+                        name="invoiceDeletionEmail"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceDeletion.sendSlack"
+                        name="invoiceDeletionSlack"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="admin-settings__toggle">
+                      <input
+                        type="checkbox"
+                        class="admin-settings__toggle__input"
+                        [(ngModel)]="notifSettings.invoiceDeletion.sendPush"
+                        name="invoiceDeletionPush"
+                      />
+                      <span class="admin-settings__toggle__track"></span>
+                    </label>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
