@@ -111,6 +111,7 @@ describe('SystemSettingService', () => {
         invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
         invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
         invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(client, 'GET').mockResolvedValue({ data: response, error: null } as any);
@@ -149,6 +150,7 @@ describe('SystemSettingService', () => {
             invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
             invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
             invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
           }),
         ),
       ).resolves.toBeUndefined();
@@ -171,6 +173,7 @@ describe('SystemSettingService', () => {
             invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
             invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
             invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
+            invoiceDeletion: { sendEmail: true, sendSlack: false, sendPush: true },
           }),
         ),
       ).rejects.toThrow('Failed to update notification channels');

@@ -88,6 +88,11 @@ namespace PayTrack.Application.Services.Implementation
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack, DefaultSendSlack),
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoicePaymentCompletedPush, DefaultSendPush));
 
+            var invoiceDeletion = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionPush, DefaultSendPush));
+
             return new NotificationChannelGroupsDto(
                 creation,
                 confirmation,
@@ -96,7 +101,8 @@ namespace PayTrack.Application.Services.Implementation
                 invoiceApproval,
                 invoiceRejection,
                 invoiceChangesRequested,
-                invoicePaymentCompleted);
+                invoicePaymentCompleted,
+                invoiceDeletion);
         }
 
         /// <inheritdoc/>
@@ -129,6 +135,9 @@ namespace PayTrack.Application.Services.Implementation
                     [SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail] = dto.InvoicePaymentCompleted.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack] = dto.InvoicePaymentCompleted.SendSlack.ToString(),
                     [SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] = dto.InvoicePaymentCompleted.SendPush.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceDeletionEmail] = dto.InvoiceDeletion.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceDeletionSlack] = dto.InvoiceDeletion.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceDeletionPush] = dto.InvoiceDeletion.SendPush.ToString(),
                 },
                 userId);
         }

@@ -215,6 +215,7 @@ export type NotificationChannelGroupsDto = {
   invoiceRejection: NotificationChannelDto;
   invoiceChangesRequested: NotificationChannelDto;
   invoicePaymentCompleted: NotificationChannelDto;
+  invoiceDeletion: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
 export type ReminderScheduleDto = {

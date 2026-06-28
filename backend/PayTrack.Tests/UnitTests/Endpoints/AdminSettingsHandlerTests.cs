@@ -107,7 +107,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
-                    new NotificationChannelDto(false, false, false)));
+                    new NotificationChannelDto(false, false, false),
+                    new NotificationChannelDto(true, false, true)));
 
             var client = this.factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
@@ -139,7 +140,8 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
                     new NotificationChannelDto(true, false, true),
-                    new NotificationChannelDto(false, false, false)));
+                    new NotificationChannelDto(false, false, false),
+                    new NotificationChannelDto(true, false, true)));
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }

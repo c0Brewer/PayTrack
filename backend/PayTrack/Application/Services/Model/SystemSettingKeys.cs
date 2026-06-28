@@ -87,6 +87,15 @@ namespace PayTrack.Application.Services.Model
         /// <summary>Notification channels: send push notification when an invoice payment is completed.</summary>
         public const string NotificationsInvoicePaymentCompletedPush = "notifications.invoice.payment-completed.push";
 
+        /// <summary>Notification channels: send email when an invoice is deleted.</summary>
+        public const string NotificationsInvoiceDeletionEmail = "notifications.invoice.deletion.email";
+
+        /// <summary>Notification channels: send Slack when an invoice is deleted.</summary>
+        public const string NotificationsInvoiceDeletionSlack = "notifications.invoice.deletion.slack";
+
+        /// <summary>Notification channels: send push notification when an invoice is deleted.</summary>
+        public const string NotificationsInvoiceDeletionPush = "notifications.invoice.deletion.push";
+
         /// <summary>Reminder schedule: comma-separated list of days before due date (e.g. "7,2,1").</summary>
         public const string RemindersDaysBeforeDue = "reminders.days-before-due";
 
