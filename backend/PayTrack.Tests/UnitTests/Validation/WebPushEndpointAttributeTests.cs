@@ -11,6 +11,7 @@ namespace PayTrack.Tests.UnitTests.Validation
         [InlineData("https://fcm.googleapis.com/fcm/send/abc")]
         [InlineData("https://updates.push.services.mozilla.com/wpush/v2/abc")]
         [InlineData("https://web.push.apple.com/abc")]
+        [InlineData("https://wns2-by3p.notify.windows.com/w/?token=abc")]
         public void IsValid_ShouldReturnTrue_WhenEndpointUsesSupportedPushService(string endpoint)
         {
             var attribute = new WebPushEndpointAttribute();

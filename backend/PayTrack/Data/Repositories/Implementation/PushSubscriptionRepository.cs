@@ -14,16 +14,11 @@ namespace PayTrack.Data.Repositories.Implementation
         private readonly AppDbContext context = _context;
 
         /// <inheritdoc/>
-        public async Task<bool> HasEnabledSubscriptionAsync(int userId)
-        {
-            return await this.context.PushSubscriptions.AnyAsync(s => s.UserId == userId && s.IsEnabled);
-        }
-
-        /// <inheritdoc/>
         public async Task<List<PushSubscription>> GetEnabledForUserAsync(int userId)
         {
             return await this.context.PushSubscriptions
                 .Where(s => s.UserId == userId && s.IsEnabled)
+                .OrderByDescending(s => s.UpdatedAt)
                 .ToListAsync();
         }
 
@@ -43,6 +38,9 @@ namespace PayTrack.Data.Repositories.Implementation
             existing.UserId = subscription.UserId;
             existing.P256dh = subscription.P256dh;
             existing.Auth = subscription.Auth;
+            existing.BrowserName = subscription.BrowserName;
+            existing.DeviceName = subscription.DeviceName;
+            existing.Platform = subscription.Platform;
             existing.IsEnabled = true;
             existing.UpdatedAt = DateTime.UtcNow;
 

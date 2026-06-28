@@ -48,13 +48,15 @@ namespace PayTrack.Api.Handler
         /// </summary>
         /// <param name="authService">Dependency-injected auth service.</param>
         /// <param name="pushNotificationService">Dependency-injected push notification service.</param>
+        /// <param name="endpoint">Current browser push endpoint, if available.</param>
         /// <returns>Push notification configuration.</returns>
         public static async Task<Results<Ok<PushNotificationConfigDto>, BadRequest<ProblemDetails>, ProblemHttpResult>> GetPushNotificationConfigAsync(
             IAuthService authService,
-            IPushNotificationService pushNotificationService)
+            IPushNotificationService pushNotificationService,
+            [FromQuery] string? endpoint = null)
         {
             var user = await authService.GetCurrentUser() ?? throw new NotFoundException("Current user not found");
-            var config = await pushNotificationService.GetConfigAsync(user.Id);
+            var config = await pushNotificationService.GetConfigAsync(user.Id, endpoint);
             return TypedResults.Ok(config);
         }
 

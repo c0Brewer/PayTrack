@@ -54,6 +54,24 @@ namespace PayTrack.Data.Entities
         public string Auth { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the browser name reported by the subscribing client.
+        /// </summary>
+        [MaxLength(120)]
+        public string? BrowserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device name reported by the subscribing client.
+        /// </summary>
+        [MaxLength(160)]
+        public string? DeviceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the platform reported by the subscribing client.
+        /// </summary>
+        [MaxLength(120)]
+        public string? Platform { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this subscription is enabled.
         /// </summary>
         public bool IsEnabled { get; set; } = true;
