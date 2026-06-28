@@ -374,150 +374,6 @@ public static class DbSeeder
             db.User.Add(unassignedUser);
         }
 
-        var e2eFirstLoginUser = await db.User.FirstOrDefaultAsync(u => u.Email == "e2e.first-login@paytrack.local");
-        if (e2eFirstLoginUser is null)
-        {
-            e2eFirstLoginUser = new User
-            {
-                Name = "E2E First Login User",
-                Email = "e2e.first-login@paytrack.local",
-                Role = Role.RegularUser,
-                IsActive = true,
-            };
-
-            db.User.Add(e2eFirstLoginUser);
-        }
-
-        var e2eSkipBankInformationUserEmails = new[]
-        {
-            "e2e.skip-bank-information-chromium@paytrack.local",
-            "e2e.skip-bank-information-firefox@paytrack.local",
-            "e2e.skip-bank-information-webkit@paytrack.local",
-        };
-
-        foreach (var email in e2eSkipBankInformationUserEmails)
-        {
-            var e2eSkipBankInformationUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
-            if (e2eSkipBankInformationUser is null)
-            {
-                e2eSkipBankInformationUser = new User
-                {
-                    Name = "E2E Skip Bank Information User",
-                    Email = email,
-                    Role = Role.RegularUser,
-                    IsActive = true,
-                };
-
-                db.User.Add(e2eSkipBankInformationUser);
-            }
-        }
-
-        var e2eHomeDashboardUserEmails = new[]
-        {
-            "e2e.home-chromium@paytrack.local",
-            "e2e.home-firefox@paytrack.local",
-            "e2e.home-webkit@paytrack.local",
-        };
-
-        foreach (var email in e2eHomeDashboardUserEmails)
-        {
-            var e2eHomeDashboardUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
-            if (e2eHomeDashboardUser is null)
-            {
-                e2eHomeDashboardUser = new User
-                {
-                    Name = "E2E Home Dashboard User",
-                    Email = email,
-                    Role = Role.RegularUser,
-                    Team = chassisTeam,
-                    IsActive = true,
-                };
-
-                db.User.Add(e2eHomeDashboardUser);
-            }
-        }
-
-        var e2eInvoiceFlowUserEmails = new[]
-        {
-            "e2e.invoice-flow-chromium@paytrack.local",
-            "e2e.invoice-flow-firefox@paytrack.local",
-            "e2e.invoice-flow-webkit@paytrack.local",
-        };
-
-        foreach (var email in e2eInvoiceFlowUserEmails)
-        {
-            var e2eInvoiceFlowUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
-            if (e2eInvoiceFlowUser is null)
-            {
-                e2eInvoiceFlowUser = new User
-                {
-                    Name = "E2E Invoice Flow User",
-                    Email = email,
-                    Role = Role.RegularUser,
-                    Team = chassisTeam,
-                    IsActive = true,
-                };
-
-                db.User.Add(e2eInvoiceFlowUser);
-            }
-        }
-
-        var e2ePaymentRequestFlowUserEmails = new[]
-        {
-            "e2e.payment-request-flow-chromium@paytrack.local",
-            "e2e.payment-request-flow-firefox@paytrack.local",
-            "e2e.payment-request-flow-webkit@paytrack.local",
-        };
-
-        foreach (var email in e2ePaymentRequestFlowUserEmails)
-        {
-            var e2ePaymentRequestFlowUser = await db.User.FirstOrDefaultAsync(u => u.Email == email);
-            if (e2ePaymentRequestFlowUser is null)
-            {
-                e2ePaymentRequestFlowUser = new User
-                {
-                    Name = "E2E Payment Request Flow User",
-                    Email = email,
-                    Role = Role.RegularUser,
-                    Team = chassisTeam,
-                    IsActive = true,
-                };
-
-                db.User.Add(e2ePaymentRequestFlowUser);
-            }
-        }
-
-        // Duplicate-name pair — used to test ambiguous CSV matching.
-        var alexTaylor1 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor@paytrack.local");
-        if (alexTaylor1 is null)
-        {
-            alexTaylor1 = new User
-            {
-                Name = "Alex Taylor",
-                Email = "alex.taylor@paytrack.local",
-                Role = Role.RegularUser,
-                Team = powertrainTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(alexTaylor1);
-        }
-
-        var alexTaylor2 = await db.User.FirstOrDefaultAsync(u => u.Email == "alex.taylor2@paytrack.local");
-        if (alexTaylor2 is null)
-        {
-            alexTaylor2 = new User
-            {
-                Name = "Alex Taylor",
-                Email = "alex.taylor2@paytrack.local",
-                Role = Role.RegularUser,
-                Team = driverlessTeam,
-                IsActive = true,
-            };
-
-            db.User.Add(alexTaylor2);
-        }
-
         await db.SaveChangesAsync();
 
         if (!await db.BankAccounts.AnyAsync(b => b.User == adminUser && b.Iban == "AT611904300234573201"))
@@ -562,48 +418,6 @@ public static class DbSeeder
                 Bic = "BKAUATWW",
                 AccountHolder = "Electronics Member",
             });
-        }
-
-        foreach (var email in e2eHomeDashboardUserEmails)
-        {
-            var e2eHomeDashboardUser = await db.User.FirstAsync(u => u.Email == email);
-            var iban = email.Contains("chromium", StringComparison.OrdinalIgnoreCase)
-                ? "AT611904300234573301"
-                : email.Contains("firefox", StringComparison.OrdinalIgnoreCase)
-                    ? "AT611904300234573302"
-                    : "AT611904300234573303";
-
-            if (!await db.BankAccounts.AnyAsync(b => b.User == e2eHomeDashboardUser && b.Iban == iban))
-            {
-                db.BankAccounts.Add(new BankAccount
-                {
-                    User = e2eHomeDashboardUser,
-                    Iban = iban,
-                    Bic = "BKAUATWW",
-                    AccountHolder = "E2E Home Dashboard User",
-                });
-            }
-        }
-
-        foreach (var email in e2eInvoiceFlowUserEmails)
-        {
-            var e2eInvoiceFlowUser = await db.User.FirstAsync(u => u.Email == email);
-            var iban = email.Contains("chromium", StringComparison.OrdinalIgnoreCase)
-                ? "AT611904300234573401"
-                : email.Contains("firefox", StringComparison.OrdinalIgnoreCase)
-                    ? "AT611904300234573402"
-                    : "AT611904300234573403";
-
-            if (!await db.BankAccounts.AnyAsync(b => b.User == e2eInvoiceFlowUser && b.Iban == iban))
-            {
-                db.BankAccounts.Add(new BankAccount
-                {
-                    User = e2eInvoiceFlowUser,
-                    Iban = iban,
-                    Bic = "BKAUATWW",
-                    AccountHolder = "E2E Invoice Flow User",
-                });
-            }
         }
 
         var currentSeason = await db.Seasons.FirstOrDefaultAsync(c => c.Name == "S25/26");
@@ -761,6 +575,202 @@ public static class DbSeeder
             marketingTeam);
 
         await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Adds E2E-only users and accounts when they are missing.
+    /// </summary>
+    /// <param name="db">Application database context.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task SeedE2EAsync(AppDbContext db)
+    {
+        var chassisTeam = await db.Teams.FirstAsync(t => t.Name == "Chassis");
+        var powertrainTeam = await db.Teams.FirstAsync(t => t.Name == "Powertrain");
+        var driverlessTeam = await db.Teams.FirstAsync(t => t.Name == "Driverless");
+
+        await AddUserIfMissingAsync(
+            db,
+            "E2E First Login User",
+            "e2e.first-login@paytrack.local",
+            Role.RegularUser);
+
+        var e2eSkipBankInformationUserEmails = new[]
+        {
+            "e2e.skip-bank-information-chromium@paytrack.local",
+            "e2e.skip-bank-information-firefox@paytrack.local",
+            "e2e.skip-bank-information-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eSkipBankInformationUserEmails)
+        {
+            await AddUserIfMissingAsync(db, "E2E Skip Bank Information User", email, Role.RegularUser);
+        }
+
+        var e2eHomeDashboardUserEmails = new[]
+        {
+            "e2e.home-chromium@paytrack.local",
+            "e2e.home-firefox@paytrack.local",
+            "e2e.home-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eHomeDashboardUserEmails)
+        {
+            await AddUserIfMissingAsync(
+                db,
+                "E2E Home Dashboard User",
+                email,
+                Role.RegularUser,
+                chassisTeam);
+        }
+
+        var e2eInvoiceFlowUserEmails = new[]
+        {
+            "e2e.invoice-flow-chromium@paytrack.local",
+            "e2e.invoice-flow-firefox@paytrack.local",
+            "e2e.invoice-flow-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2eInvoiceFlowUserEmails)
+        {
+            await AddUserIfMissingAsync(
+                db,
+                "E2E Invoice Flow User",
+                email,
+                Role.RegularUser,
+                chassisTeam);
+        }
+
+        var e2ePaymentRequestFlowUserEmails = new[]
+        {
+            "e2e.payment-request-flow-chromium@paytrack.local",
+            "e2e.payment-request-flow-firefox@paytrack.local",
+            "e2e.payment-request-flow-webkit@paytrack.local",
+        };
+
+        foreach (var email in e2ePaymentRequestFlowUserEmails)
+        {
+            await AddUserIfMissingAsync(
+                db,
+                "E2E Payment Request Flow User",
+                email,
+                Role.RegularUser,
+                chassisTeam);
+        }
+
+        // Duplicate-name pair used by E2E CSV matching tests.
+        await AddUserIfMissingAsync(
+            db,
+            "Alex Taylor",
+            "alex.taylor@paytrack.local",
+            Role.RegularUser,
+            powertrainTeam);
+        await AddUserIfMissingAsync(
+            db,
+            "Alex Taylor",
+            "alex.taylor2@paytrack.local",
+            Role.RegularUser,
+            driverlessTeam);
+
+        await db.SaveChangesAsync();
+
+        foreach (var email in e2eHomeDashboardUserEmails)
+        {
+            var e2eHomeDashboardUser = await db.User.FirstAsync(u => u.Email == email);
+            var iban = BrowserSpecificIban(
+                email,
+                "AT611904300234573301",
+                "AT611904300234573302",
+                "AT611904300234573303");
+
+            await AddBankAccountIfMissingAsync(
+                db,
+                e2eHomeDashboardUser,
+                iban,
+                "BKAUATWW",
+                "E2E Home Dashboard User");
+        }
+
+        foreach (var email in e2eInvoiceFlowUserEmails)
+        {
+            var e2eInvoiceFlowUser = await db.User.FirstAsync(u => u.Email == email);
+            var iban = BrowserSpecificIban(
+                email,
+                "AT611904300234573401",
+                "AT611904300234573402",
+                "AT611904300234573403");
+
+            await AddBankAccountIfMissingAsync(
+                db,
+                e2eInvoiceFlowUser,
+                iban,
+                "BKAUATWW",
+                "E2E Invoice Flow User");
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task AddUserIfMissingAsync(
+        AppDbContext db,
+        string name,
+        string email,
+        Role role,
+        Team? team = null)
+    {
+        var user = await db.User.FirstOrDefaultAsync(u => u.Email == email);
+        if (user is not null)
+        {
+            return;
+        }
+
+        db.User.Add(new User
+        {
+            Name = name,
+            Email = email,
+            Role = role,
+            Team = team,
+            IsActive = true,
+        });
+    }
+
+    private static async Task AddBankAccountIfMissingAsync(
+        AppDbContext db,
+        User user,
+        string iban,
+        string bic,
+        string accountHolder)
+    {
+        if (await db.BankAccounts.AnyAsync(b => b.User == user && b.Iban == iban))
+        {
+            return;
+        }
+
+        db.BankAccounts.Add(new BankAccount
+        {
+            User = user,
+            Iban = iban,
+            Bic = bic,
+            AccountHolder = accountHolder,
+        });
+    }
+
+    private static string BrowserSpecificIban(
+        string email,
+        string chromiumIban,
+        string firefoxIban,
+        string webkitIban)
+    {
+        if (email.Contains("chromium", StringComparison.OrdinalIgnoreCase))
+        {
+            return chromiumIban;
+        }
+
+        if (email.Contains("firefox", StringComparison.OrdinalIgnoreCase))
+        {
+            return firefoxIban;
+        }
+
+        return webkitIban;
     }
 
     private static async Task<Budget> AddBudgetIfMissingAsync(

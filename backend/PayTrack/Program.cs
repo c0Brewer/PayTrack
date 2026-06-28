@@ -167,6 +167,11 @@ if (seedDataConfig && !isTestEnv)
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DbSeeder.SeedAsync(db);
+
+    if (isE2EEnv)
+    {
+        await DbSeeder.SeedE2EAsync(db);
+    }
 }
 
 // Configure the HTTP request pipeline.
