@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { take } from 'rxjs';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { AuthService } from '../../../../../services/auth/auth-service';
@@ -57,19 +56,28 @@ export class TeamRequestTeamOverviewComponent implements OnInit {
   private currentUser: UserDto | null = null;
 
   ngOnInit(): void {
-    this.authService
-      .getCurrentUser()
-      .pipe(take(1))
-      .subscribe((user) => {
-        this.currentUser = user;
-        this.loadRequests();
-      });
+    void this.loadCurrentUserAndRequests();
+  }
+
+  private async loadCurrentUserAndRequests(): Promise<void> {
+    try {
+      this.currentUser = await this.authService.refreshUser();
+      this.loadRequests();
+    } catch (error) {
+      this.notificationService.showError(
+        error instanceof Error ? error.message : 'Error while loading user',
+      );
+    }
   }
 
   loadRequests(): void {
+    if (!this.currentUser) {
+      return;
+    }
+
     const query: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.id,
+      UserId: this.currentUser.id,
       Limit: this.limit,
       Offset: this.page * this.limit,
       SortBy: this.sortBy ?? undefined,
@@ -96,14 +104,14 @@ export class TeamRequestTeamOverviewComponent implements OnInit {
   }
 
   loadRequestStats(totalCount: number): void {
-    if (totalCount <= 0) {
+    if (!this.currentUser || totalCount <= 0) {
       this.statRequests = [];
       return;
     }
 
     const query: GetPaymentRequestsByTeamOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.id,
+      UserId: this.currentUser.id,
       Limit: totalCount,
       Offset: 0,
     };
