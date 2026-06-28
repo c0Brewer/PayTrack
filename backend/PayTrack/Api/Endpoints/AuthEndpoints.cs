@@ -11,6 +11,7 @@ namespace PayTrack.Api.Endpoints
     /// </summary>
     public static class AuthEndpoints
     {
+        private const string E2EEnvironmentName = "E2E";
         private const string GroupName = "Authentication";
         private const string GroupRoute = "auth";
 
@@ -26,6 +27,12 @@ namespace PayTrack.Api.Endpoints
 
             // Unauthorized
             group.MapPost("/google", AuthHandler.GoogleAuthCallback);
+
+            var environment = app.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+            if (environment.IsEnvironment(E2EEnvironmentName))
+            {
+                group.MapPost("/e2e-login", AuthHandler.E2ELogin);
+            }
 
             // Authorized
             group.MapGet("/currentuser", AuthHandler.GetCurrentUserAsync)

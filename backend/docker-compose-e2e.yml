@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: paytrack_e2e_postgres_db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: paytrack_e2e
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_e2e_data:

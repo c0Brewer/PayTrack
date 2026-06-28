@@ -4,11 +4,13 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PayTrack.Api.Handler;
 using PayTrack.Application.Dto.Auth;
 using PayTrack.Application.Dto.User;
 using PayTrack.Application.Exceptions;
@@ -67,6 +69,20 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<ProblemDetails>();
             result.Should().NotBeNull();
             result.Detail.Should().Be("Simulated failure");
+        }
+
+        [Fact]
+        public async Task E2ELogin_ReturnsNotFound_WhenEnvironmentIsNotE2E()
+        {
+            // Arrange
+            var login = new E2ELoginDto("admin.e2e@paytrack.test", Role.Admin);
+            var client = _factory.CreateClient();
+
+            // Act
+            var response = await client.PostAsJsonAsync("api/v1/auth/e2e-login", login);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -167,6 +183,31 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 // Register the mock instead
                 services.AddSingleton(AuthServiceMock.Object);
             });
+        }
+    }
+
+    public class E2EAuthEndpointsTest
+    {
+        [Fact]
+        public async Task E2ELogin_ReturnsJwtToken()
+        {
+            // Arrange
+            var login = new E2ELoginDto("admin.e2e@paytrack.test", Role.Admin);
+            const string jwtToken = "e2e-jwt-token";
+            var jwtServiceMock = new Mock<IJwtService>();
+
+            jwtServiceMock
+                .Setup(s => s.GenerateJWTToken(login.Email, login.Role))
+                .ReturnsAsync(jwtToken);
+
+            // Act
+            var response = await AuthHandler.E2ELogin(login, jwtServiceMock.Object);
+
+            // Assert
+            response.Result.Should().BeOfType<Ok<GoogleAuthResponseDto>>();
+            var result = (Ok<GoogleAuthResponseDto>)response.Result;
+            result.Value.Should().NotBeNull();
+            result.Value.JwtToken.Should().Be(jwtToken);
         }
     }
 }
