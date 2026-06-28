@@ -10,7 +10,6 @@ import { AdminSettingsSettingsPageComponent } from './settings-pages/admin-setti
 import { BankAccountsSettingsPageComponent } from './settings-pages/bank-accounts-settings-page/bank-accounts-settings-page';
 import { NotificationsSettingsPageComponent } from './settings-pages/notifications-settings-page/notifications-settings-page';
 import { ProfileSettingsPageComponent } from './settings-pages/profile-settings-page/profile-settings-page';
-import { SecuritySettingsPageComponent } from './settings-pages/security-settings-page/security-settings-page';
 
 type SettingsTab = {
   id: string;
@@ -27,7 +26,6 @@ type SettingsTab = {
     NotificationsSettingsPageComponent,
     ProfileSettingsPageComponent,
     RouterLink,
-    SecuritySettingsPageComponent,
     AsyncPipe,
   ],
   templateUrl: './settings-component.html',
@@ -44,11 +42,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       id: 'bank-accounts',
       label: 'Bank Accounts',
       icon: 'credit_card_gear',
-    },
-    {
-      id: 'security',
-      label: 'Security',
-      icon: 'security',
     },
     {
       id: 'notifications',
