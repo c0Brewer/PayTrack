@@ -158,9 +158,10 @@ describe('MyInvoiceDetailComponent', () => {
       } as unknown as PaymentRequestByUserDto),
     );
 
+    component.ngOnInit();
     fixture.detectChanges();
 
-    const message = fixture.nativeElement.querySelector('.change-request-message');
+    const message = fixture.nativeElement.querySelector('.alert.alert-warning');
     expect(message).not.toBeNull();
     expect(message.textContent).toContain('Please upload the complete receipt');
   });
@@ -174,13 +175,15 @@ describe('MyInvoiceDetailComponent', () => {
       } as unknown as PaymentRequestByUserDto),
     );
 
+    component.ngOnInit();
     fixture.detectChanges();
 
-    const action = fixture.nativeElement.querySelector('.change-request-actions button');
-    const message = fixture.nativeElement.querySelector('.change-request-message p');
+    const action = fixture.nativeElement.querySelector('.alert.alert-warning button');
+    const message = fixture.nativeElement.querySelector('.alert.alert-warning p');
     expect(action).not.toBeNull();
-    expect(action.textContent).toContain('Edit Invoice');
-    expect(message).toBeNull();
+    expect(action.textContent).toContain('Revise and Resubmit');
+    expect(message).not.toBeNull();
+    expect(message.textContent).toContain('Reason:');
   });
 
   it('should show error and clear loading when invoice load fails', () => {

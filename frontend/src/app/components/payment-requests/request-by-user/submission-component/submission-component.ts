@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, take, takeUntil } from 'rxjs';
+import { startWith, Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
@@ -150,7 +150,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       invoiceNumber: ['', [Validators.required, Validators.maxLength(100)]],
       comment: ['', [Validators.maxLength(500)]],
-      payoutType: [null, Validators.required],
+      payoutType: [this.getPayoutTypeControlValue(PayoutType.User), Validators.required],
       bankAccountId: [null, [Validators.required, Validators.min(1)]],
       creditorName: [null],
       dueDate: [null],
@@ -163,7 +163,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     this.form
       .get('payoutType')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
+      .valueChanges.pipe(startWith(this.form.get('payoutType')?.value), takeUntil(this.destroy$))
       .subscribe((value) => {
         const payoutType = this.toPayoutType(value);
         const bankCtrl = this.form.get('bankAccountId');
@@ -229,7 +229,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.form.patchValue({
       invoiceNumber: invoice.invoiceNumber,
       comment: invoice.comment ?? '',
-      payoutType: invoice.payoutType,
+      payoutType: this.getPayoutTypeControlValue(invoice.payoutType),
       bankAccountId: invoice.bankAccount?.id ?? null,
       creditorName: invoice.creditorName ?? '',
       dueDate: invoice.dueDate?.slice(0, 10) ?? null,
@@ -732,7 +732,19 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   }
 
   private resetSubmissionState(): void {
-    this.form.reset();
+    this.form.reset({
+      invoiceNumber: '',
+      comment: '',
+      payoutType: this.getPayoutTypeControlValue(PayoutType.User),
+      bankAccountId: null,
+      creditorName: null,
+      dueDate: null,
+      teamId: null,
+      amount: null,
+      purposeOfPayment: '',
+      paidAt: '',
+      receipt: null,
+    });
     this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
       const userTeamId = user?.team?.id;
       if (userTeamId != null) {
@@ -761,7 +773,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.form.patchValue({
       invoiceNumber: draft.payload.invoiceNumber,
       comment: draft.payload.comment ?? '',
-      payoutType: draft.payload.payoutType,
+      payoutType: this.getPayoutTypeControlValue(draft.payload.payoutType),
       bankAccountId: draft.payload.bankAccountId,
       creditorName: draft.payload.creditorName,
       dueDate,
@@ -781,9 +793,19 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   }
 
   toPayoutType(value: unknown): PayoutType | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
     const num = Number(value);
 
-    return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+    return Number.isNaN(num) || !Object.values(PayoutType).includes(num)
+      ? null
+      : (num as PayoutType);
+  }
+
+  getPayoutTypeControlValue(value: PayoutType | null | undefined): string | null {
+    return value == null ? null : String(value);
   }
 
   isPayoutType(type: PayoutType): boolean {
