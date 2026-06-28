@@ -23,7 +23,6 @@
       "name": "core-api-views",
       "urls": [
         "/api/v1/auth/currentuser**",
-        "/api/v1/transaction/user**",
         "/api/v1/transaction/team**",
         "/api/v1/team**",
         "/api/v1/budget**",
