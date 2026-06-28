@@ -552,6 +552,109 @@ namespace PayTrack.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldNotifyResponsibleUser_WhenInvoiceWasDeleted()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+            var systemSettingsMock = new Mock<ISystemSettingService>();
+            var pushMock = new Mock<IPushNotificationService>();
+            var invoice = new PaymentRequestByUser
+            {
+                Id = 5,
+                UserId = 7,
+                InvoiceNumber = "INV-5",
+                Amount = 123.45m,
+                PurposeOfPayment = "Training",
+                User = new User { Id = 7, Name = "Responsible User", Email = "user@example.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.Is<GetPaymentRequestByUserQueryById>(q => q.IncludeUser == true)))
+                .ReturnsAsync(invoice);
+            repoMock.Setup(r => r.DeletePaymentRequestByUserAsync(5)).ReturnsAsync(true);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionEmail, true))
+                .ReturnsAsync(true);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionSlack, false))
+                .ReturnsAsync(true);
+            systemSettingsMock
+                .Setup(s => s.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceDeletionPush, true))
+                .ReturnsAsync(true);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationsMock.Object,
+                null,
+                pushMock.Object,
+                systemSettingsMock.Object);
+
+            await service.DeletePaymentRequestByUserAsync(5);
+
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(
+                    "user@example.com",
+                    "Invoice INV-5 deleted",
+                    It.Is<string>(body => body.Contains("after duplicate review") && body.Contains("Training"))),
+                Times.Once);
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(
+                    "user@example.com",
+                    It.Is<string>(message => message.Contains("Invoice INV-5 deleted"))),
+                Times.Once);
+            pushMock.Verify(
+                p => p.SendWorkflowStatusChangedAsync(
+                    7,
+                    "Invoice INV-5 deleted",
+                    It.Is<string>(body => body.Contains("duplicate review")),
+                    "/my-invoices"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletePaymentRequestByUserAsync_ShouldNotNotify_WhenDeleteFails()
+        {
+            var repoMock = new Mock<ITransactionRepository>();
+            var notificationsMock = new Mock<INotificationDispatchService>();
+            var invoice = new PaymentRequestByUser
+            {
+                Id = 5,
+                UserId = 7,
+                InvoiceNumber = "INV-5",
+                User = new User { Id = 7, Name = "Responsible User", Email = "user@example.com" },
+            };
+
+            repoMock
+                .Setup(r => r.GetByIdAsync(5, It.IsAny<GetPaymentRequestByUserQueryById>()))
+                .ReturnsAsync(invoice);
+            repoMock.Setup(r => r.DeletePaymentRequestByUserAsync(5)).ReturnsAsync(false);
+
+            var service = new PaymentRequestByUserService(
+                repoMock.Object,
+                new Mock<ITeamService>().Object,
+                new Mock<IFileRepository>().Object,
+                new Mock<IBankAccountService>().Object,
+                new Mock<ICostCentreService>().Object,
+                new Mock<IBudgetService>().Object,
+                notificationsMock.Object);
+
+            Func<Task> act = async () => await service.DeletePaymentRequestByUserAsync(5);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+            notificationsMock.Verify(
+                n => n.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
+            notificationsMock.Verify(
+                n => n.SendSlackAsync(It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task DismissDuplicatePaymentRequestByUserAsync_ShouldCallRepository()
         {
             var repoMock = new Mock<ITransactionRepository>();
