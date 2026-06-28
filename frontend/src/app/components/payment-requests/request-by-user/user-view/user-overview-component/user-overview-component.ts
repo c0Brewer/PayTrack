@@ -72,12 +72,28 @@ export class UserInvoicesOverviewComponent implements OnInit {
         };
         this.loadInvoices();
       });
+    void this.loadCurrentUserAndInvoices();
+  }
+
+  private async loadCurrentUserAndInvoices(): Promise<void> {
+    try {
+      this.currentUser = await this.authService.refreshUser();
+      this.loadInvoices();
+    } catch (error) {
+      this.notificationService.showError(
+        error instanceof Error ? error.message : 'Error while loading user',
+      );
+    }
   }
 
   loadInvoices(): void {
+    if (!this.currentUser) {
+      return;
+    }
+
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.id,
+      UserId: this.currentUser.id,
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
@@ -105,14 +121,14 @@ export class UserInvoicesOverviewComponent implements OnInit {
   }
 
   loadInvoiceStats(totalCount: number): void {
-    if (totalCount <= 0) {
+    if (!this.currentUser || totalCount <= 0) {
       this.statInvoices = [];
       return;
     }
 
     const query: GetPaymentRequestsByUserOptions = {
       ...this.filterOptions,
-      UserId: this.currentUser?.id,
+      UserId: this.currentUser.id,
       IncludeTeam: true,
       Limit: totalCount,
       Offset: 0,
