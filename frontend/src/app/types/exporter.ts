@@ -45,11 +45,22 @@ export type DuplicatePaymentRequestByUserDto =
 export type ReceiptExtractionDto = components['schemas']['ReceiptExtractionDto'];
 
 export type GetPaymentRequestsByUserOptions =
-  paths['/api/v1/transaction/user']['get']['parameters']['query'];
+  paths['/api/v1/transaction/user']['get']['parameters']['query'] & SortQueryOptions;
 export type GetPaymentRequestsByUserByIdOptions =
   paths['/api/v1/transaction/user/{id}']['get']['parameters']['query'];
 export type GetDuplicatePaymentRequestsByUserOptions =
   paths['/api/v1/transaction/user/duplicate']['get']['parameters']['query'];
+
+export type SortDirection = 'Asc' | 'Desc';
+
+export type SortQueryOptions = {
+  SortBy?: string;
+  SortDirection?: SortDirection;
+};
+
+export type PaymentRequestByTeamQueryExtras = {
+  VisibleStatusesOnly?: boolean;
+};
 
 export enum PayoutType {
   User = 0,
@@ -131,8 +142,10 @@ export type GetCostCentreOptions = paths['/api/v1/cost-centre']['get']['paramete
 
 // Season
 export type SeasonDto = components['schemas']['SeasonDto'];
+export type SeasonDtoPaginatedResponse = components['schemas']['SeasonDtoPaginatedResponse'];
 export type CreateSeasonRequestDto = components['schemas']['CreateSeasonRequestDto'];
 export type UpdateSeasonRequestDto = components['schemas']['UpdateSeasonRequestDto'];
+export type GetSeasonOptions = paths['/api/v1/season']['get']['parameters']['query'];
 // Payment request by team
 export type CreatePaymentRequestByTeamDto = components['schemas']['CreatePaymentRequestByTeamDto'];
 export type PaymentRequestByTeamDto = components['schemas']['PaymentRequestByTeamDto'];
@@ -141,9 +154,39 @@ export type MarkAsPaidPaymentRequestByTeamDto =
 export type PaginatedPaymentRequestByTeamDto =
   components['schemas']['PaymentRequestByTeamDtoPaginatedResponse'];
 export type GetPaymentRequestsByTeamOptions =
-  paths['/api/v1/transaction/team']['get']['parameters']['query'];
+  paths['/api/v1/transaction/team']['get']['parameters']['query'] &
+    SortQueryOptions &
+    PaymentRequestByTeamQueryExtras;
 export type GetPaymentRequestsByTeamByIdOptions =
   paths['/api/v1/transaction/team/{id}']['get']['parameters']['query'];
+
+// Financial export
+export enum FinancialExportFormat {
+  Csv = 1,
+  Pdf = 2,
+}
+
+export enum FinancialExportSource {
+  SubmittedInvoices = 1,
+  PaymentRequests = 2,
+}
+
+export type GetFinancialExportOptions = NonNullable<
+  paths['/api/v1/transaction/export']['get']['parameters']['query']
+>;
+
+export type FinancialExportQueryOptions = Omit<
+  GetFinancialExportOptions,
+  'Source' | 'InvoiceNumber' | 'PayoutType' | 'BankAccountId' | 'RequestById'
+> &
+  SortQueryOptions & {
+    Source: FinancialExportSource;
+    InvoiceNumber?: string;
+    PayoutType?: PayoutType;
+    BankAccountId?: number;
+    RequestById?: number;
+    VisibleStatusesOnly?: boolean;
+  };
 
 // Bank Account
 export type BankAccountDto = components['schemas']['BankAccountDto'];
@@ -162,12 +205,16 @@ export type TransactionDto = components['schemas']['TransactionDto'];
 // Admin Settings
 export type CsvColumnSettingsDto = { nameColumn: string; summeColumn: string };
 export type UpdateCsvColumnSettingsRequestDto = { nameColumn: string; summeColumn: string };
-export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean };
+export type NotificationChannelDto = { sendEmail: boolean; sendSlack: boolean; sendPush: boolean };
 export type NotificationChannelGroupsDto = {
   creation: NotificationChannelDto;
   confirmation: NotificationChannelDto;
   reminders: NotificationChannelDto;
   deletion: NotificationChannelDto;
+  invoiceApproval: NotificationChannelDto;
+  invoiceRejection: NotificationChannelDto;
+  invoiceChangesRequested: NotificationChannelDto;
+  invoicePaymentCompleted: NotificationChannelDto;
 };
 export type UpdateNotificationChannelGroupsRequestDto = NotificationChannelGroupsDto;
 export type ReminderScheduleDto = {
@@ -177,3 +224,5 @@ export type ReminderScheduleDto = {
   emailDelayMs: number;
 };
 export type UpdateReminderScheduleRequestDto = ReminderScheduleDto;
+export type InvoiceSubmissionSettingsDto = { receiptExtractionEnabled: boolean };
+export type UpdateInvoiceSubmissionSettingsRequestDto = InvoiceSubmissionSettingsDto;

@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { UserService } from '../../../services/user/user-service';
-import { GetUserOptions, TeamDto, UpdateUserDto, UserDto } from '../../../types/exporter';
+import { GetUserOptions, Role, TeamDto, UpdateUserDto, UserDto } from '../../../types/exporter';
 import { StatBoxComponent } from '../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../general/pagination-component/pagination-component';
 import { UserEditModalComponent } from '../user-edit-modal-component/user-edit-modal-component';
@@ -39,12 +40,11 @@ export class UserManagementComponent implements OnInit {
   page: number = 0;
   totalCount: number = 0;
   totalUserCount: number = 0;
+  activeUserCount: number = 0;
+  inactiveUserCount: number = 0;
+  adminUserCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
-
-  readonly activeUserPlaceholderCount = 12;
-  readonly inactiveUserPlaceholderCount = 2;
-  readonly adminUserPlaceholderCount = 2;
 
   editingUser: UserDto | null = null;
   activeStatusPendingIds = new Set<number>();
@@ -66,21 +66,29 @@ export class UserManagementComponent implements OnInit {
   }
 
   loadUserStats(): void {
-    this.userService
-      .getUser({
-        IncludeTeam: false,
-        Limit: 1,
-        Offset: 0,
-      })
-      .subscribe({
-        next: (data) => {
-          this.totalUserCount = data.totalCount ?? 0;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.notificationService.showError(err);
-        },
-      });
+    const baseQuery = {
+      IncludeTeam: false,
+      Limit: 1,
+      Offset: 0,
+    } satisfies GetUserOptions;
+
+    forkJoin({
+      total: this.userService.getUser(baseQuery),
+      active: this.userService.getUser({ ...baseQuery, IsActive: true }),
+      inactive: this.userService.getUser({ ...baseQuery, IsActive: false }),
+      admins: this.userService.getUser({ ...baseQuery, Role: Role.ADMIN }),
+    }).subscribe({
+      next: ({ total, active, inactive, admins }) => {
+        this.totalUserCount = total.totalCount ?? 0;
+        this.activeUserCount = active.totalCount ?? 0;
+        this.inactiveUserCount = inactive.totalCount ?? 0;
+        this.adminUserCount = admins.totalCount ?? 0;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.notificationService.showError(err);
+      },
+    });
   }
 
   loadTeams(): void {
@@ -180,6 +188,7 @@ export class UserManagementComponent implements OnInit {
         this.user = this.user.map((currentUser) =>
           currentUser.id === user.id ? { ...currentUser, isActive: nextIsActive } : currentUser,
         );
+        this.loadUserStats();
         this.setActiveStatusPending(user.id, false);
         this.cdr.markForCheck();
       },
@@ -201,6 +210,7 @@ export class UserManagementComponent implements OnInit {
 
   onUserSaved(): void {
     this.loadUser();
+    this.loadUserStats();
     this.closeEdit();
   }
 

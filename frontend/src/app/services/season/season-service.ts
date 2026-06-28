@@ -4,8 +4,10 @@ import { from, Observable } from 'rxjs';
 import { client } from '../../client';
 import {
   CreateSeasonRequestDto,
+  GetSeasonOptions,
   ProblemDetails,
   SeasonDto,
+  SeasonDtoPaginatedResponse,
   UpdateSeasonRequestDto,
 } from '../../types/exporter';
 
@@ -13,12 +15,25 @@ import {
   providedIn: 'root',
 })
 export class SeasonService {
-  public getSeasons(): Observable<SeasonDto[]> {
+  public getSeasons(queryOptions?: GetSeasonOptions): Observable<SeasonDto[]> {
     const promise: Promise<SeasonDto[]> = client
-      .GET('/api/v1/season', {})
+      .GET('/api/v1/season', { params: { query: queryOptions ?? {} } })
       .then(({ data, error }) => {
         if (error) throw new Error(SeasonService.getErrorMessage(error));
-        return data ?? [];
+        return data?.items ?? [];
+      });
+    return from(promise);
+  }
+
+  public getSeasonsPaginated(
+    queryOptions?: GetSeasonOptions,
+  ): Observable<SeasonDtoPaginatedResponse> {
+    const promise: Promise<SeasonDtoPaginatedResponse> = client
+      .GET('/api/v1/season', { params: { query: queryOptions ?? {} } })
+      .then(({ data, error }) => {
+        if (error) throw new Error(SeasonService.getErrorMessage(error));
+        if (!data) throw new Error('No data returned');
+        return data;
       });
     return from(promise);
   }
@@ -45,11 +60,12 @@ export class SeasonService {
     return from(promise);
   }
 
-  public deleteSeason(id: number): Observable<void> {
-    const promise: Promise<void> = client
+  public deleteSeason(id: number): Observable<SeasonDto | null> {
+    const promise: Promise<SeasonDto | null> = client
       .DELETE('/api/v1/season/{id}', { params: { path: { id } } })
-      .then(({ error }) => {
+      .then(({ data, error }) => {
         if (error) throw new Error(SeasonService.getErrorMessage(error));
+        return data ?? null;
       });
     return from(promise);
   }

@@ -13,9 +13,11 @@ namespace PayTrack.Application.Services.Implementation
     {
         private const bool DefaultSendEmail = true;
         private const bool DefaultSendSlack = false;
+        private const bool DefaultSendPush = true;
         private const int DefaultRunAtHourUtc = 8;
         private const int DefaultRunAtMinuteUtc = 0;
         private const int DefaultEmailDelayMs = 500;
+        private const bool DefaultReceiptExtractionEnabled = true;
         private static readonly int[] DefaultDaysBeforeDue = [7, 2, 1];
 
         private readonly ISystemSettingRepository repo = repo;
@@ -48,21 +50,53 @@ namespace PayTrack.Application.Services.Implementation
         {
             var creation = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationPush, DefaultSendPush));
 
             var confirmation = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationPush, DefaultSendPush));
 
             var reminders = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsRemindersPush, DefaultSendPush));
 
             var deletion = new NotificationChannelDto(
                 await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, DefaultSendEmail),
-                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, DefaultSendSlack));
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionPush, DefaultSendPush));
 
-            return new NotificationChannelGroupsDto(creation, confirmation, reminders, deletion);
+            var invoiceApproval = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceApprovalEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceApprovalSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceApprovalPush, DefaultSendPush));
+
+            var invoiceRejection = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceRejectionEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceRejectionSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceRejectionPush, DefaultSendPush));
+
+            var invoiceChangesRequested = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoiceChangesRequestedPush, DefaultSendPush));
+
+            var invoicePaymentCompleted = new NotificationChannelDto(
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail, DefaultSendEmail),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack, DefaultSendSlack),
+                await this.GetBoolSettingAsync(SystemSettingKeys.NotificationsInvoicePaymentCompletedPush, DefaultSendPush));
+
+            return new NotificationChannelGroupsDto(
+                creation,
+                confirmation,
+                reminders,
+                deletion,
+                invoiceApproval,
+                invoiceRejection,
+                invoiceChangesRequested,
+                invoicePaymentCompleted);
         }
 
         /// <inheritdoc/>
@@ -73,12 +107,28 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     [SystemSettingKeys.NotificationsCreationEmail] = dto.Creation.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsCreationSlack] = dto.Creation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsCreationPush] = dto.Creation.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsConfirmationEmail] = dto.Confirmation.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsConfirmationSlack] = dto.Confirmation.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsConfirmationPush] = dto.Confirmation.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsRemindersEmail] = dto.Reminders.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsRemindersSlack] = dto.Reminders.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsRemindersPush] = dto.Reminders.SendPush.ToString(),
                     [SystemSettingKeys.NotificationsDeletionEmail] = dto.Deletion.SendEmail.ToString(),
                     [SystemSettingKeys.NotificationsDeletionSlack] = dto.Deletion.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsDeletionPush] = dto.Deletion.SendPush.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceApprovalEmail] = dto.InvoiceApproval.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceApprovalSlack] = dto.InvoiceApproval.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceApprovalPush] = dto.InvoiceApproval.SendPush.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceRejectionEmail] = dto.InvoiceRejection.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceRejectionSlack] = dto.InvoiceRejection.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceRejectionPush] = dto.InvoiceRejection.SendPush.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail] = dto.InvoiceChangesRequested.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack] = dto.InvoiceChangesRequested.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsInvoiceChangesRequestedPush] = dto.InvoiceChangesRequested.SendPush.ToString(),
+                    [SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail] = dto.InvoicePaymentCompleted.SendEmail.ToString(),
+                    [SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack] = dto.InvoicePaymentCompleted.SendSlack.ToString(),
+                    [SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] = dto.InvoicePaymentCompleted.SendPush.ToString(),
                 },
                 userId);
         }
@@ -103,6 +153,26 @@ namespace PayTrack.Application.Services.Implementation
                     [SystemSettingKeys.RemindersRunAtHourUtc] = dto.RunAtHourUtc.ToString(),
                     [SystemSettingKeys.RemindersRunAtMinuteUtc] = dto.RunAtMinuteUtc.ToString(),
                     [SystemSettingKeys.RemindersEmailDelayMs] = dto.EmailDelayMs.ToString(),
+                },
+                userId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<InvoiceSubmissionSettingsDto> GetInvoiceSubmissionSettingsAsync()
+        {
+            return new InvoiceSubmissionSettingsDto(
+                await this.GetBoolSettingAsync(
+                    SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled,
+                    DefaultReceiptExtractionEnabled));
+        }
+
+        /// <inheritdoc/>
+        public async Task UpdateInvoiceSubmissionSettingsAsync(UpdateInvoiceSubmissionSettingsRequestDto dto, int userId)
+        {
+            await this.repo.UpsertManyAsync(
+                new Dictionary<string, string>
+                {
+                    [SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled] = dto.ReceiptExtractionEnabled.ToString(),
                 },
                 userId);
         }

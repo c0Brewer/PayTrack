@@ -11,8 +11,9 @@ namespace PayTrack.Application.Dto.PaymentRequestByUser
     /// </summary>
     public sealed record class ApprovePaymentRequestByUserDto(
         [property: Required]
-        int CostCentreId,
+        int BudgetId,
 
+        [property: MinLength(3)]
         [property: MaxLength(1000)]
         string? Reason);
 }

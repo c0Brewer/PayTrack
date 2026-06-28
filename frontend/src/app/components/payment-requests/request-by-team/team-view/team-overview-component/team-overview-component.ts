@@ -9,6 +9,7 @@ import {
   GetPaymentRequestsByTeamOptions,
   PaymentRequestByTeamDto,
   TransactionStatus,
+  SortDirection,
   UserDto,
 } from '../../../../../types/exporter';
 import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
@@ -49,6 +50,8 @@ export class TeamRequestTeamOverviewComponent implements OnInit {
   hasPrev: boolean = false;
 
   filterOptions: GetPaymentRequestsByTeamOptions = {};
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
 
   private currentUser: UserDto | null = null;
 
@@ -77,6 +80,8 @@ export class TeamRequestTeamOverviewComponent implements OnInit {
       UserId: this.currentUser.id,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestByTeamService.getPaymentRequestsByTeam(query).subscribe({
@@ -137,6 +142,13 @@ export class TeamRequestTeamOverviewComponent implements OnInit {
 
   updateFilterOptions(options: GetPaymentRequestsByTeamOptions): void {
     this.filterOptions = { ...this.filterOptions, ...options };
+    this.page = 0;
+    this.loadRequests();
+  }
+
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
     this.page = 0;
     this.loadRequests();
   }

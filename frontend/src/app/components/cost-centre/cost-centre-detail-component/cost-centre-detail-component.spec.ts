@@ -151,26 +151,26 @@ describe('CostCentreDetailComponent', () => {
       expect(fixture.nativeElement.textContent).toContain('—');
     });
 
-    it('should show "No budgets assigned." when budgets array is empty', () => {
+    it('should show "None assigned." when budgets array is empty', () => {
       costCentreServiceMock.getCostCentre.mockReturnValue(of({ ...mockCostCentre, budgets: [] }));
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.no-budgets')?.textContent).toContain(
-        'No budgets assigned.',
+        'None assigned.',
       );
     });
 
-    it('should show "No budgets assigned." when budgets is null', () => {
+    it('should show "None assigned." when budgets is null', () => {
       costCentreServiceMock.getCostCentre.mockReturnValue(of({ ...mockCostCentre, budgets: null }));
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.no-budgets')?.textContent).toContain(
-        'No budgets assigned.',
+        'None assigned.',
       );
     });
 
-    it('should render a row for each budget', () => {
+    it('should render a card for each expense budget', () => {
       fixture.detectChanges();
-      const rows = fixture.nativeElement.querySelectorAll('.budget-table tbody tr');
-      expect(rows.length).toBe(1);
+      const cards = fixture.nativeElement.querySelectorAll('.budget-card');
+      expect(cards.length).toBe(1);
     });
 
     it('should display the formatted budget target amount', () => {
@@ -184,9 +184,9 @@ describe('CostCentreDetailComponent', () => {
       expect(fixture.nativeElement.textContent).toContain('2024-12-31');
     });
 
-    it('should show budget count in heading', () => {
+    it('should show budget count in the expense budget subtitle', () => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('h3')?.textContent).toContain('1');
+      expect(fixture.nativeElement.textContent).toContain('1 assigned');
     });
   });
 });

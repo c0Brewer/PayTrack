@@ -8,7 +8,31 @@
 .season-management__header {
   align-items: center;
   display: flex;
+  gap: 0.75rem;
   justify-content: space-between;
+}
+
+.season-management__inactive-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.season-management__page-size {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+
+  label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  select {
+    max-width: 6rem;
+  }
 }
 
 .season-management__create {
@@ -37,7 +61,41 @@
 }
 
 @media (max-width: 640px) {
+  .season-management__header,
+  .season-management__page-size {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .season-management__create {
     grid-template-columns: 1fr;
   }
+}
+
+.season-delete-modal__text {
+  margin: 0 0 1rem;
+}
+
+.season-delete-modal__warning {
+  background-color: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 0.5rem;
+  color: #7c2d12;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+}
+
+.season-delete-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
 }

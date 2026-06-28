@@ -1,6 +1,24 @@
 <div id="invoice-page" class="main-page-container">
-  <h1>Invoice Submission</h1>
-  <p>Upload your invoice and provide the details.</p>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">{{ isEditMode ? 'Edit Invoice' : 'Invoice Submission' }}</h1>
+    <p class="mb-0 text-body-secondary">
+      {{
+        isEditMode
+          ? 'Update the requested invoice details and return it for review.'
+          : 'Upload your invoice and provide the details.'
+      }}
+    </p>
+  </div>
+
+  @if (isEditMode && changeRequestMessage) {
+    <section class="change-request-message" aria-labelledby="edit-change-request-title">
+      <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
+      <div>
+        <h2 id="edit-change-request-title">Changes requested</h2>
+        <p>{{ changeRequestMessage }}</p>
+      </div>
+    </section>
+  }
 
   @if (offlineInvoiceSubmissionQueueService.items().length > 0 || offlineService.isOffline()) {
     <app-box-component
@@ -43,9 +61,9 @@
                 </div>
 
                 <p class="offline-queue__meta">
-                  Saved {{ item.createdAt | date: 'medium' }}
+                  Saved {{ item.createdAt | date: 'medium' : undefined : 'en-US' }}
                   @if (item.lastAttemptAt) {
-                    <span> • Last attempt {{ item.lastAttemptAt | date: 'medium' }}</span>
+                    <span> • Last attempt {{ item.lastAttemptAt | date: 'medium' : undefined : 'en-US' }}</span>
                   }
                 </p>
 
@@ -207,10 +225,12 @@
           subtitle="Upload your invoice/receipt and enter the details."
           size="medium"
         >
-          <p class="receipt-upload__hint">
-            Uploading the receipt first may help us pre-fill some invoice fields automatically. You
-            can review and change all values before submitting.
-          </p>
+          @if (receiptExtractionEnabled) {
+            <p class="receipt-upload__hint">
+              Uploading the receipt first may help us pre-fill some invoice fields automatically.
+              You can review and change all values before submitting.
+            </p>
+          }
           <label
             class="receipt-upload"
             for="receiptFile"
@@ -219,11 +239,19 @@
             (drop)="onFileDropped($event)"
           >
             <span class="receipt-upload__icon material-symbols-outlined">upload</span>
-            <span class="receipt-upload__title">Drag a file here or click to upload</span>
-            <span class="receipt-upload__meta">PDF, PNG, JPG (max. 20 MB)</span>
+            <span class="receipt-upload__title">{{
+              isEditMode
+                ? 'Upload a replacement receipt or keep the current one'
+                : 'Drag a file here or click to upload'
+            }}</span>
+            <span class="receipt-upload__meta">{{
+              isEditMode
+                ? 'Leave unchanged to keep the current receipt. PDF, PNG, JPG (max. 20 MB)'
+                : 'PDF, PNG, JPG (max. 20 MB)'
+            }}</span>
             <span class="receipt-upload__button">
               <span class="material-symbols-outlined">upload</span>
-              Select file
+              {{ isEditMode ? 'Replace file' : 'Select file' }}
             </span>
             @if (selectedFileName) {
               <span class="receipt-upload__filename">{{ selectedFileName }}</span>
@@ -241,7 +269,7 @@
               <span class="material-symbols-outlined">error</span>{{ getError('receipt') }}
             </span>
           }
-          @if (receiptExtractionStatus !== 'idle') {
+          @if (receiptExtractionEnabled && receiptExtractionStatus !== 'idle') {
             <div
               class="receipt-extraction"
               [ngClass]="'receipt-extraction--' + receiptExtractionStatus"
@@ -280,9 +308,7 @@
             <div class="payout-type__options">
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.User
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.User)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.User" />
                 <span class="payout-type__dot"></span>
@@ -294,9 +320,7 @@
 
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.NotYetPaid
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.NotYetPaid)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.NotYetPaid" />
                 <span class="payout-type__dot"></span>
@@ -308,9 +332,7 @@
 
               <label
                 class="payout-type__option"
-                [class.payout-type__option--selected]="
-                  form.get('payoutType')?.value === PayoutType.AlreadyPaid
-                "
+                [class.payout-type__option--selected]="isPayoutType(PayoutType.AlreadyPaid)"
               >
                 <input type="radio" formControlName="payoutType" [value]="PayoutType.AlreadyPaid" />
                 <span class="payout-type__dot"></span>
@@ -326,7 +348,7 @@
             }
           </fieldset>
 
-          @if (form.get('payoutType')?.value === PayoutType.User) {
+          @if (isPayoutType(PayoutType.User)) {
             <div class="field input-wrapper payout-type__bank-account">
               <div class="payout-type__legend">
                 <label for="bankAccountId">Bank Account ID <span class="required">*</span></label>
@@ -359,7 +381,7 @@
             </div>
           }
 
-          @if (form.get('payoutType')?.value === PayoutType.NotYetPaid) {
+          @if (isPayoutType(PayoutType.NotYetPaid)) {
             <div class="field input-wrapper payout-type__creditor-name">
               <label for="creditorName">Company Name <span class="required">*</span></label>
               <input
@@ -396,19 +418,42 @@
         </app-box-component>
       </div>
       <div class="form-actions">
+        @if (isEditMode) {
+          <button
+            type="button"
+            class="btn btn-secondary d-inline-flex align-items-center gap-1"
+            [disabled]="isSubmitting"
+            (click)="onCancelEdit()"
+          >
+            <span class="material-symbols-outlined">close</span>
+            Cancel
+          </button>
+        }
         <button
           type="submit"
-          class="btn btn-primary d-inline-flex align-items-center gap-1"
+          class="btn btn-primary d-inline-flex align-items-center gap-1 p-2"
           [disabled]="isSubmitting"
         >
           @if (!isSubmitting) {
             <span class="material-symbols-outlined">{{
-              offlineService.isOffline() ? 'cloud_upload' : 'check_circle'
+              !isEditMode && offlineService.isOffline() ? 'cloud_upload' : 'check_circle'
             }}</span>
-            {{ offlineService.isOffline() ? 'Save Offline for Sync' : 'Submit Invoice' }}
+            {{
+              isEditMode
+                ? 'Save and Return for Review'
+                : offlineService.isOffline()
+                  ? 'Save Offline for Sync'
+                  : 'Submit Invoice'
+            }}
           }
           @if (isSubmitting) {
-            <span>{{ offlineService.isOffline() ? 'Saving locally…' : 'Submitting…' }}</span>
+            <span>{{
+              isEditMode
+                ? 'Saving...'
+                : offlineService.isOffline()
+                  ? 'Saving locally...'
+                  : 'Submitting...'
+            }}</span>
           }
         </button>
       </div>

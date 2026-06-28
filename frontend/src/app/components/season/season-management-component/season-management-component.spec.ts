@@ -11,16 +11,24 @@ import { SeasonDto } from '../../../types/exporter';
 import { SeasonManagementComponent } from './season-management-component';
 
 const mockSeasons: SeasonDto[] = [
-  { id: 1, name: '2025', budgets: [] },
-  { id: 2, name: '2026', budgets: [{ id: 10 } as NonNullable<SeasonDto['budgets']>[number]] },
+  { id: 1, name: '2025', isActive: true, budgets: [] },
+  {
+    id: 2,
+    name: '2026',
+    isActive: true,
+    budgets: [{ id: 10 } as NonNullable<SeasonDto['budgets']>[number]],
+  },
+  { id: 3, name: '2024', isActive: false, budgets: [] },
 ];
 
 describe('SeasonManagementComponent', () => {
   let component: SeasonManagementComponent;
   let fixture: ComponentFixture<SeasonManagementComponent>;
   let seasonServiceMock: {
-    getSeasons: ReturnType<typeof vi.fn>;
+    getSeasonsPaginated: ReturnType<typeof vi.fn>;
     createSeason: ReturnType<typeof vi.fn>;
+    updateSeason: ReturnType<typeof vi.fn>;
+    deleteSeason: ReturnType<typeof vi.fn>;
   };
   let notificationServiceMock: {
     showError: ReturnType<typeof vi.fn>;
@@ -30,8 +38,19 @@ describe('SeasonManagementComponent', () => {
 
   beforeEach(async () => {
     seasonServiceMock = {
-      getSeasons: vi.fn().mockReturnValue(of(mockSeasons)),
+      getSeasonsPaginated: vi.fn().mockReturnValue(
+        of({
+          items: mockSeasons.filter((season) => season.isActive),
+          totalCount: 2,
+          limit: 10,
+          offset: 0,
+          hasNext: false,
+          hasPrevious: false,
+        }),
+      ),
       createSeason: vi.fn().mockReturnValue(of(mockSeasons[0])),
+      updateSeason: vi.fn().mockReturnValue(of(mockSeasons[0])),
+      deleteSeason: vi.fn().mockReturnValue(of(null)),
     };
     notificationServiceMock = {
       showError: vi.fn(),
@@ -60,12 +79,19 @@ describe('SeasonManagementComponent', () => {
   it('ngOnInit should load seasons', () => {
     component.ngOnInit();
 
-    expect(seasonServiceMock.getSeasons).toHaveBeenCalled();
-    expect(component.seasons).toEqual(mockSeasons);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: true,
+      Limit: 10,
+      Offset: 0,
+    });
+    expect(component.seasons).toEqual(mockSeasons.filter((season) => season.isActive));
+    expect(component.totalCount).toBe(2);
   });
 
   it('loadSeasons should show error when API throws', () => {
-    seasonServiceMock.getSeasons.mockReturnValueOnce(throwError(() => new Error('API error')));
+    seasonServiceMock.getSeasonsPaginated.mockReturnValueOnce(
+      throwError(() => new Error('API error')),
+    );
 
     component.loadSeasons();
 
@@ -96,8 +122,177 @@ describe('SeasonManagementComponent', () => {
     );
   });
 
-  it('should pass seasons to the season list component', () => {
+  it('createSeason should show duplicate-name message without prefix', () => {
+    seasonServiceMock.createSeason.mockReturnValueOnce(
+      throwError(() => new Error('season name already taken')),
+    );
+
+    component.createSeason('2026');
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith('season name already taken');
+  });
+
+  it('updateSeason should update a season and reload', () => {
+    const loadSpy = vi.spyOn(component, 'loadSeasons');
+
+    component.updateSeason({ id: 1, name: '2025/26' });
+
+    expect(seasonServiceMock.updateSeason).toHaveBeenCalledWith(1, { name: '2025/26' });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Season updated successfully');
+    expect(loadSpy).toHaveBeenCalledOnce();
+  });
+
+  it('updateSeason should show error when API throws', () => {
+    seasonServiceMock.updateSeason.mockReturnValueOnce(
+      throwError(() => new Error('Update failed')),
+    );
+
+    component.updateSeason({ id: 1, name: '2025/26' });
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not update season: Update failed',
+    );
+  });
+
+  it('updateSeason should show duplicate-name message without prefix', () => {
+    seasonServiceMock.updateSeason.mockReturnValueOnce(
+      throwError(() => new Error('season name already taken')),
+    );
+
+    component.updateSeason({ id: 1, name: '2026' });
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith('season name already taken');
+  });
+
+  it('reactivateSeason should update active flag and reload', () => {
+    const loadSpy = vi.spyOn(component, 'loadSeasons');
+
+    component.reactivateSeason(3);
+
+    expect(seasonServiceMock.updateSeason).toHaveBeenCalledWith(3, { isActive: true });
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Season reactivated successfully',
+    );
+    expect(loadSpy).toHaveBeenCalledOnce();
+  });
+
+  it('reactivateSeason should show error when API throws', () => {
+    seasonServiceMock.updateSeason.mockReturnValueOnce(
+      throwError(() => new Error('Reactivate failed')),
+    );
+
+    component.reactivateSeason(3);
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not reactivate season: Reactivate failed',
+    );
+  });
+
+  it('toggleInactiveSeasons should load inactive seasons from first page', () => {
+    seasonServiceMock.getSeasonsPaginated.mockReturnValueOnce(
+      of({
+        items: [mockSeasons[2]],
+        totalCount: 1,
+        limit: 10,
+        offset: 0,
+        hasNext: false,
+        hasPrevious: false,
+      }),
+    );
+
+    component.page = 2;
+    component.toggleInactiveSeasons();
+
+    expect(component.showInactiveSeasons).toBe(true);
+    expect(component.page).toBe(0);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: false,
+      Limit: 10,
+      Offset: 0,
+    });
+    expect(component.seasons).toEqual([mockSeasons[2]]);
+  });
+
+  it('nextPage should increment page and reload seasons', () => {
+    component.nextPage();
+
+    expect(component.page).toBe(1);
+    expect(seasonServiceMock.getSeasonsPaginated).toHaveBeenCalledWith({
+      IsActive: true,
+      Limit: 10,
+      Offset: 10,
+    });
+  });
+
+  it('openDeleteSeason should select the season for delete modal', () => {
     component.seasons = mockSeasons;
+
+    component.openDeleteSeason(1);
+
+    expect(component.seasonToDelete).toEqual(mockSeasons[0]);
+  });
+
+  it('closeDeleteSeasonModal should clear selected season', () => {
+    component.seasonToDelete = mockSeasons[0];
+
+    component.closeDeleteSeasonModal();
+
+    expect(component.seasonToDelete).toBeNull();
+  });
+
+  it('selectedSeasonHasDependencies should detect linked budgets', () => {
+    component.seasonToDelete = mockSeasons[1];
+
+    expect(component.selectedSeasonHasDependencies).toBe(true);
+
+    component.seasonToDelete = mockSeasons[0];
+    expect(component.selectedSeasonHasDependencies).toBe(false);
+  });
+
+  it('confirmDeleteSeason should delete and reload', () => {
+    const loadSpy = vi.spyOn(component, 'loadSeasons');
+
+    component.seasonToDelete = mockSeasons[0];
+    component.confirmDeleteSeason();
+
+    expect(seasonServiceMock.deleteSeason).toHaveBeenCalledWith(1);
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith('Season deleted successfully');
+    expect(component.seasonToDelete).toBeNull();
+    expect(loadSpy).toHaveBeenCalledOnce();
+  });
+
+  it('confirmDeleteSeason should show deactivated message when service returns season', () => {
+    seasonServiceMock.deleteSeason.mockReturnValueOnce(of({ ...mockSeasons[1], isActive: false }));
+
+    component.seasonToDelete = mockSeasons[1];
+    component.confirmDeleteSeason();
+
+    expect(notificationServiceMock.showSuccess).toHaveBeenCalledWith(
+      'Season deactivated successfully',
+    );
+  });
+
+  it('confirmDeleteSeason should do nothing without a selected season', () => {
+    component.seasonToDelete = null;
+    component.confirmDeleteSeason();
+
+    expect(seasonServiceMock.deleteSeason).not.toHaveBeenCalled();
+  });
+
+  it('confirmDeleteSeason should show error when API throws', () => {
+    seasonServiceMock.deleteSeason.mockReturnValueOnce(
+      throwError(() => new Error('Delete failed')),
+    );
+
+    component.seasonToDelete = mockSeasons[0];
+    component.confirmDeleteSeason();
+
+    expect(notificationServiceMock.showError).toHaveBeenCalledWith(
+      'Could not delete season: Delete failed',
+    );
+  });
+
+  it('should pass seasons to the season list component', () => {
     fixture.detectChanges();
 
     const list = fixture.nativeElement.querySelector('app-season-list-component');

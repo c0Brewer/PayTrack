@@ -17,6 +17,7 @@ export class ExternalNotificationComponent implements OnInit {
   @Input() defaultSubject = '';
   @Input() defaultMessage = '';
   @Output() closeEvent = new EventEmitter<void>();
+  @Output() sentEvent = new EventEmitter<void>();
 
   subject = '';
   message = '';
@@ -52,6 +53,7 @@ export class ExternalNotificationComponent implements OnInit {
       next: () => {
         this.notificationService.showSuccess('Notification sent successfully.');
         this.sending = false;
+        this.sentEvent.emit();
         this.closeEvent.emit();
       },
       error: (err: Error) => {

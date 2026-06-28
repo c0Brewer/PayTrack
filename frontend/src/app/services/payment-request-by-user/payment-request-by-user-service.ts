@@ -40,6 +40,16 @@ export class PaymentRequestByUserService {
     return this.getApiUrl('/api/v1/transaction/user/receipt/extract');
   }
 
+  private getUndoStatusChangeUrl(id: number): string {
+    const path = `/api/v1/transaction/user/${id}/undo-status-change`;
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
+  private getResubmitUrl(id: number): string {
+    const path = `/api/v1/transaction/user/${id}/resubmit`;
+    return environment.apiBaseUrl ? new URL(path, environment.apiBaseUrl).toString() : path;
+  }
+
   public getPaymentRequestsByUser(
     queryOptions: GetPaymentRequestsByUserOptions,
   ): Observable<PaginatedPaymentRequestByUserDto> {
@@ -50,7 +60,7 @@ export class PaymentRequestByUserService {
         },
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -71,7 +81,7 @@ export class PaymentRequestByUserService {
         },
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -94,11 +104,14 @@ export class PaymentRequestByUserService {
     fd.append('invoiceNumber', updateRequest.invoiceNumber);
     fd.append('comment', updateRequest.comment ?? '');
     fd.append('payoutType', String(updateRequest.payoutType));
-    if (updateRequest.payoutType === PayoutType.User && updateRequest.bankAccountId != null) {
+    if (updateRequest.payoutType === PayoutType.User && (updateRequest.bankAccountId ?? 0) > 0) {
       fd.append('bankAccountId', String(updateRequest.bankAccountId));
     }
     if (updateRequest.creditorName != null) {
       fd.append('creditorName', updateRequest.creditorName);
+    }
+    if (updateRequest.dueDate != null) {
+      fd.append('dueDate', updateRequest.dueDate);
     }
     fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
     fd.append('transaction.amount', String(updateRequest.transaction.amount));
@@ -141,6 +154,50 @@ export class PaymentRequestByUserService {
         throw new Error(err.detail ?? 'Receipt extraction failed.');
       }
       return res.json() as Promise<ReceiptExtractionDto>;
+    });
+
+    return from(promise);
+  }
+
+  public resubmitPaymentRequestByUser(
+    id: number,
+    updateRequest: CreatePaymentRequestByUserDto,
+    file: File | null,
+  ): Observable<PaymentRequestByUserDto> {
+    const fd = new FormData();
+
+    if (file) fd.append('receipt', file);
+    fd.append('invoiceNumber', updateRequest.invoiceNumber);
+    if (updateRequest.comment?.trim()) {
+      fd.append('comment', updateRequest.comment.trim());
+    }
+    fd.append('payoutType', String(updateRequest.payoutType));
+    if (updateRequest.payoutType === PayoutType.User && (updateRequest.bankAccountId ?? 0) > 0) {
+      fd.append('bankAccountId', String(updateRequest.bankAccountId));
+    }
+    if (updateRequest.creditorName != null) {
+      fd.append('creditorName', updateRequest.creditorName);
+    }
+    if (updateRequest.dueDate != null) {
+      fd.append('dueDate', updateRequest.dueDate);
+    }
+    fd.append('transaction.teamId', String(updateRequest.transaction.teamId));
+    fd.append('transaction.amount', String(updateRequest.transaction.amount));
+    fd.append('transaction.purposeOfPayment', updateRequest.transaction.purposeOfPayment);
+    fd.append('transaction.paidAt', updateRequest.transaction.paidAt);
+
+    const promise = fetch(this.getResubmitUrl(id), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+      body: fd,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.json() as Promise<PaymentRequestByUserDto>;
     });
 
     return from(promise);
@@ -230,7 +287,7 @@ export class PaymentRequestByUserService {
         body: updateRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -253,7 +310,7 @@ export class PaymentRequestByUserService {
         body: markPaidRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -276,7 +333,7 @@ export class PaymentRequestByUserService {
         body: approveRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -299,7 +356,7 @@ export class PaymentRequestByUserService {
         body: declineRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
@@ -322,11 +379,43 @@ export class PaymentRequestByUserService {
         body: requestChangesRequest,
       })
       .then(({ data, error }) => {
-        if (error) throw new Error(error.detail ?? 'Unexpected Error');
+        if (error) throw new Error(this.getErrorMessage(error));
         return data;
       });
 
     return from(promise);
+  }
+
+  public undoLastStatusChange(id: number): Observable<PaymentRequestByUserDto> {
+    const promise = fetch(this.getUndoStatusChangeUrl(id), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ?? 'Unexpected Error');
+      }
+      return res.json() as Promise<PaymentRequestByUserDto>;
+    });
+
+    return from(promise);
+  }
+
+  private getErrorMessage(error: unknown): string {
+    const problem = error as {
+      detail?: string | null;
+      title?: string | null;
+      errors?: Record<string, string[]>;
+    };
+    const validationMessage = problem.errors
+      ? Object.values(problem.errors)
+          .flat()
+          .find((message) => !!message)
+      : undefined;
+
+    return problem.detail ?? validationMessage ?? problem.title ?? 'Unexpected Error';
   }
 
   public downloadReceipt(id: number): Observable<Blob> {

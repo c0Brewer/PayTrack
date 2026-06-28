@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PayTrack.Api.Mapper;
+using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Services.Model;
 
@@ -18,13 +19,17 @@ namespace PayTrack.Api.Handler
         /// <summary>
         /// Returns all seasons.
         /// </summary>
+        /// <param name="query">Query options.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<Ok<List<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
+        public static async Task<Results<Ok<PaginatedResponse<SeasonDto>>, ProblemHttpResult>> GetSeasonsAsync(
+            [AsParameters] GetSeasonQuery query,
             ISeasonService service)
         {
-            var seasons = await service.GetAllAsync();
-            return TypedResults.Ok(SeasonMapper.ListToDto(seasons));
+            var (seasons, totalCount) = await service.GetAllAsync(query);
+            var seasonDtos = SeasonMapper.ListToDto(seasons);
+            var paginatedResponse = new PaginatedResponse<SeasonDto>(seasonDtos, totalCount, query.Limit ?? -1, query.Offset ?? 0);
+            return TypedResults.Ok(paginatedResponse);
         }
 
         /// <summary>
@@ -53,7 +58,7 @@ namespace PayTrack.Api.Handler
             [FromBody] UpdateSeasonRequestDto dto,
             ISeasonService service)
         {
-            var season = await service.UpdateAsync(id, dto.Name);
+            var season = await service.UpdateAsync(id, dto.Name, dto.IsActive);
             return TypedResults.Ok(SeasonMapper.ToDto(season));
         }
 
@@ -63,12 +68,17 @@ namespace PayTrack.Api.Handler
         /// <param name="id">Id from route.</param>
         /// <param name="service">Dependency-Injected Service.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<Results<NoContent, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteSeasonAsync(
+        public static async Task<Results<NoContent, Ok<SeasonDto>, BadRequest<ProblemDetails>, NotFound<ProblemDetails>, ProblemHttpResult>> DeleteSeasonAsync(
             [FromRoute] int id,
             ISeasonService service)
         {
-            await service.DeleteAsync(id);
-            return TypedResults.NoContent();
+            var deletedSeason = await service.DeleteAsync(id);
+            if (deletedSeason is null)
+            {
+                return TypedResults.NoContent();
+            }
+
+            return TypedResults.Ok(SeasonMapper.ToDto(deletedSeason));
         }
     }
 }

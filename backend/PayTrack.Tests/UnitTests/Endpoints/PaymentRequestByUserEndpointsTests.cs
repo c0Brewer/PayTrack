@@ -14,6 +14,7 @@ using Moq;
 using PayTrack.Application.Dto.Pagination;
 using PayTrack.Application.Dto.PaymentRequestByUser;
 using PayTrack.Application.Dto.User;
+using PayTrack.Application.Dto.Transaction;
 using PayTrack.Application.Services.Model;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -387,6 +388,138 @@ namespace PayTrack.Tests.UnitTests.Endpoints
         }
 
         [Fact]
+        public async Task Resubmit_ReturnsOkAndUsesCurrentUser()
+        {
+            var user = new User { Id = 7, Role = Role.RegularUser };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = user.Id,
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Review
+            };
+            _factory.AuthServiceMock.Setup(service => service.GetCurrentUser()).ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(service => service.ResubmitPaymentRequestByUserAsync(
+                    1,
+                    user.Id,
+                    It.IsAny<int>(),
+                    It.IsAny<decimal>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<PayoutType>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>(),
+                    It.IsAny<IFormFile?>()))
+                .ReturnsAsync(updated);
+
+            using var form = new MultipartFormDataContent
+            {
+                { new StringContent("2"), "Transaction.TeamId" },
+                { new StringContent("42"), "Transaction.Amount" },
+                { new StringContent("Travel"), "Transaction.PurposeOfPayment" },
+                { new StringContent("2026-05-01T00:00:00Z"), "Transaction.PaidAt" },
+                { new StringContent("INV-1"), "InvoiceNumber" },
+                { new StringContent("Corrected"), "Comment" },
+                { new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType" },
+                { new StringContent("0"), "BankAccountId" },
+                { new StringContent("Test Company"), "CreditorName" },
+                { new StringContent("2026-06-01T00:00:00Z"), "DueDate" }
+            };
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/resubmit", form);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, responseBody);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Review);
+            _factory.ServiceMock.Verify(service => service.ResubmitPaymentRequestByUserAsync(
+                1,
+                user.Id,
+                2,
+                42,
+                "Travel",
+                It.IsAny<DateTime>(),
+                "INV-1",
+                "Corrected",
+                PayoutType.NotYetPaid,
+                0,
+                "Test Company",
+                It.IsAny<DateTime?>(),
+                null));
+
+        }
+
+        [Fact]
+        public async Task Resubmit_ReturnsOk_WhenCommentIsEmpty()
+        {
+            var user = new User { Id = 7, Role = Role.RegularUser };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                UserId = user.Id,
+                InvoiceNumber = "INV-1",
+                Status = TransactionStatus.Review
+            };
+            _factory.AuthServiceMock.Setup(service => service.GetCurrentUser()).ReturnsAsync(user);
+            _factory.ServiceMock
+                .Setup(service => service.ResubmitPaymentRequestByUserAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<decimal>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<PayoutType>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<DateTime?>(),
+                    It.IsAny<IFormFile?>()))
+                .ReturnsAsync(updated);
+
+            using var form = new MultipartFormDataContent
+            {
+                { new StringContent("2"), "Transaction.TeamId" },
+                { new StringContent("42"), "Transaction.Amount" },
+                { new StringContent("Travel"), "Transaction.PurposeOfPayment" },
+                { new StringContent("2026-05-01T00:00:00Z"), "Transaction.PaidAt" },
+                { new StringContent("INV-1"), "InvoiceNumber" },
+                { new StringContent(((int)PayoutType.NotYetPaid).ToString()), "PayoutType" },
+                { new StringContent("0"), "BankAccountId" },
+                { new StringContent("Test Company"), "CreditorName" },
+                { new StringContent("2026-06-01T00:00:00Z"), "DueDate" }
+            };
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            var response = await client.PostAsync("api/v1/transaction/user/1/resubmit", form);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, responseBody);
+            _factory.ServiceMock.Verify(service => service.ResubmitPaymentRequestByUserAsync(
+                1,
+                user.Id,
+                2,
+                42,
+                "Travel",
+                It.IsAny<DateTime>(),
+                "INV-1",
+                null,
+                PayoutType.NotYetPaid,
+                0,
+                "Test Company",
+                It.IsAny<DateTime?>(),
+                null));
+        }
+
+        [Fact]
         public async Task DeletePaymentRequest_ReturnsNoContent()
         {
             _factory.AuthServiceMock
@@ -429,12 +562,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
             _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
             _factory.ServiceMock
-                .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "ok"))
+                .Setup(s => s.ApprovePaymentRequestByUserAsync(1, adminUser.Id, 5, "approved"))
                 .ReturnsAsync(updated);
 
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
-            var dto = new ApprovePaymentRequestByUserDto(5, "ok");
+            var dto = new ApprovePaymentRequestByUserDto(5, "approved");
 
             // Act
             var response = await client.PostAsJsonAsync("api/v1/transaction/user/1/approve", dto);
@@ -549,6 +682,35 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             result!.Status.Should().Be(TransactionStatus.ChangesRequested);
         }
 
+        [Fact]
+        public async Task UndoStatusChange_ReturnsOk()
+        {
+            // Arrange
+            var adminUser = new User { Id = 7, Role = Role.Admin };
+            var updated = new PaymentRequestByUser
+            {
+                Id = 1,
+                InvoiceNumber = "123",
+                Status = TransactionStatus.Submitted
+            };
+
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser()).ReturnsAsync(adminUser);
+            _factory.ServiceMock
+                .Setup(s => s.UndoLastStatusChangeAsync(1, adminUser.Id))
+                .ReturnsAsync(updated);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.PostAsync("api/v1/transaction/user/1/undo-status-change", null);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<PaymentRequestByUserDto>();
+            result!.Status.Should().Be(TransactionStatus.Submitted);
+        }
+
         // ----------------------------
         // FILE
         // ----------------------------
@@ -612,12 +774,51 @@ namespace PayTrack.Tests.UnitTests.Endpoints
             var result = await response.Content.ReadFromJsonAsync<ReceiptExtractionDto>();
             result.Should().BeEquivalentTo(extraction);
         }
+
+        [Fact]
+        public async Task ExportFinancialData_ReturnsFile()
+        {
+            // Arrange
+            var adminUser = new User { Id = 1, Role = Role.Admin };
+            _factory.AuthServiceMock.Setup(a => a.GetCurrentUser(It.IsAny<GetUserQueryById?>())).ReturnsAsync(adminUser);
+
+            var fileBytes = new byte[] { 1, 2, 3 };
+            _factory.FinancialExportServiceMock
+                .Setup(s => s.ExportFinancialDataAsync(It.Is<GetFinancialExportQuery>(q =>
+                    q.Format == FinancialExportFormat.Csv &&
+                    q.Source == FinancialExportSource.SubmittedInvoices &&
+                    q.TeamId == 7 &&
+                    q.CostCentreId == 4)))
+                .ReturnsAsync(new FinancialExportResult(
+                    fileBytes,
+                    "text/csv; charset=utf-8",
+                    "submitted-invoices-export.csv"));
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Admin");
+
+            // Act
+            var response = await client.GetAsync("api/v1/transaction/export?Format=Csv&Source=SubmittedInvoices&TeamId=7&CostCentreId=4");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
+            response.Content.Headers.ContentDisposition!.FileNameStar.Should().Be("submitted-invoices-export.csv");
+
+            var content = await response.Content.ReadAsByteArrayAsync();
+            content.Should().Equal(fileBytes);
+
+            _factory.FinancialExportServiceMock.Verify(
+                s => s.ExportFinancialDataAsync(It.IsAny<GetFinancialExportQuery>()),
+                Times.Once);
+        }
     }
     public class PaymentRequestByUserApiFactory : WebApplicationFactory<Program>
     {
         public Mock<IPaymentRequestByUserService> ServiceMock { get; } = new();
         public Mock<IAuthService> AuthServiceMock { get; } = new();
         public Mock<IReceiptExtractionService> ReceiptExtractionServiceMock { get; } = new();
+        public Mock<IFinancialExportService> FinancialExportServiceMock { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -656,6 +857,12 @@ namespace PayTrack.Tests.UnitTests.Endpoints
                 if (serviceDescriptorAuth is not null)
                     services.Remove(serviceDescriptorAuth);
 
+                var financialExportServiceDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IFinancialExportService));
+
+                if (financialExportServiceDescriptor is not null)
+                    services.Remove(financialExportServiceDescriptor);
+
                 var receiptExtractionServiceDescriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(IReceiptExtractionService));
 
@@ -665,6 +872,7 @@ namespace PayTrack.Tests.UnitTests.Endpoints
 
                 services.AddSingleton(ServiceMock.Object);
                 services.AddSingleton(AuthServiceMock.Object);
+                services.AddSingleton(FinancialExportServiceMock.Object);
                 services.AddSingleton(ReceiptExtractionServiceMock.Object);
             });
         }

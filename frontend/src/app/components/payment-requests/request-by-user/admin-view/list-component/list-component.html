@@ -2,15 +2,60 @@
   <table class="TUR-table invoice-table">
     <thead>
       <tr>
-        <th>Invoice Number</th>
-        <th>Submitted</th>
-        <th>Paid At</th>
-        <th>Amount</th>
-        <th>Purpose</th>
-        <th>Team</th>
-        <th>Payout Type</th>
-        <th>Status</th>
-        <th class="user-col">User</th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('InvoiceNumber')">
+            Invoice Number
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('InvoiceNumber') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Submitted')">
+            Submitted
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Submitted') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('PaidAt')">
+            Paid At
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('PaidAt') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Amount')">
+            Amount
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Purpose')">
+            Purpose
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Team')">
+            Team
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Team') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('PayoutType')">
+            Payout Type
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('PayoutType') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Status')">
+            Status
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+          </button>
+        </th>
+        <th class="sortable-col user-col">
+          <button type="button" class="sort-header" (click)="onSort('User')">
+            User
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('User') }}</span>
+          </button>
+        </th>
         <th>Duplicate</th>
         <th class="actions-col">Actions</th>
       </tr>

@@ -2,13 +2,17 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
+import { FinancialExportService } from '../../../../../services/financial-export/financial-export-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
 import {
   DuplicatePaymentRequestByUserDto,
+  FinancialExportFormat,
+  FinancialExportSource,
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
   TransactionStatus,
+  SortDirection,
 } from '../../../../../types/exporter';
 import { StatBoxComponent } from '../../../../general/boxes/stat-box-component/stat-box-component';
 import { PaginationComponent } from '../../../../general/pagination-component/pagination-component';
@@ -32,6 +36,7 @@ import { AdminInvoiceListComponent } from '../list-component/list-component';
 export class AdminInvoicesOverviewComponent implements OnInit {
   constructor(
     private readonly paymentRequestService: PaymentRequestByUserService,
+    private readonly financialExportService: FinancialExportService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -57,6 +62,10 @@ export class AdminInvoicesOverviewComponent implements OnInit {
   isDuplicateModalOpen: boolean = false;
   isDuplicateModalLoading: boolean = false;
   duplicateActionInvoiceId: number | null = null;
+  isExporting: boolean = false;
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
+  FinancialExportFormat = FinancialExportFormat;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -68,6 +77,8 @@ export class AdminInvoicesOverviewComponent implements OnInit {
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
@@ -130,6 +141,48 @@ export class AdminInvoicesOverviewComponent implements OnInit {
     this.filterOptions = { ...this.filterOptions, ...options };
     this.page = 0;
     this.loadInvoices();
+  }
+
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onUpdateLimit(newLimit: number): void {
+    this.limit = newLimit;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  exportFinancialData(format: FinancialExportFormat): void {
+    this.isExporting = true;
+
+    this.financialExportService
+      .downloadFinancialData(
+        {
+          ...this.filterOptions,
+          Source: FinancialExportSource.SubmittedInvoices,
+          Limit: undefined,
+          Offset: undefined,
+          SortBy: this.sortBy ?? undefined,
+          SortDirection: this.sortDirection ?? undefined,
+        },
+        format,
+      )
+      .subscribe({
+        next: () => {
+          this.isExporting = false;
+          this.notificationService.showSuccess('Financial export downloaded.');
+          this.cdr.markForCheck();
+        },
+        error: (err: Error) => {
+          this.isExporting = false;
+          this.notificationService.showError(err.message ?? 'Financial export failed.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   onOpenDetail(invoice: PaymentRequestByUserDto): void {

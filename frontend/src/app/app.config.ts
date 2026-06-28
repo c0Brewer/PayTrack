@@ -14,6 +14,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { initClientInterceptors } from './client';
+import { AppUpdateService } from './services/app-update/app-update-service';
 import { AuthService } from './services/auth/auth-service';
 
 registerLocaleData(localeDe);
@@ -32,6 +33,10 @@ export const appConfig: ApplicationConfig = {
       const authService = inject(AuthService);
       const router = inject(Router);
       return initClientInterceptors(() => authService.logout(), router);
+    }),
+    provideAppInitializer(() => {
+      const appUpdateService = inject(AppUpdateService);
+      appUpdateService.init();
     }),
   ],
 };

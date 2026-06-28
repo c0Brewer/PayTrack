@@ -2,6 +2,7 @@
 
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using PayTrack.Application.Dto.Season;
 using PayTrack.Application.Exceptions;
 using PayTrack.Data;
 using PayTrack.Data.Entities;
@@ -35,8 +36,30 @@ namespace PayTrack.Tests.UnitTests.Repositories
             // Assert
             result.Should().NotBeNull();
             result.Name.Should().Be("2026");
+            result.IsActive.Should().BeTrue();
             var dbEntity = await context.Seasons.FindAsync(result.Id);
             dbEntity.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithIncludeInactive_ShouldReturnInactiveSeasons()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_WithInactive");
+            context.Seasons.AddRange(
+                new Season { Name = "2026" },
+                new Season { Name = "2025", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { IncludeInactive = true });
+
+            // Assert
+            result.seasons.Should().HaveCount(2);
+            result.totalCount.Should().Be(2);
+            result.seasons.Select(s => s.Name).Should().Equal("2025", "2026");
         }
 
         [Fact]
@@ -56,6 +79,44 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
+        public async Task AddAsync_ShouldThrowInvalidState_WhenNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddSeason_DuplicateName");
+            context.Seasons.Add(new Season { Name = "2026" });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.AddAsync(new Season { Name = "2026" }));
+
+            // Assert
+            exception.Message.Should().Be("season name already taken");
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrowInvalidState_WhenInactiveNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddSeason_InactiveDuplicateName");
+            var inactiveSeason = new Season { Name = "2026", IsActive = false };
+            context.Seasons.Add(inactiveSeason);
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.AddAsync(new Season { Name = "2026" }));
+
+            // Assert
+            exception.Message.Should().Be("season name already taken");
+            inactiveSeason.IsActive.Should().BeFalse();
+        }
+
+        [Fact]
         public async Task GetAllAsync_ShouldReturnAllSeasonsOrderedByName()
         {
             // Arrange
@@ -63,7 +124,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             context.Seasons.AddRange(
                 new Season { Name = "2027" },
                 new Season { Name = "2025" },
-                new Season { Name = "2026" });
+                new Season { Name = "2026" },
+                new Season { Name = "2024", IsActive = false });
             await context.SaveChangesAsync();
 
             var repo = new SeasonRepository(context);
@@ -72,8 +134,52 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.GetAllAsync();
 
             // Assert
-            result.Should().HaveCount(3);
-            result.Select(s => s.Name).Should().Equal("2025", "2026", "2027");
+            result.seasons.Should().HaveCount(3);
+            result.totalCount.Should().Be(3);
+            result.seasons.Select(s => s.Name).Should().Equal("2025", "2026", "2027");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithPagination_ShouldReturnPageAndTotalCount()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_Paginated");
+            context.Seasons.AddRange(
+                new Season { Name = "2024" },
+                new Season { Name = "2025" },
+                new Season { Name = "2026" });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { Limit = 1, Offset = 1 });
+
+            // Assert
+            result.seasons.Should().ContainSingle();
+            result.totalCount.Should().Be(3);
+            result.seasons[0].Name.Should().Be("2025");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithInactiveFilter_ShouldReturnOnlyInactiveSeasons()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetAllSeasons_InactiveOnly");
+            context.Seasons.AddRange(
+                new Season { Name = "2026" },
+                new Season { Name = "2025", IsActive = false });
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.GetAllAsync(new GetSeasonQuery { IsActive = false });
+
+            // Assert
+            result.seasons.Should().ContainSingle();
+            result.totalCount.Should().Be(1);
+            result.seasons[0].Name.Should().Be("2025");
         }
 
         [Fact]
@@ -107,8 +213,8 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var result = await repo.GetAllAsync();
 
             // Assert
-            result.Should().ContainSingle();
-            result[0].Budgets.Should().ContainSingle(b => b.Name == "Season budget");
+            result.seasons.Should().ContainSingle();
+            result.seasons[0].Budgets.Should().ContainSingle(b => b.Name == "Season budget");
         }
 
         [Fact]
@@ -156,12 +262,32 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new SeasonRepository(context);
 
             // Act
-            var result = await repo.UpdateAsync(entity.Id, "2027");
+            var result = await repo.UpdateAsync(entity.Id, "2027", null);
 
             // Assert
             result.Name.Should().Be("2027");
             var dbEntity = await context.Seasons.FindAsync(entity.Id);
             dbEntity!.Name.Should().Be("2027");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldThrowInvalidState_WhenNameAlreadyExists()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateSeason_DuplicateName");
+            var first = new Season { Name = "2026" };
+            var second = new Season { Name = "2027" };
+            context.Seasons.AddRange(first, second);
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidStateException>(
+                async () => await repo.UpdateAsync(second.Id, "2026", null));
+
+            // Assert
+            exception.Message.Should().Be("season name already taken");
         }
 
         [Fact]
@@ -176,10 +302,30 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new SeasonRepository(failingContext);
 
             // Act
-            var result = await repo.UpdateAsync(entity.Id, null);
+            var result = await repo.UpdateAsync(entity.Id, null, null);
 
             // Assert
             result.Name.Should().Be("2026");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ShouldUpdateIsActive()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateSeason_IsActive");
+            var entity = new Season { Name = "2026" };
+            context.Seasons.Add(entity);
+            await context.SaveChangesAsync();
+
+            var repo = new SeasonRepository(context);
+
+            // Act
+            var result = await repo.UpdateAsync(entity.Id, null, false);
+
+            // Assert
+            result.IsActive.Should().BeFalse();
+            var dbEntity = await context.Seasons.FindAsync(entity.Id);
+            dbEntity!.IsActive.Should().BeFalse();
         }
 
         [Fact]
@@ -191,7 +337,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(
-                async () => await repo.UpdateAsync(999, "2027"));
+                async () => await repo.UpdateAsync(999, "2027", null));
         }
 
         [Fact]
@@ -207,7 +353,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
 
             // Act & Assert
             await Assert.ThrowsAsync<InternalErrorException>(
-                async () => await repo.UpdateAsync(entity.Id, "2027"));
+                async () => await repo.UpdateAsync(entity.Id, "2027", null));
         }
 
         [Fact]
@@ -230,7 +376,7 @@ namespace PayTrack.Tests.UnitTests.Repositories
         }
 
         [Fact]
-        public async Task DeleteAsync_ShouldThrowInvalidState_WhenBudgetsExist()
+        public async Task DeleteAsync_ShouldDeactivateSeason_WhenBudgetsExist()
         {
             // Arrange
             await using var context = GetInMemoryDbContext("DeleteSeason_WithBudgets");
@@ -257,13 +403,14 @@ namespace PayTrack.Tests.UnitTests.Repositories
             var repo = new SeasonRepository(context);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidStateException>(
-                async () => await repo.DeleteAsync(season.Id));
+            var result = await repo.DeleteAsync(season.Id);
 
             // Assert
-            exception.Message.Should().Contain("budgets");
+            result.Should().NotBeNull();
+            result!.IsActive.Should().BeFalse();
             var dbEntity = await context.Seasons.FindAsync(season.Id);
             dbEntity.Should().NotBeNull();
+            dbEntity!.IsActive.Should().BeFalse();
         }
 
         [Fact]

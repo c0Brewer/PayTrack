@@ -7,6 +7,7 @@ data:
   ASPNETCORE_ENVIRONMENT: Production
   CORS__Origins: https://__HOST__
   Migrations__Auto: "true"
+  GoogleDrive__Enabled: "true"
   POSTGRES_HOST: paytrack-postgres
   POSTGRES_PORT: "5432"
 ---
@@ -133,6 +134,11 @@ spec:
                 configMapKeyRef:
                   name: paytrack-config
                   key: Migrations__Auto
+            - name: GoogleDrive__Enabled
+              valueFrom:
+                configMapKeyRef:
+                  name: paytrack-config
+                  key: GoogleDrive__Enabled
             - name: ConnectionStrings__Default
               valueFrom:
                 secretKeyRef:
@@ -153,15 +159,55 @@ spec:
                 secretKeyRef:
                   name: paytrack-secrets
                   key: GOOGLE_CLIENT_SECRET
+            - name: Email__SmtpUser
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: EMAIL_SMTP_USER
+            - name: Email__SmtpPassword
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: EMAIL_SMTP_PASSWORD
+            - name: Slack__BotToken
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: SLACK_BOT_TOKEN
+            - name: GoogleDrive__RootFolderId
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: GOOGLE_DRIVE_ROOT_FOLDER_ID
+            - name: GoogleDrive__ServiceAccountKeyBase64
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY_BASE64
+            - name: PushNotifications__PublicKey
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_PUBLIC_KEY
+            - name: PushNotifications__PrivateKey
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_PRIVATE_KEY
+            - name: PushNotifications__Subject
+              valueFrom:
+                secretKeyRef:
+                  name: paytrack-secrets
+                  key: PUSH_VAPID_SUBJECT
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
-              ephemeral-storage: "100Mi"
-            limits:
               memory: "512Mi"
+              cpu: "100m"
+              ephemeral-storage: "200Mi"
+            limits:
+              memory: "1Gi"
               cpu: "500m"
-              ephemeral-storage: "250Mi"
+              ephemeral-storage: "500Mi"
           volumeMounts:
             - name: backend-uploads
               mountPath: /app/uploads
@@ -211,6 +257,8 @@ kind: Ingress
 metadata:
   name: paytrack
   namespace: __NAMESPACE__
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
 spec:
   rules:
     - host: __HOST__

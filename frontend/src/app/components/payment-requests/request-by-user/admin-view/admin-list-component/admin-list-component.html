@@ -1,0 +1,59 @@
+<div class="requests">
+  <div class="list-header">
+    <h2>Submitted Invoices</h2>
+
+    <div class="header-actions">
+      <div class="export-actions">
+        <button type="button" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Csv)">
+          Export CSV
+        </button>
+        <button type="button" [disabled]="isExporting" (click)="exportFinancialData(FinancialExportFormat.Pdf)">
+          Export PDF
+        </button>
+      </div>
+      <button type="button" (click)="navigateBankStatementUpload()">
+        Upload Bank Statement
+      </button>
+    </div>
+  </div>
+
+  <app-invoice-filter-component
+    [limitSelection]="limitSelection"
+    [limit]="limit"
+    [showUserFilter]="true"
+    (updateFilter)="updateFilterOptions($event)"
+    (limitChange)="onUpdateLimit($event)"
+  ></app-invoice-filter-component>
+
+  <app-invoice-list-component
+    [invoices]="invoices"
+    [showUserNameColumn]="true"
+    [showDuplicateIndicator]="true"
+    [sortBy]="sortBy"
+    [sortDirection]="sortDirection"
+    (openDetail)="onOpenDetail($event)"
+    (openDuplicates)="onOpenDuplicates($event)"
+    (sortChange)="onSortChange($event)"
+  ></app-invoice-list-component>
+
+  <app-duplicate-list-modal-component
+    [visible]="isDuplicateModalOpen"
+    [loading]="isDuplicateModalLoading"
+    [actionInvoiceId]="duplicateActionInvoiceId"
+    [sourceInvoice]="selectedDuplicateInvoice"
+    [duplicates]="duplicateCandidates"
+    (closeModal)="onCloseDuplicateModal()"
+    (openDetail)="onOpenDuplicateDetail($event)"
+    (deleteInvoice)="onDeleteDuplicateInvoice($event)"
+    (dismissDuplicate)="onDismissDuplicate($event)"
+  ></app-duplicate-list-modal-component>
+
+  <app-pagination-component
+    [hasNext]="hasNext"
+    [hasPrev]="hasPrev"
+    [currentPage]="page"
+    [maxPage]="getTotalPages()"
+    (next)="nextPage()"
+    (prev)="previousPage()"
+  ></app-pagination-component>
+</div>

@@ -130,6 +130,21 @@
   gap: v.$size-xs;
 }
 
+.duplicate-list__confirm-delete {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: v.$size-xs;
+  display: grid;
+  gap: v.$size-xs;
+  padding: v.$size-xs;
+
+  p {
+    color: #991b1b;
+    font-size: v.$font-xs;
+    margin: 0;
+  }
+}
+
 .duplicate-list__button {
   padding: v.$size-xxs v.$size-s;
   border: 1px solid v.$border-color;

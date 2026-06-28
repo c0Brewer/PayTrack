@@ -15,6 +15,7 @@
         [(ngModel)]="team.name"
         [class.input-error]="hasFieldError('name')"
         (blur)="onFieldBlur('name')"
+        placeholder="Electronics..."
       />
       @if (hasFieldError('name')) {
         <span class="field-error">{{ getFieldError('name') }}</span>
@@ -27,6 +28,7 @@
         [(ngModel)]="team.description"
         [class.input-error]="hasFieldError('description')"
         (blur)="onFieldBlur('description')"
+        placeholder="Team for managing..."
       />
       @if (hasFieldError('description')) {
         <span class="field-error">{{ getFieldError('description') }}</span>
@@ -162,7 +164,9 @@
             >
               <option [ngValue]="0" disabled>Select season</option>
               @for (season of seasons; track season.id) {
-                <option [ngValue]="season.id">{{ season.name }}</option>
+                <option [ngValue]="season.id" [disabled]="season.isActive === false">
+                  {{ getSeasonOptionLabel(season) }}
+                </option>
               }
             </select>
             @if (hasBudgetFieldError('seasonId')) {
@@ -303,18 +307,18 @@
       @if (!isCreating) {
         <button
           type="button"
-          class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1"
+          class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1 p-2"
           (click)="onDelete()"
         >
           <span class="material-symbols-outlined">delete</span>
           Delete
         </button>
       }
-      <button class="btn btn-secondary d-inline-flex align-items-center gap-1" (click)="onClose()">
+      <button class="btn btn-secondary d-inline-flex align-items-center gap-1 p-2" (click)="onClose()">
         <span class="material-symbols-outlined">cancel</span>
         Cancel
       </button>
-      <button class="btn btn-primary d-inline-flex align-items-center gap-1" (click)="onSave()">
+      <button class="btn btn-primary d-inline-flex align-items-center gap-1 p-2" (click)="onSave()">
         <span class="material-symbols-outlined">save</span>
         {{ isCreating ? 'Create' : 'Save' }}
       </button>

@@ -18,7 +18,8 @@ namespace PayTrack.Application.Services.Implementation
         IBudgetService _budgetService,
         INotificationDispatchService _notifications,
         ISystemSettingService _systemSettings,
-        ILogger<PaymentRequestByTeamService> _logger) : IPaymentRequestByTeamService
+        ILogger<PaymentRequestByTeamService> _logger,
+        IPushNotificationService? _pushNotifications = null) : IPaymentRequestByTeamService
     {
         /// <summary>
         /// Repository for PaymentRequestByTeams.
@@ -30,6 +31,7 @@ namespace PayTrack.Application.Services.Implementation
         private readonly INotificationDispatchService notifications = _notifications;
         private readonly ISystemSettingService systemSettings = _systemSettings;
         private readonly ILogger<PaymentRequestByTeamService> logger = _logger;
+        private readonly IPushNotificationService? pushNotifications = _pushNotifications;
 
         /// <inheritdoc/>
         public async Task<(List<PaymentRequestByTeam> paymentRequestByTeam, int totalCount)> GetAllAsync(
@@ -93,6 +95,7 @@ namespace PayTrack.Application.Services.Implementation
 
             var sendCreationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationEmail, true);
             var sendCreationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationSlack, false);
+            var sendCreationPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsCreationPush, true);
 
             if (sendCreationEmail)
             {
@@ -122,7 +125,7 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     var slackMsg =
                         $"New Payment Request: {purposeOfPayment}\n" +
-                        $"Amount: {amount:C2} · Due: {dueDate:yyyy-MM-dd}";
+                        $"Amount: {amount:C2} - Due: {dueDate:yyyy-MM-dd}";
 
                     // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(userToAssignTo.Email, slackMsg);
@@ -131,6 +134,16 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     this.logger.LogError(ex, "Failed to send new-payment-request Slack notification to {Email}.", userToAssignTo.Email);
                 }
+            }
+
+            if (sendCreationPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    created,
+                    userToAssignTo.Id,
+                    "New payment request",
+                    $"A new payment request was assigned to you: {purposeOfPayment}",
+                    $"/my-team-requests/{created.Id}");
             }
 
             return created;
@@ -202,6 +215,7 @@ namespace PayTrack.Application.Services.Implementation
 
             var sendConfirmationEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationEmail, true);
             var sendConfirmationSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationSlack, false);
+            var sendConfirmationPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsConfirmationPush, true);
 
             if (sendConfirmationEmail)
             {
@@ -231,7 +245,7 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     var slackMsg =
                         $"Payment Confirmed: {transaction.PurposeOfPayment}\n" +
-                        $"Amount: {transaction.Amount:C2} · Paid on: {transaction.PaidAt:yyyy-MM-dd}";
+                        $"Amount: {transaction.Amount:C2} - Paid on: {transaction.PaidAt:yyyy-MM-dd}";
 
                     // NotificationDispatchService resolves the Slack user by email address.
                     await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
@@ -240,6 +254,16 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     this.logger.LogError(ex, "Failed to send payment-confirmed Slack notification to {Email}.", transaction.User.Email);
                 }
+            }
+
+            if (sendConfirmationPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    result,
+                    transaction.UserId,
+                    "Payment request paid",
+                    $"Your payment request has been marked as paid: {transaction.PurposeOfPayment}",
+                    $"/my-team-requests/{transaction.Id}");
             }
 
             return result;
@@ -267,6 +291,7 @@ namespace PayTrack.Application.Services.Implementation
             var normalizedReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
             var sendDeletionEmail = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionEmail, true);
             var sendDeletionSlack = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionSlack, false);
+            var sendDeletionPush = await this.systemSettings.GetBoolSettingAsync(SystemSettingKeys.NotificationsDeletionPush, true);
 
             if (sendDeletionEmail)
             {
@@ -297,7 +322,7 @@ namespace PayTrack.Application.Services.Implementation
                     var slackMsg =
                         $"Payment Request Deleted: {transaction.PurposeOfPayment}\n" +
                         $"Amount: {transaction.Amount:C2}" +
-                        (normalizedReason is not null ? $" · Reason: {normalizedReason}" : string.Empty);
+                        (normalizedReason is not null ? $" - Reason: {normalizedReason}" : string.Empty);
 
                     await this.notifications.SendSlackAsync(transaction.User.Email, slackMsg);
                 }
@@ -305,6 +330,16 @@ namespace PayTrack.Application.Services.Implementation
                 {
                     this.logger.LogError(ex, "Failed to send payment-request-deleted Slack notification to {Email}.", transaction.User.Email);
                 }
+            }
+
+            if (sendDeletionPush)
+            {
+                await this.SendTeamRequestPushAsync(
+                    transaction,
+                    transaction.UserId,
+                    "Payment request deleted",
+                    $"Your payment request was deleted: {transaction.PurposeOfPayment}",
+                    "/my-team-requests");
             }
         }
 
@@ -322,6 +357,24 @@ namespace PayTrack.Application.Services.Implementation
 
                 _ => false
             };
+        }
+
+        private async Task SendTeamRequestPushAsync(PaymentRequestByTeam transaction, int userId, string title, string body, string url)
+        {
+            if (this.pushNotifications is null)
+            {
+                return;
+            }
+
+            var purpose = string.IsNullOrWhiteSpace(transaction.PurposeOfPayment)
+                ? $"Payment request #{transaction.Id}"
+                : transaction.PurposeOfPayment.Trim();
+
+            await this.pushNotifications.SendWorkflowStatusChangedAsync(
+                userId,
+                title,
+                $"{body}\nAmount: {transaction.Amount:C2}\n{purpose}",
+                url);
         }
     }
 }

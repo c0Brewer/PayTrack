@@ -1,67 +1,73 @@
-<table class="user-table TUR-table ">
-  <thead>
-    <tr>
-      <th class="user-col">User</th>
-      <th class="role-col">Role</th>
-      <th class="team-col">Team</th>
-      <th class="status-col">Status</th>
-      <th class="actions-col">Actions</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    @for (u of user; track u.id) {
+<div class="user-table-wrapper">
+  <table class="user-table TUR-table ">
+    <thead>
       <tr>
-        <td class="user-col" data-label="User">
-          <div class="user-summary">
-            <span class="name">{{ u.name }}</span>
-            <span class="email">{{ u.email }}</span>
-          </div>
-        </td>
-
-        <td class="role-col" data-label="Role">
-          @if (u.role == regular_user) {
-            <span class="table-badge regular_user role">{{ roleToText(u.role) }}</span>
-          } @else if (u.role == team_lead) {
-            <span class="table-badge team_lead role">{{ roleToText(u.role) }}</span>
-          } @else if (u.role == admin) {
-            <span class="table-badge admin role">{{ roleToText(u.role) }}</span>
-          }
-        </td>
-
-        <td class="team-col" data-label="Team">
-          @if (u.team != null && u.team.name) {
-            <div class="team">
-              <span class="team-color" [style.background]="u.team.displayColor"></span>
-              <span>{{ u.team.name }}</span>
-            </div>
-          } @else {
-            <span class="no-team">No Team</span>
-          }
-        </td>
-
-        <td class="status-col" data-label="Status">
-          <button
-            type="button"
-            class="status-btn"
-            [class.active]="u.isActive"
-            [class.inactive]="!u.isActive"
-            [disabled]="isActiveStatusPending(u)"
-            (click)="onToggleActive(u)"
-            [title]="u.isActive ? 'Click to deactivate user' : 'Click to activate user'"
-          >
-            <span class="status-dot" aria-hidden="true"></span>
-            {{ u.isActive ? 'Active' : 'Inactive' }}
-          </button>
-        </td>
-
-        <td class="actions-col" data-label="Actions">
-          <button type="button" class="btn btn-secondary icon-hover-btn" (click)="onOpenEditUser(u)">
-            <span class="material-symbols-outlined">edit</span>
-            <span class="btn-text">Edit</span>
-          </button>
-        </td>
+        <th class="user-col">User</th>
+        <th class="role-col">Role</th>
+        <th class="team-col">Team</th>
+        <th class="status-col">Status</th>
+        <th class="actions-col">Actions</th>
       </tr>
-    }
-  </tbody>
-</table>
+    </thead>
+
+    <tbody>
+      @for (u of user; track u.id) {
+        <tr>
+          <td class="user-col" data-label="User">
+            <div class="user-summary">
+              <span class="name">{{ u.name }}</span>
+              <span class="email">{{ u.email }}</span>
+            </div>
+          </td>
+
+          <td class="role-col" data-label="Role">
+            @if (u.role == regular_user) {
+              <span class="table-badge regular_user role">{{ roleToText(u.role) }}</span>
+            } @else if (u.role == team_lead) {
+              <span class="table-badge team_lead role">{{ roleToText(u.role) }}</span>
+            } @else if (u.role == admin) {
+              <span class="table-badge admin role">{{ roleToText(u.role) }}</span>
+            }
+          </td>
+
+          <td class="team-col" data-label="Team">
+            @if (u.team != null && u.team.name) {
+              <div class="team">
+                <span class="team-color" [style.background]="u.team.displayColor"></span>
+                <span>{{ u.team.name }}</span>
+              </div>
+            } @else {
+              <span class="no-team">No Team</span>
+            }
+          </td>
+
+          <td class="status-col" data-label="Status">
+            <button
+              type="button"
+              class="status-btn"
+              [class.active]="u.isActive"
+              [class.inactive]="!u.isActive"
+              [disabled]="isActiveStatusPending(u)"
+              (click)="onToggleActive(u)"
+              [title]="u.isActive ? 'Click to deactivate user' : 'Click to activate user'"
+            >
+              <span class="status-dot" aria-hidden="true"></span>
+              {{ u.isActive ? 'Active' : 'Inactive' }}
+            </button>
+          </td>
+
+          <td class="actions-col" data-label="Actions">
+            <button
+              type="button"
+              class="btn btn-secondary icon-hover-btn"
+              (click)="onOpenEditUser(u)"
+            >
+              <span class="material-symbols-outlined">edit</span>
+              <span class="btn-text">Edit</span>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

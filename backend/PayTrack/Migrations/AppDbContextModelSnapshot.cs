@@ -104,7 +104,7 @@ namespace PayTrack.Migrations
 
                     b.HasIndex("SeasonId");
 
-                    b.HasIndex("TeamId", "CostCentreId", "SeasonId", "PeriodStart", "PeriodEnd")
+                    b.HasIndex("TeamId", "CostCentreId", "SeasonId", "Type", "PeriodStart", "PeriodEnd", "Name")
                         .IsUnique();
 
                     b.ToTable("Budgets");
@@ -169,6 +169,51 @@ namespace PayTrack.Migrations
                     b.ToTable("DismissedDuplicatePaymentRequestsByUser");
                 });
 
+            modelBuilder.Entity("PayTrack.Data.Entities.PushSubscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "IsEnabled");
+
+                    b.ToTable("PushSubscriptions");
+                });
+
             modelBuilder.Entity("PayTrack.Data.Entities.Season", b =>
                 {
                     b.Property<int>("Id")
@@ -176,6 +221,9 @@ namespace PayTrack.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -528,6 +576,17 @@ namespace PayTrack.Migrations
                     b.Navigation("SecondPaymentRequestByUser");
                 });
 
+            modelBuilder.Entity("PayTrack.Data.Entities.PushSubscription", b =>
+                {
+                    b.HasOne("PayTrack.Data.Entities.User", "User")
+                        .WithMany("PushSubscriptions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PayTrack.Data.Entities.SystemSetting", b =>
                 {
                     b.HasOne("PayTrack.Data.Entities.User", "LastModifiedByUser")
@@ -646,6 +705,8 @@ namespace PayTrack.Migrations
             modelBuilder.Entity("PayTrack.Data.Entities.User", b =>
                 {
                     b.Navigation("BankAccounts");
+
+                    b.Navigation("PushSubscriptions");
 
                     b.Navigation("RequestedByTeamPayments");
 

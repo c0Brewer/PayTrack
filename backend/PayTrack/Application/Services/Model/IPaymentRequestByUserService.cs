@@ -100,6 +100,38 @@ namespace PayTrack.Application.Services.Model
         Task<PaymentRequestByUser> UpdatePaymentRequestByUserAsync(int id, int? teamId = null, decimal? amount = null, string? purposeOfPayment = null, DateTime? paidAt = null, string? invoiceNumber = null, string? comment = null, PayoutType? payoutType = null, int? bankAccountId = null);
 
         /// <summary>
+        /// Updates an invoice after changes were requested and returns it to finance review.
+        /// </summary>
+        /// <param name="id">The invoice id.</param>
+        /// <param name="userId">The id of the user resubmitting the invoice.</param>
+        /// <param name="teamId">The selected team id.</param>
+        /// <param name="amount">The updated amount.</param>
+        /// <param name="purposeOfPayment">The updated purpose of payment.</param>
+        /// <param name="paidAt">The updated invoice date.</param>
+        /// <param name="invoiceNumber">The updated invoice number.</param>
+        /// <param name="comment">The updated optional comment.</param>
+        /// <param name="payoutType">The updated payout type.</param>
+        /// <param name="bankAccountId">The updated optional bank account id.</param>
+        /// <param name="creditorName">The updated optional creditor name.</param>
+        /// <param name="dueDate">The updated optional due date.</param>
+        /// <param name="receipt">An optional replacement receipt.</param>
+        /// <returns>The updated invoice in review.</returns>
+        Task<PaymentRequestByUser> ResubmitPaymentRequestByUserAsync(
+            int id,
+            int userId,
+            int teamId,
+            decimal amount,
+            string purposeOfPayment,
+            DateTime paidAt,
+            string invoiceNumber,
+            string? comment,
+            PayoutType payoutType,
+            int? bankAccountId,
+            string? creditorName,
+            DateTime? dueDate,
+            IFormFile? receipt);
+
+        /// <summary>
         /// Deletes a PaymentRequestByUser.
         /// </summary>
         /// <param name="id">Id of the PaymentRequestByUser to delete.</param>
@@ -135,13 +167,13 @@ namespace PayTrack.Application.Services.Model
         /// </summary>
         /// <param name="id">The id of the PaymentRequestByUser to approve.</param>
         /// <param name="changedById">Id of the user who changed the status.</param>
-        /// <param name="costCentreId">Cost centre assigned by finance.</param>
+        /// <param name="budgetId">Budget assigned by finance.</param>
         /// <param name="reason">Optional reason or comment.</param>
         /// <returns>Instance of updated PaymentRequestByUser object.</returns>
         Task<PaymentRequestByUser> ApprovePaymentRequestByUserAsync(
             int id,
             int changedById,
-            int costCentreId,
+            int budgetId,
             string? reason);
 
         /// <summary>
@@ -167,6 +199,16 @@ namespace PayTrack.Application.Services.Model
             int id,
             int changedById,
             string reason);
+
+        /// <summary>
+        /// Undoes the latest status change and stores a compensating status history entry.
+        /// </summary>
+        /// <param name="id">The id of the PaymentRequestByUser to update.</param>
+        /// <param name="changedById">Id of the user who undid the status change.</param>
+        /// <returns>Instance of updated PaymentRequestByUser object.</returns>
+        Task<PaymentRequestByUser> UndoLastStatusChangeAsync(
+            int id,
+            int changedById);
 
         /// <summary>
         /// Validates that the supplied query parameters are permissible for the current user's role.

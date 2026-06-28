@@ -7,11 +7,12 @@ import { CostCentreService } from '../../../services/cost-centre/cost-centre-ser
 import { NotificationService } from '../../../services/notification/notification-service';
 import { TeamService } from '../../../services/team/team-service';
 import { BudgetDto, BudgetType, CostCentreDto, TeamDto } from '../../../types/exporter';
+import { BoxComponent } from '../../general/boxes/box-component/box-component';
 import { DetailComponent } from '../../general/detail-component/detail-component';
 
 @Component({
   selector: 'app-team-detail-component',
-  imports: [DetailComponent, EuroPipe, RouterLink, SlicePipe],
+  imports: [BoxComponent, DetailComponent, EuroPipe, RouterLink, SlicePipe],
   templateUrl: './team-detail-component.html',
   styleUrl: './team-detail-component.scss',
 })

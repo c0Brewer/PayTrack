@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { take } from 'rxjs';
 
 import { EuroPipe } from '../../../../../pipes/euro.pipe';
 import { AuthService } from '../../../../../services/auth/auth-service';
@@ -8,6 +9,8 @@ import { PaymentRequestByUserService } from '../../../../../services/payment-req
 import {
   GetPaymentRequestsByUserOptions,
   PaymentRequestByUserDto,
+  PayoutType,
+  SortDirection,
   TransactionStatus,
   UserDto,
 } from '../../../../../types/exporter';
@@ -33,6 +36,7 @@ export class UserInvoicesOverviewComponent implements OnInit {
     private readonly paymentRequestService: PaymentRequestByUserService,
     private readonly authService: AuthService,
     private readonly notificationService: NotificationService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
@@ -51,10 +55,23 @@ export class UserInvoicesOverviewComponent implements OnInit {
   filterOptions: GetPaymentRequestsByUserOptions = {
     IncludeTeam: true,
   };
+  sortBy: string | null = null;
+  sortDirection: SortDirection | null = null;
 
   private currentUser: UserDto | null = null;
 
   ngOnInit(): void {
+    this.authService
+      .getCurrentUser()
+      .pipe(take(1))
+      .subscribe((user) => {
+        this.currentUser = user;
+        this.filterOptions = {
+          IncludeTeam: true,
+          ...this.getFilterOptionsFromQueryParams(),
+        };
+        this.loadInvoices();
+      });
     void this.loadCurrentUserAndInvoices();
   }
 
@@ -80,6 +97,8 @@ export class UserInvoicesOverviewComponent implements OnInit {
       IncludeTeam: true,
       Limit: this.limit,
       Offset: this.page * this.limit,
+      SortBy: this.sortBy ?? undefined,
+      SortDirection: this.sortDirection ?? undefined,
     };
 
     this.paymentRequestService.getPaymentRequestsByUser(query).subscribe({
@@ -147,6 +166,19 @@ export class UserInvoicesOverviewComponent implements OnInit {
     this.loadInvoices();
   }
 
+  onSortChange(sort: { sortBy: string; sortDirection: SortDirection }): void {
+    this.sortBy = sort.sortBy;
+    this.sortDirection = sort.sortDirection;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
+  onUpdateLimit(newLimit: number): void {
+    this.limit = newLimit;
+    this.page = 0;
+    this.loadInvoices();
+  }
+
   onOpenDetail(invoice: PaymentRequestByUserDto): void {
     this.router.navigate(['/my-invoices', invoice.id]);
   }
@@ -166,5 +198,36 @@ export class UserInvoicesOverviewComponent implements OnInit {
       this.page--;
       this.loadInvoices();
     }
+  }
+
+  private getFilterOptionsFromQueryParams(): GetPaymentRequestsByUserOptions {
+    const queryParams = this.route.snapshot.queryParams;
+
+    return {
+      InvoiceNumber: this.getStringQueryParam(queryParams['invoiceNumber']),
+      Status: this.getNumberQueryParam(queryParams['status']) as TransactionStatus | undefined,
+      MinCreatedAt: this.getStringQueryParam(queryParams['minCreatedAt']),
+      MaxCreatedAt: this.getStringQueryParam(queryParams['maxCreatedAt']),
+      MinPaidAt: this.getStringQueryParam(queryParams['minPaidAt']),
+      MaxPaidAt: this.getStringQueryParam(queryParams['maxPaidAt']),
+      MinAmount: this.getNumberQueryParam(queryParams['minAmount']),
+      MaxAmount: this.getNumberQueryParam(queryParams['maxAmount']),
+      PurposeOfPayment: this.getStringQueryParam(queryParams['purposeOfPayment']),
+      TeamId: this.getNumberQueryParam(queryParams['teamId']),
+      PayoutType: this.getNumberQueryParam(queryParams['payoutType']) as PayoutType | undefined,
+    };
+  }
+
+  private getStringQueryParam(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() !== '' ? value : undefined;
+  }
+
+  private getNumberQueryParam(value: unknown): number | undefined {
+    if (typeof value !== 'string' || value.trim() === '') {
+      return undefined;
+    }
+
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) ? parsedValue : undefined;
   }
 }

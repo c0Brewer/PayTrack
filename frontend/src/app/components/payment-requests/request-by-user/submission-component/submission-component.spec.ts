@@ -1,19 +1,22 @@
 //AI helped with the test cases
 
 import { TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
 import { BankAccountService } from '../../../../services/bank-account/bank-account-service';
 import { NotificationService } from '../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   CreatePaymentRequestByUserDto,
   DuplicatePaymentRequestByUserDto,
+  PaymentRequestByUserDto,
   PayoutType,
+  TransactionStatus,
 } from '../../../../types/exporter';
 
 import { ReceiptSubmitComponent } from './submission-component';
@@ -23,8 +26,13 @@ describe('ReceiptSubmitComponent', () => {
 
   const paymentServiceMock = {
     createPaymentRequestByUser: vi.fn(),
+    resubmitPaymentRequestByUser: vi.fn(),
     getDuplicatePaymentRequestsByUser: vi.fn(),
     extractReceiptData: vi.fn(),
+  };
+
+  const systemSettingServiceMock = {
+    getPublicInvoiceSubmissionSettings: vi.fn(),
   };
 
   const teamServiceMock = {
@@ -42,6 +50,14 @@ describe('ReceiptSubmitComponent', () => {
 
   const routerMock = {
     navigate: vi.fn(),
+  };
+
+  const activatedRouteMock = {
+    snapshot: {
+      paramMap: {
+        get: vi.fn(() => null),
+      },
+    },
   };
 
   const authServiceMock = {
@@ -66,8 +82,12 @@ describe('ReceiptSubmitComponent', () => {
 
   beforeEach(async () => {
     paymentServiceMock.createPaymentRequestByUser.mockReset();
+    paymentServiceMock.resubmitPaymentRequestByUser.mockReset();
     paymentServiceMock.getDuplicatePaymentRequestsByUser.mockReset();
     paymentServiceMock.extractReceiptData.mockReset();
+    systemSettingServiceMock.getPublicInvoiceSubmissionSettings
+      .mockReset()
+      .mockReturnValue(of({ receiptExtractionEnabled: true }));
     teamServiceMock.getTeams.mockReset();
     bankAccountServiceMock.getBankAccounts.mockReset();
     notificationMock.showSuccess.mockReset();
@@ -92,10 +112,12 @@ describe('ReceiptSubmitComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceMock },
         { provide: PaymentRequestByUserService, useValue: paymentServiceMock },
+        { provide: SystemSettingService, useValue: systemSettingServiceMock },
         { provide: TeamService, useValue: teamServiceMock },
         { provide: BankAccountService, useValue: bankAccountServiceMock },
         { provide: NotificationService, useValue: notificationMock },
         { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     }).compileComponents();
 
@@ -247,6 +269,29 @@ describe('ReceiptSubmitComponent', () => {
     expect(component.form.get('invoiceNumber')?.value).toBe('MANUAL-1');
     expect(component.form.get('creditorName')?.value).toBe('Manual Supplier');
     expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe(
+      'Invoice details were detected, but your existing input was kept.',
+    );
+  });
+
+  it('should show no reliable details only when receipt extraction found no values', () => {
+    component.ngOnInit();
+    paymentServiceMock.extractReceiptData.mockReturnValue(
+      of({
+        extractionSucceeded: false,
+        message: null,
+        amount: { value: null, confidence: 0 },
+        invoiceDate: { value: null, confidence: 0 },
+        invoiceNumber: { value: null, confidence: 0 },
+      }),
+    );
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.receiptExtractionStatus).toBe('partial');
+    expect(component.receiptExtractionMessage).toBe('No reliable invoice details were detected.');
   });
 
   it('should report only the number of fields actually prefilled', () => {
@@ -298,9 +343,27 @@ describe('ReceiptSubmitComponent', () => {
 
     expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
     expect(component.receiptExtractionStatus).toBe('partial');
-    expect(component.receiptExtractionMessage).toContain('offline');
+    expect(component.receiptExtractionMessage).toBe(
+      'Automatic field detection is unavailable while you are offline.',
+    );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (component as any).offlineService.isOffline.set(false);
+  });
+
+  it('should skip receipt extraction when receipt extraction is disabled', () => {
+    systemSettingServiceMock.getPublicInvoiceSubmissionSettings.mockReturnValue(
+      of({ receiptExtractionEnabled: false }),
+    );
+    component.ngOnInit();
+
+    component.onFileSelected({
+      target: { files: [new File(['ok'], 'ok.pdf', { type: 'application/pdf' })] },
+    } as unknown as Event);
+
+    expect(component.selectedFileName).toBe('ok.pdf');
+    expect(paymentServiceMock.extractReceiptData).not.toHaveBeenCalled();
+    expect(component.receiptExtractionStatus).toBe('idle');
+    expect(component.receiptExtractionMessage).toBe('');
   });
 
   it('should ignore file selection when no file is present', () => {
@@ -363,16 +426,42 @@ describe('ReceiptSubmitComponent', () => {
   it('should update bank account validation when payout type changes', () => {
     component.ngOnInit();
     const bankAccountControl = component.form.get('bankAccountId')!;
+    bankAccountControl.setValue(12);
 
     component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
 
-    expect(bankAccountControl.value).toBeNull();
+    expect(bankAccountControl.value).toBe(12);
     expect(bankAccountControl.errors).toBeNull();
 
     component.form.get('payoutType')?.setValue(PayoutType.User);
     bankAccountControl.markAsTouched();
 
-    expect(bankAccountControl.errors).toEqual({ required: true });
+    expect(bankAccountControl.errors).toBeNull();
+  });
+
+  it('should keep payout-specific values when switching payout types', () => {
+    component.ngOnInit();
+
+    component.form.get('bankAccountId')?.setValue(12);
+    component.form.get('creditorName')?.setValue('Acme GmbH');
+    component.form.get('dueDate')?.setValue('2026-06-01');
+
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+    component.form.get('payoutType')?.setValue(PayoutType.User);
+    component.form.get('payoutType')?.setValue(PayoutType.NotYetPaid);
+
+    expect(component.form.get('bankAccountId')?.value).toBe(12);
+    expect(component.form.get('creditorName')?.value).toBe('Acme GmbH');
+    expect(component.form.get('dueDate')?.value).toBe('2026-06-01');
+  });
+
+  it('should handle string payout type values from radio controls', () => {
+    component.ngOnInit();
+
+    component.form.get('payoutType')?.setValue(String(PayoutType.NotYetPaid));
+
+    expect(component.isPayoutType(PayoutType.NotYetPaid)).toBe(true);
+    expect(component.form.get('creditorName')?.hasValidator(Validators.required)).toBe(true);
   });
 
   it('should return validation messages for touched invalid controls', () => {
@@ -473,7 +562,7 @@ describe('ReceiptSubmitComponent', () => {
     expect(paymentServiceMock.getDuplicatePaymentRequestsByUser).toHaveBeenCalledWith({
       TeamId: 1,
       Amount: 100,
-      PaidAt: '2025-01-01T00:00:00.000Z',
+      PaidAt: '2025-01-01',
       InvoiceNumber: 'INV-1',
     });
     expect(paymentServiceMock.createPaymentRequestByUser).not.toHaveBeenCalled();
@@ -497,7 +586,7 @@ describe('ReceiptSubmitComponent', () => {
         teamId: 1,
         amount: 100,
         purposeOfPayment: 'test',
-        paidAt: '2025-01-01T00:00:00.000Z',
+        paidAt: '2025-01-01',
       },
     };
 
@@ -608,6 +697,57 @@ describe('ReceiptSubmitComponent', () => {
       }),
       file,
     );
+  });
+
+  it('should resubmit a change request without requiring a comment', () => {
+    component.ngOnInit();
+    setValidFormValues();
+    component.form.get('comment')?.setValue('');
+    component.isEditMode = true;
+    component.editingInvoiceId = 7;
+    component.selectedFile = null;
+    paymentServiceMock.resubmitPaymentRequestByUser.mockReturnValue(of({}));
+
+    component.onSubmit();
+
+    expect(paymentServiceMock.resubmitPaymentRequestByUser).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({
+        comment: null,
+      }),
+      null,
+    );
+  });
+
+  it('should keep not-yet-paid details and existing receipt when editing a change request', () => {
+    component.ngOnInit();
+
+    (
+      component as unknown as {
+        patchInvoice: (invoice: PaymentRequestByUserDto) => void;
+      }
+    ).patchInvoice({
+      id: 7,
+      invoiceNumber: 'INV-7',
+      comment: null,
+      payoutType: PayoutType.NotYetPaid,
+      bankAccount: null,
+      team: { id: 2, name: 'Team A' },
+      amount: 42,
+      purposeOfPayment: 'Travel',
+      paidAt: '2026-05-01T00:00:00Z',
+      creditorName: 'Test Company',
+      dueDate: '2026-06-01T00:00:00Z',
+      budget: { id: 3, name: 'Marketing' },
+      status: TransactionStatus.ChangesRequested,
+      statusHistory: [],
+    } as unknown as PaymentRequestByUserDto);
+
+    expect(component.form.get('creditorName')?.value).toBe('Test Company');
+    expect(component.form.get('dueDate')?.value).toBe('2026-06-01');
+    expect(component.form.get('receipt')?.value).toBe('existing-receipt');
+    expect(component.form.get('receipt')?.errors).toBeNull();
+    expect(component.selectedFileName).toBe('Current receipt will be kept');
   });
 
   // -------------------------

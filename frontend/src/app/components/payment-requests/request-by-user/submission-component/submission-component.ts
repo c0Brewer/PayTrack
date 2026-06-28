@@ -9,7 +9,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../../services/auth/auth-service';
@@ -22,6 +22,8 @@ import {
 } from '../../../../services/offline/offline-invoice-submission-queue.service';
 import { OfflineService } from '../../../../services/offline/offline-service';
 import { PaymentRequestByUserService } from '../../../../services/payment-request-by-user/payment-request-by-user-service';
+import { PaymentRequestStatusRefreshService } from '../../../../services/payment-request-by-user/payment-request-status-refresh-service';
+import { SystemSettingService } from '../../../../services/system-setting/system-setting-service';
 import { TeamService } from '../../../../services/team/team-service';
 import {
   DuplicatePaymentRequestByUserDto,
@@ -29,6 +31,8 @@ import {
   CreatePaymentRequestByUserDto,
   PayoutType,
   BankAccount,
+  PaymentRequestByUserDto,
+  TransactionStatus,
   ReceiptExtractionDto,
 } from '../../../../types/exporter';
 import { BoxComponent } from '../../../general/boxes/box-component/box-component';
@@ -43,13 +47,24 @@ function maxDateValidator(maxDate: Date): ValidatorFn {
       return null;
     }
 
-    const selected = new Date(control.value);
-    const latestAllowed = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+    const selected = new Date(`${control.value}T00:00:00`);
+    const latestAllowed = startOfLocalDay(maxDate);
 
     return selected > latestAllowed
-      ? { maxDate: { max: latestAllowed.toISOString().slice(0, 10) } }
+      ? { maxDate: { max: toLocalDateInputValue(latestAllowed) } }
       : null;
   };
+}
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function toLocalDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 @Component({
@@ -71,13 +86,17 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   selectedFile: File | null = null;
   selectedFileName = '';
-  maxInvoiceDate = new Date().toISOString().split('T')[0];
+  maxInvoiceDate = toLocalDateInputValue(new Date());
   duplicateCandidates: DuplicatePaymentRequestByUserDto[] = [];
   duplicateSourceInvoice: DuplicateInvoiceSummary | null = null;
   isDuplicateModalOpen = false;
   pendingSubmissionPayload: CreatePaymentRequestByUserDto | null = null;
   pendingSubmissionFile: File | null = null;
+  isEditMode = false;
+  editingInvoiceId: number | null = null;
+  changeRequestMessage: string | null = null;
   isExtractingReceiptData = false;
+  receiptExtractionEnabled = false;
   receiptExtractionMessage = '';
   receiptExtractionStatus: 'idle' | 'loading' | 'success' | 'partial' | 'error' = 'idle';
   receiptExtractionResult: ReceiptExtractionDto | null = null;
@@ -102,9 +121,12 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
     private readonly paymentRequestByUserService: PaymentRequestByUserService,
+    private readonly statusRefreshService: PaymentRequestStatusRefreshService,
+    private readonly systemSettingService: SystemSettingService,
     private readonly teamService: TeamService,
     private readonly bankAccountService: BankAccountService,
     private readonly notificationService: NotificationService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
@@ -115,6 +137,8 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.loadCurrentUserName();
     this.loadTeams();
     this.loadBankAccounts();
+    this.loadInvoiceSubmissionSettings();
+    this.loadInvoiceForEditing();
   }
 
   ngOnDestroy(): void {
@@ -141,30 +165,97 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       .get('payoutType')!
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((value) => {
+        const payoutType = this.toPayoutType(value);
         const bankCtrl = this.form.get('bankAccountId');
         const creditorCtrl = this.form.get('creditorName');
         const dueDateCtrl = this.form.get('dueDate');
 
-        if (value === PayoutType.User) {
+        if (payoutType === PayoutType.User) {
           bankCtrl?.setValidators([Validators.required, Validators.min(1)]);
         } else {
           bankCtrl?.clearValidators();
-          bankCtrl?.setValue(null);
         }
         bankCtrl?.updateValueAndValidity();
 
-        if (value === PayoutType.NotYetPaid) {
+        if (payoutType === PayoutType.NotYetPaid) {
           creditorCtrl?.setValidators([Validators.required, Validators.maxLength(255)]);
           dueDateCtrl?.setValidators([Validators.required]);
         } else {
           creditorCtrl?.clearValidators();
-          creditorCtrl?.setValue(null);
           dueDateCtrl?.clearValidators();
-          dueDateCtrl?.setValue(null);
         }
         creditorCtrl?.updateValueAndValidity();
         dueDateCtrl?.updateValueAndValidity();
       });
+  }
+
+  private loadInvoiceForEditing(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) return;
+
+    this.isEditMode = true;
+    this.editingInvoiceId = id;
+    this.form.get('receipt')?.clearValidators();
+    this.form.get('receipt')?.updateValueAndValidity();
+
+    this.paymentRequestByUserService
+      .getPaymentRequestsByUserById(id, {
+        IncludeTeam: true,
+        IncludeBankAccount: true,
+        IncludeStatusHistory: true,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (invoice) => {
+          if (invoice.status !== TransactionStatus.ChangesRequested) {
+            this.notificationService.showError(
+              'Only invoices with requested changes can be edited.',
+            );
+            this.router.navigate(['/my-invoices', id]);
+            return;
+          }
+
+          this.patchInvoice(invoice);
+          this.changeDetectorRef.markForCheck();
+        },
+        error: (err: Error) => {
+          this.notificationService.showError('Could not load invoice: ' + err.message);
+          this.router.navigate(['/my-invoices']);
+        },
+      });
+  }
+
+  private patchInvoice(invoice: PaymentRequestByUserDto): void {
+    this.form.patchValue({
+      invoiceNumber: invoice.invoiceNumber,
+      comment: invoice.comment ?? '',
+      payoutType: invoice.payoutType,
+      bankAccountId: invoice.bankAccount?.id ?? null,
+      creditorName: invoice.creditorName ?? '',
+      dueDate: invoice.dueDate?.slice(0, 10) ?? null,
+      teamId: invoice.team?.id ?? null,
+      amount: invoice.amount,
+      purposeOfPayment: invoice.purposeOfPayment,
+      paidAt: invoice.paidAt?.slice(0, 10) ?? '',
+    });
+
+    this.selectedFile = null;
+    this.selectedFileName = 'Current receipt will be kept';
+    const receiptControl = this.form.get('receipt');
+    receiptControl?.setValue('existing-receipt');
+    receiptControl?.setErrors(null);
+    receiptControl?.markAsPristine();
+
+    this.changeRequestMessage =
+      [...(invoice.statusHistory ?? [])]
+        .filter(
+          (entry) =>
+            entry.toStatus === TransactionStatus.ChangesRequested && !!entry.comment?.trim(),
+        )
+        .sort(
+          (left, right) => new Date(right.changedAt).getTime() - new Date(left.changedAt).getTime(),
+        )[0]
+        ?.comment?.trim() ?? null;
   }
 
   private loadTeams(): void {
@@ -276,7 +367,30 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.selectedFileName = file.name;
     receiptControl.setValue(file.name);
     receiptControl.setErrors(null);
+    if (!this.receiptExtractionEnabled) {
+      this.clearReceiptExtractionState();
+      return;
+    }
+
     this.extractReceiptData(file);
+  }
+
+  private loadInvoiceSubmissionSettings(): void {
+    this.systemSettingService
+      .getPublicInvoiceSubmissionSettings()
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.receiptExtractionEnabled = settings.receiptExtractionEnabled;
+          if (!settings.receiptExtractionEnabled) {
+            this.clearReceiptExtractionState();
+          }
+          this.changeDetectorRef.detectChanges();
+        },
+        error: () => {
+          this.receiptExtractionEnabled = false;
+        },
+      });
   }
 
   private extractReceiptData(file: File): void {
@@ -309,10 +423,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
             this.receiptExtractionResult = result;
             this.isExtractingReceiptData = false;
             this.receiptExtractionStatus = appliedFields > 0 ? 'success' : 'partial';
-            this.receiptExtractionMessage =
-              appliedFields > 0
-                ? `Pre-filled ${appliedFields} ${appliedFields === 1 ? 'field' : 'fields'} from the receipt. Please review before submitting.`
-                : (result.message ?? 'No reliable invoice details were detected.');
+            this.receiptExtractionMessage = this.getReceiptExtractionMessage(result, appliedFields);
             this.changeDetectorRef.detectChanges();
           },
           error: (err: Error) => {
@@ -346,6 +457,24 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     appliedFields += this.patchIfEmpty('invoiceNumber', result.invoiceNumber?.value);
 
     return appliedFields;
+  }
+
+  private getReceiptExtractionMessage(result: ReceiptExtractionDto, appliedFields: number): string {
+    if (appliedFields > 0) {
+      return `Pre-filled ${appliedFields} ${appliedFields === 1 ? 'field' : 'fields'} from the receipt. Please review before submitting.`;
+    }
+
+    if (this.hasExtractedReceiptValues(result)) {
+      return 'Invoice details were detected, but your existing input was kept.';
+    }
+
+    return result.message ?? 'No reliable invoice details were detected.';
+  }
+
+  private hasExtractedReceiptValues(result: ReceiptExtractionDto): boolean {
+    return [result.amount?.value, result.invoiceDate?.value, result.invoiceNumber?.value].some(
+      (value) => value != null && value !== '',
+    );
   }
 
   private patchIfEmpty(field: string, value: string | number | null | undefined): number {
@@ -405,7 +534,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.form.markAllAsTouched();
-    if (this.form.invalid || !this.selectedFile) return;
+    if (this.form.invalid || (!this.isEditMode && !this.selectedFile)) return;
 
     this.isSubmitting = true;
     const v = this.form.value;
@@ -417,9 +546,9 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload: CreatePaymentRequestByUserDto = {
+    const payload = {
       invoiceNumber: v.invoiceNumber,
-      comment: v.comment,
+      comment: v.comment?.trim() || null,
       payoutType: payoutType,
       bankAccountId: payoutType === PayoutType.User ? Number(v.bankAccountId) : null,
       creditorName: payoutType === PayoutType.NotYetPaid ? v.creditorName : null,
@@ -432,12 +561,17 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
         teamId: Number(v.teamId),
         amount: Number(v.amount),
         purposeOfPayment: v.purposeOfPayment,
-        paidAt: new Date(v.paidAt).toISOString(),
+        paidAt: v.paidAt,
       },
-    };
+    } as CreatePaymentRequestByUserDto;
+
+    if (this.isEditMode) {
+      this.resubmitPaymentRequest(payload);
+      return;
+    }
 
     if (this.offlineService.isOffline()) {
-      void this.queueOfflineSubmission(payload, this.selectedFile);
+      void this.queueOfflineSubmission(payload, this.selectedFile!);
       return;
     }
 
@@ -454,6 +588,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
           this.ngZone.run(() => {
             if (duplicates.length > 0) {
               this.duplicateCandidates = duplicates;
+              this.duplicateSourceInvoice = this.buildDuplicateSourceInvoice(payload);
               this.pendingSubmissionPayload = payload;
               this.pendingSubmissionFile = this.selectedFile;
               this.isDuplicateModalOpen = true;
@@ -475,9 +610,33 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
       });
   }
 
+  private resubmitPaymentRequest(payload: CreatePaymentRequestByUserDto): void {
+    this.paymentRequestByUserService
+      .resubmitPaymentRequestByUser(this.editingInvoiceId!, payload, this.selectedFile)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Invoice updated and returned for review.');
+          this.statusRefreshService.requestRefresh();
+          this.isSubmitting = false;
+          this.router.navigate(['/my-invoices', this.editingInvoiceId]);
+        },
+        error: (err: Error) => {
+          this.notificationService.showError(err.message ?? 'Invoice update failed.');
+          this.isSubmitting = false;
+          this.changeDetectorRef.detectChanges();
+        },
+      });
+  }
+
+  onCancelEdit(): void {
+    this.router.navigate(['/my-invoices', this.editingInvoiceId]);
+  }
+
   onDuplicateModalCancel(): void {
     this.isDuplicateModalOpen = false;
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;
   }
@@ -495,6 +654,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
 
     this.isDuplicateModalOpen = false;
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;
     this.isSubmitting = true;
@@ -582,6 +742,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     this.selectedFile = null;
     this.selectedFileName = '';
     this.duplicateCandidates = [];
+    this.duplicateSourceInvoice = null;
     this.isDuplicateModalOpen = false;
     this.pendingSubmissionPayload = null;
     this.pendingSubmissionFile = null;
@@ -591,9 +752,7 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
   }
 
   private applyOfflineDraftToForm(draft: OfflineInvoiceSubmissionDraft): void {
-    const paidAt = draft.payload.transaction.paidAt
-      ? new Date(draft.payload.transaction.paidAt).toISOString().slice(0, 10)
-      : '';
+    const paidAt = draft.payload.transaction.paidAt ?? '';
 
     const dueDate = draft.payload.dueDate
       ? new Date(draft.payload.dueDate).toISOString().slice(0, 10)
@@ -625,6 +784,10 @@ export class ReceiptSubmitComponent implements OnInit, OnDestroy {
     const num = Number(value);
 
     return Object.values(PayoutType).includes(num) ? (num as PayoutType) : null;
+  }
+
+  isPayoutType(type: PayoutType): boolean {
+    return this.toPayoutType(this.form.get('payoutType')?.value) === type;
   }
 
   private buildDuplicateSourceInvoice(

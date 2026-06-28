@@ -16,6 +16,8 @@ const mockSystemSettingService = {
   updateNotificationChannelGroups: vi.fn(),
   getReminderSchedule: vi.fn(),
   updateReminderSchedule: vi.fn(),
+  getInvoiceSubmissionSettings: vi.fn(),
+  updateInvoiceSubmissionSettings: vi.fn(),
 };
 
 const mockNotificationService = {
@@ -25,16 +27,23 @@ const mockNotificationService = {
 
 const defaultCsvSettings = { nameColumn: 'Name', summeColumn: 'Summe' };
 const defaultNotifSettings = {
-  creation: { sendEmail: true, sendSlack: false },
-  confirmation: { sendEmail: true, sendSlack: false },
-  reminders: { sendEmail: true, sendSlack: false },
-  deletion: { sendEmail: false, sendSlack: false },
+  creation: { sendEmail: true, sendSlack: false, sendPush: true },
+  confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+  reminders: { sendEmail: true, sendSlack: false, sendPush: true },
+  deletion: { sendEmail: false, sendSlack: false, sendPush: true },
+  invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+  invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
 };
 const defaultReminderSettings = {
   daysBeforeDue: [7, 2, 1],
   runAtHourUtc: 8,
   runAtMinuteUtc: 0,
   emailDelayMs: 500,
+};
+const defaultInvoiceSubmissionSettings = {
+  receiptExtractionEnabled: true,
 };
 
 describe('AdminSettingsSettingsPageComponent', () => {
@@ -52,6 +61,10 @@ describe('AdminSettingsSettingsPageComponent', () => {
         confirmation: { ...defaultNotifSettings.confirmation },
         reminders: { ...defaultNotifSettings.reminders },
         deletion: { ...defaultNotifSettings.deletion },
+        invoiceApproval: { ...defaultNotifSettings.invoiceApproval },
+        invoiceRejection: { ...defaultNotifSettings.invoiceRejection },
+        invoiceChangesRequested: { ...defaultNotifSettings.invoiceChangesRequested },
+        invoicePaymentCompleted: { ...defaultNotifSettings.invoicePaymentCompleted },
       }),
     );
     mockSystemSettingService.updateNotificationChannelGroups
@@ -61,6 +74,12 @@ describe('AdminSettingsSettingsPageComponent', () => {
       .mockReset()
       .mockReturnValue(of({ ...defaultReminderSettings }));
     mockSystemSettingService.updateReminderSchedule.mockReset().mockReturnValue(of(undefined));
+    mockSystemSettingService.getInvoiceSubmissionSettings
+      .mockReset()
+      .mockReturnValue(of({ ...defaultInvoiceSubmissionSettings }));
+    mockSystemSettingService.updateInvoiceSubmissionSettings
+      .mockReset()
+      .mockReturnValue(of(undefined));
     mockNotificationService.showSuccess.mockReset();
     mockNotificationService.showError.mockReset();
 
@@ -84,16 +103,18 @@ describe('AdminSettingsSettingsPageComponent', () => {
   // ── Group A: ngOnInit + load methods ───────────────────────────────────────
 
   describe('ngOnInit', () => {
-    it('should call loadCsvSettings, loadNotifSettings, and loadReminderSettings', () => {
+    it('should call all load methods', () => {
       const spyCsv = vi.spyOn(component, 'loadCsvSettings');
       const spyNotif = vi.spyOn(component, 'loadNotifSettings');
       const spyReminder = vi.spyOn(component, 'loadReminderSettings');
+      const spyInvoiceSubmission = vi.spyOn(component, 'loadInvoiceSubmissionSettings');
 
       fixture.detectChanges();
 
       expect(spyCsv).toHaveBeenCalledOnce();
       expect(spyNotif).toHaveBeenCalledOnce();
       expect(spyReminder).toHaveBeenCalledOnce();
+      expect(spyInvoiceSubmission).toHaveBeenCalledOnce();
     });
   });
 
@@ -156,6 +177,25 @@ describe('AdminSettingsSettingsPageComponent', () => {
     });
   });
 
+  describe('loadInvoiceSubmissionSettings', () => {
+    it('should set invoice submission settings from the service response', () => {
+      fixture.detectChanges();
+
+      expect(component.invoiceSubmissionSettings).toEqual(defaultInvoiceSubmissionSettings);
+      expect(component.invoiceSubmissionLoading).toBe(false);
+    });
+
+    it('should set invoiceSubmissionLoading to false on service error', () => {
+      mockSystemSettingService.getInvoiceSubmissionSettings.mockReturnValue(
+        throwError(() => new Error('load failed')),
+      );
+
+      fixture.detectChanges();
+
+      expect(component.invoiceSubmissionLoading).toBe(false);
+    });
+  });
+
   // ── Group B: save methods ──────────────────────────────────────────────────
 
   describe('saveCsvSettings', () => {
@@ -193,10 +233,14 @@ describe('AdminSettingsSettingsPageComponent', () => {
     it('should update notifOriginal and show success notification on success', () => {
       fixture.detectChanges();
       component.notifSettings = {
-        creation: { sendEmail: false, sendSlack: true },
-        confirmation: { sendEmail: true, sendSlack: false },
-        reminders: { sendEmail: false, sendSlack: false },
-        deletion: { sendEmail: false, sendSlack: false },
+        creation: { sendEmail: false, sendSlack: true, sendPush: true },
+        confirmation: { sendEmail: true, sendSlack: false, sendPush: true },
+        reminders: { sendEmail: false, sendSlack: false, sendPush: false },
+        deletion: { sendEmail: false, sendSlack: false, sendPush: false },
+        invoiceApproval: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceRejection: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoiceChangesRequested: { sendEmail: true, sendSlack: false, sendPush: true },
+        invoicePaymentCompleted: { sendEmail: true, sendSlack: false, sendPush: true },
       };
 
       component.saveNotifSettings();
@@ -259,6 +303,36 @@ describe('AdminSettingsSettingsPageComponent', () => {
     });
   });
 
+  describe('saveInvoiceSubmissionSettings', () => {
+    it('should save settings and show success notification', () => {
+      fixture.detectChanges();
+      component.invoiceSubmissionSettings.receiptExtractionEnabled = false;
+
+      component.saveInvoiceSubmissionSettings();
+
+      expect(mockSystemSettingService.updateInvoiceSubmissionSettings).toHaveBeenCalledWith({
+        receiptExtractionEnabled: false,
+      });
+      expect(component.invoiceSubmissionDirty).toBe(false);
+      expect(component.invoiceSubmissionSaving).toBe(false);
+      expect(mockNotificationService.showSuccess).toHaveBeenCalledWith(
+        'Invoice submission settings saved.',
+      );
+    });
+
+    it('should show error notification on service failure', () => {
+      fixture.detectChanges();
+      mockSystemSettingService.updateInvoiceSubmissionSettings.mockReturnValue(
+        throwError(() => new Error('Invoice save failed')),
+      );
+
+      component.saveInvoiceSubmissionSettings();
+
+      expect(component.invoiceSubmissionSaving).toBe(false);
+      expect(mockNotificationService.showError).toHaveBeenCalledWith('Invoice save failed');
+    });
+  });
+
   // ── Group C: dirty getters ─────────────────────────────────────────────────
 
   describe('csvDirty', () => {
@@ -284,7 +358,10 @@ describe('AdminSettingsSettingsPageComponent', () => {
       fixture.detectChanges();
       component.notifSettings = {
         ...component.notifSettings,
-        creation: { ...component.notifSettings.creation, sendSlack: true },
+        invoicePaymentCompleted: {
+          ...component.notifSettings.invoicePaymentCompleted,
+          sendSlack: true,
+        },
       };
       expect(component.notifDirty).toBe(true);
     });
@@ -300,6 +377,19 @@ describe('AdminSettingsSettingsPageComponent', () => {
       fixture.detectChanges();
       component.reminderDaysInput = '1, 2, 3';
       expect(component.reminderDirty).toBe(true);
+    });
+  });
+
+  describe('invoiceSubmissionDirty', () => {
+    it('should be false when settings match the loaded original', () => {
+      fixture.detectChanges();
+      expect(component.invoiceSubmissionDirty).toBe(false);
+    });
+
+    it('should be true after receipt extraction setting is toggled', () => {
+      fixture.detectChanges();
+      component.invoiceSubmissionSettings.receiptExtractionEnabled = false;
+      expect(component.invoiceSubmissionDirty).toBe(true);
     });
   });
 

@@ -77,6 +77,10 @@ export class CostCentreEditComponent implements OnChanges {
     return this.editingCostCentre?.id === -1;
   }
 
+  get activeSeasons(): SeasonDto[] {
+    return this.seasons.filter((season) => season.isActive !== false);
+  }
+
   hasChanged(): boolean {
     if (!this.editingCostCentre || !this.originalCostCentre) return false;
 

@@ -87,10 +87,14 @@ describe('DuplicateListModalComponent', () => {
   it('should emit close event', () => {
     const spy = vi.fn();
     component.closeModal.subscribe(spy);
+    component.pendingDeleteInvoice = { id: 2 } as PaymentRequestByUserDto;
+    component.deleteConfirmationDuplicateId = 2;
 
     component.onClose();
 
     expect(spy).toHaveBeenCalledOnce();
+    expect(component.pendingDeleteInvoice).toBeNull();
+    expect(component.deleteConfirmationDuplicateId).toBeNull();
   });
 
   it('should emit source invoice view and delete events after source invoice is selected', () => {

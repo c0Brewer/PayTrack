@@ -79,23 +79,42 @@ namespace PayTrack.Tests.UnitTests.Services
 
             result.Creation.SendEmail.Should().BeTrue();
             result.Creation.SendSlack.Should().BeFalse();
+            result.Creation.SendPush.Should().BeTrue();
             result.Confirmation.SendEmail.Should().BeTrue();
             result.Confirmation.SendSlack.Should().BeFalse();
+            result.Confirmation.SendPush.Should().BeTrue();
             result.Reminders.SendEmail.Should().BeTrue();
             result.Reminders.SendSlack.Should().BeFalse();
+            result.Reminders.SendPush.Should().BeTrue();
+            result.InvoiceApproval.SendEmail.Should().BeTrue();
+            result.InvoiceApproval.SendSlack.Should().BeFalse();
+            result.InvoiceApproval.SendPush.Should().BeTrue();
+            result.InvoiceRejection.SendEmail.Should().BeTrue();
+            result.InvoiceRejection.SendSlack.Should().BeFalse();
+            result.InvoiceRejection.SendPush.Should().BeTrue();
+            result.InvoiceChangesRequested.SendEmail.Should().BeTrue();
+            result.InvoiceChangesRequested.SendSlack.Should().BeFalse();
+            result.InvoiceChangesRequested.SendPush.Should().BeTrue();
+            result.InvoicePaymentCompleted.SendEmail.Should().BeTrue();
+            result.InvoicePaymentCompleted.SendSlack.Should().BeFalse();
+            result.InvoicePaymentCompleted.SendPush.Should().BeTrue();
         }
 
         [Fact]
-        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllEightKeys()
+        public async Task UpdateNotificationChannelGroupsAsync_ShouldUpsertAllNotificationKeys()
         {
             var repoMock = new Mock<ISystemSettingRepository>();
             var service = BuildService(repoMock);
 
             var dto = new UpdateNotificationChannelGroupsRequestDto(
-                Creation: new NotificationChannelDto(true, false),
-                Confirmation: new NotificationChannelDto(false, true),
-                Reminders: new NotificationChannelDto(true, true),
-                Deletion: new NotificationChannelDto(false, false));
+                Creation: new NotificationChannelDto(true, false, true),
+                Confirmation: new NotificationChannelDto(false, true, false),
+                Reminders: new NotificationChannelDto(true, true, true),
+                Deletion: new NotificationChannelDto(false, false, false),
+                InvoiceApproval: new NotificationChannelDto(true, false, false),
+                InvoiceRejection: new NotificationChannelDto(false, true, true),
+                InvoiceChangesRequested: new NotificationChannelDto(true, true, false),
+                InvoicePaymentCompleted: new NotificationChannelDto(false, false, true));
 
             await service.UpdateNotificationChannelGroupsAsync(dto, userId: 5);
 
@@ -103,12 +122,28 @@ namespace PayTrack.Tests.UnitTests.Services
                 It.Is<IReadOnlyDictionary<string, string>>(d =>
                     d[SystemSettingKeys.NotificationsCreationEmail] == "True" &&
                     d[SystemSettingKeys.NotificationsCreationSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsCreationPush] == "True" &&
                     d[SystemSettingKeys.NotificationsConfirmationEmail] == "False" &&
                     d[SystemSettingKeys.NotificationsConfirmationSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsConfirmationPush] == "False" &&
                     d[SystemSettingKeys.NotificationsRemindersEmail] == "True" &&
                     d[SystemSettingKeys.NotificationsRemindersSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsRemindersPush] == "True" &&
                     d[SystemSettingKeys.NotificationsDeletionEmail] == "False" &&
-                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False"),
+                    d[SystemSettingKeys.NotificationsDeletionSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsDeletionPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceApprovalPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceRejectionPush] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedEmail] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedSlack] == "True" &&
+                    d[SystemSettingKeys.NotificationsInvoiceChangesRequestedPush] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedEmail] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedSlack] == "False" &&
+                    d[SystemSettingKeys.NotificationsInvoicePaymentCompletedPush] == "True"),
                 5), Times.Once);
         }
 
@@ -145,6 +180,52 @@ namespace PayTrack.Tests.UnitTests.Services
                     d[SystemSettingKeys.RemindersRunAtMinuteUtc] == "30" &&
                     d[SystemSettingKeys.RemindersEmailDelayMs] == "250"),
                 2), Times.Once);
+        }
+
+        // ── GetInvoiceSubmissionSettingsAsync ─────────────────────────────────────
+
+        [Fact]
+        public async Task GetInvoiceSubmissionSettingsAsync_ShouldReturnEnabled_WhenNoRowsExist()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            repoMock.Setup(r => r.GetByKeyAsync(It.IsAny<string>())).ReturnsAsync((SystemSetting?)null);
+
+            var service = BuildService(repoMock);
+            var result = await service.GetInvoiceSubmissionSettingsAsync();
+
+            result.ReceiptExtractionEnabled.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetInvoiceSubmissionSettingsAsync_ShouldReturnStoredValue_WhenRowExists()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            repoMock.Setup(r => r.GetByKeyAsync(SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled))
+                .ReturnsAsync(new SystemSetting
+                {
+                    Key = SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled,
+                    Value = "False",
+                });
+
+            var service = BuildService(repoMock);
+            var result = await service.GetInvoiceSubmissionSettingsAsync();
+
+            result.ReceiptExtractionEnabled.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UpdateInvoiceSubmissionSettingsAsync_ShouldUpsertReceiptExtractionKey()
+        {
+            var repoMock = new Mock<ISystemSettingRepository>();
+            var service = BuildService(repoMock);
+
+            await service.UpdateInvoiceSubmissionSettingsAsync(
+                new UpdateInvoiceSubmissionSettingsRequestDto(false), userId: 3);
+
+            repoMock.Verify(r => r.UpsertManyAsync(
+                It.Is<IReadOnlyDictionary<string, string>>(d =>
+                    d[SystemSettingKeys.InvoiceSubmissionReceiptExtractionEnabled] == "False"),
+                3), Times.Once);
         }
 
         // ── GetBoolSettingAsync ────────────────────────────────────────────────────

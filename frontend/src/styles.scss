@@ -66,6 +66,31 @@ body {
   }
 }
 
+.toolbar {
+  background-color: white;
+  border: 1px solid v.$TUR-border-color;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px v.$shadow-color;
+  padding: v.$size-m;
+
+  .filter-icon {
+    color: v.$TUR-primary-orange;
+    font-size: 1.25rem;
+  }
+
+  .filter-label {
+    color: v.$gray-500;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  hr {
+    border-color: v.$TUR-border-color;
+    opacity: 1;
+  }
+}
+
 .btn-secondary {
   --bs-btn-active-bg: white;
   --bs-btn-active-border-color: rgb(235 106 0);
@@ -461,6 +486,23 @@ textarea:focus,
       white-space: normal;
       width: 100%;
     }
+
+    td[data-label='Status'] {
+      .status,
+      .status-btn {
+        justify-self: end;
+        max-width: min(14rem, 100%);
+      }
+
+      .status {
+        display: inline-flex;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        word-break: normal;
+      }
+    }
+
     .status-btn {
       justify-self: end;
     }
@@ -483,11 +525,19 @@ textarea:focus,
       }
 
       .action-buttons {
-        justify-content: flex-start;
+        justify-content: flex-end;
       }
     }
+
+    td[data-label='Status'] {
+      .status,
+      .status-btn {
+        justify-self: end;
+      }
+    }
+
     .status-btn {
-      justify-self: start;
+      justify-self: end;
     }
   }
 }
@@ -509,11 +559,14 @@ textarea:focus,
   gap: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition: gap 0.2s ease;
+  transition:
+    gap 0.2s ease,
+    transform 0.2s ease;
 }
 
 .icon-hover-btn .material-symbols-outlined {
   font-size: 20px;
+  transition: transform 0.25s ease;
 }
 
 .icon-hover-btn .btn-text {
@@ -530,6 +583,7 @@ textarea:focus,
 .icon-hover-btn:hover,
 .icon-hover-btn:focus-visible {
   gap: 0.4rem;
+  transform: translateX(2px);
 }
 
 .icon-hover-btn:hover .btn-text,
@@ -537,4 +591,33 @@ textarea:focus,
   max-width: 4rem;
   opacity: 1;
   transform: translateX(0);
+}
+
+.icon-hover-btn:hover .material-symbols-outlined,
+.icon-hover-btn:focus-visible .material-symbols-outlined {
+  transform: translateX(2px);
+}
+
+@media (max-width: 767.98px) {
+  .icon-hover-btn {
+    gap: 0.4rem;
+  }
+
+  .icon-hover-btn .btn-text {
+    max-width: 4rem;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .icon-hover-btn .material-symbols-outlined {
+    transform: translateX(2px);
+  }
+}
+
+
+.main-page-container{
+  p:first-of-type {
+    color: v.$TUR-primary-grey;
+    font-size: 1.2rem;
+  }
 }

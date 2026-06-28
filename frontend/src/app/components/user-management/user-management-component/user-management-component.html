@@ -1,6 +1,9 @@
 <div class="main-page-container user-management">
-  <div class="d-flex mb-1">
-    <h2 class="align-self-start">User Management</h2>
+  <div class="d-flex flex-column gap-1 mb-4">
+    <h1 class="m-0">User Management</h1>
+    <p class="mb-0 text-body-secondary">
+      Manage user access, roles, team assignments, and account status.
+    </p>
   </div>
 
   <div class="row g-3 align-items-stretch">
@@ -13,7 +16,7 @@
     />
     <app-stat-box-component
       header="Active Users"
-      [content]="activeUserPlaceholderCount"
+      [content]="activeUserCount"
       icon="check"
       iconColor="#10b981"
       iconBackgroundColor="#ECFDF5"
@@ -22,7 +25,7 @@
     />
     <app-stat-box-component
       header="Inactive Users"
-      [content]="inactiveUserPlaceholderCount"
+      [content]="inactiveUserCount"
       icon="person_off"
       iconColor="#6b7280"
       iconBackgroundColor="#f3f4f6"
@@ -31,7 +34,7 @@
     />
     <app-stat-box-component
       header="Admins"
-      [content]="adminUserPlaceholderCount"
+      [content]="adminUserCount"
       icon="shield"
       size="small"
       iconColor="#3b82f6"

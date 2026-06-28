@@ -3,10 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { CostCentreService } from '../../../../../services/cost-centre/cost-centre-service';
+import { BudgetService } from '../../../../../services/budget/budget-service';
+import { ExternalNotificationService } from '../../../../../services/external-notification/external-notification-service';
 import { NotificationService } from '../../../../../services/notification/notification-service';
 import { PaymentRequestByUserService } from '../../../../../services/payment-request-by-user/payment-request-by-user-service';
-import { PaymentRequestByUserDto } from '../../../../../types/exporter';
+import { PaymentRequestStatusRefreshService } from '../../../../../services/payment-request-by-user/payment-request-status-refresh-service';
+import { PaymentRequestByUserDto, TransactionStatus } from '../../../../../types/exporter';
 
 import { RequestDetailComponent } from './admin-detail-component';
 
@@ -21,15 +23,25 @@ describe('RequestDetailComponent', () => {
     approvePaymentRequestByUser: vi.fn(),
     declinePaymentRequestByUser: vi.fn(),
     requestChangesForPaymentRequestByUser: vi.fn(),
+    undoLastStatusChange: vi.fn(),
   };
 
-  const costCentreServiceMock = {
-    getCostCentres: vi.fn(),
+  const budgetServiceMock = {
+    getBudgets: vi.fn(),
   };
 
   const notificationMock = {
     showError: vi.fn(),
     showSuccess: vi.fn(),
+  };
+
+  const statusRefreshMock = {
+    requestRefresh: vi.fn(),
+  };
+
+  const externalNotificationMock = {
+    sendEmail: vi.fn(),
+    sendSlack: vi.fn(),
   };
 
   const routerMock = {
@@ -49,14 +61,14 @@ describe('RequestDetailComponent', () => {
     invoiceNumber: 'INV-007',
     status: 0,
     amount: 100,
-    transaction: { team: { name: 'Finance' }, costCentre: { name: 'CC-01' } },
+    team: { id: 3, name: 'Finance' },
     purposeOfPayment: 'Office supplies',
     payoutType: 0,
     comment: '',
     createdAt: '2026-01-01T00:00:00Z',
     paidAt: null,
     bankAccount: { iban: 'AT611904300234573201' },
-    user: { firstName: 'Bob', lastName: 'Admin' },
+    user: { id: 8, name: 'Bob Admin', email: 'bob@example.com' },
     statusHistory: [],
   } as unknown as PaymentRequestByUserDto;
 
@@ -64,14 +76,16 @@ describe('RequestDetailComponent', () => {
     vi.clearAllMocks();
     URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
     URL.revokeObjectURL = vi.fn();
-    costCentreServiceMock.getCostCentres.mockReturnValue(of({ items: [] }));
+    budgetServiceMock.getBudgets.mockReturnValue(of({ items: [] }));
 
     await TestBed.configureTestingModule({
       imports: [RequestDetailComponent],
       providers: [
         { provide: PaymentRequestByUserService, useValue: serviceMock },
-        { provide: CostCentreService, useValue: costCentreServiceMock },
+        { provide: BudgetService, useValue: budgetServiceMock },
+        { provide: ExternalNotificationService, useValue: externalNotificationMock },
         { provide: NotificationService, useValue: notificationMock },
+        { provide: PaymentRequestStatusRefreshService, useValue: statusRefreshMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: Router, useValue: routerMock },
         { provide: ChangeDetectorRef, useValue: cdrMock },
@@ -112,13 +126,17 @@ describe('RequestDetailComponent', () => {
     });
   });
 
-  it('should load active cost centres on init', () => {
-    costCentreServiceMock.getCostCentres.mockReturnValue(
+  it('should load budgets for the invoice team on init', () => {
+    const budget = {
+      id: 9,
+      name: 'Operations 2026',
+      teamId: 3,
+      periodStart: '2026-01-01T00:00:00Z',
+      periodEnd: '2026-12-31T00:00:00Z',
+    };
+    budgetServiceMock.getBudgets.mockReturnValue(
       of({
-        items: [
-          { id: 1, name: 'Active' },
-          { id: 2, name: 'Inactive', isActive: false },
-        ],
+        items: [budget],
       }),
     );
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
@@ -126,8 +144,8 @@ describe('RequestDetailComponent', () => {
 
     component.ngOnInit();
 
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledWith({ Limit: 100 });
-    expect(component.costCentres).toEqual([{ id: 1, name: 'Active' }]);
+    expect(budgetServiceMock.getBudgets).toHaveBeenCalledWith({ TeamId: 3, Limit: 100 });
+    expect(component.budgets).toEqual([budget]);
   });
 
   it('should call downloadReceipt with the route id on init', () => {
@@ -250,11 +268,11 @@ describe('RequestDetailComponent', () => {
     serviceMock.approvePaymentRequestByUser.mockReturnValue(of({ id: 7 }));
     serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
 
-    component.onApprove({ costCentreId: 5, reason: 'ok' });
+    component.onApprove({ budgetId: 5, reason: 'valid reason' });
 
     expect(serviceMock.approvePaymentRequestByUser).toHaveBeenCalledWith(7, {
-      costCentreId: 5,
-      reason: 'ok',
+      budgetId: 5,
+      reason: 'valid reason',
     });
     expect(serviceMock.getPaymentRequestsByUserById).toHaveBeenCalledWith(7, {
       IncludeUser: true,
@@ -351,5 +369,149 @@ describe('RequestDetailComponent', () => {
   it('onBack navigates to /requests', () => {
     component.onBack();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/requests']);
+  });
+
+  it('returns the invoice user email for notifications', () => {
+    component.invoice = mockInvoice;
+    expect(component.notificationEmail).toBe('bob@example.com');
+  });
+
+  it('returns a changes requested subject containing the invoice number', () => {
+    component.invoice = mockInvoice;
+    expect(component.notificationSubject).toContain('INV-007');
+  });
+
+  it('returns an email notification message with invoice context and latest change reason', () => {
+    component.invoice = {
+      ...mockInvoice,
+      statusHistory: [
+        {
+          fromStatus: TransactionStatus.Submitted,
+          toStatus: TransactionStatus.ChangesRequested,
+          changedAt: '2026-01-02T00:00:00Z',
+          changedById: 1,
+          comment: 'Please upload a clearer receipt',
+        },
+      ],
+    } as unknown as PaymentRequestByUserDto;
+    component.modalType = 'email';
+
+    const message = component.notificationMessage;
+
+    expect(message).toContain('Bob Admin');
+    expect(message).toContain('INV-007');
+    expect(message).toContain('Please upload a clearer receipt');
+  });
+
+  it('returns a slack notification message with invoice context', () => {
+    component.invoice = mockInvoice;
+    component.modalType = 'slack';
+
+    const message = component.notificationMessage;
+
+    expect(message).toContain('INV-007');
+    expect(message).toContain('100');
+  });
+
+  it('requests changes before opening the email notification modal', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: TransactionStatus.ChangesRequested,
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    expect(serviceMock.requestChangesForPaymentRequestByUser).toHaveBeenCalledWith(7, {
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.modalType).toBe('email');
+    expect(component.pendingChangeRequest).toEqual({
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.notificationMessage).toContain('Please upload a clearer receipt');
+  });
+
+  it('does not open the notification modal when request changes fails', () => {
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(
+      throwError(() => new Error('status failed')),
+    );
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    expect(component.modalType).toBeNull();
+    expect(component.pendingChangeRequest).toBeNull();
+    expect(notificationMock.showError).toHaveBeenCalledWith(
+      'Could not request changes: status failed',
+    );
+  });
+
+  it('opens the slack notification modal after request changes succeeds', () => {
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'slack',
+    });
+
+    expect(serviceMock.requestChangesForPaymentRequestByUser).toHaveBeenCalledWith(7, {
+      reason: 'Please upload a clearer receipt',
+    });
+    expect(component.modalType).toBe('slack');
+  });
+
+  it('clears pending request when the notification modal is closed', () => {
+    component.invoice = mockInvoice;
+    serviceMock.requestChangesForPaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
+    component.onRequestChanges({
+      reason: 'Please upload a clearer receipt',
+      contactMethod: 'email',
+    });
+
+    component.onNotificationModalClosed();
+
+    expect(component.modalType).toBeNull();
+    expect(component.pendingChangeRequest).toBeNull();
+  });
+
+  it('shows undo button after a status action succeeds', () => {
+    component.invoice = mockInvoice;
+    serviceMock.declinePaymentRequestByUser.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(mockInvoice));
+
+    component.onDecline({ reason: 'duplicate' });
+
+    expect(component.canUndoLastStatusChange).toBe(true);
+  });
+
+  it('undoes the last status change and reloads the invoice', () => {
+    const reloadedInvoice = {
+      ...mockInvoice,
+      status: TransactionStatus.Submitted,
+    } as unknown as PaymentRequestByUserDto;
+    component.invoice = mockInvoice;
+    component.canUndoLastStatusChange = true;
+    serviceMock.undoLastStatusChange.mockReturnValue(of({ id: 7 }));
+    serviceMock.getPaymentRequestsByUserById.mockReturnValue(of(reloadedInvoice));
+
+    component.onUndoStatusChange();
+
+    expect(serviceMock.undoLastStatusChange).toHaveBeenCalledWith(7);
+    expect(component.invoice).toEqual(reloadedInvoice);
+    expect(component.canUndoLastStatusChange).toBe(false);
+    expect(notificationMock.showSuccess).toHaveBeenCalledWith('Status change undone');
   });
 });

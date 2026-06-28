@@ -28,8 +28,24 @@ function sendFile(filePath, response) {
   const ext = path.extname(filePath).toLowerCase();
   response.writeHead(200, {
     'Content-Type': contentTypes.get(ext) ?? 'application/octet-stream',
+    'Cache-Control': getCacheControl(filePath),
   });
   createReadStream(filePath).pipe(response);
+}
+
+function getCacheControl(filePath) {
+  const fileName = path.basename(filePath);
+  if (
+    fileName === 'index.html' ||
+    fileName === 'ngsw.json' ||
+    fileName === 'ngsw-worker.js' ||
+    fileName === 'safety-worker.js' ||
+    fileName === 'worker-basic.min.js'
+  ) {
+    return 'no-cache, no-store, must-revalidate';
+  }
+
+  return 'public, max-age=31536000, immutable';
 }
 
 const server = http.createServer(async (request, response) => {

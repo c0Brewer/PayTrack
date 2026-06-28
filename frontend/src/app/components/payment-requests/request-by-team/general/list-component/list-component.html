@@ -1,0 +1,77 @@
+<table class="team-request-table">
+  <thead>
+    <tr>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Amount')">
+          Amount
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Amount') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('DueDate')">
+          Due Date
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('DueDate') }}</span>
+        </button>
+      </th>
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Purpose')">
+          Purpose
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Purpose') }}</span>
+        </button>
+      </th>
+      @if (showTeamColumn) {
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('Team')">
+            Team
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Team') }}</span>
+          </button>
+        </th>
+      }
+      <th class="sortable-col">
+        <button type="button" class="sort-header" (click)="onSort('Status')">
+          Status
+          <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('Status') }}</span>
+        </button>
+      </th>
+      @if (showUserColumn) {
+        <th class="sortable-col">
+          <button type="button" class="sort-header" (click)="onSort('User')">
+            User
+            <span class="material-symbols-outlined" aria-hidden="true">{{ getSortIcon('User') }}</span>
+          </button>
+        </th>
+      }
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (request of requests; track request.id) {
+      <tr>
+        <td>{{ request.amount | euro }}</td>
+        <td>{{ request.dueDate ? (request.dueDate | date: 'dd.MM.yyyy') : '-' }}</td>
+        <td>{{ request.purposeOfPayment ?? '-' }}</td>
+        @if (showTeamColumn) {
+          <td>{{ request.team?.name ?? '-' }}</td>
+        }
+        <td>
+          <span [class]="'status ' + getStatusClass(request.status)">
+            {{ getTransactionStatusLabel(request.status) }}
+          </span>
+        </td>
+        @if (showUserColumn) {
+          <td>{{ request.user?.name ?? '-' }}</td>
+        }
+        <td class="actions-col">
+          <button class="view-btn" (click)="onOpenDetail(request)">View</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="4 + (showTeamColumn ? 1 : 0) + (showUserColumn ? 1 : 0) + 1">
+          No payment requests found.
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
