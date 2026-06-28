@@ -2,7 +2,7 @@
   <div class="d-flex flex-column gap-1 mb-4">
     <h1 class="m-0">Settings</h1>
     <p class="mb-0 text-body-secondary">
-      Manage your profile, payout details, notifications, and security settings.
+      Manage your profile, payout details, and notification settings.
     </p>
   </div>
   @let user = authService.currentUser$ | async;
@@ -38,9 +38,6 @@
   @switch (activeTab()) {
     @case ('bank-accounts') {
       <app-bank-accounts-settings-page [user]="user" />
-    }
-    @case ('security') {
-      <app-security-settings-page [user]="user" />
     }
     @case ('notifications') {
       <app-notifications-settings-page [user]="user" />

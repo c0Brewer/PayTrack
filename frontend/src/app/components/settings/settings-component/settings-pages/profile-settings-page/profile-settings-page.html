@@ -10,14 +10,40 @@
     </app-box-component>
   </div>
   <div class="col-12 col-xl-8">
-    <app-box-component title="Account Information" subtitle="Name, email, and team assignment" size="medium">
-    </app-box-component>
-  </div>
-</div>
+    <app-box-component
+      title="Account Information"
+      subtitle="Current access, team assignment, and payout setup status"
+      size="medium"
+    >
+      <div class="account-info-grid">
+        <div class="account-info-item">
+          <span class="account-info-item__label">Current Team</span>
+          <span class="account-info-item__value">
+            {{ user()?.team?.name ?? 'No team assigned' }}
+          </span>
+        </div>
 
-<div class="row gx-4 gx-xl-5 gy-4 mt-1">
-  <div class="col-12">
-    <app-box-component title="Profile Activity" subtitle="Recent account changes" size="large">
+        <div class="account-info-item">
+          <span class="account-info-item__label">Role</span>
+          <span class="account-info-item__value">
+            {{ roleToText(user()?.role) }}
+          </span>
+        </div>
+
+        <div class="account-info-item">
+          <span class="account-info-item__label">Account Status</span>
+          <span class="account-info-item__value">
+            {{ user()?.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <div class="account-info-item">
+          <span class="account-info-item__label">Payout Setup</span>
+          <span class="account-info-item__value">
+            {{ getBankSetupStatus(user()) }}
+          </span>
+        </div>
+      </div>
     </app-box-component>
   </div>
 </div>
