@@ -43,28 +43,28 @@ describe('SettingsComponent', () => {
     });
 
     it('should return false for a tab that is not active', () => {
-      expect(component['isActiveTab']('security')).toBe(false);
+      expect(component['isActiveTab']('notifications')).toBe(false);
     });
   });
 
   // ── filteredTabs ───────────────────────────────────────────────────────────
 
   describe('filteredTabs', () => {
-    it('should return all 5 tabs for an admin user', () => {
+    it('should return all 4 tabs for an admin user', () => {
       const adminUser = { role: Role.ADMIN } as UserDto;
-      expect(component['filteredTabs'](adminUser)).toHaveLength(5);
+      expect(component['filteredTabs'](adminUser)).toHaveLength(4);
     });
 
     it('should exclude the admin-only tab for a regular user', () => {
       const regularUser = { role: Role.REGULAR_USER } as UserDto;
       const tabs = component['filteredTabs'](regularUser);
-      expect(tabs).toHaveLength(4);
+      expect(tabs).toHaveLength(3);
       expect(tabs.every((t) => !t['adminOnly'])).toBe(true);
     });
 
     it('should exclude the admin-only tab for a null user', () => {
       const tabs = component['filteredTabs'](null);
-      expect(tabs).toHaveLength(4);
+      expect(tabs).toHaveLength(3);
     });
   });
 
@@ -91,8 +91,8 @@ describe('SettingsComponent', () => {
   describe('fragment navigation', () => {
     it('should set the active tab to a valid fragment', () => {
       fixture.detectChanges();
-      fragment$.next('security');
-      expect(component['activeTab']()).toBe('security');
+      fragment$.next('notifications');
+      expect(component['activeTab']()).toBe('notifications');
     });
 
     it('should fall back to the profile tab for an unknown fragment', () => {
@@ -107,13 +107,13 @@ describe('SettingsComponent', () => {
   describe('ngOnDestroy', () => {
     it('should stop reacting to fragment changes after destruction', () => {
       fixture.detectChanges();
-      fragment$.next('security');
-      expect(component['activeTab']()).toBe('security');
+      fragment$.next('notifications');
+      expect(component['activeTab']()).toBe('notifications');
 
       component.ngOnDestroy();
       fragment$.next('bank-accounts');
 
-      expect(component['activeTab']()).toBe('security');
+      expect(component['activeTab']()).toBe('notifications');
     });
   });
 });
