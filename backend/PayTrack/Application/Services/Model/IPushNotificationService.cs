@@ -15,8 +15,9 @@ namespace PayTrack.Application.Services.Model
         /// Gets the current user's push configuration.
         /// </summary>
         /// <param name="userId">User id.</param>
+        /// <param name="currentEndpoint">Current browser push endpoint, if available.</param>
         /// <returns>Push configuration.</returns>
-        Task<PushNotificationConfigDto> GetConfigAsync(int userId);
+        Task<PushNotificationConfigDto> GetConfigAsync(int userId, string? currentEndpoint = null);
 
         /// <summary>
         /// Saves a browser push subscription for a user.

@@ -12,13 +12,6 @@ namespace PayTrack.Data.Repositories.Model
     public interface IPushSubscriptionRepository
     {
         /// <summary>
-        /// Returns whether a user has any enabled push subscription.
-        /// </summary>
-        /// <param name="userId">User id.</param>
-        /// <returns>True if at least one subscription is enabled.</returns>
-        Task<bool> HasEnabledSubscriptionAsync(int userId);
-
-        /// <summary>
         /// Gets all enabled subscriptions for a user.
         /// </summary>
         /// <param name="userId">User id.</param>

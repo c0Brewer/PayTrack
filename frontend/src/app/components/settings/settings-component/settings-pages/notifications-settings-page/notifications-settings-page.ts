@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, input } from '@angular/core';
 
 import { NotificationService } from '../../../../../services/notification/notification-service';
@@ -7,7 +8,7 @@ import { BoxComponent } from '../../../../general/boxes/box-component/box-compon
 
 @Component({
   selector: 'app-notifications-settings-page',
-  imports: [BoxComponent],
+  imports: [BoxComponent, DatePipe],
   templateUrl: './notifications-settings-page.html',
   styleUrl: './notifications-settings-page.scss',
 })
@@ -20,6 +21,7 @@ export class NotificationsSettingsPageComponent implements OnInit {
   protected readonly enabled = this.pushNotifications.enabled;
   protected readonly loading = this.pushNotifications.loading;
   protected readonly availability = this.pushNotifications.availability;
+  protected readonly devices = this.pushNotifications.devices;
   protected readonly canToggle = computed(
     () => this.availability() === 'available' && !this.loading(),
   );
@@ -51,7 +53,8 @@ export class NotificationsSettingsPageComponent implements OnInit {
   }
 
   protected onToggle(event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+    const target = event.target as HTMLInputElement;
+    const checked = target.checked;
     const action = checked ? this.pushNotifications.enable() : this.pushNotifications.disable();
 
     action
@@ -60,8 +63,13 @@ export class NotificationsSettingsPageComponent implements OnInit {
           checked ? 'Push notifications enabled.' : 'Push notifications disabled.',
         );
       })
-      .catch(() => {
-        this.notifications.showError('Could not update push notification settings.');
+      .catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : 'Could not update push notification settings.';
+        this.notifications.showError(message);
+      })
+      .finally(() => {
+        target.checked = this.enabled();
       });
   }
 }

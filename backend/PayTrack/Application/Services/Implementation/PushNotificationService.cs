@@ -35,13 +35,26 @@ namespace PayTrack.Application.Services.Implementation
         private readonly ILogger<PushNotificationService> logger = logger;
 
         /// <inheritdoc/>
-        public async Task<PushNotificationConfigDto> GetConfigAsync(int userId)
+        public async Task<PushNotificationConfigDto> GetConfigAsync(int userId, string? currentEndpoint = null)
         {
+            var subscriptions = await this.repository.GetEnabledForUserAsync(userId);
+            subscriptions = RemoveDuplicateSubscriptions(subscriptions);
+
             return new PushNotificationConfigDto
             {
                 IsConfigured = this.settings.IsConfigured,
                 VapidPublicKey = this.settings.IsConfigured ? this.settings.PublicKey : null,
-                Enabled = await this.repository.HasEnabledSubscriptionAsync(userId),
+                Enabled = !string.IsNullOrWhiteSpace(currentEndpoint) &&
+                    subscriptions.Any(s => s.Endpoint == currentEndpoint),
+                Devices = subscriptions.Select(s => new PushSubscriptionDeviceDto
+                {
+                    Id = s.Id,
+                    BrowserName = string.IsNullOrWhiteSpace(s.BrowserName) ? "Unknown browser" : s.BrowserName,
+                    DeviceName = string.IsNullOrWhiteSpace(s.DeviceName) ? "Unknown device" : s.DeviceName,
+                    Platform = string.IsNullOrWhiteSpace(s.Platform) ? "Unknown platform" : s.Platform,
+                    IsCurrentDevice = !string.IsNullOrWhiteSpace(currentEndpoint) && s.Endpoint == currentEndpoint,
+                    UpdatedAt = s.UpdatedAt,
+                }).ToArray(),
             };
         }
 
@@ -59,6 +72,9 @@ namespace PayTrack.Application.Services.Implementation
                 Endpoint = subscription.Endpoint,
                 P256dh = subscription.P256dh,
                 Auth = subscription.Auth,
+                BrowserName = subscription.BrowserName,
+                DeviceName = subscription.DeviceName,
+                Platform = subscription.Platform,
                 IsEnabled = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -232,6 +248,16 @@ namespace PayTrack.Application.Services.Implementation
                 senderPublicKeyBytes,
                 cipherText,
                 tag);
+        }
+
+        private static List<PushSubscription> RemoveDuplicateSubscriptions(List<PushSubscription> subscriptions)
+        {
+            return subscriptions
+                .GroupBy(s => s.Endpoint)
+                .Select(group => group
+                    .OrderByDescending(s => s.UpdatedAt)
+                    .First())
+                .ToList();
         }
 
         private string CreateVapidJwt(string endpoint)

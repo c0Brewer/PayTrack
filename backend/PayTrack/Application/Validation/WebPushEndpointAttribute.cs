@@ -20,6 +20,11 @@ namespace PayTrack.Application.Validation
             "web.push.apple.com",
         };
 
+        private static readonly string[] AllowedHostSuffixes =
+        [
+            ".notify.windows.com",
+        ];
+
         /// <summary>
         /// Checks whether a value is an allowed Web Push endpoint.
         /// </summary>
@@ -40,7 +45,8 @@ namespace PayTrack.Application.Validation
             return uri.Scheme == Uri.UriSchemeHttps
                 && (uri.IsDefaultPort || uri.Port == 443)
                 && string.IsNullOrEmpty(uri.UserInfo)
-                && AllowedHosts.Contains(uri.IdnHost);
+                && (AllowedHosts.Contains(uri.IdnHost)
+                    || AllowedHostSuffixes.Any(suffix => uri.IdnHost.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
         }
 
         /// <inheritdoc/>
