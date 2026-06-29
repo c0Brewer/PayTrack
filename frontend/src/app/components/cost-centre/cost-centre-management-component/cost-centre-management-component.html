@@ -4,9 +4,7 @@
   >
     <div class="d-flex flex-column gap-1">
       <h1 class="m-0">Cost Centre Management</h1>
-      <p class="mb-0 text-body-secondary">
-        Organize cost centres, budgets, and their current availability.
-      </p>
+      <p class="mb-0 text-body-secondary">{{ summaryBannerText }}</p>
     </div>
     <button
       class="btn btn-primary align-self-start align-self-sm-auto d-inline-flex align-items-center gap-1"
@@ -20,7 +18,7 @@
   <div class="row g-3 align-items-stretch">
     <app-stat-box-component
       header="Total Cost Centres"
-      [content]="10"
+      [content]="totalCount"
       icon="account_tree"
       iconColor="#eb6a00"
       iconBackgroundColor="#fff4ea"
@@ -29,7 +27,7 @@
     />
     <app-stat-box-component
       header="Active Centres"
-      [content]="8"
+      [content]="activeCostCentreCount"
       icon="check_circle"
       iconColor="#3b82f6"
       iconBackgroundColor="#EFF6FF"
@@ -38,7 +36,7 @@
     />
     <app-stat-box-component
       header="Total Budget"
-      [content]="'€1000'"
+      [content]="totalBudgetDisplay"
       icon="account_balance_wallet"
       iconColor="#10b981"
       iconBackgroundColor="#ECFDF5"
@@ -47,7 +45,7 @@
     />
     <app-stat-box-component
       header="With Budgets"
-      [content]="6"
+      [content]="costCentresWithBudgetsCount"
       icon="savings"
       iconColor="#7c3aed"
       iconBackgroundColor="#f3e8ff"
