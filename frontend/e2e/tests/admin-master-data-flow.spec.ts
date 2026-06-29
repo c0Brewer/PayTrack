@@ -99,12 +99,17 @@ async function createCostCentreWithBudget(
   await dialog.locator('input').nth(5).fill('2026-12-31');
   await dialog.getByRole('button', { name: /Add Budget/ }).click();
 
-  const newBudgetRow = dialog.locator('table.new-budgets tbody tr').filter({
+  const newBudgetCard = dialog.locator('.budget-card--new').filter({
     hasText: options.budgetName,
   });
-  await expect(newBudgetRow).toBeVisible();
-  await expect(newBudgetRow).toContainText(options.seasonName);
-  await expect(newBudgetRow).toContainText(options.teamName);
+  await expect(newBudgetCard).toBeVisible();
+  await expect(newBudgetCard).toContainText(`${options.teamName} - ${options.budgetName}`);
+  await expect(newBudgetCard).toContainText('New');
+  await expect(newBudgetCard).toContainText('Expense');
+  await expect(newBudgetCard).toContainText(options.seasonName);
+  await expect(newBudgetCard).toContainText(/4\.321,00\s*€/);
+  await expect(newBudgetCard).toContainText('01.07.2026');
+  await expect(newBudgetCard).toContainText('31.12.2026');
 
   await dialog.getByRole('button', { name: 'Create' }).click();
   await expect(page.getByText('Cost centre created successfully')).toBeVisible();
