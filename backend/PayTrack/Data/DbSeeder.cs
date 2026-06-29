@@ -19,44 +19,6 @@ namespace PayTrack.Data;
 public static class DbSeeder
 {
     /// <summary>
-    /// Adds presentation users when they are missing.
-    /// </summary>
-    /// <param name="db">Application database context.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public static async Task SeedPresentationUsersAsync(AppDbContext db)
-    {
-        var presentationUsers = new[]
-        {
-            new { Name = "Toto Wolff", Email = "toto.wolff.7f3a2b@paytrack.local" },
-            new { Name = "Christian Horner", Email = "christian.horner.92c4d1@paytrack.local" },
-            new { Name = "Lewis Hamilton", Email = "lewis.hamilton.a8d51e@paytrack.local" },
-            new { Name = "Kimi Antonelli", Email = "kimi.antonelli.f31b7c@paytrack.local" },
-            new { Name = "Lando Norris", Email = "lando.norris.c46e90@paytrack.local" },
-            new { Name = "Sebastian Vettel", Email = "sebastian.vettel.5b0ad4@paytrack.local" },
-            new { Name = "Michael Schuhmacher", Email = "michael.schuhmacher.e27c19@paytrack.local" },
-            new { Name = "Stefano Domenicali", Email = "stefano.domenicali.0a6f8e@paytrack.local" },
-        };
-
-        foreach (var presentationUser in presentationUsers)
-        {
-            if (await db.User.AnyAsync(u => u.Email == presentationUser.Email))
-            {
-                continue;
-            }
-
-            db.User.Add(new User
-            {
-                Name = presentationUser.Name,
-                Email = presentationUser.Email,
-                Role = Role.RegularUser,
-                IsActive = true,
-            });
-        }
-
-        await db.SaveChangesAsync();
-    }
-
-    /// <summary>
     /// Adds demo data when it is missing.
     /// </summary>
     /// <param name="db">Application database context.</param>
