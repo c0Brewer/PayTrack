@@ -30,74 +30,6 @@
       </span>
     </div>
 
-    @if (workingBudgets.length > 0) {
-      <table class="budget-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Season</th>
-            <th>Team</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Period Start</th>
-            <th>Period End</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (budget of workingBudgets; track budget.originalId) {
-            <tr [class.deleted]="budget.markedForDeletion">
-              <td>{{ budget.name }}</td>
-              <td>{{ getSeasonName(budget.seasonId) }}</td>
-              <td>{{ getTeamName(budget.teamId) }}</td>
-              <td>{{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}</td>
-              <td>{{ budget.targetAmount | euro }}</td>
-              <td>{{ budget.periodStart | date: 'yyyy-MM-dd' }}</td>
-              <td>{{ budget.periodEnd | date: 'yyyy-MM-dd' }}</td>
-              <td>
-                <button type="button" class="btn-icon" (click)="toggleBudgetDeletion(budget)">
-                  {{ budget.markedForDeletion ? 'Restore' : 'Remove' }}
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
-
-    @if (newBudgets.length > 0) {
-      <table class="budget-table new-budgets">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Season</th>
-            <th>Team</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Period Start</th>
-            <th>Period End</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (budget of newBudgets; track $index) {
-            <tr>
-              <td>{{ budget.name }}</td>
-              <td>{{ getSeasonName(budget.seasonId) }}</td>
-              <td>{{ getTeamName(budget.teamId) }}</td>
-              <td>{{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}</td>
-              <td>{{ budget.targetAmount | euro }}</td>
-              <td>{{ budget.periodStart }}</td>
-              <td>{{ budget.periodEnd }}</td>
-              <td>
-                <button type="button" class="btn-icon" (click)="removeNewBudget($index)">Remove</button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
-
     <div class="budget-form-card border rounded p-3 mb-3">
       <div class="row g-3 align-items-start">
         <label class="col-12 mb-0">
@@ -211,6 +143,111 @@
         </div>
       </div>
     </div>
+
+    @if (workingBudgets.length > 0 || newBudgets.length > 0) {
+      <div class="d-grid gap-2">
+        @for (budget of workingBudgets; track budget.originalId) {
+          <div
+            class="budget-card border rounded p-3"
+            [class.budget-card--deleted]="budget.markedForDeletion"
+          >
+            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+              <div>
+                <div class="fw-semibold">{{ getTeamName(budget.teamId) + ' - ' + budget.name }}</div>
+                <div class="d-flex gap-1 mt-1">
+                  <span class="badge text-bg-light border">Existing</span>
+                  <span
+                    class="badge"
+                    [class.text-bg-secondary]="budget.type === BudgetType.Expense"
+                    [class.text-bg-success]="budget.type === BudgetType.Income"
+                  >
+                    {{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm d-inline-flex align-items-center gap-1 align-self-start"
+                [class.btn-outline-danger]="!budget.markedForDeletion"
+                [class.btn-outline-secondary]="budget.markedForDeletion"
+                (click)="toggleBudgetDeletion(budget)"
+              >
+                <span class="material-symbols-outlined">
+                  {{ budget.markedForDeletion ? 'undo' : 'delete' }}
+                </span>
+                {{ budget.markedForDeletion ? 'Restore' : 'Remove' }}
+              </button>
+            </div>
+            <div class="budget-card__details mt-3">
+              <div>
+                <span>Season</span>
+                <strong>{{ getSeasonName(budget.seasonId) }}</strong>
+              </div>
+              <div>
+                <span>Amount</span>
+                <strong>{{ budget.targetAmount | euro }}</strong>
+              </div>
+              <div>
+                <span>Start</span>
+                <strong>{{ budget.periodStart | date: 'dd.MM.yyyy' }}</strong>
+              </div>
+              <div>
+                <span>End</span>
+                <strong>{{ budget.periodEnd | date: 'dd.MM.yyyy' }}</strong>
+              </div>
+            </div>
+          </div>
+        }
+
+        @for (budget of newBudgets; track $index) {
+          <div class="budget-card border rounded p-3 budget-card--new">
+            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+              <div>
+                <div class="fw-semibold">{{ getTeamName(budget.teamId) + ' - ' + budget.name }}</div>
+                <div class="d-flex gap-1 mt-1">
+                  <span class="badge text-bg-primary">New</span>
+                  <span
+                    class="badge"
+                    [class.text-bg-secondary]="budget.type === BudgetType.Expense"
+                    [class.text-bg-success]="budget.type === BudgetType.Income"
+                  >
+                    {{ budget.type === BudgetType.Income ? 'Income' : 'Expense' }}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 align-self-start"
+                (click)="removeNewBudget($index)"
+              >
+                <span class="material-symbols-outlined">delete</span>
+                Remove
+              </button>
+            </div>
+            <div class="budget-card__details mt-3">
+              <div>
+                <span>Season</span>
+                <strong>{{ getSeasonName(budget.seasonId) }}</strong>
+              </div>
+              <div>
+                <span>Amount</span>
+                <strong>{{ budget.targetAmount | euro }}</strong>
+              </div>
+              <div>
+                <span>Start</span>
+                <strong>{{ budget.periodStart | date: 'dd.MM.yyyy' }}</strong>
+              </div>
+              <div>
+                <span>End</span>
+                <strong>{{ budget.periodEnd | date: 'dd.MM.yyyy' }}</strong>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-muted border rounded p-3">No budgets added yet.</div>
+    }
   </div>
 
   <div class="modal-actions">
