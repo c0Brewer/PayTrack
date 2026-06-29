@@ -18,7 +18,7 @@ test('shows required-field validation on invoice submission', async ({
   await expectInvalid(page.locator('#paidAt'));
   await expectInvalid(page.locator('#invoiceNumber'));
   await expectInvalid(page.locator('#purposeOfPayment'));
-  await expect(page.locator('.payout-type')).toHaveClass(/payout-type--invalid/);
+  await expectInvalid(page.locator('#bankAccountId'));
   await expect(page.locator('.receipt-upload')).toHaveClass(/receipt-upload--invalid/);
   await expect(page.getByText('This field is required.')).toHaveCount(6);
 });
@@ -43,8 +43,8 @@ test('validates required cost centre budget team and season fields', async ({ pa
   await authenticatePage(page, request, e2eUsers.admin);
   await openCreateCostCentreModal(page);
 
-  const addBudgetForm = page.locator('.add-budget-form');
-  await addBudgetForm.getByRole('button', { name: '+ Add Budget' }).click();
+  const addBudgetForm = page.locator('.budget-form-card');
+  await addBudgetForm.getByRole('button', { name: /Add Budget/ }).click();
 
   await expect(page.getByText('Name is required.')).toBeVisible();
   await expect(page.getByText('Team is required.')).toBeVisible();
@@ -58,14 +58,14 @@ test('validates invalid budget date ranges', async ({ page, request }) => {
   await authenticatePage(page, request, e2eUsers.admin);
   await openCreateCostCentreModal(page);
 
-  const addBudgetForm = page.locator('.add-budget-form');
+  const addBudgetForm = page.locator('.budget-form-card');
   await addBudgetForm.getByPlaceholder('Budget name').fill('E2E invalid date budget');
   await addBudgetForm.locator('select').nth(1).selectOption({ index: 1 });
   await addBudgetForm.locator('select').nth(2).selectOption({ index: 1 });
   await addBudgetForm.getByPlaceholder('0.00').fill('100');
   await addBudgetForm.locator('input[type="date"]').nth(0).fill('2026-07-15');
   await addBudgetForm.locator('input[type="date"]').nth(1).fill('2026-07-01');
-  await addBudgetForm.getByRole('button', { name: '+ Add Budget' }).click();
+  await addBudgetForm.getByRole('button', { name: /Add Budget/ }).click();
 
   await expect(page.getByText('Period end must not be before period start.')).toBeVisible();
 });

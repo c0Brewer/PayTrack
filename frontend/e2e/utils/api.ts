@@ -49,6 +49,8 @@ interface CreateInvoiceOptions {
 interface ResubmitInvoiceOptions extends CreateInvoiceOptions {
   invoiceId: number;
   comment: string;
+  creditorName?: string;
+  dueDate?: string;
 }
 
 interface CreateTeamPaymentRequestOptions {
@@ -149,6 +151,7 @@ export async function disableNotificationChannels(
       invoiceRejection: disabledChannel,
       invoiceChangesRequested: disabledChannel,
       invoicePaymentCompleted: disabledChannel,
+      invoiceDeletion: disabledChannel,
     },
   });
   await expectOk(response);
@@ -204,7 +207,8 @@ export async function resubmitInvoice(
         InvoiceNumber: options.invoiceNumber,
         Comment: options.comment,
         PayoutType: '1',
-        BankAccountId: '0',
+        CreditorName: options.creditorName ?? 'E2E Supplier',
+        DueDate: options.dueDate ?? options.paidAt,
       },
     },
   );
