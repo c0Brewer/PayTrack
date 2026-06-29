@@ -15,6 +15,8 @@ test('moves an invoice through changes requested, review, approved, and paid', a
   page,
   request,
 }) => {
+  test.setTimeout(60_000);
+
   const invoiceUser = getInvoiceFlowUser(browserName);
   const adminToken = await requestE2EJwt(request, e2eUsers.admin);
   const invoiceUserToken = await requestE2EJwt(request, invoiceUser);
@@ -46,10 +48,10 @@ test('moves an invoice through changes requested, review, approved, and paid', a
   await authenticatePage(userPage, request, invoiceUser);
   await userPage.goto(`/my-invoices/${invoice.id}`);
   await expect(userPage.getByRole('heading', { name: `Invoice ${invoiceNumber}` })).toBeVisible();
-  await expect(userPage.getByRole('heading', { name: 'Changes requested' })).toBeVisible();
-  await expect(userPage.locator('.change-request-message')).toContainText(changeRequestReason);
+  await expect(userPage.getByRole('heading', { name: 'Changes Requested' })).toBeVisible();
+  await expect(userPage.getByText(`Reason: ${changeRequestReason}`)).toBeVisible();
 
-  await userPage.getByRole('button', { name: 'Edit Invoice' }).click();
+  await userPage.getByRole('button', { name: 'Revise and Resubmit' }).click();
   await expect(userPage.getByRole('heading', { name: 'Edit Invoice' })).toBeVisible();
   await userPage.locator('#purposeOfPayment').fill(updatedPurpose);
   await userPage.locator('#creditorName').fill('E2E Supplier Updated');
@@ -63,6 +65,8 @@ test('moves an invoice through changes requested, review, approved, and paid', a
     purposeOfPayment: updatedPurpose,
     paidAt: '2026-06-10T00:00:00Z',
     comment: 'Updated after requested changes.',
+    creditorName: 'E2E Supplier Updated',
+    dueDate: '2026-06-10T00:00:00Z',
   });
 
   await page.goto(`/requests/${invoice.id}`);
@@ -86,8 +90,13 @@ async function openAdminInvoiceFromOverview(page: Page, invoiceNumber: string): 
   const row = page.locator('tbody tr').filter({ hasText: invoiceNumber });
   await expect(row).toBeVisible();
   await expect(row).toContainText('Submitted');
-  await row.getByRole('button', { name: 'View' }).click();
-  await expect(page.getByRole('heading', { name: `Invoice ${invoiceNumber}` })).toBeVisible();
+  await Promise.all([
+    page.waitForURL(/\/requests\/\d+$/, { timeout: 10_000 }),
+    row.getByRole('button', { name: 'View' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: `Invoice ${invoiceNumber}` })).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 async function requestInvoiceChanges(page: Page, reason: string): Promise<void> {

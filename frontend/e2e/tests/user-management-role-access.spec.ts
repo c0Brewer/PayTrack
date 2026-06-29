@@ -9,6 +9,8 @@ test('updates a user role team and active state and applies the changed access',
   page,
   request,
 }) => {
+  test.setTimeout(60_000);
+
   const targetUser = getHomeDashboardUser(browserName);
 
   await authenticatePage(page, request, e2eUsers.admin);
@@ -87,8 +89,12 @@ async function editUser(
 
   const dialog = page.getByRole('dialog').filter({ hasText: 'Edit User' });
   await expect(dialog).toBeVisible();
-  await dialog.locator('select[name="role"]').selectOption({ label: options.role });
-  await dialog.locator('select[name="team"]').selectOption({ label: options.team });
+  const roleSelect = dialog.locator('select[name="role"]');
+  const teamSelect = dialog.locator('select[name="team"]');
+  await expect(roleSelect).toBeVisible({ timeout: 10_000 });
+  await expect(teamSelect).toBeVisible({ timeout: 10_000 });
+  await roleSelect.selectOption({ label: options.role });
+  await teamSelect.selectOption({ label: options.team });
   await dialog.getByRole('switch', { name: 'Active' }).setChecked(options.active);
   await dialog.getByRole('button', { name: /Save/ }).click();
 

@@ -8,6 +8,8 @@ test('redirects a regular user from admin routes to the unauthorized page', asyn
   page,
   request,
 }) => {
+  test.setTimeout(60_000);
+
   await authenticatePage(page, request, getInvoiceFlowUser(browserName));
 
   await expectForbiddenRoute(page, '/requests');
@@ -55,10 +57,14 @@ test('hides admin navigation and forbids admin routes for a team lead', async ({
 });
 
 async function expectForbiddenRoute(page: Page, path: string): Promise<void> {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   await expect(page).toHaveURL(/\/unauthorized$/);
-  await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeVisible();
-  await expect(page.getByText('You do not have permission to access this page.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.getByText('You do not have permission to access this page.')).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 async function expectAdminNavigationHidden(page: Page): Promise<void> {

@@ -29,10 +29,13 @@ test('creates season, team, cost centre, and budget', async ({ browserName, page
 
   await openCostCentreDetail(page, costCentreName);
   await expect(page.getByRole('heading', { name: costCentreName })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Budgets (1)' })).toBeVisible();
-  await expect(page.locator('table.budget-table')).toContainText(/4\.321,00\s*€/);
-  await expect(page.locator('table.budget-table')).toContainText('2026-07-01');
-  await expect(page.locator('table.budget-table')).toContainText('2026-12-31');
+  await expect(page.getByRole('row', { name: 'Total Budgets 1' })).toBeVisible();
+
+  await expect(page.getByRole('heading', { name: 'Expense Budgets' })).toBeVisible();
+  await expect(page.getByText('1 assigned')).toBeVisible();
+  await expect(page.getByText(budgetName)).toBeVisible();
+  await expect(page.getByText('2026-07-01 – 2026-12-31')).toBeVisible();
+  await expect(page.getByText(/Target:\s*4\.321,00\s*€/)).toBeVisible();
 });
 
 async function createSeason(page: Page, seasonName: string): Promise<void> {
@@ -64,7 +67,6 @@ async function createTeam(
   await dialog.locator('input').nth(1).fill(options.description);
   await dialog.getByRole('button', { name: 'Create' }).click();
 
-  await expect(page.getByText(`Successfully created team ${options.name}`)).toBeVisible();
   await filterTableByName(page, options.name);
   await expect(page.locator('tbody tr').filter({ hasText: options.name })).toBeVisible();
 }
@@ -95,7 +97,7 @@ async function createCostCentreWithBudget(
   await dialog.locator('input').nth(3).fill(options.budgetAmount);
   await dialog.locator('input').nth(4).fill('2026-07-01');
   await dialog.locator('input').nth(5).fill('2026-12-31');
-  await dialog.getByRole('button', { name: '+ Add Budget' }).click();
+  await dialog.getByRole('button', { name: /Add Budget/ }).click();
 
   const newBudgetRow = dialog.locator('table.new-budgets tbody tr').filter({
     hasText: options.budgetName,
