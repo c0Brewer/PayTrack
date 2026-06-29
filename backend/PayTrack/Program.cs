@@ -167,7 +167,14 @@ if (seedDataConfig && !isTestEnv)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DbSeeder.SeedAsync(db);
+    if (app.Environment.IsProduction())
+    {
+        await DbSeeder.SeedPresentationUsersAsync(db);
+    }
+    else
+    {
+        await DbSeeder.SeedAsync(db);
+    }
 
     if (isE2EEnv)
     {
