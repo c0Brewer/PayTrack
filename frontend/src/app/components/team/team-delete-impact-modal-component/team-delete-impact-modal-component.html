@@ -33,7 +33,10 @@
     </div>
     <div class="modal-actions">
       @if (isReadOnlyImpact) {
-        <button type="button" (click)="onClose()">Back</button>
+        <button type="button" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-1 p-2" (click)="onClose()">
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          Back
+        </button>
       } @else {
         <button type="button" class="btn btn-danger ms-auto d-inline-flex align-items-center gap-1" (click)="onConfirmDelete()">
           <span class="material-symbols-outlined">delete</span>
