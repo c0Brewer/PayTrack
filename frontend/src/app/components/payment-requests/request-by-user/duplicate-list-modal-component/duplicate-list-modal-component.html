@@ -121,29 +121,32 @@
             <div class="duplicate-list__actions">
               <button
                 type="button"
-                class="duplicate-list__button"
+                class="duplicate-list__button duplicate-list__button--dismiss d-inline-flex align-items-center justify-content-center gap-1 p-2"
                 [disabled]="!getSelectedInvoice(duplicate)"
                 (click)="onOpenSelectedDetail(duplicate)"
               >
+                <span class="material-symbols-outlined">info</span>
                 View selected
               </button>
               <button
                 type="button"
-                class="duplicate-list__button"
-                appDisableOfflineAction
-                [disabled]="isDuplicateActionPending(duplicate)"
-                (click)="onDismissDuplicate(duplicate)"
-              >
-                Dismiss warning
-              </button>
-              <button
-                type="button"
-                class="duplicate-list__button duplicate-list__button--danger"
+                class="duplicate-list__button duplicate-list__button--danger d-inline-flex align-items-center justify-content-center gap-1 p-2"
                 appDisableOfflineAction
                 [disabled]="!getSelectedInvoice(duplicate) || isDuplicateActionPending(duplicate)"
                 (click)="onRequestDeleteSelectedInvoice(duplicate)"
               >
-                Delete selected invoice
+                <span class="material-symbols-outlined">delete</span>
+                Delete selected
+              </button>
+              <button
+                type="button"
+                class="duplicate-list__button duplicate-list__button--dismiss  d-inline-flex align-items-center justify-content-center gap-1 p-2"
+                appDisableOfflineAction
+                [disabled]="isDuplicateActionPending(duplicate)"
+                (click)="onDismissDuplicate(duplicate)"
+              >
+                <span class="material-symbols-outlined">close</span>
+                Ignore Duplicate
               </button>
             </div>
 

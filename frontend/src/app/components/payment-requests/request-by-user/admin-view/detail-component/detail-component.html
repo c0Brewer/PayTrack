@@ -248,6 +248,7 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'approve'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -317,6 +318,7 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'requestChanges'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -372,6 +374,7 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="statusActionPending === 'decline'"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>
@@ -460,6 +463,7 @@
             <button
               type="button"
               class="btn btn-secondary d-inline-flex align-items-center gap-1"
+              [disabled]="markingPaid"
               (click)="closeActionModal()"
             >
               <span class="material-symbols-outlined">close</span>

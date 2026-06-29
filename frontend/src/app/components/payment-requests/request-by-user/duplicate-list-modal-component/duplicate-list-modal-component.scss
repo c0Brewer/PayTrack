@@ -13,7 +13,6 @@
   font-weight: v.$font-semibold;
   margin-left: v.$size-xxs;
 }
-
 .duplicate-list {
   display: flex;
   flex-direction: column;
@@ -132,14 +131,14 @@
 
 .duplicate-list__confirm-delete {
   background: #fef2f2;
-  border: 1px solid #fecaca;
+  border: 1px solid red;
   border-radius: v.$size-xs;
   display: grid;
   gap: v.$size-xs;
   padding: v.$size-xs;
 
   p {
-    color: #991b1b;
+    color: red;
     font-size: v.$font-xs;
     margin: 0;
   }
@@ -154,7 +153,7 @@
   font-size: v.$font-xs;
 
   &:hover:not(:disabled) {
-    background: v.$background-dark;
+   background: v.$TUR-secondary-background;
   }
 
   &:disabled {
@@ -250,4 +249,12 @@
     grid-row: auto;
     grid-template-rows: none;
   }
+}
+.duplicate-list__button--dismiss{
+  border: 1px solid v.$TUR-primary-orange;
+  color: v.$TUR-primary-orange;
+  border-radius: v.$size-xs;
+  display: grid;
+  gap: v.$size-xs;
+  padding: v.$size-xs;
 }
