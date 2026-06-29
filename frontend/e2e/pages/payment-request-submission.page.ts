@@ -4,8 +4,16 @@ export class PaymentRequestSubmissionPage {
   constructor(private readonly page: Page) {}
 
   async goto(): Promise<void> {
+    const usersLoaded = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        response.url().includes('/api/v1/user') &&
+        response.ok(),
+    );
+
     await this.page.goto('/create-payment-request');
     await expect(this.page.getByRole('heading', { name: 'Create Payment Request' })).toBeVisible();
+    await usersLoaded;
   }
 
   async fillPaymentDetails(options: {
@@ -20,7 +28,9 @@ export class PaymentRequestSubmissionPage {
 
   async selectAssignedUser(email: string): Promise<void> {
     await this.page.getByRole('textbox', { name: 'Search by name…' }).fill(email);
-    await this.page.locator('.typeahead__option').filter({ hasText: email }).click();
+    const option = this.page.locator('.typeahead__option').filter({ hasText: email });
+    await expect(option).toBeVisible();
+    await option.click();
   }
 
   async selectTeam(teamName: string): Promise<void> {
