@@ -23,10 +23,33 @@ const mockCostCentres: CostCentreDto[] = [
     name: 'Aerodynamics',
     description: 'Aero costs',
     displayColor: '#FF5733',
-    budgets: [],
+    budgets: [
+      {
+        id: 11,
+        name: 'Aero Budget',
+        description: null,
+        teamId: 1,
+        costCentreId: 1,
+        seasonId: 1,
+        targetAmount: 700,
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+        type: 0 as const,
+        transactionIds: [],
+        paidAmount: 0,
+        approvedAmount: 0,
+      },
+    ],
     isActive: true,
   },
-  { id: 2, name: 'Powertrain', description: null, displayColor: null, budgets: [], isActive: true },
+  {
+    id: 2,
+    name: 'Powertrain',
+    description: null,
+    displayColor: null,
+    budgets: [],
+    isActive: false,
+  },
 ];
 
 const mockPaginatedResponse: CostCentreDtoPaginatedResponse = {
@@ -115,12 +138,18 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('ngOnInit should load cost centres', () => {
+    costCentreServiceMock.getCostCentres.mockClear();
+    teamServiceMock.getTeams.mockClear();
+    seasonServiceMock.getSeasons.mockClear();
     component.ngOnInit();
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledTimes(2);
     expect(teamServiceMock.getTeams).toHaveBeenCalled();
     expect(seasonServiceMock.getSeasons).toHaveBeenCalledWith({ IncludeInactive: true });
     expect(component.costCentres).toEqual(mockCostCentres);
     expect(component.seasons).toEqual(mockSeasons);
+    expect(component.activeCostCentreCount).toBe(1);
+    expect(component.costCentresWithBudgetsCount).toBe(1);
+    expect(component.totalBudgetDisplay).toBe('€700');
   });
 
   it('load should show error when API throws', () => {
@@ -196,10 +225,11 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('onCostCentreSaved should reload and close edit modal', () => {
+    costCentreServiceMock.getCostCentres.mockClear();
     component.editingCostCentre = { ...mockCostCentres[0] };
     component.onCostCentreSaved();
 
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledTimes(2);
     expect(component.editingCostCentre).toBeNull();
   });
 
@@ -215,10 +245,11 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('onCostCentreDeleted should reload and close delete modal', () => {
+    costCentreServiceMock.getCostCentres.mockClear();
     component.deletingCostCentre = mockCostCentres[0];
     component.onCostCentreDeleted();
 
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledTimes(2);
     expect(component.deletingCostCentre).toBeNull();
   });
 
@@ -231,6 +262,7 @@ describe('CostCentreManagementComponent', () => {
   });
 
   it('updateFilterOptions should update filter state and reload', () => {
+    costCentreServiceMock.getCostCentres.mockClear();
     const options: GetCostCentreOptions = {
       Name: 'Aero',
       Description: 'test',
@@ -246,7 +278,22 @@ describe('CostCentreManagementComponent', () => {
     expect(component.filterOptions!.MinBudget).toBe(100);
     expect(component.filterOptions!.MaxBudget).toBe(500);
     expect(component.page).toBe(0);
-    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalled();
+    expect(costCentreServiceMock.getCostCentres).toHaveBeenCalledTimes(2);
+  });
+
+  it('summaryBannerText should reflect active filters', () => {
+    component.totalCount = 4;
+    component.filterOptions = { ...component.filterOptions, Name: 'Aero' };
+
+    expect(component.summaryBannerText).toBe(
+      'Review 4 matching cost centres, their budgets, and current availability.',
+    );
+  });
+
+  it('summaryBannerText should handle empty results', () => {
+    component.totalCount = 0;
+
+    expect(component.summaryBannerText).toBe('No cost centres match the current filters.');
   });
 
   it('getTotalPages should return correct page count', () => {
