@@ -32,6 +32,13 @@ import { CostCentreListComponent } from '../cost-centre-list-component/cost-cent
   styleUrl: './cost-centre-management-component.scss',
 })
 export class CostCentreManagementComponent implements OnInit {
+  private static readonly CurrencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
   constructor(
     private readonly costCentreService: CostCentreService,
     private readonly seasonService: SeasonService,
@@ -53,6 +60,9 @@ export class CostCentreManagementComponent implements OnInit {
   totalCount: number = 0;
   hasNext: boolean = false;
   hasPrev: boolean = false;
+  activeCostCentreCount: number = 0;
+  costCentresWithBudgetsCount: number = 0;
+  totalBudgetAmount: number = 0;
 
   filterOptions: GetCostCentreOptions = {
     Name: undefined,
@@ -110,6 +120,13 @@ export class CostCentreManagementComponent implements OnInit {
       Offset: this.page * this.limit,
     };
 
+    const summaryQueryOptions: GetCostCentreOptions = {
+      Name: queryOptions.Name,
+      Description: queryOptions.Description,
+      MinBudget: queryOptions.MinBudget,
+      MaxBudget: queryOptions.MaxBudget,
+    };
+
     this.costCentreService.getCostCentres(queryOptions).subscribe({
       next: (data) => {
         if (data?.items) {
@@ -126,6 +143,53 @@ export class CostCentreManagementComponent implements OnInit {
         this.notificationService.showError('Could not load cost centres: ' + err.message);
       },
     });
+
+    this.costCentreService.getCostCentres(summaryQueryOptions).subscribe({
+      next: (data) => {
+        const summaryItems = data.items ?? [];
+        this.activeCostCentreCount = summaryItems.filter(
+          (costCentre) => costCentre.isActive,
+        ).length;
+        this.costCentresWithBudgetsCount = summaryItems.filter(
+          (costCentre) => (costCentre.budgets?.length ?? 0) > 0,
+        ).length;
+        this.totalBudgetAmount = summaryItems.reduce(
+          (sum, costCentre) =>
+            sum +
+            (costCentre.budgets ?? []).reduce(
+              (budgetSum, budget) => budgetSum + (budget.targetAmount ?? 0),
+              0,
+            ),
+          0,
+        );
+        this.cdr.markForCheck();
+      },
+      error: (err: Error) => {
+        this.notificationService.showError('Could not load cost centre summary: ' + err.message);
+      },
+    });
+  }
+
+  get summaryBannerText(): string {
+    if (this.totalCount === 0) {
+      return 'No cost centres match the current filters.';
+    }
+
+    const filterOptions = this.filterOptions;
+    const filterActive = Boolean(
+      filterOptions?.Name ||
+      filterOptions?.Description ||
+      filterOptions?.MinBudget != null ||
+      filterOptions?.MaxBudget != null,
+    );
+
+    return filterActive
+      ? `Review ${this.totalCount} matching cost centres, their budgets, and current availability.`
+      : `Organize ${this.totalCount} cost centres, budgets, and their current availability.`;
+  }
+
+  get totalBudgetDisplay(): string {
+    return CostCentreManagementComponent.CurrencyFormatter.format(this.totalBudgetAmount);
   }
 
   updateFilterOptions(options: GetCostCentreOptions): void {
