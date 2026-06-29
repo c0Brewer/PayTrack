@@ -60,44 +60,43 @@ select {
   background: v.$background-light;
 }
 
-.budget-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: v.$font-s;
-  margin-bottom: v.$size-m;
+.budget-card {
+  background: v.$background-light;
+}
 
-  th,
-  td {
-    padding: v.$size-xs v.$size-s;
-    text-align: left;
-    border-bottom: 1px solid v.$border-color;
+.budget-card--new {
+  border-color: rgba(v.$TUR-primary-orange, 0.45) !important;
+}
+
+.budget-card--deleted {
+  background: v.$TUR-secondary-background;
+  opacity: 0.7;
+}
+
+.budget-card__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: v.$size-s;
+  align-items: flex-end;
+  margin-top: v.$size-s;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 
-  th {
+  span {
+    margin-bottom: v.$size-xxs;
+    color: v.$text-muted;
+    font-size: v.$font-xs;
+  }
+
+  strong {
+    overflow-wrap: anywhere;
     color: v.$text-color;
-    font-weight: v.$font-medium;
-  }
-
-  tr.deleted td {
-    opacity: 0.4;
-    text-decoration: line-through;
-  }
-}
-
-.new-budgets tr td {
-  color: v.$primary-color;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: v.$accent-color;
-  cursor: pointer;
-  font-size: v.$font-s;
-  padding: 0;
-
-  &:hover {
-    text-decoration: underline;
+    font-size: v.$font-s;
+    line-height: 1.4;
   }
 }
 
