@@ -1,0 +1,210 @@
+# General
+As a finance team member, I want uploaded invoices to be automatically archived in Google Drive so that financial documentation is stored redundantly and can still be recovered if the local application storage is lost.
+
+Each uploaded invoice is first stored locally by PayTrack. If Google Drive archiving is enabled, the already saved local invoice is then uploaded to the configured Google Drive folder of the racing team.
+
+Target storage architecture:
+
+`<year>/<month>/<invoice-file-name>`
+
+Example:
+
+`2026/March/invoice_INV-123_20260527_194127.pdf`
+
+The Google Drive integration uses a service account only. OAuth is not supported anymore because this is a backend-to-Drive archiving feature and should not depend on a user login flow.
+
+Configuration is available through `appsettings.json`, `appsettings.Development.json`, and `.env` overrides:
+
+- `GoogleDrive:Enabled`
+- `GoogleDrive:RootFolderId`
+- `GoogleDrive:ServiceAccountKeyPath`
+- `GoogleDrive:ServiceAccountKeyBase64`
+
+`ServiceAccountKeyPath` and `ServiceAccountKeyBase64` are mutually exclusive. The application throws a configuration error if both are set at the same time.
+
+For local testing, the service account JSON can be stored as a base64 value in development settings. For real deployment, the TUW/racing team credentials can be provided through normal configuration or environment variables.
+
+Failure policy:
+
+If the Google Drive upload fails, the invoice upload must still succeed from the user perspective. The file remains stored locally, the Drive failure is logged, and PayTrack sends an email notification to `gitlab@racing.tuwien.ac.at` with the invoice attached so an admin can manually upload it later. The invoice has the following structure:
+![image](/uploads/6b1924a9efc7cad062afb9ccb4f3de3a/image.png){width=900 height=187}
+
+Implementation details:
+
+- Google Drive SDK dependency was added.
+- Google Drive upload logic was extracted into `IGoogleDriveArchiveClient` / `GoogleDriveArchiveClient`.
+- `FileRepository.SaveFile(...)` now only coordinates local saving and optional archiving.
+- Google Drive folders are created or reused automatically by year and month.
+- Upload uses the locally saved file path, so no request stream reset is needed anymore.
+- Google Drive query values are escaped before folder lookup.
+- Email notification supports file attachments.
+- Archive failures do not block invoice submission.
+- Tests mock the Google Drive archive client and verify local save, archive calls, and failure notification behavior.
+
+Checklist:
+- [x] Add Google Drive SDK dependency
+- [x] Add Drive configuration
+- [x] Decide authentication method: service account only
+- [x] Support service account key via file path
+- [x] Support service account key via base64 config value
+- [x] Reject config when both key path and base64 key are set
+- [x] Remove OAuth/authentication-mode selection
+- [x] Extract Google Drive upload into separate client/service
+- [x] Register Google Drive archive client in dependency injection
+- [x] Extend `FileRepository.SaveFile(...)`
+- [x] Save invoice locally before Drive upload
+- [x] Upload the locally saved file to Drive
+- [x] Build Drive folder structure: year/month/file
+- [x] Handle Drive upload failures without blocking the user upload
+- [x] Send failure email with invoice attachment
+- [x] Add/update tests for Drive-enabled saves
+- [x] Add/update tests for Drive-disabled saves
+- [x] Add/update tests for Drive failure notification
+- [x] Add/update tests for optional transaction budget form binding
+- [x] Document environment variables in `env.example`
+
+# Google Drive Archive Setup Notes
+
+For local testing, I created a Google Cloud free trial project and enabled the Google Drive API.
+
+### Steps performed
+
+1. Created a new Google Cloud project:
+   - Project name: `PayTrack Google Drive Archive`
+   - Project ID: `paytrack-drive-archive-test`
+
+2. Enabled the Google Drive API:
+   - Google Cloud Console
+   - `APIs & Services` / `APIs & Dienste`
+   - Enabled `Google Drive API`
+
+3. Created a Google Drive folder for testing:
+   - Folder name: `PayTrack Invoice Archive Test`
+
+4. First attempted service account authentication:
+   - Created a service account for Drive uploads.
+   - Created/downloaded a JSON key.
+   - Configured the backend with `ServiceAccountKeyPath`.
+
+5. Service account upload did not work with my personal Google Drive folder.
+   Google returned:
+   `Service Accounts do not have storage quota. Leverage shared drives, or use OAuth delegation instead.`
+
+6. To continue local testing, I switched to OAuth authentication:
+   - Created an OAuth client in Google Cloud.
+   - Added my personal Google account as a test user.
+   - Configured the backend with `AuthenticationMode = OAuth`.
+   - Successfully tested invoice upload into my personal Google Drive folder.
+
+### Current local test setup
+
+The working local setup uses my personal Google account via OAuth. This proves that the backend upload logic, folder creation, and invoice upload flow work.
+
+However, this is not the intended production setup. Production should likely use a TUW Racing-owned Google Workspace/Shared Drive setup, not my personal Drive.
+
+## Open Questions For TUW Racing
+
+1. Does TUW Racing have a Google Workspace Shared Drive for finance documents?
+   - This matters because service accounts cannot upload into a normal personal Google Drive folder due to missing service account storage quota.
+
+2. Should invoices be archived into one global finance folder or into team-specific folders?
+   - Example: `2026/March/invoice.pdf`
+   - Or: `<TeamName>/2026/March/invoice.pdf`
+
+3. Who should own the archived files?
+   - TUW Racing organization account?
+   - Finance team Shared Drive?
+   - A specific technical/service account?
+
+4. Can TUW Racing provide or approve a Google Cloud service account setup?
+   - Required for production-style automatic backend uploads without personal user login.
+
+5. Should Google Drive upload failure block invoice creation?
+   - Current behavior: if Drive upload is enabled and fails, invoice creation fails.
+   - Alternative: save locally, mark Drive archive as failed, and retry later.
+
+## Why I Cannot Fully Test Production Behavior Yet
+
+I can test the upload logic with my personal Google account using OAuth, but I cannot fully test the intended service-account production setup because service accounts require an organization-owned/shared Drive storage setup.
+
+A normal personal Google Drive folder is not enough for service account uploads. Google blocks this with a quota/storage ownership error. Therefore, a proper production test requires a TUW Racing Google Workspace Shared Drive or an equivalent organization-owned Drive folder.
+
+# Google Drive Upload Setup Guide
+
+This feature is disabled by default. To make automatic Drive archiving work locally, each developer needs their own `.env` configuration because secrets and Drive folder IDs are not committed.
+
+### Required Google Drive Folder
+
+1. Open Google Drive with the account that should own the uploaded archive files.
+2. Create one root archive folder, for example: `PayTrack Archive`
+3. Open the folder and copy its folder ID from the URL. Example:
+`https://drive.google.com/drive/folders/1abcDEFghiJKLmnoPQRstuVWxyz`. The folder ID then is: `1abcDEFghiJKLmnoPQRstuVWxyz`. The backend will automatically create subfolders inside this root folder: `PayTrack Archive/2026/May/uploaded-invoice.pdf`.
+
+### Required .env Section
+Add the following values to your local .env file:
+```
+GOOGLE_DRIVE_ENABLED=true
+GOOGLE_DRIVE_AUTHENTICATION_MODE=OAuth
+GOOGLE_DRIVE_ROOT_FOLDER_ID=your_drive_folder_id_here
+GOOGLE_DRIVE_OAUTH_CLIENT_SECRETS_PATH=path/to/oauth-client-secrets.json
+GOOGLE_DRIVE_OAUTH_TOKEN_STORE_PATH=google-drive-token
+```
+
+### OAuth Client Secrets
+Each developer needs a Google OAuth client secrets JSON file.
+The file path must match:
+```
+GOOGLE_DRIVE_OAUTH_CLIENT_SECRETS_PATH=path/to/oauth-client-secrets.json
+```
+Do not commit this JSON file!
+
+### Verify The Setup
+1. Start the backend.
+2. Upload an invoice/receipt through the normal payment request flow.
+3. On the first OAuth run, approve access with the Google account that owns the archive folder.
+4. Check the configured Drive folder.
+5. Confirm that the file appears under the generated year/month folder.
+
+### Disable Drive Upload Again
+Set:
+```
+GOOGLE_DRIVE_ENABLED=false
+```
+Expected behavior: files are still stored locally, but no Google Drive upload is attempted.
+
+# Google Workspace Shared Drive Test Setup
+
+## Goal
+Create a production-like test environment for the PayTrack Google Drive backup feature using:
+- Google Workspace Shared Drive
+- Google Cloud Service Account
+- Google Drive API
+
+## 1. Start Google Workspace Trial
+- Create a Google Workspace trial account
+- Verify your domain (or use the temporary setup if available)
+- Log into the Workspace Admin Console
+
+## 2. Create Shared Drive
+Google Drive → Shared Drives → Create Shared Drive
+
+Example:
+- `PayTrack-Test`
+
+## 3. Create Google Cloud Project
+Google Cloud Console:
+- Create new project
+- Enable `Google Drive API`
+
+## 4. Create Service Account
+IAM & Admin → Service Accounts → Create Service Account
+
+Example:
+- `paytrack-drive-uploader`
+
+Generate:
+- JSON credentials key
+
+Store securely:
+```env
+GOOGLE_APPLICATION_CREDENTIALS=...
